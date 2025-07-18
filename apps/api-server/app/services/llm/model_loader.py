@@ -14,9 +14,9 @@ def load_openai():
 
 def load_groq():
     return ChatGroq(
-        model="lava-1.5",
+        model="llama-3.3-70b-versatile",
         api_key=os.getenv("GROQ_API_KEY"),
-        temperature=0.2
+        temperature=0.1
     )
 
 def load_groq_fast():

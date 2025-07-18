@@ -9,6 +9,7 @@ class Slide(BaseModel):
     image_url:Optional[str]=None
 
 class TutorState(BaseModel):
+    user_input:Optional[str]=None
     topic:Optional[str]=None
     sub_topics:Optional[List[str]]=None
     preffered_method:Optional[str]=None
