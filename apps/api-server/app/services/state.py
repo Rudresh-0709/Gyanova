@@ -11,6 +11,7 @@ class Slide(BaseModel):
 class TutorState(BaseModel):
     user_input:Optional[str]=None
     topic:Optional[str]=None
+    topic_granularity:Optional[str]=None
     sub_topics:Optional[List[str]]=None
     preffered_method:Optional[str]=None
 

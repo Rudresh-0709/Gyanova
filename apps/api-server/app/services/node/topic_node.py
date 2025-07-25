@@ -1,5 +1,6 @@
 from ..llm.model_loader import load_groq,load_groq_fast,load_openai
 from ..state import TutorState
+import json
 
 def extract_topic():
     system_prompt = (
@@ -23,13 +24,16 @@ def extract_topic():
         """
     )
 
-    # user_prompt=f"User input = ${state.user_input}"
     user_prompt=input("You: ")
     llm=load_groq()
     topic=llm.invoke(system_prompt+" "+user_prompt)
+    parsed = json.loads(topic.content)
+    extracted_topic=parsed.get("topic","No clear topic detected")
+    extracted_granularity=parsed.get("granularity","No defined granularity of the subject")
     # state.topic=topic.content
     # return state
-    print(topic.content)
+    print(extracted_topic)
+    print(topic)
 
 if __name__ == "__main__":
     extract_topic()
