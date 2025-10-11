@@ -1,5 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 from dotenv import load_dotenv
 
@@ -26,5 +27,22 @@ def load_groq_fast():
         temperature=0.2
     )
 
+def load_gemini():
+    return ChatGoogleGenerativeAI(
+        model="gemini-2.5-pro",
+        api_key=os.getenv("GEMINI_API_KEY"),
+        temperature=0.3
+    )
+
+def load_gemini_image():
+    return ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash-image",
+        api_key=os.getenv("GEMINI_API_KEY"),
+        temperature=0.2
+    )
+
 load_groq()
 load_openai()
+load_groq_fast()
+load_gemini()
+load_gemini_image()

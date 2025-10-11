@@ -2,7 +2,7 @@ from ..llm.model_loader import load_groq,load_groq_fast,load_openai
 from ..state import TutorState
 import ast
 
-def suggest_sub_topic():
+def suggest_sub_topic(state:TutorState)->TutorState:
     system_prompt = (
     """You are an AI teaching assistant that analyzes a given academic topic and determines if it is too broad or too narrow for direct tutoring.
 
@@ -29,10 +29,10 @@ def suggest_sub_topic():
 
     """
 )
-    user_prompt=input("You :")
+    user_prompt=state.topic or ""
     llm=load_groq()
     topic=llm.invoke(system_prompt+" "+user_prompt)
-    print(topic.content)
+    print
 
 if __name__ == "__main__":
     suggest_sub_topic()
