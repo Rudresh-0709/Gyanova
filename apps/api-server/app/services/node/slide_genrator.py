@@ -77,27 +77,27 @@ if __name__ == "__main__":
         "topic": "Computer generations",
         "sub_topics": [
             {
-                "name": "Introduction to Computer Generations",
+                "name": "What is an atom?",
                 "difficulty": "Beginner",
                 "id": "sub_1_af16be"
             },
             {
-                "name": "First Generation Computers (1940s-1950s): Vacuum Tubes",
+                "name": "Parts of an atom",
                 "difficulty": "Intermediate",
                 "id": "sub_2_f30be9"
             },
             {
-                "name": "Second to Fifth Generation Computers (1950s-1980s): Transistors, Integrated Circuits, Microprocessors",
+                "name": "Atomic number and mass number",
                 "difficulty": "Intermediate",
                 "id": "sub_3_7b69d0"
             },
             {
-                "name": "Modern Computer Generations (1990s-present): Advances in Microarchitecture, AI, and Cloud Computing",
+                "name": "Electron shells for first 20 elements",
                 "difficulty": "Advanced",
                 "id": "sub_4_78635b"
             },
             {
-                "name": "Comparison and Evolution of Computer Generations",
+                "name": "Ions and neutral atoms",
                 "difficulty": "Intermediate",
                 "id": "sub_5_283526"
             }
