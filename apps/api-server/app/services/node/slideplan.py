@@ -1,5 +1,5 @@
-from llm.model_loader import load_groq,load_groq_fast,load_openai,load_gemini
-from state import TutorState
+from ..llm.model_loader import load_groq,load_groq_fast,load_openai,load_gemini
+from ..state import TutorState
 import uuid
 import json
 import ast
@@ -7,6 +7,7 @@ import ast
 def generate_slides_for_subtopic(subtopic):
     """Generate 1 or more slides for a given subtopic using LLM"""
     llm = load_groq()
+    
     SYSTEM_PROMPT="""
     You are an AI slide planner that designs structured, teachable slides for an interactive AI tutor.
 
@@ -38,28 +39,87 @@ def generate_slides_for_subtopic(subtopic):
     {
         "title": "Introduction to Atoms",
         "key_terms": ["atom", "matter", "structure"],
-        "visual_type": "pptslide",
-        "narration_tone": "friendly"
+        "visual_type": "pptslide"
     },
     {
         "title": "Protons and Neutrons",
         "key_terms": ["nucleon", "proton", "neutron"],
-        "visual_type": "ai_image",
-        "narration_tone": "analytical"
+        "visual_type": "ai_image"
     },
     {
         "title": "Electrons and Orbits",
         "key_terms": ["electron", "orbit", "energy level"],
-        "visual_type": "pptslide",
-        "narration_tone": "curious"
+        "visual_type": "pptslide"
     },
     {
         "title": "Isotopes and Stability",
         "key_terms": ["isotope", "atomic mass", "stability"],
-        "visual_type": "stock",
-        "narration_tone": "neutral"
+        "visual_type": "stock"
     }
     ]
 
     Your JSON must begin with '[' and end with ']' with no trailing text or commentary.
     """
+    
+    user_prompt = f"Subtopic: {subtopic['name']}"
+    response = llm.invoke(SYSTEM_PROMPT + user_prompt)
+
+    print("Model raw output:", response.content)
+
+    try:
+        slides = json.loads(response.content)
+        for i, slide in enumerate(slides, start=1):
+            slide["id"] = f"slide_{i}_{uuid.uuid4().hex[:6]}"
+            slide["order"] = i
+        return slides
+    except Exception as e:
+        print("JSON parsing failed:", e)
+        return []
+
+
+def generate_all_slides(state):
+    """Loop over subtopics and generate slides for each"""
+    state["slides"] = {}
+
+    for subtopic in state["sub_topics"]:
+        sub_id = subtopic["id"]
+        state["slides"][sub_id] = generate_slides_for_subtopic(subtopic)
+
+    return state
+
+
+# Example run
+if __name__ == "__main__":
+    TutorState = {
+        "topic": "Computer generations",
+        "sub_topics": [
+            {
+                "name": "What is an atom?",
+                "difficulty": "Beginner",
+                "id": "sub_1_af16be"
+            },
+            {
+                "name": "Parts of an atom",
+                "difficulty": "Intermediate",
+                "id": "sub_2_f30be9"
+            },
+            {
+                "name": "Atomic number and mass number",
+                "difficulty": "Intermediate",
+                "id": "sub_3_7b69d0"
+            },
+            {
+                "name": "Electron shells for first 20 elements",
+                "difficulty": "Advanced",
+                "id": "sub_4_78635b"
+            },
+            {
+                "name": "Ions and neutral atoms",
+                "difficulty": "Intermediate",
+                "id": "sub_5_283526"
+            }
+        ]
+    }
+
+    updated_state = generate_all_slides(TutorState)
+    print(json.dumps(updated_state, indent=2))
