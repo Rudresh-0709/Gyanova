@@ -108,7 +108,33 @@ def generate_all_narrations(state):
 if __name__ == "__main__":
     TutorState = {
         "topic": "Computer generations",
-        "narration_style": "Narrate the topics like you are teaching a 5 year old, simplify the topics. Give analogies and examples to teach hard topics.",
+        "sub_topics": [
+            {
+            "name": "What is an atom?",
+            "difficulty": "Beginner",
+            "id": "sub_1_af16be"
+            },
+            {
+            "name": "Parts of an atom",
+            "difficulty": "Intermediate",
+            "id": "sub_2_f30be9"
+            },
+            {
+            "name": "Atomic number and mass number",
+            "difficulty": "Intermediate",
+            "id": "sub_3_7b69d0"
+            },
+            {
+            "name": "Electron shells for first 20 elements",
+            "difficulty": "Advanced",
+            "id": "sub_4_78635b"
+            },
+            {
+            "name": "Ions and neutral atoms",
+            "difficulty": "Intermediate",
+            "id": "sub_5_283526"
+            }
+        ],
         "slides": {
             "sub_1_af16be": [
             {
@@ -118,19 +144,17 @@ if __name__ == "__main__":
                 "matter",
                 "structure"
                 ],
-                "visual_type": "pptslide",
-                "id": "slide_1_774d9b",
+                "id": "slide_1_075595",
                 "order": 1
             },
             {
-                "title": "Atom Components",
+                "title": "Atom Composition",
                 "key_terms": [
                 "proton",
                 "neutron",
                 "electron"
                 ],
-                "visual_type": "ai_image",
-                "id": "slide_2_65e33c",
+                "id": "slide_2_7cd67b",
                 "order": 2
             },
             {
@@ -138,21 +162,19 @@ if __name__ == "__main__":
                 "key_terms": [
                 "nucleus",
                 "orbit",
-                "shell"
+                "energy level"
                 ],
-                "visual_type": "pptslide",
-                "id": "slide_3_204c70",
+                "id": "slide_3_09a1ad",
                 "order": 3
             },
             {
-                "title": "Real World Atoms",
+                "title": "Atom Summary",
                 "key_terms": [
+                "atom",
                 "element",
-                "compound",
-                "molecule"
+                "compound"
                 ],
-                "visual_type": "stock",
-                "id": "slide_4_ad5234",
+                "id": "slide_4_e5cdd6",
                 "order": 4
             }
             ],
@@ -164,8 +186,7 @@ if __name__ == "__main__":
                 "matter",
                 "structure"
                 ],
-                "visual_type": "pptslide",
-                "id": "slide_1_a69640",
+                "id": "slide_1_61a532",
                 "order": 1
             },
             {
@@ -175,8 +196,7 @@ if __name__ == "__main__":
                 "proton",
                 "neutron"
                 ],
-                "visual_type": "ai_image",
-                "id": "slide_2_1a2afc",
+                "id": "slide_2_dbebc2",
                 "order": 2
             },
             {
@@ -186,19 +206,17 @@ if __name__ == "__main__":
                 "orbit",
                 "energy level"
                 ],
-                "visual_type": "pptslide",
-                "id": "slide_3_b17a7f",
+                "id": "slide_3_ad9a57",
                 "order": 3
             },
             {
-                "title": "Atomic Nucleus",
+                "title": "Atom Structure Summary",
                 "key_terms": [
                 "nucleus",
-                "proton",
-                "neutron"
+                "electron cloud",
+                "atomic mass"
                 ],
-                "visual_type": "ai_image",
-                "id": "slide_4_8e2d37",
+                "id": "slide_4_82e3a8",
                 "order": 4
             }
             ],
@@ -210,8 +228,7 @@ if __name__ == "__main__":
                 "protons",
                 "elements"
                 ],
-                "visual_type": "pptslide",
-                "id": "slide_1_4b22b8",
+                "id": "slide_1_dfbeae",
                 "order": 1
             },
             {
@@ -221,30 +238,27 @@ if __name__ == "__main__":
                 "nucleons",
                 "isotopes"
                 ],
-                "visual_type": "ai_image",
-                "id": "slide_2_f22849",
+                "id": "slide_2_65abc0",
                 "order": 2
             },
             {
-                "title": "Relationship Between Atomic and Mass Numbers",
+                "title": "Relationship Between Atomic and Mass Number",
                 "key_terms": [
                 "atomic mass",
                 "protons",
                 "neutrons"
                 ],
-                "visual_type": "pptslide",
-                "id": "slide_3_2c9e3e",
+                "id": "slide_3_09dff5",
                 "order": 3
             },
             {
-                "title": "Real-World Applications of Atomic and Mass Numbers",
+                "title": "Applications of Atomic and Mass Number",
                 "key_terms": [
                 "isotopes",
-                "radioactivity",
-                "nuclear reactions"
+                "atomic structure",
+                "chemistry"
                 ],
-                "visual_type": "stock",
-                "id": "slide_4_00f946",
+                "id": "slide_4_703696",
                 "order": 4
             }
             ],
@@ -254,66 +268,40 @@ if __name__ == "__main__":
                 "key_terms": [
                 "electron",
                 "shell",
-                "orbital"
+                "atom"
                 ],
-                "visual_type": "pptslide",
-                "id": "slide_1_f8a634",
+                "id": "slide_1_127355",
                 "order": 1
             },
             {
                 "title": "Electron Shell Configuration",
                 "key_terms": [
                 "electron configuration",
-                "shell filling",
-                "aufbau principle"
+                "shell model",
+                "energy level"
                 ],
-                "visual_type": "ai_image",
-                "id": "slide_2_5cd233",
+                "id": "slide_2_301bcd",
                 "order": 2
             },
             {
-                "title": "First 10 Elements' Electron Shells",
+                "title": "First 20 Elements: Electron Shells",
                 "key_terms": [
-                "hydrogen",
-                "helium",
-                "alkali metals"
+                "periodic table",
+                "electron shell",
+                "elements"
                 ],
-                "visual_type": "pptslide",
-                "id": "slide_3_8a547d",
+                "id": "slide_3_44aae9",
                 "order": 3
             },
             {
-                "title": "Transition to d-Block Elements",
+                "title": "Applying Electron Shells to Elements",
                 "key_terms": [
-                "d-block",
-                "transition metals",
-                "electron shell"
+                "electron configuration",
+                "chemical properties",
+                "periodicity"
                 ],
-                "visual_type": "ai_image",
-                "id": "slide_4_482c6d",
+                "id": "slide_4_7f9ef8",
                 "order": 4
-            },
-            {
-                "title": "Electron Shells of First 20 Elements",
-                "key_terms": [
-                "s-block",
-                "p-block",
-                "d-block"
-                ],
-                "visual_type": "stock",
-                "id": "slide_5_812d69",
-                "order": 5
-            },
-            {
-                "title": "Stability and Reactivity Trends",
-                "key_terms": [
-                "reactivity",
-                "stability",
-                "electron configuration"
-                ],
-                "visual_type": "pptslide",
-                "id": "slide_6_ce490b",
-                "order": 6
             }
             ],
             "sub_5_283526": [
@@ -324,41 +312,37 @@ if __name__ == "__main__":
                 "atom",
                 "charge"
                 ],
-                "visual_type": "pptslide",
-                "id": "slide_1_017de5",
+                "id": "slide_1_609c03",
                 "order": 1
             },
             {
-                "title": "Formation of Cations",
+                "title": "Formation of Ions",
                 "key_terms": [
-                "cation",
-                "electron loss",
-                "positive charge"
+                "ionization",
+                "electron",
+                "proton"
                 ],
-                "visual_type": "ai_image",
-                "id": "slide_2_1b5fd2",
+                "id": "slide_2_ba47a4",
                 "order": 2
-            },
-            {
-                "title": "Formation of Anions",
-                "key_terms": [
-                "anion",
-                "electron gain",
-                "negative charge"
-                ],
-                "visual_type": "ai_image",
-                "id": "slide_3_adddfa",
-                "order": 3
             },
             {
                 "title": "Neutral Atoms vs Ions",
                 "key_terms": [
-                "neutral atom",
+                "neutral",
                 "ion",
-                "electroneutrality"
+                "stability"
                 ],
-                "visual_type": "pptslide",
-                "id": "slide_4_5e6832",
+                "id": "slide_3_d5c448",
+                "order": 3
+            },
+            {
+                "title": "Properties of Ions",
+                "key_terms": [
+                "ionic",
+                "compound",
+                "reactivity"
+                ],
+                "id": "slide_4_9768fa",
                 "order": 4
             }
             ]

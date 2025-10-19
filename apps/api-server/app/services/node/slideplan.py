@@ -20,10 +20,6 @@ def generate_slides_for_subtopic(subtopic):
     2. Each object in the array must contain:
     - "title": string (<= 60 chars, clear and specific)
     - "key_terms": array of 2–6 short keywords
-    - "visual_type": choose one of the following based on content:
-        - "pptslide" → when visual explanation can be done using simple text, diagrams, or cliparts (e.g., conceptual, sequential, summary slides).
-        - "stock" → when topic has real-world, photographic examples (e.g., environment, biology, geography, daily-life examples).
-        - "ai_image" → when visuals are abstract, scientific, historical, or not easily available in stock libraries (e.g., “ancient atom model”, “black hole cross-section”, “AI neural network visualization”).
     3. Each slide should teach one clear concept or idea.
     4. Number of slides:
     - Beginner topics → 3–4 slides
@@ -38,23 +34,19 @@ def generate_slides_for_subtopic(subtopic):
     [
     {
         "title": "Introduction to Atoms",
-        "key_terms": ["atom", "matter", "structure"],
-        "visual_type": "pptslide"
+        "key_terms": ["atom", "matter", "structure"]
     },
     {
         "title": "Protons and Neutrons",
-        "key_terms": ["nucleon", "proton", "neutron"],
-        "visual_type": "ai_image"
+        "key_terms": ["nucleon", "proton", "neutron"]
     },
     {
         "title": "Electrons and Orbits",
-        "key_terms": ["electron", "orbit", "energy level"],
-        "visual_type": "pptslide"
+        "key_terms": ["electron", "orbit", "energy level"]
     },
     {
         "title": "Isotopes and Stability",
-        "key_terms": ["isotope", "atomic mass", "stability"],
-        "visual_type": "stock"
+        "key_terms": ["isotope", "atomic mass", "stability"]
     }
     ]
 
