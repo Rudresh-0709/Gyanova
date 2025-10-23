@@ -1,59 +1,78 @@
 from ..llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
 from ..state import TutorState
 import json
+import re
 
 def generate_narration_for_slide(slide, subtopic_name, narration_style):
     """Generate narration text for a single slide."""
     llm = load_openai()
 
     SYSTEM_PROMPT = f"""
-    You are an expert educational narrator and explainer for an AI teaching platform.
-    Your role is to transform each slide into a clear, emotionally engaging, and pedagogically sound spoken narration — 
-    as if a passionate teacher is speaking to a student.
+        You are an expert educational slide designer and content creator for an AI teaching platform.
 
-    🎭 TEACHING STYLE (USER PREFERENCE):
-    {narration_style if narration_style else "Default: Use a clear, structured, and balanced tone suitable for general learners."}
+        Your task is to transform each educational concept into a **visually balanced slide**, 
+        combining **short, clear point-form narration** with an appropriate **image type and layout template**.
 
-    🎯 PURPOSE:
-    Turn slide content (title + key terms + subtopic) into a teaching experience — not just an explanation.
-    Make it easy to follow, interesting to listen to, and emotionally engaging.
-    Focus on **one core idea** per slide's narration to prevent cognitive overload.
+        🎯 PURPOSE:
+        Create slide data that can later be converted into both narration and HTML slides.
+        Each slide should explain **one key idea** clearly and visually.
 
-    - Explain concepts step-by-step, introducing each term in a way that builds understanding.
-    - Maintain curiosity flow: start with a small question, build explanation, end with insight.
+        🧩 SLIDE STRUCTURE:
+        Each slide must include:
+        1. **title** — short and clear (derived from the main concept)
+        2. **points** — 3 to 5 concise and visually readable points (15–25 words each)
+        3. **template** — choose from ["image_right", "image_left", "image_full", "text_only", "split_horizontal"], try to keep the template different for each slide.
+        4. **imageType** — choose from ["ai_image", "ai_enhanced_image", "chart_diagram"]
+        - Use:
+            - `ai_image` for creative or everyday scenes.
+            - `ai_enhanced_image` for precise and majority of images.
+            - `chart_diagram` for visualizable data or structured explanations (e.g. comparisons, hierarchies)
+        5. **imagePrompt** — concise and descriptive prompt describing what the image should contain.
 
-    📚 CONTENT STRUCTURE:
-    Each narration should:
-    1. Begin with a *hook* or *curiosity trigger* related to the slide title.
-    2. Gradually explain the concept and introduce `key_terms` naturally, **defining them implicitly or with brief clarity**.
-    3. Use analogies, mini examples, or scenarios where helpful, strictly adhering to the TEACHING STYLE.
-    4. End with a small reflective or transition sentence (“Now that we understand…, let’s explore…”).
-    5. Conclude the narration on a high, encouraging note.
+        📚 CONTENT STYLE:
+        - Write in **point format**, suitable for slide display.
+        - Focus on clarity, brevity, and logical sequencing.
+        - Do not write long paragraphs.
+        - Avoid jargon-heavy or overly scientific wording — make it visually scannable.
+        - Each point should introduce **one clear sub-idea**.
+        - Maintain a natural teaching flow from curiosity → concept → conclusion.
 
-    🧩 OUTPUT FORMAT:
-    Return only valid JSON, no markdown or text outside JSON.
-    Example:
-    {{
-      "narration": "Have you ever wondered what holds the center of an atom together? At the core lies the nucleus — made of protons and neutrons, tightly packed together...",
-      "style": "{narration_style if narration_style else 'default'}"
-    }}
+        🎨 VISUAL VARIETY RULE:
+        - Randomize or intuitively vary template layouts across slides to keep visuals engaging.
+        - Ensure slide structure complements the concept (e.g., image on side for processes, full image for diagrams).
 
-    📏 LENGTH:
-    - 80–140 words.
-    - Must sound like a teacher speaking naturally for 25–35 seconds.
+        📏 OUTPUT FORMAT:
+        Return valid JSON only — no markdown or extra text.
+        Example:
+        {{
+        "title": "Structure of an Atom",
+        "points": [
+            "Atoms are the smallest units of all matter.",
+            "Each atom has a nucleus made of protons and neutrons.",
+            "Electrons orbit around the nucleus in energy levels."
+        ],
+        "template": "image_right",
+        "imageType": "ai_enhanced_image",
+        "imagePrompt": "detailed labeled diagram of an atom showing nucleus and orbiting electrons"
+        }}
 
-    Avoid:
-    - Lists or bullet formats.
-    - Robotic or formal textbook tone.
-    - Phrases like “In this slide we will learn” or “This slide explains”.
-    - **Avoid filler phrases** like 'Alright,' 'So,' or 'Moving on,' unless they serve a clear conversational purpose.
+        💡 LENGTH:
+        - 3–5 points per slide.
+        - Each point: 10–20 words max.
 
-    You are the voice of the teacher. Teach with flow, presence, and clarity.
-    """
+        Avoid:
+        - Long explanations or paragraphs.
+        - Phrases like “In this slide” or “We will learn”.
+        - Repetitive sentence structures.
+
+        Your role: Create **educationally meaningful, visually diverse slides** that can be directly converted to both narration and HTML visuals.
+        """
+
 
     user_prompt = f"""
-    Subtopic: {subtopic_name}
-    Slide: {json.dumps(slide, ensure_ascii=False)}
+    Subtopic: {subtopic_name or "General"}
+    Slide details:
+    {json.dumps(slide, ensure_ascii=False, indent=2)}
     """
 
     response = llm.invoke([
@@ -61,53 +80,50 @@ def generate_narration_for_slide(slide, subtopic_name, narration_style):
         {"role": "user", "content": user_prompt}
     ])
 
+    # Try to safely parse JSON
     try:
-        narration_data = json.loads(response.content)
+        slide_data = json.loads(response.content)
     except Exception:
         import re
         text = str(response)
         match = re.search(r'\{.*\}', text, re.DOTALL)
         if match:
-            narration_data = json.loads(match.group(0))
+            slide_data = json.loads(match.group(0))
         else:
-            narration_data = {"narration": "Parsing failed.", "style": "neutral"}
+            slide_data = {
+                "title": slide.get("title", "Untitled Slide"),
+                "points": ["Parsing failed, please retry."],
+                "template": "image_right",
+                "imageType": "ai_enhanced_image",
+                "imagePrompt": "no image"
+            }
 
-
-    try:
-        narration_data = json.loads(response.content)
-        slide["narration"] = narration_data.get("narration", "").strip()
-        slide["narration_style"] = narration_data.get("style", slide.get("narration_tone", "neutral"))
-    except Exception as e:
-        print("Narration JSON parsing failed:", e)
-        slide["narration"] = "Narration unavailable due to parsing error."
-        slide["narration_style"] = "neutral"
-
-    return slide
+    return slide_data
 
 
 def generate_all_narrations(state):
-    """Generate narrations for all slides directly (not grouped by subtopics)."""
     slides_by_subtopic = state.get("slides", {})
     narration_style = state.get("narration_style", "default educational style")
 
-    # ✅ Loop through all subtopic slide groups
     for sub_id, slide_list in slides_by_subtopic.items():
         for i, slide in enumerate(slide_list):
-            # Pass each slide individually
             slides_by_subtopic[sub_id][i] = generate_narration_for_slide(
                 slide=slide,
-                subtopic_name=None,  # Not needed anymore
-                narration_style=narration_style
+                subtopic_name=sub_id,
+                narration_style=narration_style   # ✅ Add this line
             )
 
-    # ✅ Update state with new narrations
     state["slides"] = slides_by_subtopic
     return state
+
+
+
 
 
 if __name__ == "__main__":
     TutorState = {
         "topic": "Computer generations",
+        "narration_style":"Teach like you are explaining it to a 7 year old, give analogies and examples.",
         "sub_topics": [
             {
             "name": "What is an atom?",
