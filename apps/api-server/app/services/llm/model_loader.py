@@ -22,7 +22,7 @@ def load_groq():
 
 def load_groq_fast():
     return ChatGroq(
-        model="llama3-70b-8192",
+        model="openai/gpt-oss-120b",
         api_key=os.getenv("GROQ_API_KEY"),
         temperature=0.2
     )

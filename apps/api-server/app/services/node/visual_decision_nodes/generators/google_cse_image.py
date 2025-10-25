@@ -7,7 +7,7 @@ load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 cse_id = os.getenv("GOOGLE_CSE_ID")
 
-def google_image_search(query, num_images=2):
+def google_image_search(query, num_images=1):
     url = f"https://www.googleapis.com/customsearch/v1"
     params = {
         "q": query, 
@@ -25,5 +25,5 @@ def google_image_search(query, num_images=2):
     # return only top `num_images` links
     return [item["link"] for item in results["items"][:num_images]]
 
-images = google_image_search("isotonic solution osmosis diagram labeled", num_images=2)
+images = google_image_search("illustration showing different atoms with nucleus and orbiting electrons", num_images=1)
 print(images)

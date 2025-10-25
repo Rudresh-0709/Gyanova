@@ -36,6 +36,7 @@ def generate_narration_for_slide(slide, subtopic_name, narration_style):
         - Avoid jargon-heavy or overly scientific wording — make it visually scannable.
         - Each point should introduce **one clear sub-idea**.
         - Maintain a natural teaching flow from curiosity → concept → conclusion.
+        - Use the narration style mentioned to cater the users style of teaching.{narration_style}
 
         🎨 VISUAL VARIETY RULE:
         - Randomize or intuitively vary template layouts across slides to keep visuals engaging.
