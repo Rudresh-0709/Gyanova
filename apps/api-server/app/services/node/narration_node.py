@@ -3,72 +3,73 @@ from ..state import TutorState
 import json
 import re
 
+
 def generate_narration_for_slide(slide, subtopic_name, narration_style):
     """Generate narration text for a single slide."""
     llm = load_openai()
 
     SYSTEM_PROMPT = f"""
-        You are an expert educational slide designer and content creator for an AI teaching platform.
+    You are an expert educational content creator and slide narrator for an AI teaching platform.
 
-        Your task is to transform each educational concept into a **visually balanced slide**, 
-        combining **short, clear point-form narration** with an appropriate **image type and layout template**.
+    🎯 PURPOSE:
+    Your task is to transform each educational concept into a **clear, concise, and engaging narration** suitable for use in slides or spoken teaching.
+    Each narration should effectively explain **one key idea** using 3–5 logically ordered points that are short, easy to follow, and pedagogically sound.
 
-        🎯 PURPOSE:
-        Create slide data that can later be converted into both narration and HTML slides.
-        Each slide should explain **one key idea** clearly and visually.
+    🧩 SLIDE NARRATION STRUCTURE:
+    Each slide must include:
+    1. **title** — A short, clear title derived from the main concept.
+    2. **points** — 3 to 5 concise and visually readable points (15–25 words each).
 
-        🧩 SLIDE STRUCTURE:
-        Each slide must include:
-        1. **title** — short and clear (derived from the main concept)
-        2. **points** — 3 to 5 concise and visually readable points (15–25 words each)
-        3. **template** — choose from ["image_right", "image_left", "image_full", "text_only", "split_horizontal"], try to keep the template different for each slide.
-        4. **imageType** — choose from ["ai_image", "ai_enhanced_image", "chart_diagram"]
-        - Use:
-            - `ai_image` for creative or everyday scenes.
-            - `ai_enhanced_image` for precise and majority of images.
-            - `chart_diagram` for visualizable data or structured explanations (e.g. comparisons, hierarchies)
-        5. **imagePrompt** — concise and descriptive prompt describing what the image should contain.
+    📚 NARRATION STYLE:
+    - The narration must feel like a teacher explaining the concept with natural flow and curiosity.
+    - Maintain an educational tone that encourages understanding, not just definition.
+    - Avoid robotic, repetitive, or mechanical phrasing.
+    - Each point should focus on **one distinct sub-idea** and follow a logical teaching flow:
+    curiosity → explanation → insight → takeaway.
+    - Use transitions and progression between points where needed.
+    - Adapt the narration style based on the user’s preference if provided: {narration_style}
 
-        📚 CONTENT STYLE:
-        - Write in **point format**, suitable for slide display.
-        - Focus on clarity, brevity, and logical sequencing.
-        - Do not write long paragraphs.
-        - Avoid jargon-heavy or overly scientific wording — make it visually scannable.
-        - Each point should introduce **one clear sub-idea**.
-        - Maintain a natural teaching flow from curiosity → concept → conclusion.
-        - Use the narration style mentioned to cater the users style of teaching.{narration_style}
+    🎓 TEACHING PRINCIPLES TO FOLLOW:
+    - Begin with **what** and **why** before **how** — establish curiosity.
+    - Use simple, accessible language that a broad audience can understand.
+    - Present information in a **build-up manner** — each point should add depth to the previous one.
+    - Ensure points are **self-contained** (each makes sense independently) yet **connected** (they form a coherent mini-lesson).
 
-        🎨 VISUAL VARIETY RULE:
-        - Randomize or intuitively vary template layouts across slides to keep visuals engaging.
-        - Ensure slide structure complements the concept (e.g., image on side for processes, full image for diagrams).
+    ✅ DOs:
+    - Do use clear and engaging phrasing (e.g., “Let’s explore how...” / “This helps us understand...”).
+    - Do simplify complex ideas into relatable explanations.
+    - Do use active voice and educational tone.
+    - Do ensure logical sequencing — each point should naturally lead to the next.
+    - Do maintain a balanced mix of conceptual and factual points.
+    - Do emphasize takeaways or conclusions in the last point.
+    - Do use analogy or comparison **only** if it enhances clarity.
 
-        📏 OUTPUT FORMAT:
-        Return valid JSON only — no markdown or extra text.
-        Example:
-        {{
-        "title": "Structure of an Atom",
-        "points": [
-            "Atoms are the smallest units of all matter.",
-            "Each atom has a nucleus made of protons and neutrons.",
-            "Electrons orbit around the nucleus in energy levels."
-        ],
-        "template": "image_right",
-        "imageType": "ai_enhanced_image",
-        "imagePrompt": "detailed labeled diagram of an atom showing nucleus and orbiting electrons"
-        }}
+    🚫 DON’Ts:
+    - Don’t include any visual references (no mention of images, charts, diagrams, etc.).
+    - Don’t repeat the same idea across multiple points.
+    - Don’t use filler phrases like “In this slide” or “We will learn about”.
+    - Don’t use overly technical jargon or definitions straight from textbooks.
+    - Don’t write long paragraphs — each point should be a compact educational statement.
+    - Don’t include any meta text, formatting, or markdown.
 
-        💡 LENGTH:
-        - 3–5 points per slide.
-        - Each point: 10–20 words max.
+    💡 LENGTH & FORMAT:
+    - Total: 3–5 points per slide.
+    - Each point: 10–25 words max.
+    - Title: concise and clear (4–8 words ideally).
+    - Output valid JSON only — no markdown or extra text.
 
-        Avoid:
-        - Long explanations or paragraphs.
-        - Phrases like “In this slide” or “We will learn”.
-        - Repetitive sentence structures.
+    📏 OUTPUT FORMAT EXAMPLE:
+    {{
+    "title": "Structure of an Atom",
+    "points": [
+        "Atoms are the fundamental units that make up all forms of matter.",
+        "Each atom contains a central nucleus made of protons and neutrons.",
+        "Electrons orbit the nucleus in different energy levels that define the atom’s behavior."
+    ]
+    }}
 
-        Your role: Create **educationally meaningful, visually diverse slides** that can be directly converted to both narration and HTML visuals.
-        """
-
+    Your role: Create **educationally meaningful, logically structured, and engaging narration** that can later be paired with visuals and voiceovers for AI-powered teaching slides.
+    """
 
     user_prompt = f"""
     Subtopic: {subtopic_name or "General"}
@@ -76,18 +77,21 @@ def generate_narration_for_slide(slide, subtopic_name, narration_style):
     {json.dumps(slide, ensure_ascii=False, indent=2)}
     """
 
-    response = llm.invoke([
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_prompt}
-    ])
+    response = llm.invoke(
+        [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ]
+    )
 
     # Try to safely parse JSON
     try:
         slide_data = json.loads(response.content)
     except Exception:
         import re
+
         text = str(response)
-        match = re.search(r'\{.*\}', text, re.DOTALL)
+        match = re.search(r"\{.*\}", text, re.DOTALL)
         if match:
             slide_data = json.loads(match.group(0))
         else:
@@ -96,7 +100,7 @@ def generate_narration_for_slide(slide, subtopic_name, narration_style):
                 "points": ["Parsing failed, please retry."],
                 "template": "image_right",
                 "imageType": "ai_enhanced_image",
-                "imagePrompt": "no image"
+                "imagePrompt": "no image",
             }
 
     return slide_data
@@ -111,259 +115,211 @@ def generate_all_narrations(state):
             slides_by_subtopic[sub_id][i] = generate_narration_for_slide(
                 slide=slide,
                 subtopic_name=sub_id,
-                narration_style=narration_style   # ✅ Add this line
+                narration_style=narration_style,  # ✅ Add this line
             )
 
     state["slides"] = slides_by_subtopic
     return state
 
 
-
-
-
 if __name__ == "__main__":
     TutorState = {
         "topic": "Computer generations",
-        "narration_style":"Teach like you are explaining it to a 7 year old, give analogies and examples.",
         "sub_topics": [
             {
-            "name": "What is an atom?",
-            "difficulty": "Beginner",
-            "id": "sub_1_af16be"
+                "name": "Introduction to Computer Generations",
+                "difficulty": "Beginner",
+                "id": "sub_1_2b67b6",
             },
             {
-            "name": "Parts of an atom",
-            "difficulty": "Intermediate",
-            "id": "sub_2_f30be9"
+                "name": "First Generation Computers (1940s-1950s): Vacuum Tubes",
+                "difficulty": "Intermediate",
+                "id": "sub_2_30755b",
             },
             {
-            "name": "Atomic number and mass number",
-            "difficulty": "Intermediate",
-            "id": "sub_3_7b69d0"
+                "name": "Second to Fifth Generation Computers (1950s-1980s): Transistors, Integrated Circuits, and Microprocessors",
+                "difficulty": "Intermediate",
+                "id": "sub_3_d87eaf",
             },
             {
-            "name": "Electron shells for first 20 elements",
-            "difficulty": "Advanced",
-            "id": "sub_4_78635b"
+                "name": "Modern Computer Generations (1980s-present): Artificial Intelligence, Internet, and Beyond",
+                "difficulty": "Advanced",
+                "id": "sub_4_c8e0dd",
             },
             {
-            "name": "Ions and neutral atoms",
-            "difficulty": "Intermediate",
-            "id": "sub_5_283526"
-            }
+                "name": "Comparison and Evolution of Computer Generations",
+                "difficulty": "Intermediate",
+                "id": "sub_5_dca7e2",
+            },
         ],
         "slides": {
-            "sub_1_af16be": [
-            {
-                "title": "Introduction to Atoms",
-                "key_terms": [
-                "atom",
-                "matter",
-                "structure"
-                ],
-                "id": "slide_1_075595",
-                "order": 1
-            },
-            {
-                "title": "Atom Composition",
-                "key_terms": [
-                "proton",
-                "neutron",
-                "electron"
-                ],
-                "id": "slide_2_7cd67b",
-                "order": 2
-            },
-            {
-                "title": "Atomic Structure",
-                "key_terms": [
-                "nucleus",
-                "orbit",
-                "energy level"
-                ],
-                "id": "slide_3_09a1ad",
-                "order": 3
-            },
-            {
-                "title": "Atom Summary",
-                "key_terms": [
-                "atom",
-                "element",
-                "compound"
-                ],
-                "id": "slide_4_e5cdd6",
-                "order": 4
-            }
+            "sub_1_2b67b6": [
+                {
+                    "title": "Intro to Comp Generations",
+                    "key_terms": ["computer", "generation", "history"],
+                    "id": "slide_1_cf42b9",
+                    "order": 1,
+                },
+                {
+                    "title": "First Generation Computers",
+                    "key_terms": ["vacuum tube", "eniac", "1940s"],
+                    "id": "slide_2_17fab4",
+                    "order": 2,
+                },
+                {
+                    "title": "Second to Third Gen Computers",
+                    "key_terms": ["transistor", "ic", "mainframe"],
+                    "id": "slide_3_3d214e",
+                    "order": 3,
+                },
+                {
+                    "title": "Modern Computer Generations",
+                    "key_terms": ["microprocessor", "pc", "ai"],
+                    "id": "slide_4_2c77d4",
+                    "order": 4,
+                },
             ],
-            "sub_2_f30be9": [
-            {
-                "title": "Introduction to Atoms",
-                "key_terms": [
-                "atom",
-                "matter",
-                "structure"
-                ],
-                "id": "slide_1_61a532",
-                "order": 1
-            },
-            {
-                "title": "Protons and Neutrons",
-                "key_terms": [
-                "nucleon",
-                "proton",
-                "neutron"
-                ],
-                "id": "slide_2_dbebc2",
-                "order": 2
-            },
-            {
-                "title": "Electrons and Orbits",
-                "key_terms": [
-                "electron",
-                "orbit",
-                "energy level"
-                ],
-                "id": "slide_3_ad9a57",
-                "order": 3
-            },
-            {
-                "title": "Atom Structure Summary",
-                "key_terms": [
-                "nucleus",
-                "electron cloud",
-                "atomic mass"
-                ],
-                "id": "slide_4_82e3a8",
-                "order": 4
-            }
+            "sub_2_30755b": [
+                {
+                    "title": "Intro to First Gen Computers",
+                    "key_terms": [
+                        "vacuum tube",
+                        "first generation",
+                        "computer history",
+                    ],
+                    "id": "slide_1_79aa21",
+                    "order": 1,
+                },
+                {
+                    "title": "Vacuum Tube Basics",
+                    "key_terms": ["vacuum tube", "electronic switch", "amplifier"],
+                    "id": "slide_2_d01730",
+                    "order": 2,
+                },
+                {
+                    "title": "ENIAC and Vacuum Tubes",
+                    "key_terms": [
+                        "ENIAC",
+                        "vacuum tube computer",
+                        "electronic numerical integrator",
+                    ],
+                    "id": "slide_3_69c986",
+                    "order": 3,
+                },
+                {
+                    "title": "Limitations of Vacuum Tubes",
+                    "key_terms": [
+                        "heat generation",
+                        "reliability issues",
+                        "maintenance challenges",
+                    ],
+                    "id": "slide_4_fb67e4",
+                    "order": 4,
+                },
             ],
-            "sub_3_7b69d0": [
-            {
-                "title": "Introduction to Atomic Number",
-                "key_terms": [
-                "atomic number",
-                "protons",
-                "elements"
-                ],
-                "id": "slide_1_dfbeae",
-                "order": 1
-            },
-            {
-                "title": "Understanding Mass Number",
-                "key_terms": [
-                "mass number",
-                "nucleons",
-                "isotopes"
-                ],
-                "id": "slide_2_65abc0",
-                "order": 2
-            },
-            {
-                "title": "Relationship Between Atomic and Mass Number",
-                "key_terms": [
-                "atomic mass",
-                "protons",
-                "neutrons"
-                ],
-                "id": "slide_3_09dff5",
-                "order": 3
-            },
-            {
-                "title": "Applications of Atomic and Mass Number",
-                "key_terms": [
-                "isotopes",
-                "atomic structure",
-                "chemistry"
-                ],
-                "id": "slide_4_703696",
-                "order": 4
-            }
+            "sub_3_d87eaf": [
+                {
+                    "title": "Intro to 2nd Gen Computers",
+                    "key_terms": ["transistor", "computer", "generation"],
+                    "id": "slide_1_1aa180",
+                    "order": 1,
+                },
+                {
+                    "title": "Integrated Circuits",
+                    "key_terms": ["IC", "circuit", "silicon"],
+                    "id": "slide_2_80a056",
+                    "order": 2,
+                },
+                {
+                    "title": "Microprocessors Emergence",
+                    "key_terms": ["microprocessor", "CPU", "chip"],
+                    "id": "slide_3_cef665",
+                    "order": 3,
+                },
+                {
+                    "title": "4th Gen Computers Overview",
+                    "key_terms": ["personal", "computer", "microcomputer"],
+                    "id": "slide_4_46b1c0",
+                    "order": 4,
+                },
+                {
+                    "title": "5th Gen Computers Advances",
+                    "key_terms": ["AI", "parallel", "processing"],
+                    "id": "slide_5_6056ac",
+                    "order": 5,
+                },
+                {
+                    "title": "Comparison of Generations",
+                    "key_terms": ["generation", "comparison", "evolution"],
+                    "id": "slide_6_f19c18",
+                    "order": 6,
+                },
             ],
-            "sub_4_78635b": [
-            {
-                "title": "Introduction to Electron Shells",
-                "key_terms": [
-                "electron",
-                "shell",
-                "atom"
-                ],
-                "id": "slide_1_127355",
-                "order": 1
-            },
-            {
-                "title": "Electron Shell Configuration",
-                "key_terms": [
-                "electron configuration",
-                "shell model",
-                "energy level"
-                ],
-                "id": "slide_2_301bcd",
-                "order": 2
-            },
-            {
-                "title": "First 20 Elements: Electron Shells",
-                "key_terms": [
-                "periodic table",
-                "electron shell",
-                "elements"
-                ],
-                "id": "slide_3_44aae9",
-                "order": 3
-            },
-            {
-                "title": "Applying Electron Shells to Elements",
-                "key_terms": [
-                "electron configuration",
-                "chemical properties",
-                "periodicity"
-                ],
-                "id": "slide_4_7f9ef8",
-                "order": 4
-            }
+            "sub_4_c8e0dd": [
+                {
+                    "title": "Intro to Modern Computers",
+                    "key_terms": ["microprocessor", "personal computer", "revolution"],
+                    "id": "slide_1_4b161e",
+                    "order": 1,
+                },
+                {
+                    "title": "Artificial Intelligence Basics",
+                    "key_terms": ["AI", "machine learning", "neural networks"],
+                    "id": "slide_2_972354",
+                    "order": 2,
+                },
+                {
+                    "title": "Internet and Networking",
+                    "key_terms": ["internet", "world wide web", "connectivity"],
+                    "id": "slide_3_c110de",
+                    "order": 3,
+                },
+                {
+                    "title": "Cloud Computing and Beyond",
+                    "key_terms": ["cloud", "big data", "IoT"],
+                    "id": "slide_4_2302fc",
+                    "order": 4,
+                },
             ],
-            "sub_5_283526": [
-            {
-                "title": "Introduction to Ions",
-                "key_terms": [
-                "ion",
-                "atom",
-                "charge"
-                ],
-                "id": "slide_1_609c03",
-                "order": 1
-            },
-            {
-                "title": "Formation of Ions",
-                "key_terms": [
-                "ionization",
-                "electron",
-                "proton"
-                ],
-                "id": "slide_2_ba47a4",
-                "order": 2
-            },
-            {
-                "title": "Neutral Atoms vs Ions",
-                "key_terms": [
-                "neutral",
-                "ion",
-                "stability"
-                ],
-                "id": "slide_3_d5c448",
-                "order": 3
-            },
-            {
-                "title": "Properties of Ions",
-                "key_terms": [
-                "ionic",
-                "compound",
-                "reactivity"
-                ],
-                "id": "slide_4_9768fa",
-                "order": 4
-            }
-            ]
-        }
+            "sub_5_dca7e2": [
+                {
+                    "title": "Introduction to Computer Generations",
+                    "key_terms": ["computer", "generation", "evolution"],
+                    "id": "slide_1_e682ab",
+                    "order": 1,
+                },
+                {
+                    "title": "First Generation Computers",
+                    "key_terms": ["vacuum tube", "ENIAC", "1940s"],
+                    "id": "slide_2_ebadde",
+                    "order": 2,
+                },
+                {
+                    "title": "Second to Fourth Generations",
+                    "key_terms": ["transistor", "microprocessor", "mainframe"],
+                    "id": "slide_3_9feef4",
+                    "order": 3,
+                },
+                {
+                    "title": "Fifth Generation and Beyond",
+                    "key_terms": ["AI", "parallel processing", "nanotechnology"],
+                    "id": "slide_4_690af8",
+                    "order": 4,
+                },
+                {
+                    "title": "Comparison of Computer Generations",
+                    "key_terms": ["performance", "size", "cost"],
+                    "id": "slide_5_a4610d",
+                    "order": 5,
+                },
+                {
+                    "title": "Impact of Evolution on Society",
+                    "key_terms": ["technology", "innovation", "globalization"],
+                    "id": "slide_6_55d941",
+                    "order": 6,
+                },
+            ],
+        },
     }
 
     updated_state = generate_all_narrations(TutorState)

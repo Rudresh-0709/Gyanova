@@ -1,84 +1,185 @@
-import os
+from typing import Dict, Any
 import json
-import re
+from ..llm.model_loader import load_openai
 
-from .generators.ai_image import create_ai_enhanced_visual
-from .generators.ai_image_generation import generate_ai_image
+# 🔹 SYSTEM PROMPT — Visual Generation Stage
+SYSTEM_PROMPT = """
+You are an expert visual designer and slide layout planner for an AI-powered educational platform.
 
-# from .generators.diagram import generate_diagram
-# from .utils.save_image import save_image
-import copy
+🎯 PURPOSE:
+Your task is to transform an existing slide narration (title + points) into a **visually engaging and pedagogically clear design plan**.
+Each output should define:
+1. The **layout template** — how text and visuals will be positioned.
+2. The **image type** — the kind of visual best suited for the concept.
+3. The **image prompt** — a detailed yet concise description of what the image should show.
+
+---
+
+🧩 INPUT FORMAT:
+You will receive a JSON object containing:
+{
+  "title": "string",
+  "points": ["point1", "point2", "point3", ...]
+}
+
+---
+
+🖼️ OUTPUT FORMAT:
+Return valid JSON only:
+{
+  "template": "image_left" | "image_right" | "image_full" | "text_only" | "split_horizontal",
+  "imageType": "ai_image" | "ai_enhanced_image" | "chart_diagram",
+  "imagePrompt": "string"
+}
+
+---
+
+🎨 DESIGN RULES:
+
+1. **Template Selection (Layout)**  
+   Choose from ["image_right", "image_left", "image_full", "text_only", "split_horizontal"].  
+   - Use different templates across slides when possible (for visual variety).  
+   - Examples:
+     - "image_left" → When visuals explain sequential or process-like ideas.
+     - "image_right" → When text drives the slide and visuals are supportive.
+     - "image_full" → For diagrams, timelines, or big-picture visuals.
+     - "text_only" → For abstract or purely conceptual ideas.
+     - "split_horizontal" → For comparisons, dual stages, or layered structures.
+
+2. **Image Type Rules (Balanced Use)**  
+   Choose from ["ai_image", "ai_enhanced_image"]  
+
+   - `ai_image`: Use for creative, conceptual, or real-world context scenes where atmosphere or visualization matters more than labeling.  
+     Examples: historical scenes, natural processes, mythological depictions, imaginative metaphors.
+     Also use for structured, timeline, stepwise, or comparative visuals.  
+     Examples: evolution stages, process flows, hierarchies, cycles, data comparisons.
+
+   - `ai_enhanced_image`: Use for labeled or factual visuals needing clarity and precision.  
+     Examples: scientific diagrams, anatomical structures, internal mechanisms, labeled educational illustrations.  
+     ⚠ Use sparingly.
+
+   
+
+    "Timeline / Sequence" — for chronological or step-based visual progression.` 
+   Aim for an overall balance
+   Do not overuse ai_enhanced_image.
+
+3. **Image Prompt Design Rules**
+   - The imagePrompt must directly reflect the narration’s *content and sequence of ideas*.  
+   - Include key visual elements and perspectives (e.g., “timeline view”, “cross-section”, “side comparison”).  
+   - Use educational clarity — focus on what helps a learner understand visually.  
+   - Include artistic style hints: "clean infographic", "vector educational style", "simple labeled illustration", etc.  
+   - Avoid generic phrasing like “an image showing the concept.”  
+
+---
+
+📚 EXAMPLES:
+
+Input:
+{
+  "title": "Evolution of the Human Brain",
+  "points": [
+    "Early humans had smaller brains suited for survival and basic tools.",
+    "Over time, brain regions expanded to handle complex reasoning.",
+    "Modern humans developed larger frontal lobes for creativity and decision-making."
+  ]
+}
+
+Output:
+{
+  "template": "image_left",
+  "imageType": "ai_image",
+  "imagePrompt": "educational timeline infographic showing human brain evolution from early hominids to modern humans, labeled stages, clean vector style"
+}
+
+---
+
+⚙️ ADDITIONAL GUIDELINES:
+- Maintain alignment between the **complexity of narration** and the **visual type**:
+  - Abstract or emotional → ai_image  
+  - Analytical or labeled → ai_enhanced_image  
+- Encourage visual variety and avoid repetitive prompt wording.
+- Prefer *educationally supportive visuals* over decorative ones.
+- Never include narration text, slide titles, or extra markup in the output.
+
+---
+
+Your role: Create **educationally meaningful and visually balanced slide visuals** that perfectly complement the narration content.
+"""
 
 
-def sanitize_filename(name: str) -> str:
+def add_visual_design_to_state(full_state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Convert slide titles to safe filenames.
-    Removes special characters and replaces spaces with underscores.
+    Takes the narration-based state and returns the same state
+    after adding visual design fields (template, imageType, imagePrompt)
+    to each slide using the LLM model.
     """
-    return re.sub(r"[^a-zA-Z0-9_-]", "_", name.strip())
 
+    llm = load_openai()
 
-def generate_visuals(full_state: dict, output_dir: str = "./generated_images") -> dict:
-    """
-    Iterate through slides and generate visuals based on imageType.
-    Returns updated state with image_path added for each slide.
-    """
-    os.makedirs(output_dir, exist_ok=True)
+    slides_dict = full_state.get("slides", {})
+    if not slides_dict or not isinstance(slides_dict, dict):
+        print("⚠️ No valid slides found in the given state.")
+        return full_state
 
-    slides_state = full_state.get("slides", {})
-    if not slides_state:
-        print("⚠️ No slides found in the given state.")
-        return full_state  # Return unchanged if no slides
+    # Iterate through each subtopic and its slides
+    for subtopic_id, slides_list in slides_dict.items():
+        if not isinstance(slides_list, list):
+            print(f"⚠️ Slides for {subtopic_id} are not a list. Skipping.")
+            continue
 
-    # Work on a copy to avoid mutating original state
-    updated_state = copy.deepcopy(full_state)
+        updated_slides = []
 
-    for section_id, slides in slides_state.items():
-        print(f"\n🧠 Processing section: {section_id}")
+        for index, slide in enumerate(slides_list, start=1):
+            if not isinstance(slide, dict):
+                print(f"⚠️ Slide {index} under {subtopic_id} is not a dict. Skipping.")
+                continue
 
-        section_dir = os.path.join(output_dir, section_id)
-        os.makedirs(section_dir, exist_ok=True)
+            # Prepare input for model
+            user_prompt = json.dumps(
+                {"title": slide.get("title", ""), "points": slide.get("points", [])},
+                ensure_ascii=False,
+                indent=2,
+            )
 
-        for idx, slide in enumerate(slides):
-            slide_title = slide.get("title", f"slide_{idx}")
-            image_type = slide.get("imageType")
-            print(f"   🎨 Slide {idx + 1}: {slide['title']} [{image_type}]")
+            # Call model
+            response = llm.invoke(
+                [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ]
+            )
 
-            safe_filename = sanitize_filename(slide_title) + ".png"
-            image_path = os.path.join(section_dir, safe_filename)
+            # Parse JSON safely
+            response_content = getattr(response, "content", response)
 
+            # Parse JSON safely
             try:
-                image_bytes = None
-                if image_type == "ai_enhanced_image":
-                    image_bytes = create_ai_enhanced_visual(
-                        image_prompt=slide.get("imagePrompt", ""),
-                        narration=slide.get("points", []),
-                        save_dir=os.path.dirname(image_path),
-                        output_path=image_path
-                    )
-                    print("AI enhanced image found")
+                visual_data = json.loads(response_content)
+            except json.JSONDecodeError:
+                print(
+                    f"⚠️ Invalid JSON from model on {subtopic_id} slide {index}. Raw response:\n{response_content}"
+                )
+                visual_data = {}
 
-                elif image_type == "ai_image":
-                    image_bytes = generate_ai_image(
-                        prompt=slide.get("imagePrompt", ""),
-                        narration=slide.get("points", []),
-                        output_path=os.path.dirname(image_path),
-                    )
-                    print("AI image found")
+            # Merge results into slide
+            slide.update(
+                {
+                    "template": visual_data.get("template", "image_right"),
+                    "imageType": visual_data.get("imageType", "ai_image"),
+                    "imagePrompt": visual_data.get(
+                        "imagePrompt",
+                        "simple educational visual representing the concept",
+                    ),
+                }
+            )
 
-                else:
-                    print(f"      ⚠️ Unknown imageType: {image_type}, skipping...")
-                    continue
-                if image_bytes:
-                    with open(image_path, "wb") as f:
-                        f.write(image_bytes)
-                    print(f"      ✅ Saved image to {image_path}")
+            updated_slides.append(slide)
 
-                updated_state["slides"][section_id][idx]["image_path"] = image_path
-            except Exception as e:
-                print(f"      ❌ Failed to generate for slide {idx}: {e}")
+        # Update the subtopic’s slides list
+        full_state["slides"][subtopic_id] = updated_slides
 
-    return updated_state
+    return full_state
 
 
 if __name__ == "__main__":
@@ -120,9 +221,6 @@ if __name__ == "__main__":
                         "First generation computers used vacuum tubes, while second generation computers adopted transistors.",
                         "Third generation computers integrated integrated circuits, leading to smaller, more powerful machines.",
                     ],
-                    "template": "image_left",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "educational diagram illustrating the evolution of computers through generations, showcasing first-generation vacuum tube computers, second-generation transistor computers, and third-generation integrated circuit computers, detailed labeled illustration in a clean technical style",
                 },
                 {
                     "title": "First Generation Computers",
@@ -131,9 +229,6 @@ if __name__ == "__main__":
                         "ENIAC, developed in the 1940s, was one of the earliest electronic general-purpose computers.",
                         "These computers were huge in size and consumed a significant amount of electricity.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "detailed labeled diagram of the ENIAC computer, showcasing vacuum tubes, large size, and electricity consumption, schematic illustration with technical details",
                 },
                 {
                     "title": "Evolution from Second to Third Gen Computers",
@@ -142,9 +237,6 @@ if __name__ == "__main__":
                         "Integrated Circuits (ICs) compacted multiple components, reducing size and cost.",
                         "Mainframes in third-gen computers enabled multi-user access, advancing computing capabilities.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "detailed comparison illustration showing the evolution from second to third-gen computers, highlighting transistors vs. vacuum tubes, ICs integration, and mainframes in a clean labeled diagram style",
                 },
                 {
                     "title": "Evolution of Computing Power",
@@ -153,9 +245,6 @@ if __name__ == "__main__":
                         "Second-generation computers introduced transistors, enhancing speed and reliability.",
                         "Microprocessors revolutionized computing, leading to personal computers and AI advancements.",
                     ],
-                    "template": "image_left",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "educational diagram illustrating the evolution of computing power: 1. Vacuum tube computer with labeled components, 2. Transistor-based computer showing speed improvement, 3. Microprocessor technology enabling personal computers and AI, detailed labeled illustration",
                 },
             ],
             "sub_2_30755b": [
@@ -166,9 +255,6 @@ if __name__ == "__main__":
                         "First-generation computers were massive and consumed significant power.",
                         "Computer history traces back to this era, showcasing rapid technological advancements.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "detailed labeled diagram of a first-generation computer with vacuum tubes, side-by-side comparison of a light bulb and a vacuum tube, emphasizing size and power consumption, technical educational style",
                 },
                 {
                     "title": "Vacuum Tube Basics",
@@ -178,9 +264,6 @@ if __name__ == "__main__":
                         "Vacuum tubes played a crucial role in early electronic technology advancements.",
                         "Understanding vacuum tubes is fundamental for grasping the evolution of modern electronics.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "educational labeled diagram illustrating the internal structure of a vacuum tube, showing electron flow control, detailed components, clean technical illustration style",
                 },
                 {
                     "title": "ENIAC and Vacuum Tubes",
@@ -191,9 +274,6 @@ if __name__ == "__main__":
                         "The use of vacuum tubes in ENIAC paved the way for modern computing technology.",
                         "Understanding ENIAC and vacuum tubes is key to appreciating the evolution of computers.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "labeled educational illustration comparing ENIAC's internal structure with and without vacuum tubes, highlighting heat generation, detailed cross-section view",
                 },
                 {
                     "title": "Limitations of Vacuum Tubes",
@@ -202,9 +282,6 @@ if __name__ == "__main__":
                         "Reliability is a concern due to tube fragility and susceptibility to wear and tear.",
                         "Maintenance of vacuum tubes is labor-intensive, requiring frequent replacements and adjustments.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "detailed labeled diagram showing the internal components of a vacuum tube, highlighting heat generation points, fragile areas prone to wear and tear, and areas requiring frequent maintenance, clean technical illustration style",
                 },
             ],
             "sub_3_d87eaf": [
@@ -217,9 +294,6 @@ if __name__ == "__main__":
                         "2nd gen computers marked significant advancements in computing power and reliability.",
                         "Understanding 2nd gen computers helps grasp the rapid evolution of technology.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "detailed labeled diagram comparing 1st gen and 2nd gen computers, highlighting transistors replacing vacuum tubes, assembly language usage, and magnetic core memory, educational technical illustration style",
                 },
                 {
                     "title": "Integrated Circuits",
@@ -230,9 +304,6 @@ if __name__ == "__main__":
                         "ICs revolutionized electronics by enabling smaller devices, faster speeds, and increased functionality.",
                         "Understanding ICs is crucial for grasping modern technology's intricate inner workings.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "detailed cross-section diagram of an integrated circuit (IC) showcasing miniature transistors, resistors, and silicon components, highlighting compact design and efficiency, technical labeled illustration",
                 },
                 {
                     "title": "Microprocessors Emergence",
@@ -243,9 +314,6 @@ if __name__ == "__main__":
                         "Microprocessors paved the way for advancements in automation, AI, and interconnected devices.",
                         "Understanding microprocessors is key to grasping modern computing and technological progress.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "labeled diagram illustrating the integration of CPU functions into a single chip, showing components like ALU, control unit, registers, in a detailed educational style",
                 },
                 {
                     "title": "Evolution of Personal Computers",
@@ -255,9 +323,6 @@ if __name__ == "__main__":
                         "Advancements led to smaller, more powerful computers, revolutionizing computing capabilities.",
                         "This era laid the foundation for modern personal computing and digital revolution.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_image",
-                    "imagePrompt": "educational timeline depiction showcasing the evolution of personal computers from 4th gen (1971-1980) to modern PCs, highlighting microprocessor introduction, affordability, size reduction, and computing advancements, clean vector style",
                 },
                 {
                     "title": "Advancements in 5th Gen Computers",
@@ -268,9 +333,6 @@ if __name__ == "__main__":
                         "AI algorithms in 5th gen computers enable autonomous decision-making and learning.",
                         "These advancements mark a significant leap in computing power and intelligent automation.",
                     ],
-                    "template": "split_horizontal",
-                    "imageType": "ai_image",
-                    "imagePrompt": "visual comparison of 4th gen vs. 5th gen computers, showcasing AI integration, parallel processing, speed enhancement, autonomous decision-making, and intelligent automation, side-by-side educational comparison",
                 },
                 {
                     "title": "Generational Differences",
@@ -279,9 +341,6 @@ if __name__ == "__main__":
                         "Generational traits impact communication styles and work preferences.",
                         "Understanding generational differences fosters empathy and effective collaboration.",
                     ],
-                    "template": "split_horizontal",
-                    "imageType": "ai_image",
-                    "imagePrompt": "side-by-side comparison showing key events and cultural influences shaping different generations, highlighting communication styles and work preferences, clean infographic style",
                 },
             ],
             "sub_4_c8e0dd": [
@@ -293,9 +352,6 @@ if __name__ == "__main__":
                         "The accessibility of personal computers democratized technology, empowering individuals.",
                         "The evolution of computers has sparked a technological revolution, shaping modern society.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_image",
-                    "imagePrompt": "visual comparison showing the evolution of computing technology from room-sized machines to compact personal devices, side-by-side view, emphasizing size reduction and technological advancement, clean and modern infographic style",
                 },
                 {
                     "title": "AI vs. Machine Learning",
@@ -304,9 +360,6 @@ if __name__ == "__main__":
                         "Machine Learning is a subset of AI where machines learn from data to improve performance.",
                         "AI encompasses various techniques beyond Machine Learning, like neural networks for complex pattern recognition.",
                     ],
-                    "template": "split_horizontal",
-                    "imageType": "ai_image",
-                    "imagePrompt": "educational comparison illustration showing AI on one side with diverse tasks like speech recognition, image processing, and decision-making, and Machine Learning on the other side focusing on data input and performance improvement, clean vector style",
                 },
                 {
                     "title": "Internet Basics",
@@ -315,9 +368,6 @@ if __name__ == "__main__":
                         "The World Wide Web is a collection of websites and web pages accessible via the internet.",
                         "Connectivity enables devices to link to the internet, facilitating data exchange and online activities.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "detailed diagram illustrating the structure of the internet with interconnected devices worldwide, labeled network nodes, data exchange paths, and global connectivity, clean and precise educational illustration",
                 },
                 {
                     "title": "Evolution of Computing Technologies",
@@ -327,9 +377,6 @@ if __name__ == "__main__":
                         "IoT connects everyday objects to the internet, enhancing automation and data collection.",
                         "These technologies collectively shape the future of interconnected systems and smart devices.",
                     ],
-                    "template": "split_horizontal",
-                    "imageType": "ai_image",
-                    "imagePrompt": "illustrative comparison of cloud computing, big data analysis, and IoT technology in a split-screen layout, showing cloud servers, data analytics process, and interconnected IoT devices, clean modern infographic style",
                 },
             ],
             "sub_5_dca7e2": [
@@ -340,9 +387,6 @@ if __name__ == "__main__":
                         "Each generation introduced new technologies, making computers faster, smaller, and more powerful.",
                         "Advancements in hardware and software defined the characteristics of each computer generation.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_image",
-                    "imagePrompt": "educational comparison illustration showing the evolution of computer generations from 1st to 5th, highlighting key technologies and size differences, side-by-side visual comparison",
                 },
                 {
                     "title": "First Generation Computers",
@@ -351,9 +395,6 @@ if __name__ == "__main__":
                         "ENIAC, the first electronic general-purpose computer, was a key innovation.",
                         "These computers were huge in size, consumed massive amounts of power, and generated a lot of heat.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "educational labeled diagram illustrating the internal components of a first-generation computer with vacuum tubes, detailed cross-section view, highlighting ENIAC as the first electronic general-purpose computer",
                 },
                 {
                     "title": "Evolution of Computing Generations",
@@ -362,9 +403,6 @@ if __name__ == "__main__":
                         "Third generation saw microprocessors enabling smaller, faster, and more powerful computers.",
                         "Fourth generation brought mainframe computers with advanced processing capabilities.",
                     ],
-                    "template": "image_left",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "educational diagram comparing computing generations: second generation with transistors, third generation with microprocessors, fourth generation with mainframe computers, detailed labeled illustration",
                 },
                 {
                     "title": "Future of Computing",
@@ -375,9 +413,6 @@ if __name__ == "__main__":
                         "Nanotechnology involves building devices at the molecular level for powerful computing capabilities.",
                         "The future of computing lies in combining these technologies for unprecedented advancements.",
                     ],
-                    "template": "image_right",
-                    "imageType": "ai_enhanced_image",
-                    "imagePrompt": "educational diagram illustrating the Fifth Generation computing technologies: AI, parallel processing, and nanotechnology, detailed labels explaining AI learning, reasoning, and decision-making processes, parallel processing tasks performed simultaneously, nanotechnology molecular-level device construction, advanced educational infographic style",
                 },
                 {
                     "title": "Computer Generations Compared",
@@ -388,9 +423,6 @@ if __name__ == "__main__":
                         "Fourth generation computers brought microprocessors, leading to smaller, faster, and more affordable devices.",
                         "Each generation marked significant advancements in performance, size reduction, and cost efficiency.",
                     ],
-                    "template": "split_horizontal",
-                    "imageType": "ai_image",
-                    "imagePrompt": "comparative visual showing the evolution of computer generations from large, slow machines to smaller, faster devices with improved performance and reduced costs, side-by-side comparison, clean infographic style",
                 },
                 {
                     "title": "Evolution's Influence on Society",
@@ -401,12 +433,10 @@ if __name__ == "__main__":
                         "Evolution's impact on society showcases the dynamic nature of human adaptation.",
                         "Understanding this influence helps navigate and anticipate future societal changes.",
                     ],
-                    "template": "split_horizontal",
-                    "imageType": "ai_image",
-                    "imagePrompt": "educational comparison illustration showing the evolution of technology and society on one side and modern innovations on the other, highlighting interconnectedness and progress, clean infographic style",
                 },
             ],
         },
     }
 
-    generate_visuals(State)
+updated_state = add_visual_design_to_state(State)
+print(json.dumps(updated_state, indent=2))

@@ -1,8 +1,9 @@
-from ..llm.model_loader import load_groq,load_groq_fast,load_openai,load_gemini
+from ..llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
 from ..state import TutorState
 import uuid
 import json
 import ast
+
 
 def generate_slides_for_subtopic(subtopic):
     """Generate 1 or more slides for a given subtopic using LLM"""
@@ -45,7 +46,6 @@ def generate_slides_for_subtopic(subtopic):
     ]
     """
 
-
     user_prompt = f"Subtopic: {subtopic['name']}"
     response = llm.invoke(SYSTEM_PROMPT + user_prompt)
 
@@ -77,31 +77,31 @@ if __name__ == "__main__":
         "topic": "Computer generations",
         "sub_topics": [
             {
-                "name": "What is an atom?",
+                "name": "Introduction to Computer Generations",
                 "difficulty": "Beginner",
-                "id": "sub_1_af16be"
+                "id": "sub_1_89ba45",
             },
             {
-                "name": "Parts of an atom",
+                "name": "First Generation Computers (1940s-1950s): Vacuum Tubes",
                 "difficulty": "Intermediate",
-                "id": "sub_2_f30be9"
+                "id": "sub_2_a2f29f",
             },
             {
-                "name": "Atomic number and mass number",
+                "name": "Second to Fifth Generation Computers (1950s-1980s): Transistors, Integrated Circuits, and Microprocessors",
                 "difficulty": "Intermediate",
-                "id": "sub_3_7b69d0"
+                "id": "sub_3_7cc90e",
             },
             {
-                "name": "Electron shells for first 20 elements",
+                "name": "Modern Computer Generations (1990s-present): Advances in Microarchitecture and Artificial Intelligence",
                 "difficulty": "Advanced",
-                "id": "sub_4_78635b"
+                "id": "sub_4_261744",
             },
             {
-                "name": "Ions and neutral atoms",
+                "name": "Comparison and Evolution of Computer Generations",
                 "difficulty": "Intermediate",
-                "id": "sub_5_283526"
-            }
-        ]
+                "id": "sub_5_632e6d",
+            },
+        ],
     }
 
     updated_state = generate_all_slides(TutorState)

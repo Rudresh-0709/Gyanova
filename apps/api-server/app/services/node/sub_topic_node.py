@@ -3,6 +3,7 @@ from ..state import TutorState
 import uuid
 import json
 import ast
+import re
 
 def extract_sub_topic(state:TutorState)->TutorState:
     system_prompt = (
@@ -28,10 +29,18 @@ def extract_sub_topic(state:TutorState)->TutorState:
     user_prompt=state.get("topic","")
     llm=load_groq()
     topic=llm.invoke(system_prompt+" "+user_prompt)
+    
+    json_match = re.search(r"```json\s*([\s\S]*?)\s*```", topic.content)
+    if json_match:
+        json_string = json_match.group(1).strip()
+    else:
+        # Assume the whole content is the JSON string
+        json_string = topic.content.strip()
     try:
-        data = json.loads(topic.content)  
+        data = json.loads(json_string)  
     except json.JSONDecodeError:
         print("Error: Model did not return valid JSON")
+        print(topic.content)
         state["sub_topics"]=[]
         return state
     
@@ -41,3 +50,9 @@ def extract_sub_topic(state:TutorState)->TutorState:
 
     state["sub_topics"]=data.get("sub_topics",[])
     return state
+
+if __name__=="__main__":
+    State={
+    "topic": "Computer generations"
+    }
+    print(extract_sub_topic(State))
