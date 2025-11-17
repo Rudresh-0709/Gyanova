@@ -8,7 +8,7 @@ load_dotenv()
 
 def load_openai():
     return ChatOpenAI(
-        model="gpt-3.5-turbo",
+        model="gpt-4.1-mini",
         api_key=os.getenv("OPENAI_API_KEY"),
         temperature=0.5
     )
