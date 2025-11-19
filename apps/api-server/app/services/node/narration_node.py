@@ -1,15 +1,95 @@
 from ..llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
 from ..state import TutorState
+from tavily import TavilyClient
+import os
+from dotenv import load_dotenv
 import json
 import re
+
+load_dotenv()
+tavily=TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+
+def clean_json_output(text: str) -> str:
+    """
+    Remove code fences and extract JSON cleanly from Gemini.
+    """
+    text = text.strip()
+
+    # Remove ```json or ``` wrappers
+    if text.startswith("```"):
+        text = text.strip("`")
+        # sometimes gemini sends: ```json\n{ ... }\n```
+        text = text.replace("json\n", "", 1).replace("json", "", 1).strip()
+
+    # Find the first { and last }
+    import re
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if match:
+        return match.group(0)
+
+    # fallback: return text as-is
+    return text
+
+
+def should_use_search(slide, subtopic_name):
+    llm = load_groq_fast()  # very cheap model
+
+    prompt = f"""
+Decide if external web search (Tavily) is ABSOLUTELY REQUIRED for generating accurate slide narration.
+
+Use search ONLY when the slide needs:
+- exact facts (dates, numbers, timelines, stats)
+- historical accuracy (events, inventions, discoveries)
+- version/release information
+- real-world data that must be correct and up-to-date
+
+Do NOT use search for:
+- concepts, explanations, definitions, principles
+- theories, abstractions, analogies
+- content that can be answered from general knowledge
+
+If accurate narration is possible WITHOUT verified facts, set needs_search to false.
+
+Respond with ONLY this JSON (no markdown, no code fences):
+{{
+  "needs_search": true/false,
+  "query": "short search query or empty string"
+}}
+"""
+
+
+    resp = llm.invoke([{"role": "user", "content": prompt}])
+    raw = resp.content
+
+    cleaned = clean_json_output(raw)
+    try:
+        print(cleaned)
+        return json.loads(cleaned)
+    except:
+        return {"needs_search": False, "query": ""}
 
 
 def generate_narration_for_slide(slide, subtopic_name, narration_style):
     """Generate narration text for a single slide."""
     llm = load_openai()
 
+    decision = should_use_search(slide, subtopic_name)
+    needs_search = decision.get("needs_search", False)
+    search_results = ""
+
+    if needs_search:
+        query = decision.get("query", "")
+        if query.strip():
+            try:
+                search = tavily.search(query=query, max_results=5)
+                search_results = json.dumps(search, ensure_ascii=False)
+                print(search_results)
+            except:
+                search_results = "Search failed."
+                
     SYSTEM_PROMPT = f"""
     You are an expert educational content creator and slide narrator for an AI teaching platform.
+    {"USE THE FOLLOWING VERIFIED FACTUAL INFORMATION FOR HIGH ACCURACY:\n" + search_results if needs_search else ""}
 
     🎯 PURPOSE:
     Your task is to transform each educational concept into a **clear, concise, and engaging narration** suitable for use in slides or spoken teaching.
@@ -97,10 +177,7 @@ def generate_narration_for_slide(slide, subtopic_name, narration_style):
         else:
             slide_data = {
                 "title": slide.get("title", "Untitled Slide"),
-                "points": ["Parsing failed, please retry."],
-                "template": "image_right",
-                "imageType": "ai_enhanced_image",
-                "imagePrompt": "no image",
+                "points": ["Parsing failed, please retry."]
             }
 
     return slide_data
