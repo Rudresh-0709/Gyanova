@@ -35,27 +35,27 @@ def should_use_search(slide, subtopic_name):
     llm = load_groq_fast()  # very cheap model
 
     prompt = f"""
-Decide if external web search (Tavily) is ABSOLUTELY REQUIRED for generating accurate slide narration.
+        Decide if external web search (Tavily) is ABSOLUTELY REQUIRED for generating accurate slide narration.
 
-Use search ONLY when the slide needs:
-- exact facts (dates, numbers, timelines, stats)
-- historical accuracy (events, inventions, discoveries)
-- version/release information
-- real-world data that must be correct and up-to-date
+        Use search ONLY when the slide needs:
+        - exact facts (dates, numbers, timelines, stats)
+        - historical accuracy (events, inventions, discoveries)
+        - version/release information
+        - real-world data that must be correct and up-to-date
 
-Do NOT use search for:
-- concepts, explanations, definitions, principles
-- theories, abstractions, analogies
-- content that can be answered from general knowledge
+        Do NOT use search for:
+        - concepts, explanations, definitions, principles
+        - theories, abstractions, analogies
+        - content that can be answered from general knowledge
 
-If accurate narration is possible WITHOUT verified facts, set needs_search to false.
+        If accurate narration is possible WITHOUT verified facts, set needs_search to false.
 
-Respond with ONLY this JSON (no markdown, no code fences):
-{{
-  "needs_search": true/false,
-  "query": "short search query or empty string"
-}}
-"""
+        Respond with ONLY this JSON (no markdown, no code fences):
+        {{
+        "needs_search": true/false,
+        "query": "short search query or empty string"
+        }}
+        """
 
 
     resp = llm.invoke([{"role": "user", "content": prompt}])

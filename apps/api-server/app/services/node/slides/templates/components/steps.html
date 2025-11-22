@@ -1,0 +1,11 @@
+<div class="block-steps">
+    {% for item in content_data.steps %}
+    <div class="step-row">
+        <div class="step-number">{{ item.step }}</div>
+        <div class="step-details">
+            <h4>{{ item.title }}</h4>
+            <p>{{ item.description }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>

@@ -18,7 +18,12 @@ def sanitize_filename(name: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_-]", "_", name.strip())
 
 
-def generate_visuals(full_state: dict, output_dir: str = "./generated_images") -> dict:
+def generate_visuals(
+    full_state: dict,
+    output_dir: str = os.path.join(
+        os.path.dirname(__file__), "../slides/static/images"
+    ),
+) -> dict:
     """
     Iterate through slides and generate visuals based on imageType.
     Returns updated state with image_path added for each slide.
@@ -54,7 +59,7 @@ def generate_visuals(full_state: dict, output_dir: str = "./generated_images") -
                         image_prompt=slide.get("imagePrompt", ""),
                         narration=slide.get("points", []),
                         save_dir=os.path.dirname(image_path),
-                        output_path=image_path
+                        output_path=image_path,
                     )
                     print("AI enhanced image found")
 
@@ -62,7 +67,7 @@ def generate_visuals(full_state: dict, output_dir: str = "./generated_images") -
                     image_bytes = generate_ai_image(
                         prompt=slide.get("imagePrompt", ""),
                         narration=slide.get("points", []),
-                        output_path=os.path.dirname(image_path),
+                        output_path=image_path,
                     )
                     print("AI image found")
 

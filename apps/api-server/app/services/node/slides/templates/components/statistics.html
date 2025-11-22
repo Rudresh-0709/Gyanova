@@ -1,0 +1,8 @@
+<div class="block-statistics" data-count="{{ content_data.stats|length }}">
+    {% for stat in content_data.stats %}
+    <div class="stat-card">
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-label">{{ stat.label }}</div>
+    </div>
+    {% endfor %}
+</div>

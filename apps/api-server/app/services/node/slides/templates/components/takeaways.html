@@ -1,0 +1,11 @@
+<div class="block-takeaways">
+    <h3 class="takeaway-header">Key Takeaways</h3>
+    <ul>
+        {% for point in content_data.points %}
+        <li>
+            <span class="icon">✔</span>
+            <span class="text">{{ point }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>

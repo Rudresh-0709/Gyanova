@@ -1,0 +1,12 @@
+<div class="block-comparison">
+    {% for column in content_data.columns %}
+    <div class="comparison-col">
+        <h3 class="col-header">{{ column.title }}</h3>
+        <ul class="col-list">
+            {% for item in column.items %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</div>
