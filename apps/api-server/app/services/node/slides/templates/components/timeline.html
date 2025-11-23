@@ -1,11 +1,13 @@
-<div class="block-timeline">
+<div class="block-timeline-vertical">
     {% for event in content_data.events %}
-    <div class="timeline-item">
-        <div class="timeline-marker">
-            <span class="year-badge">{{ event.year }}</span>
+    <div class="timeline-row">
+        <div class="timeline-visual">
+            <div class="timeline-dot"></div>
+            <div class="timeline-line"></div>
         </div>
         <div class="timeline-content">
-            <p class="event-desc">{{ event.description }}</p>
+            <div class="timeline-year">{{ event.year }}</div>
+            <div class="timeline-desc">{{ event.description }}</div>
         </div>
     </div>
     {% endfor %}

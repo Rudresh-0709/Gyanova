@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolution of Computers</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+   1. GLOBAL VARIABLES & RESET
+   ========================================= */
+:root {
+    /* Theme Variables (Injected via Python) */
+    --theme-bg-primary: #ffffff;
+    --theme-bg-secondary: #f3f4f6;
+    --theme-text-primary: #111827;
+    --theme-text-secondary: #4b5563;
+    --theme-accent: #4f46e5;
+    --theme-font-heading: 'Outfit', sans-serif;
+    --theme-font-body: 'Plus Jakarta Sans', sans-serif;
+    --theme-border-radius: 16px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: var(--theme-font-body);
+    color: var(--theme-text-primary);
+    overflow: hidden;
+    /* Slides shouldn't scroll */
+}
+
+/* =========================================
+   2. SLIDE ROOT & STRUCTURE
+   ========================================= */
+.slide-root {
+    width: 100vw;
+    height: 100vh;
+    background: var(--theme-bg-primary);
+    padding: 4rem;
+    display: grid;
+    gap: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Background Image Support */
+.slide-root::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--theme-bg-image, none);
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1;
+    /* Subtle texture */
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Common Areas */
+.panel-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    justify-content: center;
+    min-width: 0;
+    /* Prevent flex overflow */
+}
+
+.panel-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+}
+
+/* Strict Image Container */
+.image-container {
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 1 / 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: var(--theme-border-radius);
+}
+
+/* Typography */
+h1 {
+    font-family: var(--theme-font-heading);
+    font-size: clamp(2.5rem, 4vw, 4.5rem);
+    /* Fluid Typography */
+    line-height: 1.1;
+    margin: 0;
+    color: var(--theme-accent);
+}
+
+/* =========================================
+   3. LAYOUT MODES
+   ========================================= */
+
+/* A. layout-split-balanced (50/50) */
+.layout-split-balanced {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "text visual";
+}
+
+.layout-split-balanced .panel-text {
+    grid-area: text;
+}
+
+.layout-split-balanced .panel-visual {
+    grid-area: visual;
+}
+
+/* B. layout-bento (Grid-like) */
+.layout-bento {
+    grid-template-columns: 1.2fr 0.8fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+        "text visual"
+        "text visual";
+}
+
+.layout-bento .panel-text {
+    grid-area: text;
+}
+
+.layout-bento .panel-visual {
+    grid-area: visual;
+}
+
+/* C. layout-magazine (Editorial) */
+.layout-magazine {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 3rem;
+}
+
+.layout-magazine .panel-visual {
+    order: 1;
+    max-height: 40vh;
+}
+
+.layout-magazine .panel-text {
+    order: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.layout-magazine h1 {
+    grid-column: 1 / -1;
+}
+
+/* D. layout-image-card-right (Image Left, Cards Right) */
+.layout-image-card-right {
+    grid-template-columns: 0.8fr 1.2fr;
+}
+
+.layout-image-card-right .panel-visual {
+    order: 1;
+}
+
+.layout-image-card-right .panel-text {
+    order: 2;
+}
+
+/* E. layout-image-card-left (Image Right, Cards Left) */
+.layout-image-card-left {
+    grid-template-columns: 1.2fr 0.8fr;
+}
+
+.layout-image-card-left .panel-text {
+    order: 1;
+}
+
+.layout-image-card-left .panel-visual {
+    order: 2;
+}
+
+/* F. layout-explanation-bottom-image-left */
+.layout-explanation-bottom-image-left {
+    grid-template-columns: 0.8fr 1.2fr;
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+        "visual points"
+        "explanation explanation";
+}
+
+.layout-explanation-bottom-image-left .panel-visual {
+    grid-area: visual;
+}
+}
+
+.decor-tech::after {
+    content: '';
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    width: 100px;
+    height: 100px;
+    border-top: 2px solid var(--theme-accent);
+    border-right: 2px solid var(--theme-accent);
+    opacity: 0.5;
+}
+
+.decor-tech .image-container {
+    border: 1px solid var(--theme-accent);
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.2);
+}
+
+/* decor-organic */
+.decor-organic {
+    --theme-border-radius: 30px 50px 30px 50px;
+}
+
+.decor-organic .image-container {
+    border-radius: 50% 40% 30% 70% / 60% 30% 70% 40%;
+    overflow: hidden;
+}
+
+.decor-organic::before {
+    background: radial-gradient(circle at top right, var(--theme-accent), transparent 40%);
+    opacity: 0.1;
+}
+
+/* decor-minimal */
+.decor-minimal {
+    --theme-bg-secondary: #ffffff;
+    --theme-border-radius: 0px;
+}
+
+.decor-minimal .panel-text {
+    border-left: 4px solid var(--theme-accent);
+    padding-left: 2rem;
+}
+
+/* decor-glass */
+.decor-glass {
+    background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);
+}
+
+.decor-glass .panel-text,
+.decor-glass .image-container {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 2rem;
+    border-radius: 24px;
+}
+
+/* =========================================
+   5. POINT STYLES
+   ========================================= */
+
+.points-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* points-list */
+.points-list .point-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+.points-list .point-item::before {
+    content: '•';
+    color: var(--theme-accent);
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+/* points-numbered */
+.points-numbered {
+    counter-reset: point-counter;
+}
+
+.points-numbered .point-item {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-size: 1.1rem;
+    counter-increment: point-counter;
+}
+
+.points-numbered .point-item::before {
+    content: counter(point-counter);
+    background: var(--theme-accent);
+    color: white;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* points-cards */
+.points-cards .point-item {
+    background: var(--theme-bg-secondary);
+    padding: 1rem 1.5rem;
+    border-radius: var(--theme-border-radius);
+    border-left: 4px solid var(--theme-accent);
+    font-weight: 500;
+}
+
+/* points-bento */
+.points-bento {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.points-bento .point-item {
+    background: var(--theme-bg-secondary);
+    padding: 1.5rem;
+    border-radius: var(--theme-border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+}
+
+/* =========================================
+   6. COMPONENT OVERRIDES
+   ========================================= */
+/* Timeline Component */
+.block-timeline-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* Gap handled by padding */
+    margin-top: 1rem;
+}
+
+.timeline-row {
+    display: flex;
+    gap: 1.5rem;
+    position: relative;
+    padding-bottom: 2rem;
+}
+
+.timeline-row:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-visual {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 24px;
+    flex-shrink: 0;
+}
+
+.timeline-dot {
+    width: 16px;
+    height: 16px;
+    background: var(--theme-accent);
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 0 0 4px var(--theme-bg-secondary);
+    /* Ring effect */
+}
+
+.timeline-line {
+    width: 2px;
+    flex-grow: 1;
+    background: var(--theme-text-secondary);
+    opacity: 0.2;
+    margin-top: -2px;
+    margin-bottom: -10px;
+    min-height: 2rem;
+}
+
+.timeline-row:last-child .timeline-line {
+    display: none;
+}
+
+.timeline-content {
+    padding-top: -4px;
+    flex: 1;
+}
+
+.timeline-year {
+    font-family: var(--theme-font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--theme-accent);
+    margin-bottom: 0.25rem;
+    line-height: 1;
+}
+
+.timeline-desc {
+    font-size: 1rem;
+    color: var(--theme-text-secondary);
+    line-height: 1.5;
+}
+
+/* Explanation Component */
+.block-explanation {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--theme-text-secondary);
+    background: var(--theme-bg-secondary);
+    padding: 1.5rem;
+    border-radius: var(--theme-border-radius);
+    border-left: 4px solid var(--theme-accent);
+}
+
+.explanation-text {
+    margin-bottom: 1rem;
+}
+
+.explanation-text:last-child {
+    margin-bottom: 0;
+}
+    </style>
+    
+    <style>
+        :root {
+            --theme-bg-primary: #ffffff;
+            --theme-bg-secondary: #f3f4f6;
+            --theme-text-primary: #111827;
+            --theme-text-secondary: #4b5563;
+            --theme-accent: #4f46e5;
+            --theme-bg-image: url('../static/backgrounds/abstract.jpg');
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-root layout-explanation-bottom-image-right decor-tech">
+        
+        <!-- PANEL 1: TEXT & CONTENT -->
+        <div class="panel-text">
+            <h1>Evolution of Computers</h1>
+
+            <!-- Dynamic Content Block (Timeline, Explanation, etc.) -->
+            <div class="content-block-wrapper">
+                
+                    
+                         <!-- Pass block data as content_data -->
+                        
+                            <div class="block-timeline-vertical">
+    
+    <div class="timeline-row">
+        <div class="timeline-visual">
+            <div class="timeline-dot"></div>
+            <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+            <div class="timeline-year">1940s-1950s</div>
+            <div class="timeline-desc">First Generation: Vacuum tubes used as main electronic component, large and power-hungry.</div>
+        </div>
+    </div>
+    
+    <div class="timeline-row">
+        <div class="timeline-visual">
+            <div class="timeline-dot"></div>
+            <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+            <div class="timeline-year">1950s-1960s</div>
+            <div class="timeline-desc">Second Generation: Transistors replaced vacuum tubes, improving reliability and reducing size.</div>
+        </div>
+    </div>
+    
+    <div class="timeline-row">
+        <div class="timeline-visual">
+            <div class="timeline-dot"></div>
+            <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+            <div class="timeline-year">1960s-1970s</div>
+            <div class="timeline-desc">Third Generation: Introduction of integrated circuits, enabling more compact and efficient computers.</div>
+        </div>
+    </div>
+    
+    <div class="timeline-row">
+        <div class="timeline-visual">
+            <div class="timeline-dot"></div>
+            <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+            <div class="timeline-year">1970s-Present</div>
+            <div class="timeline-desc">Fourth Generation: Microprocessors revolutionized computing by integrating thousands of ICs onto a single chip.</div>
+        </div>
+    </div>
+    
+</div>
+                        
+                    
+                         <!-- Pass block data as content_data -->
+                        
+                            <div class="block-explanation">
+    
+        <p class="explanation-text">Each generation of computers not only improved hardware components but also expanded the scope of applications, from basic calculations to complex data processing and artificial intelligence.</p>
+    
+        <p class="explanation-text">The evolution reflects continuous innovation in materials, design, and manufacturing techniques, driving the exponential growth in computing power.</p>
+    
+</div>
+                        
+                    
+                
+            </div>
+
+            <!-- Narration Points -->
+            
+            <div class="points-wrapper points-numbered">
+                
+                <div class="point-item">
+                    Computers have evolved through distinct generations, each marked by significant advancements.
+                </div>
+                
+                <div class="point-item">
+                    First generation computers used vacuum tubes, while second generation computers adopted transistors.
+                </div>
+                
+                <div class="point-item">
+                    Third generation computers integrated integrated circuits, leading to smaller, more powerful machines.
+                </div>
+                
+            </div>
+            
+        </div>
+
+        <!-- PANEL 2: VISUAL -->
+        <div class="panel-visual">
+            <div class="image-container">
+                
+                <img src="apps/api-server/app/services/node/slides/static/images/sub_1_2b67b6/Evolution_of_Computers.png" alt="Slide Visual">
+                
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

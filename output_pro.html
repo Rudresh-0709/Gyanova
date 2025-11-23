@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 1);
+            --primary-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            --text-main: #1e293b;
+            --text-muted: #475569;
+        }
+
+        body { 
+            margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; 
+            height: 100vh; width: 100vw; overflow: hidden;
+            background: radial-gradient(circle at 50% 0%, #e0e7ff 0%, #f3f4f6 100%);
+        }
+
+        /* --- COMPONENTS --- */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        /* 1:1 Image Container - CENTERED & SAFE */
+        .visual-wrapper {
+            background: white;
+            padding: 1rem;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+            aspect-ratio: 1 / 1; 
+            height: 90%; /* Keep some breathing room */
+            width: auto; 
+            max-width: 100%;
+            display: flex; align-items: center; justify-content: center;
+            margin: auto;
+        }
+        .visual-wrapper img {
+            width: 100%; height: 100%; object-fit: contain;
+        }
+
+        /* --- GRID SYSTEM --- */
+        .slide-grid {
+            display: grid;
+            width: 100%; height: 100%;
+            box-sizing: border-box;
+            padding: 2rem;
+            gap: 1.5rem;
+        }
+
+        /* =========================================
+           LAYOUTS (Standard Definitions)
+           ========================================= */
+
+        /* 1. BENTO: Big Image on Right */
+        .layout-bento {
+            grid-template-columns: 1fr 45vh; 
+            grid-template-rows: auto 1fr auto;
+            grid-template-areas:
+                "header  visual"
+                "content visual"
+                "footer  visual";
+        }
+
+        /* 2. SIDEBAR: Image on Left */
+        .layout-sidebar {
+            grid-template-columns: 35% 65%;
+            grid-template-rows: auto 1fr auto;
+            grid-template-areas:
+                "visual header"
+                "visual content"
+                "visual footer";
+        }
+
+        /* 3. STACK: Image Top, Text Bottom (FIXED HEIGHT) */
+        .layout-stack {
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 55vh 1fr; /* Fixed height for image row */
+            grid-template-areas:
+                "visual visual visual"
+                "header content footer";
+        }
+
+        /* 4. BI-COLUMN: 2x2 Grid */
+        .layout-bi-column {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            grid-template-areas:
+                "header visual"
+                "content footer";
+        }
+
+        /* 5. CENTRAL: Image in Middle */
+        .layout-central {
+            grid-template-columns: 1fr 50vh 1fr;
+            grid-template-rows: auto 1fr;
+            grid-template-areas:
+                "header header header"
+                "content visual footer";
+        }
+
+
+        /* =========================================
+           VARIATIONS (The Internal Shuffle)
+           We redefine grid-template-areas to move things around
+           ========================================= */
+
+        /* VARIATION: REVERSED (Swap Left/Right) */
+        .layout-bento.variant-reversed {
+            grid-template-columns: 45vh 1fr;
+            grid-template-areas: "visual header" "visual content" "visual footer";
+        }
+        .layout-sidebar.variant-reversed {
+            grid-template-columns: 65% 35%;
+            grid-template-areas: "header visual" "content visual" "footer visual";
+        }
+        .layout-bi-column.variant-reversed {
+            grid-template-areas: "visual header" "footer content";
+        }
+
+        /* VARIATION: INVERTED (Swap Top/Bottom) */
+        .layout-stack.variant-inverted {
+            grid-template-rows: 1fr 55vh; /* Text Top, Image Bottom */
+            grid-template-areas: "header content footer" "visual visual visual";
+        }
+        .layout-central.variant-inverted {
+            grid-template-areas: "content visual footer" "header header header"; /* Header at bottom */
+        }
+
+
+        /* --- ZONES --- */
+        .area-header { grid-area: header; }
+        .area-visual { grid-area: visual; display: flex; justify-content: center; align-items: center; }
+        .area-content { grid-area: content; }
+        .area-footer { grid-area: footer; }
+
+        /* --- TYPOGRAPHY --- */
+        h1 {
+            font-size: 3rem; margin: 0; line-height: 1.1;
+            background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        p { font-size: 1.1rem; line-height: 1.5; color: var(--text-main); margin-bottom: 0.8rem; }
+        
+        /* Insights Styling */
+        .insights-box { border-left: 5px solid #7c3aed; padding-left: 1rem; }
+        .insights-box h3 { margin: 0 0 0.5rem 0; color: #7c3aed; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        ul { padding-left: 1rem; margin: 0; }
+        li { margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.95rem; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Added variant_class here -->
+    <div class="slide-grid layout-magazine ">
+        
+        <!-- HEADER -->
+        <div class="area-header glass-card">
+            <h1>ENIAC and Vacuum Tubes</h1>
+        </div>
+
+        <!-- VISUAL -->
+        <div class="area-visual">
+            <div class="visual-wrapper">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Eniac.jpg" alt="Diagram">
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="area-content glass-card">
+            
+                
+                <p>Vacuum tubes functioned as electronic switches, allowing ENIAC to perform calculations 1,000x faster than mechanical relays.</p>
+                
+                <p>However, the sheer number of tubes meant that tubes burned out almost daily.</p>
+                
+            
+        </div>
+
+        <!-- FOOTER -->
+        <div class="area-footer glass-card">
+            <div class="insights-box">
+                <h3>Key Insights</h3>
+                <ul>
+                    
+                    <li>ENIAC was the first electronic general-purpose computer.</li>
+                    
+                    <li>It contained 17,468 vacuum tubes for processing.</li>
+                    
+                    <li>Heat generation was a massive engineering challenge.</li>
+                    
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

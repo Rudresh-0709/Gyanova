@@ -1,0 +1,151 @@
+<!-- master_slide.html
+Example background asset (local path): /mnt/data/Atomic-Number-and-Isotopes.png
+
+Expect variables passed in from render.py:
+- slide: dict (title, points, contentBlocks, image_filename, etc.)
+- layout_class: CSS layout class (e.g., layout-split-balanced)
+- decor_class: decoration class (e.g., decor-tech)
+- point_style_class: points-list | points-numbered | points-cards | points-bento
+- theme_css_vars: CSS variables string returned from ThemeManager (e.g. "--accent: #4fe3c1; --bg-image: url('/static/backgrounds/nebula.jpg')")
+- image_url: URL to the 1:1 image (relative path to static folder)
+
+This template uses component partials in `components/` for each contentBlock type:
+- components/timeline.html
+- components/explanation.html
+- components/comparison.html
+- components/steps.html
+- components/statistics.html
+- components/story.html
+- components/takeaways.html
+
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ slide.title }}</title>
+  <link rel="stylesheet" href="/apps/api-server/app/services/node/slides/static/css/base.css">
+  <link rel="stylesheet" href="/apps/api-server/app/services/node/slides/static/css/layouts.css">
+  <link rel="stylesheet" href="/apps/api-server/app/services/node/slides/static/css/blocks.css">
+  <link rel="stylesheet" href="/apps/api-server/app/services/node/slides/static/css/points.css">
+</head>
+<body>
+
+<div class="slide-root {{ layout_class }} {{ decor_class }}" style="{{ theme_css_vars }}">
+  <main class="slide-inner">
+
+    <!-- PANEL: Text / Left column -->
+    <section class="panel panel-text">
+
+      <!-- Title -->
+      <h1 class="slide-title">{{ slide.title }}</h1>
+
+      <!-- Top contentBlocks: used for timeline or leading blocks -->
+      {% for block in slide.contentBlocks %}
+        {% if block.type == 'timeline' or block.type == 'steps' %}
+          <div class="block-wrapper block-top">
+            {% include 'components/' ~ block.type ~ '.html' %}
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      <!-- Middle contentBlocks: explanation / comparison / statistics -->
+      {% for block in slide.contentBlocks %}
+        {% if block.type == 'explanation' or block.type == 'comparison' or block.type == 'statistics' or block.type == 'story' %}
+          <div class="block-wrapper block-middle">
+            {% include 'components/' ~ block.type ~ '.html' %}
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      <!-- Narration points (styled via point_style_class) -->
+      <div class="points-area {{ point_style_class }}">
+        {% if point_style_class == 'points-numbered' %}
+          <ol class="points-list-ordered">
+            {% for p in slide.points %}
+              <li class="point-item">{{ p }}</li>
+            {% endfor %}
+          </ol>
+        {% elif point_style_class == 'points-cards' %}
+          <div class="points-cards-grid">
+            {% for p in slide.points %}
+              <div class="point-card">{{ p }}</div>
+            {% endfor %}
+          </div>
+        {% elif point_style_class == 'points-bento' %}
+          <div class="points-bento-grid">
+            {% for p in slide.points %}
+              <div class="bento-item">{{ p }}</div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <ul class="points-list">
+            {% for p in slide.points %}
+              <li class="point-item">{{ p }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+
+    </section>
+
+    <!-- PANEL: Visual / Right column -->
+    <aside class="panel panel-visual">
+      <div class="image-frame">
+        <!-- image must be 1:1 aspect ratio and object-fit: contain -->
+        <img src="{{ image_url }}" alt="slide image" loading="lazy" />
+      </div>
+
+      <!-- Small explanation box under the image (if an explanation block exists and design asks for image-bottom explanation) -->
+      {% set image_explanation = None %}
+      {% for block in slide.contentBlocks %}
+        {% if block.type == 'explanation' %}
+          {% set image_explanation = block %}
+          {% break %}
+        {% endif %}
+      {% endfor %}
+
+      {% if image_explanation %}
+        <div class="image-explanation">
+          {% for para in image_explanation.paragraphs %}
+            <p>{{ para }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+    </aside>
+
+  </main>
+</div>
+
+<!-- Optional small script for vertical centering of short text blocks -->
+<script>
+  (function(){
+    // If the left panel is significantly shorter than the visual panel, vertically center the left content
+    function adjustVerticalBalance(){
+      const root = document.querySelector('.slide-inner');
+      if(!root) return;
+      const text = root.querySelector('.panel-text');
+      const visual = root.querySelector('.panel-visual');
+      if(!text||!visual) return;
+      const tH = text.getBoundingClientRect().height;
+      const vH = visual.getBoundingClientRect().height;
+      if(tH < vH * 0.9){
+        text.style.display = 'flex';
+        text.style.flexDirection = 'column';
+        text.style.justifyContent = 'center';
+      } else {
+        text.style.display = '';
+        text.style.flexDirection = '';
+        text.style.justifyContent = '';
+      }
+    }
+    window.addEventListener('load', adjustVerticalBalance);
+    window.addEventListener('resize', adjustVerticalBalance);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,201 @@
+/* ------------------------------------------------------
+   ANIMATIONS.CSS — Smooth, Modern, Subtle Animations
+   Designed for Slides • No jitter • No scroll conflicts
+--------------------------------------------------------- */
+
+:root {
+  --fade-duration: 0.8s;
+  --slide-duration: 0.8s;
+  --scale-duration: 0.7s;
+  --accent: #66e2ff;
+}
+
+/* ------------------------------------------------------ */
+/* FADE IN */
+/* ------------------------------------------------------ */
+.fade-in {
+  animation: fadeIn var(--fade-duration) ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ------------------------------------------------------ */
+/* FADE UP */
+/* ------------------------------------------------------ */
+.fade-up {
+  animation: fadeUp var(--fade-duration) ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------------------ */
+/* SLIDE IN FROM LEFT */
+/* ------------------------------------------------------ */
+.slide-left {
+  animation: slideLeft var(--slide-duration) ease forwards;
+  opacity: 0;
+}
+
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ------------------------------------------------------ */
+/* SLIDE IN FROM RIGHT */
+/* ------------------------------------------------------ */
+.slide-right {
+  animation: slideRight var(--slide-duration) ease forwards;
+  opacity: 0;
+}
+
+@keyframes slideRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ------------------------------------------------------ */
+/* SLIDE IN FROM TOP */
+/* ------------------------------------------------------ */
+.slide-down {
+  animation: slideDown var(--slide-duration) ease forwards;
+  opacity: 0;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------------------ */
+/* SLIDE IN FROM BOTTOM */
+/* ------------------------------------------------------ */
+.slide-up {
+  animation: slideUp var(--slide-duration) ease forwards;
+  opacity: 0;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------------------ */
+/* SCALE IN (subtle zoom) */
+/* ------------------------------------------------------ */
+.scale-in {
+  animation: scaleIn var(--scale-duration) ease forwards;
+  opacity: 0;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ------------------------------------------------------ */
+/* STAGGER CHILDREN — for point lists, steps, etc. */
+/* ------------------------------------------------------ */
+.stagger > * {
+  opacity: 0;
+  animation: fadeUp var(--fade-duration) ease forwards;
+}
+
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.15s; }
+.stagger > *:nth-child(3) { animation-delay: 0.25s; }
+.stagger > *:nth-child(4) { animation-delay: 0.35s; }
+.stagger > *:nth-child(5) { animation-delay: 0.45s; }
+.stagger > *:nth-child(6) { animation-delay: 0.55s; }
+.stagger > *:nth-child(7) { animation-delay: 0.65s; }
+
+/* ------------------------------------------------------ */
+/* GLOW PULSE — For highlighting key elements */
+/* ------------------------------------------------------ */
+.glow-pulse {
+  animation: glowPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0% { box-shadow: 0 0 0px rgba(102,226,255,0.0); }
+  50% { box-shadow: 0 0 16px rgba(102,226,255,0.35); }
+  100% { box-shadow: 0 0 0px rgba(102,226,255,0.0); }
+}
+
+/* ------------------------------------------------------ */
+/* DRAW-IN LINE (for timeline bar, dividers, connectors) */
+/* ------------------------------------------------------ */
+.draw-line {
+  overflow: hidden;
+  position: relative;
+}
+
+.draw-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  animation: drawLine 0.9s ease forwards;
+}
+
+@keyframes drawLine {
+  to { width: 100%; }
+}
+
+/* ------------------------------------------------------ */
+/* FADE-IN DELAY UTIL CLASSES */
+/* ------------------------------------------------------ */
+.delay-1 { animation-delay: 0.1s !important; }
+.delay-2 { animation-delay: 0.2s !important; }
+.delay-3 { animation-delay: 0.3s !important; }
+.delay-4 { animation-delay: 0.4s !important; }
+.delay-5 { animation-delay: 0.5s !important; }
+.delay-6 { animation-delay: 0.6s !important; }
+.delay-7 { animation-delay: 0.7s !important; }

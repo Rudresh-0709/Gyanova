@@ -1,0 +1,123 @@
+/* Base CSS for Non-Scrollable, Clean Slide Layout */
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Prevent scrolling */
+  font-family: 'Inter', sans-serif;
+  background: #0b0e13;
+  color: white;
+}
+
+/* Slide Container */
+.slide {
+  width: 100vw;
+  height: 100vh;
+  padding: 40px;
+  gap: 20px;
+  text-align: center;
+}
+
+/* Headings */
+h1, h2, h3 {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+h1 { font-size: 3rem; }
+h2 { font-size: 2.3rem; }
+h3 { font-size: 1.7rem; }
+
+/* Paragraph */
+p {
+  font-size: 1.3rem;
+  line-height: 1.5;
+  font-weight: 400;
+  max-width: 80%;
+}
+
+/* Bullet Points */
+ul, ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul li, ol li {
+  font-size: 1.3rem;
+  margin: 10px 0;
+  padding-left: 20px;
+  position: relative;
+}
+
+ul li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #66e2ff;
+}
+
+/* Image */
+.slide img {
+  max-width: 70%;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+/* Layout Helpers */
+.row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Uniform Sizing Rule */
+.text-block {
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Avoid text shrinking — enforce consistent font sizes */
+:root {
+  --title-size: 3rem;
+  --subtitle-size: 2.3rem;
+  --body-size: 1.3rem;
+}
+
+h1 { font-size: var(--title-size); }
+h2 { font-size: var(--subtitle-size); }
+p, li { font-size: var(--body-size); }
+
+/* Safe Area Padding for Different Screens */
+@media (max-width: 900px) {
+  h1 { font-size: 2.4rem; }
+  h2 { font-size: 1.9rem; }
+  p, li { font-size: 1.2rem; }
+}
+
+@media (max-width: 600px) {
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.6rem; }
+  p, li { font-size: 1.1rem; }
+}

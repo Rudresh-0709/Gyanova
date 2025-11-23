@@ -1,24 +1,306 @@
-/* --- BASE GRID --- */
-.slide-grid {
-    display: grid;
-    height: 100vh;
-    width: 100vw;
-    gap: 2rem;
-    padding: 3rem;
+/* ------------------------------------------------------
+   LAYOUTS.CSS — Structural Layout Systems for Slides
+   Clean • Grid-Based • Non-Scrollable • Professional
+--------------------------------------------------------- */
+
+:root {
+  --accent: #66e2ff;
+  --bg-dark: #0b0e13;
+  --radius: 14px;
 }
 
-/* --- VARIATION 1: CLASSIC SPLIT --- */
-.layout-classic-split {
-    grid-template-columns: 40% 60%;
-    grid-template-rows: auto 1fr auto;
-    grid-template-areas: 
-        "image header"
-        "image main"
-        "image footer";
+/* ------------------------------------------------------ */
+/* CENTERED LAYOUT — Default slide layout */
+/* ------------------------------------------------------ */
+.layout-center {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+  padding: 40px;
 }
 
-/* --- MAPPING HTML CLASSES TO GRID AREAS --- */
-.area-image  { grid-area: image; }
-.area-header { grid-area: header; }
-.area-main   { grid-area: main; }
-.area-footer { grid-area: footer; }
+/* ------------------------------------------------------ */
+/* LEFT-FOCUSED CONTENT (text left, visuals right) */
+/* ------------------------------------------------------ */
+.layout-left {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  align-items: center;
+  padding: 40px 60px;
+  gap: 40px;
+}
+
+.layout-left .text {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.layout-left .visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ------------------------------------------------------ */
+/* RIGHT-FOCUSED CONTENT (visual left, text right) */
+/* ------------------------------------------------------ */
+.layout-right {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  align-items: center;
+  padding: 40px 60px;
+  gap: 40px;
+}
+
+.layout-right .text {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.layout-right .visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ------------------------------------------------------ */
+/* SPLIT SCREEN 50–50 */
+/* ------------------------------------------------------ */
+.layout-split {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 40px;
+  gap: 30px;
+}
+
+.layout-split .column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* ------------------------------------------------------ */
+/* VISUAL-FOCUSED LAYOUT — Big image or diagram */
+/* ------------------------------------------------------ */
+.layout-visual {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.layout-visual img {
+  max-width: 85%;
+  max-height: 80vh;
+  object-fit: contain;
+}
+
+/* ------------------------------------------------------ */
+/* HEADER + BODY (for chapter title slides) */
+/* ------------------------------------------------------ */
+.layout-header {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  padding: 50px;
+}
+
+.layout-header h1 {
+  font-size: 3.6rem;
+  letter-spacing: -1px;
+}
+
+.layout-header p {
+  font-size: 1.4rem;
+  opacity: 0.85;
+  max-width: 70%;
+  text-align: center;
+}
+
+/* ------------------------------------------------------ */
+/* THREE-COLUMN INFO (features, comparisons, etc.) */
+/* ------------------------------------------------------ */
+.layout-3col {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  padding: 40px 60px;
+  gap: 30px;
+}
+
+.layout-3col .col {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 24px 28px;
+  border-radius: var(--radius);
+  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+/* ------------------------------------------------------ */
+/* GRID CONTENT (statistics, icons, points) */
+/* ------------------------------------------------------ */
+.layout-grid {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-content: center;
+  justify-items: center;
+  gap: 30px;
+  padding: 40px 60px;
+}
+
+/* ------------------------------------------------------ */
+/* BANNER LAYOUT (full-width title + subtitle) */
+/* ------------------------------------------------------ */
+.layout-banner {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  padding: 40px;
+}
+
+.layout-banner h1 {
+  font-size: 3.8rem;
+}
+
+.layout-banner p {
+  opacity: 0.75;
+  font-size: 1.35rem;
+  max-width: 75%;
+  text-align: center;
+}
+
+/* ------------------------------------------------------ */
+/* RESPONSIVE ADJUSTMENTS */
+/* ------------------------------------------------------ */
+@media (max-width: 1000px) {
+  .layout-left, .layout-right, .layout-split {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .layout-3col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .layout-3col {
+    grid-template-columns: 1fr;
+  }
+  .layout-header h1 { font-size: 2.4rem; }
+  .layout-banner h1 { font-size: 2.6rem; }
+}
+
+/* ------------------------------------------------------ */
+/* FINAL PROFESSIONAL TIMELINE LAYOUT (GAMMA STYLE)       */
+/* ------------------------------------------------------ */
+
+.layout-timeline {
+  width: 100vw;
+  height: 100vh;
+
+  display: grid;
+  grid-template-columns: 38% 62%;       /* Left column narrow, image wide */
+  grid-template-rows: auto 1fr auto;    /* Title, main content, narration row */
+
+  grid-template-areas:
+    "title title"
+    "timeline image"
+    "narration explanation";
+
+  padding: 40px 60px;
+  gap: 40px;
+
+  align-items: start;
+  overflow: hidden;
+}
+
+/* ---------------- TITLE ---------------- */
+.layout-timeline > h1 {
+  grid-area: title;
+  text-align: left;
+  margin: 0;
+}
+
+/* ---------------- TIMELINE -------------- */
+.layout-timeline > .timeline {
+  grid-area: timeline;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.timeline h4 {
+  text-align: left !important;
+}
+
+.timeline p {
+  text-align: left !important;
+}
+
+.timeline::before {
+  left: 10px !important;                /* Dot line closer to left */
+}
+
+.timeline-item {
+  padding-left: 35px !important;         /* Space for dot */
+}
+
+/* ---------------- IMAGE ---------------- */
+.layout-timeline > img {
+  grid-area: image;
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  justify-self: center;
+  align-self: start;
+  border-radius: 12px;
+}
+
+/* ---------------- NARRATION POINTS ---------------- */
+.layout-timeline > ul.points {
+  grid-area: narration;
+  width: 95%;
+  align-self: start;
+}
+
+/* ---------------- EXPLANATION BLOCK ---------------- */
+.layout-timeline > .block-explanation {
+  grid-area: explanation;
+
+  width: 85%;
+  padding: 20px;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  max-height: 300px;
+  overflow: hidden;
+}

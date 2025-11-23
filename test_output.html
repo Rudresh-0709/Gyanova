@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-soft: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+        }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-soft); height: 100vh; width: 100vw; overflow: hidden; }
+        
+        /* --- THE GRID --- */
+        .slide-container {
+            display: grid;
+            width: 100%; height: 100%;
+            box-sizing: border-box;
+            padding: 2rem;
+            gap: 2rem;
+        }
+
+        /* --- LAYOUT 1: SPLIT (Diagram Left, Text Right) --- */
+        .layout-diagram-split {
+            grid-template-columns: 1fr 1fr; /* 50/50 Split */
+            grid-template-rows: auto 1fr auto;
+            grid-template-areas: 
+                "header header"
+                "visual content"
+                "visual narration";
+        }
+        
+        /* --- LAYOUT 2: FOCUS (Diagram Top, Text Columns Bottom) --- */
+        .layout-diagram-focus {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 55% 1fr; /* Header, Big Image, Text */
+            grid-template-areas:
+                "header header"
+                "visual visual"
+                "content narration";
+        }
+
+        /* --- THE ZONES --- */
+        .area-header { grid-area: header; }
+        
+        /* THE SACRED VISUAL ZONE */
+        .area-visual { 
+            grid-area: visual; 
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1rem; /* Internal padding so diagram doesn't touch edge */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        /* CRITICAL: NEVER CROP THE IMAGE */
+        .area-visual img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* <--- THIS SAVES YOUR LABELS */
+        }
+
+        .area-content { grid-area: content; overflow-y: auto; padding-right: 10px; }
+        .area-narration { grid-area: narration; background: #f1f5f9; padding: 1.5rem; border-radius: 12px; font-size: 0.9rem; }
+
+        /* --- TYPOGRAPHY --- */
+        h1 { color: var(--primary); margin: 0 0 0.5rem 0; font-size: 2.2rem; }
+        p, li { line-height: 1.6; color: var(--text-main); }
+
+        /* --- CONTENT BLOCKS --- */
+        /* Timeline Styling */
+        .timeline-item { display: flex; gap: 1rem; margin-bottom: 1rem; }
+        .year { font-weight: 800; color: var(--primary); min-width: 60px; }
+        
+        /* Explanation Styling */
+        .explanation-para { margin-bottom: 1rem; font-size: 1.1rem; }
+
+    </style>
+</head>
+<body>
+
+    <div class="slide-container layout-diagram-split">
+        
+        <!-- 1. Header -->
+        <div class="area-header">
+            <h1>ENIAC and Vacuum Tubes</h1>
+        </div>
+
+        <!-- 2. The Diagram (Safe Zone) -->
+        <div class="area-visual">
+            <!-- 'src' will be relative path like static/images/... -->
+            <img src="static/images/sub_2_30755b/ENIAC_and_Vacuum_Tubes.png" alt="Technical Diagram">
+        </div>
+
+        <!-- 3. Main Content Block -->
+        <div class="area-content">
+            
+                
+                <p class="explanation-para">Vacuum tubes functioned as electronic switches, allowing ENIAC to perform calculations faster than mechanical relays.</p>
+                
+                <p class="explanation-para">ENIAC contained about 17,468 vacuum tubes, contributing to its size.</p>
+                
+            
+        </div>
+
+        <!-- 4. Narration Points -->
+        <div class="area-narration">
+            <strong>Key Takeaways:</strong>
+            <ul>
+                
+                <li>ENIAC was the first electronic general-purpose computer built in 1946.</li>
+                
+                <li>Vacuum tubes were crucial components in ENIAC.</li>
+                
+                <li>ENIAC's vacuum tubes generated a significant amount of heat.</li>
+                
+            </ul>
+        </div>
+
+    </div>
+</body>
+</html>

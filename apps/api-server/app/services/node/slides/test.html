@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Slide Engine Test</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Include ALL your CSS files -->
+    <link rel="stylesheet" href="static/css/base.css">
+    <link rel="stylesheet" href="static/css/layouts.css">
+    <link rel="stylesheet" href="static/css/blocks.css">
+    <link rel="stylesheet" href="static/css/points.css">
+    <!-- <link rel="stylesheet" href="static/css/components.css"> -->
+    <link rel="stylesheet" href="static/css/helpers.css">
+    <link rel="stylesheet" href="static/css/typography.css">
+    <link rel="stylesheet" href="static/css/animations.css">
+
+    <style>
+        body {
+            background: #0b0e13;
+            overflow: hidden;
+        }
+
+        #slide-root {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Navigation Buttons */
+        .nav-left,
+        .nav-right {
+            z-index: 50;
+        }
+
+        .progress-container {
+            z-index: 50;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="slide-root"></div>
+
+    <!-- Navigation arrows -->
+    <!-- <div class="nav-arrow nav-left" onclick="prevSlide()">
+        <svg viewBox="0 0 24 24" stroke-width="2" fill="none">
+            <path d="M15 18l-6-6 6-6" stroke="white" />
+        </svg>
+    </div>
+
+    <div class="nav-arrow nav-right" onclick="nextSlide()">
+        <svg viewBox="0 0 24 24" stroke-width="2" fill="none">
+            <path d="M9 6l6 6-6 6" stroke="white" />
+        </svg>
+    </div> -->
+
+    <!-- Progress Bar -->
+    <!-- <div class="progress-container">
+        <div class="progress-bar"></div>
+    </div> -->
+
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Slide Engine Test</title>
+
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+        <!-- Include ALL your CSS files -->
+        <link rel="stylesheet" href="static/css/base.css">
+        <link rel="stylesheet" href="static/css/typography.css">
+        <link rel="stylesheet" href="static/css/helpers.css">
+        <link rel="stylesheet" href="static/css/points.css">
+        <link rel="stylesheet" href="static/css/blocks.css">
+        <!-- <link rel="stylesheet" href="static/css/components.css"> -->
+        <link rel="stylesheet" href="static/css/animations.css">
+        <link rel="stylesheet" href="static/css/layouts.css">
+
+        <style>
+            body {
+                background: #0b0e13;
+                overflow: hidden;
+            }
+
+            #slide-root {
+                width: 100vw;
+                height: 100vh;
+                position: relative;
+            }
+
+            /* Navigation Buttons */
+            .nav-left,
+            .nav-right {
+                z-index: 50;
+            }
+
+            .progress-container {
+                z-index: 50;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <div id="slide-root"></div>
+
+        <!-- Navigation arrows -->
+        <!-- <div class="nav-arrow nav-left" onclick="prevSlide()">
+        <svg viewBox="0 0 24 24" stroke-width="2" fill="none">
+            <path d="M15 18l-6-6 6-6" stroke="white" />
+        </svg>
+    </div>
+
+    <div class="nav-arrow nav-right" onclick="nextSlide()">
+        <svg viewBox="0 0 24 24" stroke-width="2" fill="none">
+            <path d="M9 6l6 6-6 6" stroke="white" />
+        </svg>
+    </div> -->
+
+        <!-- Progress Bar -->
+        <!-- <div class="progress-container">
+        <div class="progress-bar"></div>
+    </div> -->
+
+        <!-- Slide Number -->
+        <!-- <div class="slide-indicator"></div> -->
+
+        <script type="module">
+            import { loadState, nextSlide, prevSlide } from "./renderer.js";
+
+            // Insert your slide state here for testing
+            const state = {
+                "topic": "Computer generations",
+                "sub_topics": [
+                    {
+                        "name": "Introduction to Computer Generations",
+                        "difficulty": "Beginner",
+                        "id": "sub_1_2b67b6",
+                    },
+                    {
+                        "name": "First Generation Computers (1940s-1950s): Vacuum Tubes",
+                        "difficulty": "Intermediate",
+                        "id": "sub_2_30755b",
+                    },
+                    {
+                        "name": "Second to Fifth Generation Computers (1950s-1980s): Transistors, Integrated Circuits, and Microprocessors",
+                        "difficulty": "Intermediate",
+                        "id": "sub_3_d87eaf",
+                    },
+                    {
+                        "name": "Modern Computer Generations (1980s-present): Artificial Intelligence, Internet, and Beyond",
+                        "difficulty": "Advanced",
+                        "id": "sub_4_c8e0dd",
+                    },
+                    {
+                        "name": "Comparison and Evolution of Computer Generations",
+                        "difficulty": "Intermediate",
+                        "id": "sub_5_dca7e2",
+                    },
+                ],
+                "slides": {
+                    "sub_1_2b67b6": [
+                        {
+                            "title": "Evolution of Computers",
+                            "layout": "layout-left",
+                            "points": [
+                                "Computers have evolved through distinct generations, each marked by significant advancements.",
+                                "First generation computers used vacuum tubes, while second generation computers adopted transistors.",
+                                "Third generation computers integrated integrated circuits, leading to smaller, more powerful machines.",
+                            ],
+                            "template": "image_left",
+                            "imageType": "ai_enhanced_image",
+                            "imagePrompt": "educational diagram illustrating the evolution of computers through generations, showcasing first-generation vacuum tube computers, second-generation transistor computers, and third-generation integrated circuit computers, detailed labeled illustration in a clean technical style",
+                            "design": {
+                                "layout_mode": "layout-timeline",
+                                "decoration_style": "decor-tech",
+                                "point_display": "points-list",
+                            },
+                            "contentBlocks": [
+                                {
+                                    "type": "timeline",
+                                    "events": [
+                                        {
+                                            "year": "1940s-1950s",
+                                            "description": "First Generation: Vacuum tubes used as main electronic component, large and power-hungry.",
+                                        },
+                                        {
+                                            "year": "1950s-1960s",
+                                            "description": "Second Generation: Transistors replaced vacuum tubes, improving reliability and reducing size.",
+                                        },
+                                        {
+                                            "year": "1960s-1970s",
+                                            "description": "Third Generation: Introduction of integrated circuits, enabling more compact and efficient computers.",
+                                        },
+                                        {
+                                            "year": "1970s-Present",
+                                            "description": "Fourth Generation: Microprocessors revolutionized computing by integrating thousands of ICs onto a single chip.",
+                                        },
+                                    ],
+                                },
+                                {
+                                    "type": "explanation",
+                                    "paragraphs": [
+                                        "Each generation of computers not only improved hardware components but also expanded the scope of applications, from basic calculations to complex data processing and artificial intelligence.",
+                                        "The evolution reflects continuous innovation in materials, design, and manufacturing techniques, driving the exponential growth in computing power.",
+                                    ],
+                                },
+                            ],
+                        }
+                    ]
+                }
+            };
+
+            loadState(state);
+        </script>
+
+    </body>
+
+    </html>

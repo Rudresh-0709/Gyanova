@@ -1,0 +1,201 @@
+/* ------------------------------------------------------
+   TYPOGRAPHY.CSS — Unified Type System for Slide Engine
+   Modern • Consistent • Readable • Non-Scroll Friendly
+--------------------------------------------------------- */
+
+:root {
+  --font-main: 'Inter', sans-serif;
+  --font-accent: 'Inter', sans-serif;
+
+  /* Core Font Sizes */
+  --h1-size: 3.2rem;
+  --h2-size: 2.4rem;
+  --h3-size: 1.9rem;
+  --h4-size: 1.55rem;
+  --body-size: 1.3rem;
+  --small-size: 1.05rem;
+
+  /* Line Heights */
+  --lh-tight: 1.15;
+  --lh-normal: 1.35;
+  --lh-relaxed: 1.55;
+
+  /* Colors */
+  --text-main: #ffffff;
+  --text-dim: rgba(255,255,255,0.7);
+  --accent: #66e2ff;
+  --accent-light: #b3f1ff;
+}
+
+/* ------------------------------------------------------ */
+/* BASE TEXT STYLES */
+/* ------------------------------------------------------ */
+body {
+  font-family: var(--font-main);
+  color: var(--text-main);
+  margin: 0;
+}
+
+p {
+  font-size: var(--body-size);
+  line-height: var(--lh-relaxed);
+  font-weight: 400;
+  max-width: 85%;
+  opacity: 0.95;
+}
+
+/* ------------------------------------------------------ */
+/* HEADINGS */
+/* ------------------------------------------------------ */
+h1, h2, h3, h4 {
+  font-family: var(--font-accent);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--h1-size);
+  line-height: var(--lh-tight);
+}
+
+h2 {
+  font-size: var(--h2-size);
+  line-height: var(--lh-tight);
+}
+
+h3 {
+  font-size: var(--h3-size);
+  line-height: var(--lh-normal);
+}
+
+h4 {
+  font-size: var(--h4-size);
+  line-height: var(--lh-normal);
+  opacity: 0.9;
+}
+
+/* ------------------------------------------------------ */
+/* SUBTLE DIM TEXT */
+/* ------------------------------------------------------ */
+.text-dim {
+  color: var(--text-dim) !important;
+}
+
+/* ------------------------------------------------------ */
+/* ACCENTED TEXT */
+/* ------------------------------------------------------ */
+.text-accent {
+  color: var(--accent) !important;
+}
+
+.text-accent-light {
+  color: var(--accent-light) !important;
+}
+
+/* ------------------------------------------------------ */
+/* TITLE BLOCK (for big opening slide titles) */
+/* ------------------------------------------------------ */
+.title-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.title-block h1 {
+  font-size: 3.8rem;
+  letter-spacing: -1.2px;
+}
+
+.title-block p {
+  font-size: 1.35rem;
+  opacity: 0.8;
+  max-width: 70%;
+}
+
+/* ------------------------------------------------------ */
+/* LABELS & MINI TEXT */
+/* ------------------------------------------------------ */
+.label {
+  font-size: var(--small-size);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  opacity: 0.7;
+}
+
+.small-text {
+  font-size: var(--small-size);
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------------ */
+/* BLOCK HEADERS (for sections like "Overview", "Steps") */
+/* ------------------------------------------------------ */
+.block-header {
+  font-size: var(--h3-size);
+  font-weight: 700;
+  border-left: 4px solid var(--accent);
+  padding-left: 18px;
+  line-height: var(--lh-tight);
+  margin-bottom: 10px;
+}
+
+/* ------------------------------------------------------ */
+/* QUOTE STYLE */
+/* ------------------------------------------------------ */
+.quote-text {
+  font-size: 1.6rem;
+  font-style: italic;
+  color: var(--accent-light);
+  line-height: var(--lh-relaxed);
+  max-width: 80%;
+}
+
+.quote-text::before {
+  content: "\201C";
+  font-size: 3rem;
+  opacity: 0.6;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* ------------------------------------------------------ */
+/* CAPTIONS UNDER IMAGES */
+/* ------------------------------------------------------ */
+.caption {
+  font-size: var(--small-size);
+  opacity: 0.65;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* ------------------------------------------------------ */
+/* RESPONSIVE ADJUSTMENTS */
+/* ------------------------------------------------------ */
+@media (max-width: 900px) {
+  :root {
+    --h1-size: 2.6rem;
+    --h2-size: 2rem;
+    --h3-size: 1.6rem;
+    --body-size: 1.15rem;
+  }
+
+  .title-block h1 {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --h1-size: 2.2rem;
+    --h2-size: 1.7rem;
+    --h3-size: 1.45rem;
+    --body-size: 1.05rem;
+  }
+
+  .title-block h1 {
+    font-size: 2.4rem;
+  }
+}

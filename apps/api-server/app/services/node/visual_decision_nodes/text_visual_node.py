@@ -138,11 +138,50 @@ def generate_contentblocks_for_slide(slide, llm):
         "points": ["", ""]
       }
 
-      ──────────────────────── OUTPUT FORMAT ────────────────────────
+      ──────────────────────── VISUAL DESIGN INSTRUCTIONS ────────────────────────
+
+      You must also analyze the slide's topic and content to determine the best visual layout.
+      Add a "design" object to your response with the following keys:
+
+      1. "layout_mode": Choose the best structural fit.Each slide should have random layout.
+         - "layout-split-balanced": Standard 50/50 text/image split. (Good for general info).
+         - "layout-bento": Boxy, grid-like arrangement. (Good for distinct stats or multiple items).
+         - "layout-magazine": Editorial style, image top, text columns bottom. (Good for stories).
+         - "layout-image-card-right": Image left, card blocks on right.
+         - "layout-image-card-left": Image right, card blocks on left.
+         - "layout-explanation-bottom-image-left": Image on left, points on the right, explanation on the bottom of the image, good when points are more or more than one contentBlock.
+         - "layout-explanation-bottom-image-right": Image on right, points on the left, explanation on the bottom of the image, good when points are more or more than one contentBlock.
+
+      2. "decoration_style": Choose the aesthetic vibe. Every slide should have the same decoration style.
+         - "decor-tech": Circuit lines, geometric shapes, monospaced accents. (For hardware/code).
+         - "decor-organic": Soft blobs, curves, fluid shapes. (For nature/biology/humanities).
+         - "decor-minimal": Clean lines, whitespace, solid dividers. (For business/data).
+         - "decor-glass": Heavy glassmorphism, blurred cards. (For modern/futuristic).
+
+      3. "point_display": How narration points should appear.
+
+        - "points-list": Standard clean vertical bullet list with icons.
+            (Best for general narration; works on most slides.)
+
+        - "points-numbered": Vertical steps 1, 2, 3 with emphasis styling. 
+            (Use when narration points follow a sequence or flow.)
+
+        - "points-cards": Each point inside a rounded card or pill-shaped box. 
+            (Best when points are short and need visual separation.)
+
+        - "points-bento": Each point sits inside a mini square/rectangle module (bento grid). 
+            (Use when there are 4–6 short high-level points; looks modern.)
+
+      ──────────────────────── UPDATED OUTPUT FORMAT ────────────────────────
 
       Produce ONLY:
 
       {
+        "design": {
+            "layout_mode": "...",
+            "decoration_style": "...",
+            "point_display": "..."
+        },
         "contentBlocks": [
           ...
         ]
@@ -188,14 +227,37 @@ def generate_contentblocks_for_slide(slide, llm):
         # If double-encoded JSON, decode twice
         data = json.loads(json.loads(response_text))
 
-    # Extract contentBlocks
-    content_blocks = data["contentBlocks"]
-    return content_blocks
+    return data
+
+
+# def process_state_add_contentblocks(State, llm):
+#     """
+#     Returns a NEW updated State with contentBlocks added to each slide.
+#     """
+#     new_state = State.copy()
+#     new_state["slides"] = {}
+
+#     for subtopic_id, slides in State["slides"].items():
+#         updated_slides = []
+
+#         for slide in slides:
+#             # Generate contentBlocks
+#             cb = generate_contentblocks_for_slide(slide, llm)
+
+#             # Create new slide dict with contentBlocks added
+#             new_slide = slide.copy()
+#             new_slide["contentBlocks"] = cb
+
+#             updated_slides.append(new_slide)
+
+#         new_state["slides"][subtopic_id] = updated_slides
+
+#     return new_state
 
 
 def process_state_add_contentblocks(State, llm):
     """
-    Returns a NEW updated State with contentBlocks added to each slide.
+    Returns a NEW updated State with design + contentBlocks added to each slide.
     """
     new_state = State.copy()
     new_state["slides"] = {}
@@ -204,12 +266,17 @@ def process_state_add_contentblocks(State, llm):
         updated_slides = []
 
         for slide in slides:
-            # Generate contentBlocks
-            cb = generate_contentblocks_for_slide(slide, llm)
+            # Generate design + contentBlocks (new structure)
+            result = generate_contentblocks_for_slide(slide, llm)
+            # result should look like:
+            # { "design": {...}, "contentBlocks": [...] }
 
-            # Create new slide dict with contentBlocks added
+            # Clean dict creation
             new_slide = slide.copy()
-            new_slide["contentBlocks"] = cb
+
+            # Add both new fields
+            new_slide["design"] = result.get("design")
+            new_slide["contentBlocks"] = result.get("contentBlocks")
 
             updated_slides.append(new_slide)
 
@@ -547,3 +614,5 @@ if __name__ == "__main__":
     }
     updated_state = process_state_add_contentblocks(State, llm)
     print(json.dumps(updated_state, indent=2))
+
+
