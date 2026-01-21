@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Title Card Slide</title>
+
+    <style>
+        /* ─────────────────────────────────────────────
+           GLOBAL RESET (CRITICAL FOR NO SCROLL)
+        ───────────────────────────────────────────── */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Optional reusable styles */
+        .slide-accent {
+            background: #111;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="slide-root"
+        style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100vw;
+        height: 100dvh;
+        padding: 80px;
+        box-sizing: border-box;
+        overflow: hidden;
+        position: relative;
+    ">
+
+        <!-- CONTENT SECTION -->
+        <div
+            style="
+            display: flex;
+            flex-direction: column;
+            width: 55%;
+            z-index: 2;
+            min-height: 0;
+        ">
+
+            <!-- Label Badge -->
+            <div class="slide-accent"
+                style="
+                display: inline-block;
+                width: fit-content;
+                padding: 8px 16px;
+                margin-bottom: 40px;
+                font-size: 14px;
+                font-weight: 700;
+                letter-spacing: 0.1em;
+                border-radius: 4px;
+                text-transform: uppercase;
+            ">
+                Heading Placeholder
+            </div>
+
+            <!-- Title -->
+            <h1 class="slide-title"
+                style="
+                margin: 0;
+                font-size: 96px;
+                line-height: 1.1;
+                font-weight: 800;
+                max-width: 800px;
+                max-height: 3.3em;
+                overflow: hidden;
+            ">
+                Title<br>
+                Headline
+            </h1>
+
+            <!-- Divider -->
+            <div class="slide-accent"
+                style="
+                width: 60px;
+                height: 4px;
+                margin: 40px 0;
+            ">
+            </div>
+
+            <!-- Subtitle -->
+            <p class="slide-subtitle"
+                style="
+                margin: 0;
+                font-size: 32px;
+                line-height: 1.4;
+                font-weight: 400;
+                max-width: 550px;
+                max-height: 4.2em;
+                overflow: hidden;
+            ">
+                Description text placeholder providing a summary or introduction to the module content.
+            </p>
+
+        </div>
+
+        <!-- IMAGE SECTION -->
+        <div
+            style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40%;
+            height: 100%;
+        ">
+
+            <div
+                style="
+                width: 100%;
+                height: 80%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">
+
+                <div
+                    style="
+                    width: 100%;
+                    height: 100%;
+                    border: 2px dashed currentColor;
+                    opacity: 0.2;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 12px;
+                ">
+                    Image Here
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
