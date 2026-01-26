@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Icons with Text</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: white;
+        }
+
+        .slide-root {
+            height: 100%;
+            padding: 60px 80px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide-content {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* HEADER - Centered with decorative line */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .slide-title {
+            font-size: 3.5rem;
+            margin: 0 0 20px 0;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #1a1a1a;
+        }
+
+        .slide-accent {
+            width: 60px;
+            height: 4px;
+            margin: 0 auto 20px;
+            background: #2563eb;
+        }
+
+        .slide-subtitle {
+            font-size: 1.15rem;
+            max-width: 700px;
+            margin: 0 auto;
+            color: rgba(0, 0, 0, 0.6);
+            line-height: 1.6;
+        }
+
+        /* GRID LAYOUT */
+        .slide-list {
+            display: grid;
+            gap: 50px 60px;
+            justify-content: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            list-style: none;
+            padding: 0;
+        }
+
+        /* 3 items: single row */
+        .slide-list[data-count="3"] {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        /* 4 items: 2x2 grid */
+        .slide-list[data-count="4"] {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 900px;
+        }
+
+        /* 5 items: 3-2 layout */
+        .slide-list[data-count="5"] {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .slide-list[data-count="5"] .slide-card:nth-child(4),
+        .slide-list[data-count="5"] .slide-card:nth-child(5) {
+            grid-column: span 1;
+        }
+
+        .slide-list[data-count="5"] .slide-card:nth-child(4) {
+            margin-left: 25%;
+        }
+
+        /* 6 items: 3x2 grid */
+        .slide-list[data-count="6"] {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        /* CARD STYLING */
+        .slide-card {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* ICON - Floating, no box */
+        .slide-icon {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #2563eb;
+            background: transparent;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        /* Geometric line decoration behind icon */
+        .slide-icon::before {
+            content: '';
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            border: 2px solid #e0e7ff;
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .slide-list-heading {
+            font-size: 1.4rem;
+            margin: 0;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.3;
+        }
+
+        .slide-list-text {
+            font-size: 1rem;
+            margin: 0;
+            line-height: 1.6;
+            color: rgba(0, 0, 0, 0.6);
+            max-width: 320px;
+        }
+
+        /* Responsive adjustments for smaller counts */
+        .slide-list[data-count="3"] .slide-card,
+        .slide-list[data-count="4"] .slide-card {
+            gap: 20px;
+        }
+
+        .slide-list[data-count="3"] .slide-icon,
+        .slide-list[data-count="4"] .slide-icon {
+            width: 64px;
+            height: 64px;
+            font-size: 2.2rem;
+        }
+
+        .slide-list[data-count="3"] .slide-icon::before,
+        .slide-list[data-count="4"] .slide-icon::before {
+            width: 72px;
+            height: 72px;
+        }
+
+        .slide-list[data-count="3"] .slide-list-heading,
+        .slide-list[data-count="4"] .slide-list-heading {
+            font-size: 1.5rem;
+        }
+
+        .slide-list[data-count="3"] .slide-list-text,
+        .slide-list[data-count="4"] .slide-list-text {
+            font-size: 1.05rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-root" id="slideRoot">
+        <header id="slideHeader">
+            <h1 class="slide-title">Core Methodologies</h1>
+            <div class="slide-accent"></div>
+            <p class="slide-subtitle">A comprehensive framework designed to optimize organizational performance through
+                iterative scaling and robust security protocols.</p>
+        </header>
+
+        <div class="slide-content">
+            <ul class="slide-list" id="slideList">
+                <li class="slide-card">
+                    <div class="slide-icon"><i class="ri-flashlight-line"></i></div>
+                    <h3 class="slide-list-heading">Rapid Scaling</h3>
+                    <p class="slide-list-text">Optimizing infrastructure to handle increased demand seamlessly without
+                        performance degradation.</p>
+                </li>
+                <li class="slide-card">
+                    <div class="slide-icon"><i class="ri-shield-check-line"></i></div>
+                    <h3 class="slide-list-heading">Data Privacy</h3>
+                    <p class="slide-list-text">Ensuring all user information is encrypted and protected through
+                        state-of-the-art security layers.</p>
+                </li>
+                <li class="slide-card">
+                    <div class="slide-icon"><i class="ri-global-line"></i></div>
+                    <h3 class="slide-list-heading">Global Reach</h3>
+                    <p class="slide-list-text">Connecting with users across every continent effortlessly using
+                        distributed edge computing nodes.</p>
+                </li>
+                <li class="slide-card">
+                    <div class="slide-icon"><i class="ri-speed-line"></i></div>
+                    <h3 class="slide-list-heading">Fast Execution</h3>
+                    <p class="slide-list-text">Delivering results with high efficiency and low latency, powered by
+                        high-performance architecture.</p>
+                </li>
+                <li class="slide-card">
+                    <div class="slide-icon"><i class="ri-stack-line"></i></div>
+                    <h3 class="slide-list-heading">Layered Security</h3>
+                    <p class="slide-list-text">Protecting critical assets with multiple tiers of verification and
+                        real-time threat monitoring.</p>
+                </li>
+                <li class="slide-card">
+                    <div class="slide-icon"><i class="ri-bar-chart-grouped-line"></i></div>
+                    <h3 class="slide-list-heading">Growth Analytics</h3>
+                    <p class="slide-list-text">Tracking performance metrics with precision and clarity to drive
+                        data-informed decision making.</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateLayout() {
+            const list = document.getElementById('slideList');
+            const root = document.getElementById('slideRoot');
+            if (list) {
+                const count = list.children.length;
+                list.setAttribute('data-count', count);
+                root.setAttribute('data-count', count);
+            }
+        }
+        updateLayout();
+        new MutationObserver(updateLayout).observe(document.getElementById('slideList'), { childList: true });
+    </script>
+</body>
+
+</html>

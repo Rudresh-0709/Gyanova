@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Title + Bullets + Image</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: white;
+        }
+
+        /* =========================
+           ROOT LAYOUT
+           ========================= */
+        .slide-root {
+            height: 100%;
+            padding: 60px 80px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* =========================
+           HEADER
+           ========================= */
+        header {
+            margin-bottom: 40px;
+            flex-shrink: 0;
+        }
+
+        .slide-title {
+            font-size: 4rem;
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .slide-accent {
+            width: 72px;
+            height: 4px;
+            margin: 16px 0;
+            background: #000;
+        }
+
+        .slide-subtitle {
+            font-size: 1.4rem;
+            max-width: 800px;
+            color: rgba(0, 0, 0, 0.6);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* =========================
+           MAIN CONTENT (TWO COLUMNS)
+           ========================= */
+        .slide-content {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            gap: 60px;
+            align-items: stretch;
+        }
+
+        /* LEFT COLUMN: Bullets */
+        .slide-bullets {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 24px;
+            min-width: 0;
+        }
+
+        /* RIGHT COLUMN: Image with accent lines */
+        .slide-image-wrapper {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Accent line - top right */
+        .slide-image-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            width: 80px;
+            height: 4px;
+            background: #000;
+        }
+
+        /* Accent line - bottom left vertical */
+        .slide-image-wrapper::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: -12px;
+            width: 4px;
+            height: 80px;
+            background: #000;
+        }
+
+        .slide-image-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .slide-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* =========================
+           BULLET CARDS
+           ========================= */
+        .slide-card {
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 16px;
+            padding: 24px 28px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            box-sizing: border-box;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .slide-card-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .slide-list-heading {
+            font-size: 1.7rem;
+            margin: 0 0 8px 0;
+            line-height: 1.2;
+            font-weight: 700;
+        }
+
+        .slide-list-text {
+            font-size: 1.2rem;
+            margin: 0;
+            line-height: 1.4;
+            color: rgba(0, 0, 0, 0.7);
+        }
+
+        .slide-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.5rem;
+        }
+
+        /* =========================
+           SCALING FOR COUNT
+           ========================= */
+        /* 1-2 items: spacious */
+        .slide-bullets[data-count="1"] .slide-card,
+        .slide-bullets[data-count="2"] .slide-card {
+            padding: 28px 32px;
+        }
+
+        .slide-bullets[data-count="1"] .slide-list-heading,
+        .slide-bullets[data-count="2"] .slide-list-heading {
+            font-size: 1.9rem;
+        }
+
+        .slide-bullets[data-count="1"] .slide-list-text,
+        .slide-bullets[data-count="2"] .slide-list-text {
+            font-size: 1.3rem;
+        }
+
+        .slide-bullets[data-count="1"] .slide-icon,
+        .slide-bullets[data-count="2"] .slide-icon {
+            width: 56px;
+            height: 56px;
+            font-size: 1.7rem;
+        }
+
+        .slide-bullets[data-count="1"],
+        .slide-bullets[data-count="2"] {
+            gap: 28px;
+        }
+
+        /* 3 items */
+        .slide-bullets[data-count="3"] .slide-card {
+            padding: 22px 26px;
+        }
+
+        .slide-bullets[data-count="3"] .slide-list-heading {
+            font-size: 1.6rem;
+        }
+
+        .slide-bullets[data-count="3"] {
+            gap: 22px;
+        }
+
+        /* 4 items: compact */
+        .slide-bullets[data-count="4"] .slide-card {
+            padding: 20px 24px;
+            gap: 16px;
+        }
+
+        .slide-bullets[data-count="4"] .slide-list-heading {
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+
+        .slide-bullets[data-count="4"] .slide-list-text {
+            font-size: 1.1rem;
+        }
+
+        .slide-bullets[data-count="4"] .slide-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.4rem;
+        }
+
+        .slide-bullets[data-count="4"] {
+            gap: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-root">
+        <header>
+            <h1 class="slide-title">The Future of Digital Education</h1>
+            <div class="slide-accent"></div>
+            <p class="slide-subtitle">Exploring the next frontier of pedagogical innovation</p>
+        </header>
+
+        <div class="slide-content">
+            <!-- LEFT: Bullet Points -->
+            <div class="slide-bullets" id="slideBullets">
+                <div class="slide-card">
+                    <div class="slide-icon"><i class="ri-focus-3-line"></i></div>
+                    <div class="slide-card-content">
+                        <h3 class="slide-list-heading">Adaptive Learning</h3>
+                        <p class="slide-list-text">Tailoring educational paths to individual student needs.</p>
+                    </div>
+                </div>
+                <div class="slide-card">
+                    <div class="slide-icon"><i class="ri-lightbulb-line"></i></div>
+                    <div class="slide-card-content">
+                        <h3 class="slide-list-heading">Interactive Content</h3>
+                        <p class="slide-list-text">Engaging multimedia experiences that enhance retention.</p>
+                    </div>
+                </div>
+                <div class="slide-card">
+                    <div class="slide-icon"><i class="ri-bar-chart-box-line"></i></div>
+                    <div class="slide-card-content">
+                        <h3 class="slide-list-heading">Real-time Analytics</h3>
+                        <p class="slide-list-text">Track progress and optimize learning outcomes.</p>
+                    </div>
+                </div>
+                <div class="slide-card">
+                    <div class="slide-icon"><i class="ri-global-line"></i></div>
+                    <div class="slide-card-content">
+                        <h3 class="slide-list-heading">Global Access</h3>
+                        <p class="slide-list-text">Breaking barriers with worldwide accessibility.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Image with accent lines -->
+            <div class="slide-image-wrapper">
+                <div class="slide-image-container">
+                    <img class="slide-image"
+                        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop"
+                        alt="Students collaborating on digital devices" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateLayout() {
+            const bullets = document.getElementById('slideBullets');
+            if (bullets) {
+                const count = bullets.children.length;
+                bullets.setAttribute('data-count', count);
+            }
+        }
+        updateLayout();
+        new MutationObserver(updateLayout).observe(document.getElementById('slideBullets'), { childList: true });
+    </script>
+</body>
+
+</html>

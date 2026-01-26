@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Title + Bullet Cards</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: white;
+        }
+
+        .slide-root {
+            height: 100%;
+            padding: 80px 100px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: padding 0.3s ease;
+        }
+
+        .slide-root[data-count="4"],
+        .slide-root[data-count="5"],
+        .slide-root[data-count="6"] {
+            padding: 30px 50px;
+        }
+
+        .slide-root[data-count="7"],
+        .slide-root[data-count="8"],
+        .slide-root[data-count="9"],
+        .slide-root[data-count="10"],
+        .slide-root[data-count="11"],
+        .slide-root[data-count="12"] {
+            padding: 30px 40px;
+        }
+
+        .slide-content {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-root[data-count="5"] .slide-content,
+        .slide-root[data-count="6"] .slide-content,
+        .slide-root[data-count="7"] .slide-content,
+        .slide-root[data-count="8"] .slide-content,
+        .slide-root[data-count="9"] .slide-content,
+        .slide-root[data-count="10"] .slide-content,
+        .slide-root[data-count="11"] .slide-content,
+        .slide-root[data-count="12"] .slide-content {
+            justify-content: flex-start;
+        }
+
+        .slide-list {
+            display: grid;
+            gap: 60px;
+            justify-content: center;
+            width: 100%;
+            margin: 0 auto;
+            list-style: none;
+            padding: 0;
+            min-height: 0;
+        }
+
+        /* =========================
+           BLOB CARD - Uses ::before for blob shape
+           ========================= */
+        .slide-card {
+            position: relative;
+            padding: 100px 70px 60px 70px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            box-sizing: border-box;
+            z-index: 1;
+            min-height: 240px;
+            justify-content: flex-start;
+        }
+
+        /* Blob background via pseudo-element */
+        .slide-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: #f0f4f8;
+            z-index: -1;
+            /* Using very soft, chunky blob shapes to ensure content containment */
+            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
+        }
+
+        /* Varied organic blob shapes - making them distinct but maintaining fullness at corners */
+        .slide-card:nth-child(1)::before {
+            border-radius: 65% 35% 50% 50% / 45% 45% 55% 55%;
+            transform: rotate(-2deg);
+        }
+
+        .slide-card:nth-child(2)::before {
+            border-radius: 40% 60% 65% 35% / 60% 40% 60% 40%;
+            transform: rotate(1deg);
+        }
+
+        .slide-card:nth-child(3)::before {
+            border-radius: 55% 45% 40% 60% / 40% 60% 45% 55%;
+            transform: rotate(-1deg);
+        }
+
+        .slide-card:nth-child(4)::before {
+            border-radius: 45% 55% 55% 45% / 55% 45% 60% 40%;
+            transform: rotate(2deg);
+        }
+
+        .slide-card:nth-child(5)::before {
+            border-radius: 60% 40% 30% 70% / 50% 50% 35% 65%;
+            transform: rotate(-3deg);
+        }
+
+        .slide-card:nth-child(6)::before {
+            border-radius: 35% 65% 60% 40% / 70% 30% 65% 35%;
+            transform: rotate(3deg);
+        }
+
+        .slide-card:nth-child(7)::before {
+            border-radius: 50% 50% 65% 35% / 40% 60% 40% 60%;
+            transform: rotate(-2deg);
+        }
+
+        .slide-card:nth-child(8)::before {
+            border-radius: 65% 35% 45% 55% / 35% 65% 55% 45%;
+            transform: rotate(1deg);
+        }
+
+        .slide-card:nth-child(9)::before {
+            border-radius: 40% 60% 55% 45% / 65% 35% 50% 50%;
+            transform: rotate(-1deg);
+        }
+
+        .slide-card:nth-child(10)::before {
+            border-radius: 55% 45% 40% 60% / 45% 55% 70% 30%;
+            transform: rotate(2deg);
+        }
+
+        .slide-card:nth-child(11)::before {
+            border-radius: 48% 52% 55% 45% / 35% 65% 48% 52%;
+            transform: rotate(-2deg);
+        }
+
+        .slide-card:nth-child(12)::before {
+            border-radius: 52% 48% 45% 55% / 65% 35% 52% 48%;
+            transform: rotate(3deg);
+        }
+
+        .slide-list-heading {
+            font-size: 1.5rem;
+            margin: 0;
+            line-height: 1.2;
+            font-weight: 700;
+        }
+
+        .slide-list-text {
+            font-size: 1.1rem;
+            margin: 0;
+            line-height: 1.4;
+            color: rgba(0, 0, 0, 0.65);
+        }
+
+        .slide-icon {
+            position: absolute;
+            top: 45px;
+            left: 70px;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: #1a1a2e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            z-index: 2;
+        }
+
+        /* Count 1-3 */
+        .slide-list[data-count="1"],
+        .slide-list[data-count="2"],
+        .slide-list[data-count="3"] {
+            grid-template-columns: repeat(var(--count, 3), minmax(280px, 1fr));
+            max-width: 1200px;
+        }
+
+        /* Increase blob size for 3 items */
+        .slide-list[data-count="3"] .slide-card {
+            padding: 110px 75px 65px 75px;
+            min-height: 260px;
+        }
+
+        .slide-list[data-count="3"] .slide-icon {
+            top: 50px;
+            left: 75px;
+            width: 52px;
+            height: 52px;
+            font-size: 1.5rem;
+        }
+
+        .slide-list[data-count="3"] .slide-list-heading {
+            font-size: 1.7rem;
+        }
+
+        .slide-list[data-count="3"] .slide-list-text {
+            font-size: 1.2rem;
+        }
+
+        /* Count 4: 2x2 */
+        .slide-list[data-count="4"] {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 1000px;
+        }
+
+        /* Count 5: 2-1-2 Staggered Layout (1 centered in middle row, 4 around) */
+        .slide-list[data-count="5"] {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-width: 900px;
+        }
+
+        .slide-list[data-count="5"] .slide-card {
+            padding: 65px 45px 25px 45px;
+            min-height: 150px;
+            gap: 12px;
+        }
+
+        /* Center the 3rd blob in its own row for 2-1-2 layout */
+        .slide-list[data-count="5"] .slide-card:nth-child(3) {
+            grid-column: 1 / -1;
+            justify-self: center;
+            width: calc(50% - 6px);
+        }
+
+        /* Adjust icon and text for 5-blob layout */
+        .slide-list[data-count="5"] .slide-icon {
+            top: 25px;
+            left: 50px;
+            width: 38px;
+            height: 38px;
+            font-size: 1.15rem;
+        }
+
+        .slide-list[data-count="5"] .slide-list-heading {
+            font-size: 1.25rem;
+        }
+
+        .slide-list[data-count="5"] .slide-list-text {
+            font-size: 0.95rem;
+            line-height: 1.3;
+        }
+
+        /* Count 6 */
+        .slide-list[data-count="6"] {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 16px;
+            height: 100%;
+            align-content: stretch;
+        }
+
+        .slide-list[data-count="6"] .slide-card {
+            padding: 95px 55px 35px 55px;
+        }
+
+        .slide-list[data-count="6"] .slide-list-heading {
+            font-size: 1.35rem;
+        }
+
+        .slide-list[data-count="6"] .slide-list-text {
+            font-size: 1rem;
+        }
+
+        /* Count 7-9 */
+        .slide-list[data-count="7"],
+        .slide-list[data-count="8"],
+        .slide-list[data-count="9"] {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 12px;
+            height: 100%;
+            align-content: stretch;
+        }
+
+        [data-count="7"] .slide-card,
+        [data-count="8"] .slide-card,
+        [data-count="9"] .slide-card {
+            padding: 90px 50px 30px 50px;
+            min-height: auto;
+        }
+
+        [data-count="7"] .slide-list-heading,
+        [data-count="8"] .slide-list-heading,
+        [data-count="9"] .slide-list-heading {
+            font-size: 1.2rem;
+        }
+
+        [data-count="7"] .slide-list-text,
+        [data-count="8"] .slide-list-text,
+        [data-count="9"] .slide-list-text {
+            font-size: 0.95rem;
+        }
+
+        [data-count="7"] .slide-icon,
+        [data-count="8"] .slide-icon,
+        [data-count="9"] .slide-icon {
+            width: 32px;
+            height: 32px;
+            font-size: 1rem;
+            top: 40px;
+            left: 60px;
+        }
+
+        /* Count 10-12 */
+        .slide-list[data-count="10"],
+        .slide-list[data-count="11"],
+        .slide-list[data-count="12"] {
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            height: 100%;
+            align-content: stretch;
+        }
+
+        [data-count="10"] .slide-card,
+        [data-count="11"] .slide-card,
+        [data-count="12"] .slide-card {
+            padding: 85px 45px 30px 45px;
+            min-height: auto;
+        }
+
+        [data-count="10"] .slide-list-heading,
+        [data-count="11"] .slide-list-heading,
+        [data-count="12"] .slide-list-heading {
+            font-size: 1.05rem;
+        }
+
+        [data-count="10"] .slide-list-text,
+        [data-count="11"] .slide-list-text,
+        [data-count="12"] .slide-list-text {
+            font-size: 0.85rem;
+        }
+
+        [data-count="10"] .slide-icon,
+        [data-count="11"] .slide-icon,
+        [data-count="12"] .slide-icon {
+            width: 28px;
+            height: 28px;
+            font-size: 0.9rem;
+            top: 35px;
+            left: 55px;
+        }
+
+        /* HEADER STYLING - CENTERED */
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+            transition: margin-bottom 0.3s ease;
+        }
+
+        .slide-title {
+            font-size: 4.2rem;
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            transition: font-size 0.3s ease;
+        }
+
+        .slide-subtitle {
+            font-size: 1.4rem;
+            max-width: 650px;
+            margin: 0 auto;
+            color: rgba(0, 0, 0, 0.6);
+            line-height: 1.5;
+            transition: font-size 0.3s ease;
+        }
+
+        .slide-accent {
+            width: 72px;
+            height: 4px;
+            margin: 16px auto;
+            background: #000;
+        }
+
+        .slide-root[data-count="4"] .slide-title,
+        .slide-root[data-count="5"] .slide-title,
+        .slide-root[data-count="6"] .slide-title {
+            font-size: 3rem !important;
+        }
+
+        .slide-root[data-count="4"] header,
+        .slide-root[data-count="5"] header,
+        .slide-root[data-count="6"] header {
+            margin-bottom: 16px !important;
+        }
+
+        .slide-root[data-count="5"] .slide-accent,
+        .slide-root[data-count="6"] .slide-accent {
+            margin: 10px auto !important;
+        }
+
+        .slide-root[data-count="5"] .slide-subtitle,
+        .slide-root[data-count="6"] .slide-subtitle {
+            font-size: 1.3rem !important;
+        }
+
+        [data-count="7"] .slide-title,
+        [data-count="8"] .slide-title,
+        [data-count="9"] .slide-title,
+        [data-count="10"] .slide-title,
+        [data-count="11"] .slide-title,
+        [data-count="12"] .slide-title {
+            font-size: 2.8rem !important;
+        }
+
+        [data-count="7"] header,
+        [data-count="8"] header,
+        [data-count="9"] header,
+        [data-count="10"] header,
+        [data-count="11"] header,
+        [data-count="12"] header {
+            margin-bottom: 16px !important;
+        }
+
+        [data-count="7"] .slide-subtitle,
+        [data-count="8"] .slide-subtitle,
+        [data-count="9"] .slide-subtitle,
+        [data-count="10"] .slide-subtitle,
+        [data-count="11"] .slide-subtitle,
+        [data-count="12"] .slide-subtitle {
+            font-size: 1.2rem !important;
+        }
+
+        [data-count="7"] .slide-accent,
+        [data-count="8"] .slide-accent,
+        [data-count="9"] .slide-accent,
+        [data-count="10"] .slide-accent,
+        [data-count="11"] .slide-accent,
+        [data-count="12"] .slide-accent {
+            margin: 8px auto !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-root" id="slideRoot">
+        <header id="slideHeader">
+            <h1 class="slide-title">The Future of Digital Education</h1>
+            <div class="slide-accent"></div>
+            <p class="slide-subtitle">Exploring the next frontier of pedagogical innovation</p>
+        </header>
+
+        <div class="slide-content">
+            <ul class="slide-list" id="slideList">
+                <li class="slide-card">
+                    <div class="slide-icon"><i class="ri-focus-3-line"></i></div>
+                    <h3 class="slide-list-heading">Adaptive Learning</h3>
+                    <p class="slide-list-text">Tailoring educational paths to individual student needs.</p>
+                </li>
+                <li class="slide-card">
+                    <div class="slide-icon"><i class="ri-focus-3-line"></i></div>
+                    <h3 class="slide-list-heading">Adaptive Learning</h3>
+                    <p class="slide-list-text">Tailoring educational paths to individual student needs.</p>
+                </li>
+                <li class="slide-card">
+                    <div class="slide-icon"><i class="ri-focus-3-line"></i></div>
+                    <h3 class="slide-list-heading">Adaptive Learning</h3>
+                    <p class="slide-list-text">Tailoring educational paths to individual student needs.</p>
+                </li>
+
+
+
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateLayout() {
+            const list = document.getElementById('slideList');
+            const root = document.getElementById('slideRoot');
+            if (list) {
+                const count = list.children.length;
+                list.setAttribute('data-count', count);
+                root.setAttribute('data-count', count);
+                list.style.setProperty('--count', Math.min(count, 3));
+
+                if (count >= 5) {
+                    list.style.height = '100%';
+                } else {
+                    list.style.height = 'auto';
+                }
+            }
+        }
+        updateLayout();
+        new MutationObserver(updateLayout).observe(document.getElementById('slideList'), { childList: true });
+    </script>
+</body>
+
+</html>

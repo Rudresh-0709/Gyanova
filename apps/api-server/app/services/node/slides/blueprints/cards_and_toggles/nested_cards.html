@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Nested Cards</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #fafbfc;
+        }
+
+        .slide-root {
+            height: 100%;
+            padding: 35px 60px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .slide-content {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* HEADER */
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .slide-title {
+            font-size: 2.5rem;
+            margin: 0 0 8px 0;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #1a1a1a;
+        }
+
+        .slide-subtitle {
+            font-size: 0.95rem;
+            margin: 0;
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        /* PARENT CARDS GRID */
+        .slide-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            justify-content: center;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            list-style: none;
+            padding: 0;
+        }
+
+        /* Always horizontal - max 3 cards in a single row */
+        .slide-list[data-count="2"] {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .slide-list[data-count="3"] {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        /* PARENT CARD - Horizontal layout */
+        .slide-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e8ebed;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+            max-height: 500px;
+        }
+
+        /* Parent card header */
+        .slide-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .slide-card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .slide-card-header-content {
+            flex: 1;
+        }
+
+        .slide-card-title {
+            font-size: 1.15rem;
+            margin: 0 0 3px 0;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.3;
+        }
+
+        .slide-card-subtitle {
+            font-size: 0.8rem;
+            margin: 0;
+            color: rgba(0, 0, 0, 0.45);
+            line-height: 1.4;
+        }
+
+        /* NESTED CONTENT - Scrollable if needed */
+        .slide-nested-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .slide-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px 14px;
+            border-left: 2px solid #dee2e6;
+        }
+
+        .slide-section-title {
+            font-size: 0.9rem;
+            margin: 0 0 4px 0;
+            font-weight: 600;
+            color: #2d3748;
+            line-height: 1.3;
+        }
+
+        .slide-section-text {
+            font-size: 0.8rem;
+            margin: 0;
+            color: #5a6c7d;
+            line-height: 1.4;
+        }
+
+        /* Responsive adjustments */
+        .slide-list[data-count="2"] .slide-card {
+            padding: 32px 36px;
+        }
+
+        .slide-list[data-count="4"] .slide-card {
+            padding: 24px 28px;
+        }
+
+        .slide-list[data-count="4"] .slide-section {
+            padding: 14px 16px;
+        }
+
+        .slide-list[data-count="4"] .slide-section-title {
+            font-size: 0.95rem;
+        }
+
+        .slide-list[data-count="4"] .slide-section-text {
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-root" id="slideRoot">
+        <header>
+            <h1 class="slide-title">Product Development Phases</h1>
+            <p class="slide-subtitle">A structured approach to bringing ideas to market</p>
+        </header>
+
+        <div class="slide-content">
+            <ul class="slide-list" id="slideList">
+                <!-- Parent Card 1 -->
+                <li class="slide-card">
+                    <div class="slide-card-header">
+                        <div class="slide-card-icon"><i class="ri-lightbulb-line"></i></div>
+                        <div class="slide-card-header-content">
+                            <h3 class="slide-card-title">Discovery Phase</h3>
+                            <p class="slide-card-subtitle">Understanding user needs and market opportunity</p>
+                        </div>
+                    </div>
+                    <div class="slide-nested-content">
+                        <div class="slide-section">
+                            <h4 class="slide-section-title">Market Research</h4>
+                            <p class="slide-section-text">Analyze target audience demographics, behaviors, and
+                                competitive landscape to identify gaps and opportunities in the market.</p>
+                        </div>
+                        <div class="slide-section">
+                            <h4 class="slide-section-title">User Interviews</h4>
+                            <p class="slide-section-text">Conduct in-depth conversations with potential customers to
+                                gather authentic insights about their pain points and expectations.</p>
+                        </div>
+                        <div class="slide-section">
+                            <h4 class="slide-section-title">Problem Validation</h4>
+                            <p class="slide-section-text">Confirm that the identified problem is significant enough to
+                                warrant a solution and has a viable path to market.</p>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- Parent Card 2 -->
+                <li class="slide-card">
+                    <div class="slide-card-header">
+                        <div class="slide-card-icon"><i class="ri-palette-line"></i></div>
+                        <div class="slide-card-header-content">
+                            <h3 class="slide-card-title">Design Phase</h3>
+                            <p class="slide-card-subtitle">Creating intuitive experiences through iterative design</p>
+                        </div>
+                    </div>
+                    <div class="slide-nested-content">
+                        <div class="slide-section">
+                            <h4 class="slide-section-title">Wireframing</h4>
+                            <p class="slide-section-text">Develop low-fidelity sketches that map out user journeys and
+                                core interactions without getting distracted by visual details.</p>
+                        </div>
+                        <div class="slide-section">
+                            <h4 class="slide-section-title">Prototyping</h4>
+                            <p class="slide-section-text">Build interactive mockups that simulate the final product
+                                experience, allowing for early testing and validation of design concepts.</p>
+                        </div>
+                        <div class="slide-section">
+                            <h4 class="slide-section-title">Usability Testing</h4>
+                            <p class="slide-section-text">Validate design decisions by observing real users interacting
+                                with prototypes and gathering feedback for refinement.</p>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- Parent Card 3 -->
+                <li class="slide-card">
+                    <div class="slide-card-header">
+                        <div class="slide-card-icon"><i class="ri-code-box-line"></i></div>
+                        <div class="slide-card-header-content">
+                            <h3 class="slide-card-title">Development Phase</h3>
+                            <p class="slide-card-subtitle">Building and refining the product for launch</p>
+                        </div>
+                    </div>
+                    <div class="slide-nested-content">
+                        <div class="slide-section">
+                            <h4 class="slide-section-title">MVP Building</h4>
+                            <p class="slide-section-text">Develop the minimum set of core features needed to deliver
+                                value and test market demand with early adopters.</p>
+                        </div>
+                        <div class="slide-section">
+                            <h4 class="slide-section-title">Quality Assurance</h4>
+                            <p class="slide-section-text">Rigorously test all functionality to identify and fix critical
+                                bugs before exposing the product to users.</p>
+                        </div>
+                        <div class="slide-section">
+                            <h4 class="slide-section-title">Beta Testing</h4>
+                            <p class="slide-section-text">Release to a select group of users to gather real-world
+                                feedback and ensure the product performs as intended.</p>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateLayout() {
+            const list = document.getElementById('slideList');
+            const root = document.getElementById('slideRoot');
+            if (list) {
+                const count = list.children.length;
+                list.setAttribute('data-count', count);
+                root.setAttribute('data-count', count);
+            }
+        }
+        updateLayout();
+        new MutationObserver(updateLayout).observe(document.getElementById('slideList'), { childList: true });
+    </script>
+</body>
+
+</html>
