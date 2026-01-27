@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Timeline</title>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #fafbfc;
+        }
+
+        .slide-root {
+            height: 100%;
+            padding: 40px 60px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Geometric decorative elements */
+        .slide-root::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #3b82f615 0%, transparent 100%);
+            border-bottom-left-radius: 100%;
+        }
+
+        .slide-root::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(45deg, #2563eb15 0%, transparent 100%);
+            border-top-right-radius: 100%;
+        }
+
+        /* Corner geometric patterns */
+        .slide-geometric-top {
+            position: absolute;
+            top: 20px;
+            right: 50px;
+            width: 60px;
+            height: 60px;
+            border-top: 3px solid #3b82f630;
+            border-right: 3px solid #3b82f630;
+        }
+
+        .slide-geometric-bottom {
+            position: absolute;
+            bottom: 20px;
+            left: 50px;
+            width: 50px;
+            height: 50px;
+            border-bottom: 3px solid #2563eb30;
+            border-left: 3px solid #2563eb30;
+        }
+
+        /* HEADER */
+        header {
+            margin-bottom: 35px;
+            margin-left: 150px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .slide-title {
+            font-size: 2.8rem;
+            margin: 0 0 16px 0;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #1a1a1a;
+            line-height: 1.2;
+        }
+
+        /* Blue accent line under title */
+        .slide-accent {
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 2px;
+        }
+
+        /* CONTENT AREA */
+        .slide-content {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        /* TIMELINE CONTAINER */
+        .slide-timeline {
+            max-width: 900px;
+            margin: 0 0 0 150px;
+            position: relative;
+            padding-left: 50px;
+            width: 100%;
+        }
+
+        /* TIMELINE ITEM - Base styles */
+        .slide-timeline-item {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .slide-timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .slide-timeline-item:last-child .slide-timeline-line {
+            display: none;
+        }
+
+        /* Responsive spacing for 2 items */
+        .slide-timeline[data-count="2"] .slide-timeline-item {
+            margin-bottom: 50px;
+        }
+
+        /* Responsive spacing for 3 items */
+        .slide-timeline[data-count="3"] .slide-timeline-item {
+            margin-bottom: 35px;
+        }
+
+        /* Responsive spacing for 4 items */
+        .slide-timeline[data-count="4"] .slide-timeline-item {
+            margin-bottom: 22px;
+        }
+
+        /* Timeline dot */
+        .slide-timeline-dot {
+            position: absolute;
+            left: -50px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #d1d5db;
+            border: 3px solid #fafbfc;
+            z-index: 2;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .slide-timeline-item.active .slide-timeline-dot {
+            background: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+            transform: scale(1.15);
+        }
+
+        /* Connecting line segment */
+        .slide-timeline-line {
+            position: absolute;
+            left: -41px;
+            width: 2px;
+            background: #e5e7eb;
+            transition: background 0.3s ease;
+            z-index: 1;
+        }
+
+        /* Line heights for different counts */
+        .slide-timeline[data-count="2"] .slide-timeline-line {
+            top: 30px;
+            height: calc(100% + 45px);
+        }
+
+        .slide-timeline[data-count="3"] .slide-timeline-line {
+            top: 30px;
+            height: calc(100% + 30px);
+        }
+
+        .slide-timeline[data-count="4"] .slide-timeline-line {
+            top: 30px;
+            height: calc(100% + 18px);
+        }
+
+        .slide-timeline-item.active .slide-timeline-line {
+            background: linear-gradient(180deg, #3b82f6 0%, #60a5fa 100%);
+        }
+
+        /* TIMELINE CONTENT */
+        .slide-timeline-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Title - responsive sizing */
+        .slide-timeline-title {
+            font-weight: 600;
+            color: #9ca3af;
+            margin: 0 0 8px 0;
+            line-height: 1.3;
+            transition: color 0.3s ease;
+        }
+
+        .slide-timeline[data-count="2"] .slide-timeline-title {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+
+        .slide-timeline[data-count="3"] .slide-timeline-title {
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+        }
+
+        .slide-timeline[data-count="4"] .slide-timeline-title {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .slide-timeline-item.active .slide-timeline-title {
+            color: #1f2937;
+        }
+
+        /* Text - responsive sizing */
+        .slide-timeline-text {
+            line-height: 1.65;
+            color: #d1d5db;
+            margin: 0;
+            transition: color 0.3s ease;
+        }
+
+        .slide-timeline[data-count="2"] .slide-timeline-text {
+            font-size: 1.05rem;
+            line-height: 1.75;
+        }
+
+        .slide-timeline[data-count="3"] .slide-timeline-text {
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .slide-timeline[data-count="4"] .slide-timeline-text {
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        .slide-timeline-item.active .slide-timeline-text {
+            color: #4b5563;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-root">
+        <div class="slide-geometric-top"></div>
+        <div class="slide-geometric-bottom"></div>
+
+        <header>
+            <h1 class="slide-title">Evolutionary Milestones</h1>
+            <div class="slide-accent"></div>
+        </header>
+
+        <div class="slide-content">
+            <div class="slide-timeline" id="slideTimeline">
+                <div class="slide-timeline-item active" data-index="0">
+                    <div class="slide-timeline-dot"></div>
+                    <div class="slide-timeline-line"></div>
+                    <div class="slide-timeline-content">
+                        <h2 class="slide-timeline-title">Phase 01: Initial Conceptualization</h2>
+                        <p class="slide-timeline-text">In this foundational stage, the core objectives were identified
+                            through rigorous stakeholder interviews and market analysis. We focused on establishing a
+                            clear value proposition that addressed existing pain points while ensuring technical
+                            feasibility for the long-term roadmap. This phase concluded with a validated architectural
+                            blueprint and a preliminary design system.</p>
+                    </div>
+                </div>
+
+                <div class="slide-timeline-item" data-index="1">
+                    <div class="slide-timeline-dot"></div>
+                    <div class="slide-timeline-line"></div>
+                    <div class="slide-timeline-content">
+                        <h2 class="slide-timeline-title">Phase 02: Iterative Development Cycle</h2>
+                        <p class="slide-timeline-text">Leveraging agile methodologies, the team executed multiple
+                            two-week sprints to build out the minimum viable product. Continuous integration and
+                            automated testing protocols were implemented to maintain high code quality standards. User
+                            feedback loops were integrated into the development process, allowing for rapid adjustments
+                            to the user interface and overall experience based on real-world usage.</p>
+                    </div>
+                </div>
+                <div class="slide-timeline-item" data-index="1">
+                    <div class="slide-timeline-dot"></div>
+                    <div class="slide-timeline-line"></div>
+                    <div class="slide-timeline-content">
+                        <h2 class="slide-timeline-title">Phase 02: Iterative Development Cycle</h2>
+                        <p class="slide-timeline-text">Leveraging agile methodologies, the team executed multiple
+                            two-week sprints to build out the minimum viable product. Continuous integration and
+                            automated testing protocols were implemented to maintain high code quality standards. User
+                            feedback loops were integrated into the development process, allowing for rapid adjustments
+                            to the user interface and overall experience based on real-world usage.</p>
+                    </div>
+                </div>
+
+                <div class="slide-timeline-item" data-index="2">
+                    <div class="slide-timeline-dot"></div>
+                    <div class="slide-timeline-line"></div>
+                    <div class="slide-timeline-content">
+                        <h2 class="slide-timeline-title">Phase 03: Scaling & Global Optimization</h2>
+                        <p class="slide-timeline-text">The final transition involved migrating to a distributed cloud
+                            infrastructure to support horizontal scaling across international regions. Performance
+                            bottlenecks were systematically addressed through advanced caching strategies and database
+                            optimization. The system now supports high-concurrency traffic while maintaining sub-second
+                            latency, providing a robust platform for future feature expansions and enterprise-level
+                            integration.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const timeline = document.getElementById('slideTimeline');
+        const timelineItems = document.querySelectorAll('.slide-timeline-item');
+
+        // Set data-count attribute based on number of items
+        timeline.setAttribute('data-count', timelineItems.length);
+
+        timelineItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active class from all items
+                timelineItems.forEach(i => i.classList.remove('active'));
+
+                // Add active class to clicked item
+                item.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

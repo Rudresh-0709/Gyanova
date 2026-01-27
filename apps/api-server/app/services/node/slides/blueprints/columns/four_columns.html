@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Four Columns</title>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #fafbfc;
+        }
+
+        .slide-root {
+            height: 100%;
+            padding: 35px 50px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Geometric decorative elements */
+        .slide-root::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #3b82f615 0%, transparent 100%);
+            border-bottom-left-radius: 100%;
+        }
+
+        .slide-root::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(45deg, #2563eb15 0%, transparent 100%);
+            border-top-right-radius: 100%;
+        }
+
+        /* Corner geometric patterns */
+        .slide-geometric-top {
+            position: absolute;
+            top: 20px;
+            right: 50px;
+            width: 60px;
+            height: 60px;
+            border-top: 3px solid #3b82f630;
+            border-right: 3px solid #3b82f630;
+        }
+
+        .slide-geometric-bottom {
+            position: absolute;
+            bottom: 20px;
+            left: 50px;
+            width: 50px;
+            height: 50px;
+            border-bottom: 3px solid #2563eb30;
+            border-left: 3px solid #2563eb30;
+        }
+
+        /* HEADER */
+        header {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .slide-title {
+            font-size: 2.5rem;
+            margin: 0 0 16px 0;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #1a1a1a;
+            line-height: 1.2;
+            max-width: 900px;
+        }
+
+        /* Blue accent line under title */
+        .slide-accent {
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 2px;
+            margin-bottom: 8px;
+        }
+
+        .slide-subtitle {
+            font-size: 1rem;
+            margin: 0;
+            color: rgba(0, 0, 0, 0.5);
+            margin-top: 12px;
+        }
+
+        /* COLUMNS CONTAINER */
+        .slide-content {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .slide-columns {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            width: 100%;
+        }
+
+        /* INDIVIDUAL COLUMN */
+        .slide-column {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            padding: 24px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .slide-column:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        /* Decorative corner element on each column */
+        .slide-column::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background-image: radial-gradient(circle, #3b82f620 1px, transparent 1px);
+            background-size: 5px 5px;
+        }
+
+        .slide-column-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 12px 0;
+            line-height: 1.3;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .slide-column-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 35px;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6 0%, transparent 100%);
+        }
+
+        .slide-column-text {
+            font-size: 0.95rem;
+            line-height: 1.65;
+            color: #4b5563;
+            margin: 0;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-root">
+        <div class="slide-geometric-top"></div>
+        <div class="slide-geometric-bottom"></div>
+
+        <header>
+            <h1 class="slide-title">Four Key Pillars of Modern Education</h1>
+            <div class="slide-accent"></div>
+        </header>
+
+        <div class="slide-content">
+            <div class="slide-columns">
+                <div class="slide-column">
+                    <h2 class="slide-column-title">Critical Thinking</h2>
+                    <p class="slide-column-text">Developing analytical skills that enable students to evaluate
+                        information objectively, question assumptions, and form well-reasoned conclusions through
+                        systematic reasoning and evidence-based analysis.</p>
+                </div>
+
+                <div class="slide-column">
+                    <h2 class="slide-column-title">Creativity</h2>
+                    <p class="slide-column-text">Fostering innovative thinking and original problem-solving approaches
+                        that encourage students to explore new ideas, express themselves uniquely, and develop novel
+                        solutions to complex challenges.</p>
+                </div>
+
+                <div class="slide-column">
+                    <h2 class="slide-column-title">Collaboration</h2>
+                    <p class="slide-column-text">Building interpersonal skills and teamwork abilities that prepare
+                        students to work effectively with diverse groups, communicate ideas clearly, and contribute
+                        positively to collective goals.</p>
+                </div>
+
+                <div class="slide-column">
+                    <h2 class="slide-column-title">Communication</h2>
+                    <p class="slide-column-text">Mastering the art of expressing ideas clearly and persuasively across
+                        various mediums, listening actively to others, and adapting messages to different audiences and
+                        contexts effectively.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

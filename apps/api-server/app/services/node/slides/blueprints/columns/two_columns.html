@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Two Columns</title>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #fafbfc;
+        }
+
+        .slide-root {
+            height: 100%;
+            padding: 35px 50px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Geometric decorative elements */
+        .slide-root::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #3b82f615 0%, transparent 100%);
+            border-bottom-left-radius: 100%;
+        }
+
+        .slide-root::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(45deg, #2563eb15 0%, transparent 100%);
+            border-top-right-radius: 100%;
+        }
+
+        /* Corner geometric patterns */
+        .slide-geometric-top {
+            position: absolute;
+            top: 20px;
+            right: 50px;
+            width: 60px;
+            height: 60px;
+            border-top: 3px solid #3b82f630;
+            border-right: 3px solid #3b82f630;
+        }
+
+        .slide-geometric-bottom {
+            position: absolute;
+            bottom: 20px;
+            left: 50px;
+            width: 50px;
+            height: 50px;
+            border-bottom: 3px solid #2563eb30;
+            border-left: 3px solid #2563eb30;
+        }
+
+        /* HEADER */
+        header {
+            margin-bottom: 35px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .slide-title {
+            font-size: 2.5rem;
+            margin: 0 0 16px 0;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #1a1a1a;
+            line-height: 1.2;
+            max-width: 900px;
+        }
+
+        /* Blue accent line under title */
+        .slide-accent {
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 2px;
+            margin-bottom: 8px;
+        }
+
+        .slide-subtitle {
+            font-size: 1rem;
+            margin: 0;
+            color: rgba(0, 0, 0, 0.5);
+            margin-top: 12px;
+        }
+
+        /* COLUMNS CONTAINER */
+        .slide-content {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .slide-columns {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            width: 100%;
+        }
+
+        /* INDIVIDUAL COLUMN */
+        .slide-column {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            padding: 28px 24px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .slide-column:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        /* Decorative corner element on each column */
+        .slide-column::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 30px;
+            height: 30px;
+            background-image: radial-gradient(circle, #3b82f620 1px, transparent 1px);
+            background-size: 6px 6px;
+        }
+
+        .slide-column-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 16px 0;
+            line-height: 1.3;
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .slide-column-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6 0%, transparent 100%);
+        }
+
+        .slide-column-text {
+            font-size: 1.05rem;
+            line-height: 1.75;
+            color: #4b5563;
+            margin: 0;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="slide-root">
+        <div class="slide-geometric-top"></div>
+        <div class="slide-geometric-bottom"></div>
+
+        <header>
+            <h1 class="slide-title">Understanding Key Concepts</h1>
+            <div class="slide-accent"></div>
+        </header>
+
+        <div class="slide-content">
+            <div class="slide-columns">
+                <div class="slide-column">
+                    <h2 class="slide-column-title">Concept One</h2>
+                    <p class="slide-column-text">This section presents the first major concept in detail. The two-column
+                        layout allows for more spacious presentation of each idea, giving room for comprehensive
+                        explanations without overwhelming the reader. The wider columns enable longer paragraphs while
+                        maintaining excellent readability and visual balance across the slide.</p>
+                </div>
+
+                <div class="slide-column">
+                    <h2 class="slide-column-title">Concept Two</h2>
+                    <p class="slide-column-text">This section introduces the second key concept with enough space to
+                        provide context and detailed information. The balanced layout ensures that both concepts receive
+                        equal visual weight, making it easy for learners to compare and contrast the two ideas being
+                        presented side by side.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
