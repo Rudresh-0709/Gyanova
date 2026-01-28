@@ -1,0 +1,63 @@
+﻿
+================================================================================
+INDIVIDUAL LAYER TESTING
+================================================================================
+
+TEST 1: Wikipedia API
+--------------------------------------------------------------------------------
+python : Traceback (most recent call last):
+At line:1 char:1
++ python test_fact_layers.py 2>&1 | Out-File -FilePath layer_test_resul ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last): 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\DATA\Desktop\AI_TUTOR\ai-teacher-app\.venv\Lib\site-packages\requests
+\models.py", line 976, in json
+    return complexjson.loads(self.text, **kwargs)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\chauh\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", 
+line 346, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File 
+"C:\Users\chauh\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", 
+line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"C:\Users\chauh\AppData\Local\Programs\Python\Python313\Lib\json\decoder.py", 
+line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\DATA\Desktop\AI_TUTOR\ai-teacher-app\apps\api-server\app\services\fac
+t_retrieval.py", line 86, in retrieve_from_wikipedia
+    search_data = search_response.json()
+  File "D:\DATA\Desktop\AI_TUTOR\ai-teacher-app\.venv\Lib\site-packages\requests
+\models.py", line 980, in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File 
+"D:\DATA\Desktop\AI_TUTOR\ai-teacher-app\apps\api-server\test_fact_layers.py", 
+line 27, in <module>
+    wiki_result = retrieve_from_wikipedia("Artificial Intelligence")
+  File "D:\DATA\Desktop\AI_TUTOR\ai-teacher-app\apps\api-server\app\services\fac
+t_retrieval.py", line 112, in retrieve_from_wikipedia
+    print(f"   \u26a0 Wikipedia retrieval failed: {e}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\chauh\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1
+252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u26a0' in position 
+3: character maps to <undefined>
