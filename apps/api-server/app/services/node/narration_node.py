@@ -106,6 +106,40 @@ def generate_narration_for_slide(
     slide_purpose = slide.get("slide_purpose", "Definition")
     slide_title = slide.get("slide_title", "Untitled Slide")
 
+    # ⭐ NEW: Extract Blueprint Constraints
+    narration_format = slide.get("narration_format", "points")  # Default to points
+    narration_constraints = slide.get("narration_constraints", {})
+
+    # Build format instructions based on blueprint
+    format_instruction = ""
+    if narration_format == "points":
+        point_range = narration_constraints.get("point_count", [3, 5])
+        if isinstance(point_range, list):
+            format_instruction = (
+                f"Provide {point_range[0]}-{point_range[1]} distinct teaching points."
+            )
+        else:
+            format_instruction = f"Provide exactly {point_range} teaching points."
+    elif narration_format == "paragraph":
+        sentence_range = narration_constraints.get("sentence_count", [3, 5])
+        format_instruction = f"Write {sentence_range[0]}-{sentence_range[1]} natural sentences in paragraph form."
+    elif narration_format == "narrative":
+        sentence_range = narration_constraints.get("sentence_count", [4, 6])
+        format_instruction = f"Provide a detailed narrative with {sentence_range[0]}-{sentence_range[1]} flowing sentences."
+    elif narration_format == "comparative_points":
+        point_range = narration_constraints.get("point_count", [6, 8])
+        format_instruction = (
+            f"Provide {point_range[0]}-{point_range[1]} points comparing both sides."
+        )
+    elif narration_format == "sequential_points":
+        point_range = narration_constraints.get("point_count", [3, 5])
+        format_instruction = f"Provide {point_range[0]}-{point_range[1]} sequential points following the logical flow."
+    else:
+        format_instruction = "Provide 3-5 clear teaching points or sentences."
+
+    constraint_style = narration_constraints.get("style", "")
+    constraint_structure = narration_constraints.get("structure", "")
+
     SYSTEM_PROMPT = f"""
     You are an expert teacher. Your task is to provide a **spoken narration** for an educational slide.
     
@@ -120,10 +154,16 @@ def generate_narration_for_slide(
     - Narration Style (User Preference): {narration_style}
     
     {"🔍 VERIFIED FACTS (Use these for accuracy):\n" + search_results if needs_search else ""}
+    
+    ⭐ BLUEPRINT CONSTRAINTS:
+    - Format Required: {narration_format}
+    - {format_instruction}
+    {f"- Style Guidance: {constraint_style}" if constraint_style else ""}
+    {f"- Structure Note: {constraint_structure}" if constraint_structure else ""}
 
     🧩 NARRATION RULES:
     1. **Spoken Only**: Write exactly what the teacher would say. Do NOT write bullet points or slide text.
-    2. **Length**: 2–4 natural sentences (approx 40–80 words).
+    2. **Format Compliance**: STRICTLY follow the format requirement above ({narration_format}).
     3. **Role-Driven**:
        - 'Introduce': Set the hook, explain why this matters, and define the scope.
        - 'Interpret': Explain the relationships or the 'why' behind what is shown.
@@ -133,7 +173,7 @@ def generate_narration_for_slide(
     4. **Template Aware**: Assume the visual structure (e.g., a {selected_template}) is already on screen. Do NOT describe the layout (e.g., don't say 'On the left we see...'). Instead, explain the logic of the content.
     5. **Style & Difficulty**: Strictly follow the style '{narration_style}' and ensure the complexity matches '{difficulty_level}'.
     
-    � DON'Ts:
+    ⛔ DON'Ts:
     - Do NOT say "In this slide" or "Moving on to...".
     - Do NOT use markdown formatting.
     - Do NOT repeat the slide title.
