@@ -1,0 +1,2456 @@
+{
+  "user_input": "Computer Generations",
+  "topic": "Computer Generations",
+  "granularity": "Focused",
+  "sub_topics": [
+    {
+      "name": "Introduction to Computer Generations",
+      "difficulty": "Beginner",
+      "id": "sub_1_582521"
+    },
+    {
+      "name": "First Generation Computers (1940s-1950s): Vacuum Tubes",
+      "difficulty": "Intermediate",
+      "id": "sub_2_c5c5fe"
+    },
+    {
+      "name": "Second to Fifth Generation Computers (1950s-2000s): Transistors, Integrated Circuits, Microprocessors, and Artificial Intelligence",
+      "difficulty": "Intermediate",
+      "id": "sub_3_650855"
+    },
+    {
+      "name": "Sixth Generation Computers (2000s-present): Emerging Technologies and Future Directions",
+      "difficulty": "Advanced",
+      "id": "sub_4_df4eeb"
+    },
+    {
+      "name": "Comparison and Evolution of Computer Generations",
+      "difficulty": "Intermediate",
+      "id": "sub_5_782c71"
+    }
+  ],
+  "slide_plan": {
+    "sub_1_582521": {
+      "subtopic_name": "Introduction to Computer Generations",
+      "slides": [
+        {
+          "slide_title": "Introduction to Computer Generations",
+          "slide_purpose": "definition",
+          "selected_template": "Title card",
+          "narration_role": "Introduce",
+          "narration_goal": "Learners will understand what computer generations are and why studying them is important for grasping computer evolution.",
+          "reasoning": "Starting with a Title card provides a clear, high-impact introduction to the subtopic and hooks learners with a concise explanation of its relevance.",
+          "slide_id": "sub_1_582521_s1",
+          "blueprint_file": "title_card/default.html",
+          "content_type": "NO_NARRATION_POINTS",
+          "visual_elements": {
+            "heading_badge": "Required (e.g., 'Chapter 1')",
+            "main_title": "1-2 lines, 5-8 words total",
+            "subtitle": "1-2 sentences, 20-40 words",
+            "hero_image": "Required, right-side placement"
+          },
+          "narration_format": "paragraph",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "motivational_hook",
+            "structure": "",
+            "note": "Narration is SEPARATE from visual content - just spoken introduction"
+          },
+          "image_generator": "gemini",
+          "image_generator_reasoning": "The slide covers historical computer generations, requiring accurate depictions of specific hardware (vacuum tubes, transistors, integrated circuits). Gemini provides the high‑precision, historically correct visuals needed.",
+          "requires_high_accuracy": true
+        },
+        {
+          "slide_title": "Overview of the Five Computer Generations",
+          "slide_purpose": "visualization",
+          "selected_template": "Timeline",
+          "narration_role": "Guide",
+          "narration_goal": "Learners will be able to identify the five generations of computers in chronological order along with their key characteristics.",
+          "reasoning": "A timeline is ideal for showing historical progression and helps learners visualize how computer technology has evolved over time.",
+          "slide_id": "sub_1_582521_s2",
+          "blueprint_file": "timeline/default.html",
+          "content_type": "TIMELINE_STEPS",
+          "visual_elements": {
+            "main_title": "Left-aligned, medium size",
+            "timeline_items": {
+              "count": [
+                2,
+                4
+              ],
+              "per_item": {
+                "dot": "Circle on left line",
+                "phase_title": "Bold heading",
+                "description": "Paragraph text, variable length based on count"
+              }
+            }
+          },
+          "narration_format": "sequential_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "chronological",
+            "structure": "One narration point per timeline step",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Key Features of Each Computer Generation",
+          "slide_purpose": "intuition",
+          "selected_template": "Three columns",
+          "narration_role": "Interpret",
+          "narration_goal": "Learners will understand the distinct technological advancements and features that define each generation.",
+          "reasoning": "Using three columns allows categorization of generations (e.g., early, middle, recent) with concise descriptions, making complex information easier to digest visually.",
+          "slide_id": "sub_1_582521_s3",
+          "blueprint_file": "columns/three_columns.html",
+          "content_type": "THREE_COLUMN_CARDS",
+          "visual_elements": {
+            "columns": {
+              "count": 3,
+              "per_column": {
+                "icon_or_number": "Optional",
+                "column_title": "3-4 words",
+                "description": "20-30 words"
+              }
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": 3,
+            "sentence_count": null,
+            "style": "categorical",
+            "structure": "One point per column",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Summary of Computer Generations",
+          "slide_purpose": "reinforcement",
+          "selected_template": "Large bullet list",
+          "narration_role": "Reinforce",
+          "narration_goal": "Learners will consolidate their understanding of the main points about computer generations for review and retention.",
+          "reasoning": "A large bullet list is effective for summarizing and reinforcing key takeaways, ensuring learners leave with a clear grasp of the topic.",
+          "slide_id": "sub_1_582521_s4",
+          "blueprint_file": "title_with_bullets/default.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required, scalable font",
+            "subtitle": "Optional",
+            "bullet_cards": {
+              "icon": "Required for each",
+              "heading": "Bold, 3-6 words",
+              "text": "1-2 sentences per bullet"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              6
+            ],
+            "sentence_count": null,
+            "style": "explanatory",
+            "structure": "Each narration point = one bullet to generate",
+            "note": ""
+          }
+        }
+      ]
+    },
+    "sub_2_c5c5fe": {
+      "subtopic_name": "First Generation Computers (1940s-1950s): Vacuum Tubes",
+      "slides": [
+        {
+          "slide_title": "First Generation Computers: Vacuum Tubes Era",
+          "slide_purpose": "definition",
+          "selected_template": "Title card",
+          "narration_role": "Introduce",
+          "narration_goal": "Learners will understand the historical context and importance of vacuum tubes in first generation computers.",
+          "reasoning": "Starting with a Title card sets the stage with a clear, impactful introduction and a hook to engage learners about why vacuum tubes matter in computing history.",
+          "slide_id": "sub_2_c5c5fe_s1",
+          "blueprint_file": "title_card/default.html",
+          "content_type": "NO_NARRATION_POINTS",
+          "visual_elements": {
+            "heading_badge": "Required (e.g., 'Chapter 1')",
+            "main_title": "1-2 lines, 5-8 words total",
+            "subtitle": "1-2 sentences, 20-40 words",
+            "hero_image": "Required, right-side placement"
+          },
+          "narration_format": "paragraph",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "motivational_hook",
+            "structure": "",
+            "note": "Narration is SEPARATE from visual content - just spoken introduction"
+          },
+          "image_generator": "gemini",
+          "image_generator_reasoning": "The slide requires a historically accurate depiction of 1940s‑1950s vacuum‑tube computers, which demands precise technical detail and period‑specific visuals.",
+          "requires_high_accuracy": true
+        },
+        {
+          "slide_title": "What Are Vacuum Tubes?",
+          "slide_purpose": "definition",
+          "selected_template": "Title with bullets",
+          "narration_role": "Interpret",
+          "narration_goal": "Learners will grasp the basic function and characteristics of vacuum tubes used in early computers.",
+          "reasoning": "A text-only bullet list is ideal here because the concept is primarily technical and definitional, benefiting from concise, clear points without needing imagery.",
+          "slide_id": "sub_2_c5c5fe_s2",
+          "blueprint_file": "title_with_bullets/default.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required, scalable font",
+            "subtitle": "Optional",
+            "bullet_cards": {
+              "icon": "Required for each",
+              "heading": "Bold, 3-6 words",
+              "text": "1-2 sentences per bullet"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              6
+            ],
+            "sentence_count": null,
+            "style": "explanatory",
+            "structure": "Each narration point = one bullet to generate",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Vacuum Tubes in Computer Architecture",
+          "slide_purpose": "visualization",
+          "selected_template": "Diagram",
+          "narration_role": "Guide",
+          "narration_goal": "Learners will understand how vacuum tubes fit into the architecture of first generation computers.",
+          "reasoning": "A diagram with detailed labels helps visualize the system architecture, clarifying the role of vacuum tubes within the complex hardware.",
+          "slide_id": "sub_2_c5c5fe_s3",
+          "blueprint_file": "diagrams/bargraph.html",
+          "content_type": "CHART_WITH_ANALYSIS",
+          "visual_elements": {
+            "chart": "Main visual element",
+            "sidebar_analysis": "Text area, 40-60 words"
+          },
+          "narration_format": "data_interpretation",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "analytical",
+            "structure": "",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Advantages and Limitations of Vacuum Tubes",
+          "slide_purpose": "comparison",
+          "selected_template": "Two columns",
+          "narration_role": "Contrast",
+          "narration_goal": "Learners will be able to compare the benefits and drawbacks of using vacuum tubes in early computers.",
+          "reasoning": "Two columns effectively contrast pros and cons side-by-side, making it easier for learners to evaluate both aspects equally.",
+          "slide_id": "sub_2_c5c5fe_s4",
+          "blueprint_file": "columns/two_columns.html",
+          "content_type": "TWO_COLUMN_TEXT",
+          "visual_elements": {
+            "main_title": "Top of slide",
+            "columns": {
+              "count": 2,
+              "per_column": {
+                "column_title": "Bold heading with underline",
+                "text": "Paragraph format, ~60-100 words"
+              }
+            }
+          },
+          "narration_format": "comparative_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "contrasting",
+            "structure": "Balanced comparison between sides",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Evolution Timeline: Vacuum Tubes to Transistors",
+          "slide_purpose": "process",
+          "selected_template": "Timeline",
+          "narration_role": "Connect",
+          "narration_goal": "Learners will understand the historical progression from vacuum tubes to transistor-based computers.",
+          "reasoning": "A timeline is the best format to show chronological development and transitions in technology over the decades.",
+          "slide_id": "sub_2_c5c5fe_s5",
+          "blueprint_file": "timeline/default.html",
+          "content_type": "TIMELINE_STEPS",
+          "visual_elements": {
+            "main_title": "Left-aligned, medium size",
+            "timeline_items": {
+              "count": [
+                2,
+                4
+              ],
+              "per_item": {
+                "dot": "Circle on left line",
+                "phase_title": "Bold heading",
+                "description": "Paragraph text, variable length based on count"
+              }
+            }
+          },
+          "narration_format": "sequential_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "chronological",
+            "structure": "One narration point per timeline step",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Key Takeaways: Vacuum Tubes in Computing History",
+          "slide_purpose": "reinforcement",
+          "selected_template": "Icons with text",
+          "narration_role": "Reinforce",
+          "narration_goal": "Learners will recall the essential points about vacuum tubes and their impact on early computing.",
+          "reasoning": "Icons with text allow reinforcement of key concepts visually and textually, aiding memory retention through a structured summary.",
+          "slide_id": "sub_2_c5c5fe_s6",
+          "blueprint_file": "cards_and_toggles/icons_with_text.html",
+          "content_type": "ICON_GRID",
+          "visual_elements": {
+            "main_title": "Centered, large",
+            "subtitle": "Centered, below accent line",
+            "icon_items": {
+              "count": [
+                3,
+                6
+              ],
+              "layout": "3 cols (3 items), 2x2 (4), 3-2 (5), 3x2 (6)",
+              "per_item": {
+                "icon": "Circular, floating",
+                "heading": "Bold, 3-5 words",
+                "text": "1-2 sentences, 12-20 words"
+              }
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              3,
+              6
+            ],
+            "sentence_count": null,
+            "style": "key_takeaways",
+            "structure": "Brief statement per icon",
+            "note": ""
+          }
+        }
+      ]
+    },
+    "sub_3_650855": {
+      "subtopic_name": "Second to Fifth Generation Computers (1950s-2000s): Transistors, Integrated Circuits, Microprocessors, and Artificial Intelligence",
+      "slides": [
+        {
+          "slide_title": "Evolution of Computers: 2nd to 5th Generations",
+          "slide_purpose": "definition",
+          "selected_template": "Timeline",
+          "narration_role": "Introduce",
+          "narration_goal": "Learners will understand the chronological progression and key technologies defining each computer generation from the 1950s to 2000s.",
+          "reasoning": "A timeline is ideal to present the historical progression of computer generations in clear sequential steps, helping learners grasp the evolution over time.",
+          "slide_id": "sub_3_650855_s1",
+          "blueprint_file": "timeline/default.html",
+          "content_type": "TIMELINE_STEPS",
+          "visual_elements": {
+            "main_title": "Left-aligned, medium size",
+            "timeline_items": {
+              "count": [
+                2,
+                4
+              ],
+              "per_item": {
+                "dot": "Circle on left line",
+                "phase_title": "Bold heading",
+                "description": "Paragraph text, variable length based on count"
+              }
+            }
+          },
+          "narration_format": "sequential_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "chronological",
+            "structure": "One narration point per timeline step",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Second Generation Computers: Transistors",
+          "slide_purpose": "intuition",
+          "selected_template": "Title with bullets and image",
+          "narration_role": "Interpret",
+          "narration_goal": "Learners will understand how transistors replaced vacuum tubes and improved computer performance during the second generation.",
+          "reasoning": "Using bullets with an image supports explaining the abstract concept of transistors with a visual representation, enhancing intuitive understanding.",
+          "slide_id": "sub_3_650855_s2",
+          "blueprint_file": "title_with_bullets_and_image/image_left.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required",
+            "image": "Left side, 40-50% width",
+            "bullet_cards": {
+              "count": [
+                3,
+                4
+              ],
+              "format": "Icon + heading + text"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              3,
+              4
+            ],
+            "sentence_count": null,
+            "style": "visual_reference",
+            "structure": "",
+            "note": "Fewer points due to image taking space"
+          },
+          "image_generator": "gemini",
+          "image_generator_reasoning": "The slide requires accurate depiction of a specific historical technology (second‑generation computers and transistors), which calls for high technical and period fidelity.",
+          "requires_high_accuracy": true
+        },
+        {
+          "slide_title": "Third Generation: Integrated Circuits",
+          "slide_purpose": "intuition",
+          "selected_template": "Image and text",
+          "narration_role": "Guide",
+          "narration_goal": "Learners will grasp how integrated circuits miniaturized components and increased reliability and speed in third-generation computers.",
+          "reasoning": "A narrative style with a strong image helps build intuition about integrated circuits by combining detailed explanation with visual context.",
+          "slide_id": "sub_3_650855_s3",
+          "blueprint_file": "title_with_bullets_and_image/image_left.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required",
+            "image": "Left side, 40-50% width",
+            "bullet_cards": {
+              "count": [
+                3,
+                4
+              ],
+              "format": "Icon + heading + text"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              3,
+              4
+            ],
+            "sentence_count": null,
+            "style": "visual_reference",
+            "structure": "",
+            "note": "Fewer points due to image taking space"
+          },
+          "image_generator": "gemini",
+          "image_generator_reasoning": "The slide requires accurate depiction of specific historical technology (integrated circuits, transistors, early microprocessors) to convey intuition about computer generations, which calls for high technical and historical precision.",
+          "requires_high_accuracy": true
+        },
+        {
+          "slide_title": "Fourth Generation: Microprocessors",
+          "slide_purpose": "definition",
+          "selected_template": "Title with bullets",
+          "narration_role": "Emphasize",
+          "narration_goal": "Learners will identify the microprocessor as the defining technology of the fourth generation and understand its impact on computing power and size.",
+          "reasoning": "A bullet list efficiently breaks down the key features and significance of microprocessors in a clear, focused manner without requiring visuals.",
+          "slide_id": "sub_3_650855_s4",
+          "blueprint_file": "title_with_bullets/default.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required, scalable font",
+            "subtitle": "Optional",
+            "bullet_cards": {
+              "icon": "Required for each",
+              "heading": "Bold, 3-6 words",
+              "text": "1-2 sentences per bullet"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              6
+            ],
+            "sentence_count": null,
+            "style": "explanatory",
+            "structure": "Each narration point = one bullet to generate",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Fifth Generation: Artificial Intelligence",
+          "slide_purpose": "intuition",
+          "selected_template": "Two columns",
+          "narration_role": "Contrast",
+          "narration_goal": "Learners will compare traditional computing with AI-driven computing to appreciate the advancements and challenges introduced by AI.",
+          "reasoning": "A two-column comparison highlights differences and advancements between conventional computers and AI, making abstract AI concepts more concrete.",
+          "slide_id": "sub_3_650855_s5",
+          "blueprint_file": "columns/two_columns.html",
+          "content_type": "TWO_COLUMN_TEXT",
+          "visual_elements": {
+            "main_title": "Top of slide",
+            "columns": {
+              "count": 2,
+              "per_column": {
+                "column_title": "Bold heading with underline",
+                "text": "Paragraph format, ~60-100 words"
+              }
+            }
+          },
+          "narration_format": "comparative_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "contrasting",
+            "structure": "Balanced comparison between sides",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Summary: Key Advances from 2nd to 5th Generations",
+          "slide_purpose": "reinforcement",
+          "selected_template": "Icons with text",
+          "narration_role": "Reinforce",
+          "narration_goal": "Learners will recall and reinforce the major technological breakthroughs and their impacts across the second to fifth computer generations.",
+          "reasoning": "Icons with text provide a visually engaging summary that reinforces key takeaways, supporting memory retention and review.",
+          "slide_id": "sub_3_650855_s6",
+          "blueprint_file": "cards_and_toggles/icons_with_text.html",
+          "content_type": "ICON_GRID",
+          "visual_elements": {
+            "main_title": "Centered, large",
+            "subtitle": "Centered, below accent line",
+            "icon_items": {
+              "count": [
+                3,
+                6
+              ],
+              "layout": "3 cols (3 items), 2x2 (4), 3-2 (5), 3x2 (6)",
+              "per_item": {
+                "icon": "Circular, floating",
+                "heading": "Bold, 3-5 words",
+                "text": "1-2 sentences, 12-20 words"
+              }
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              3,
+              6
+            ],
+            "sentence_count": null,
+            "style": "key_takeaways",
+            "structure": "Brief statement per icon",
+            "note": ""
+          }
+        }
+      ]
+    },
+    "sub_4_df4eeb": {
+      "subtopic_name": "Sixth Generation Computers (2000s-present): Emerging Technologies and Future Directions",
+      "slides": [
+        {
+          "slide_title": "Sixth Generation Computers: Emerging Technologies",
+          "slide_purpose": "definition",
+          "selected_template": "Title card",
+          "narration_role": "Introduce",
+          "narration_goal": "Learners will understand the scope and significance of sixth generation computers and their emerging technologies.",
+          "reasoning": "A Title card sets a strong thematic introduction highlighting the importance and timeframe of sixth generation computers to orient advanced learners.",
+          "slide_id": "sub_4_df4eeb_s1",
+          "blueprint_file": "title_card/default.html",
+          "content_type": "NO_NARRATION_POINTS",
+          "visual_elements": {
+            "heading_badge": "Required (e.g., 'Chapter 1')",
+            "main_title": "1-2 lines, 5-8 words total",
+            "subtitle": "1-2 sentences, 20-40 words",
+            "hero_image": "Required, right-side placement"
+          },
+          "narration_format": "paragraph",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "motivational_hook",
+            "structure": "",
+            "note": "Narration is SEPARATE from visual content - just spoken introduction"
+          },
+          "image_generator": "dalle",
+          "image_generator_reasoning": "The slide covers abstract, forward‑looking technologies (AI, quantum computing, nanotech) where conceptual metaphors and generic icons are sufficient, so a medium‑accuracy generator is ideal.",
+          "requires_high_accuracy": false
+        },
+        {
+          "slide_title": "Core Technologies Driving Sixth Generation Computers",
+          "slide_purpose": "intuition",
+          "selected_template": "Title with bullets and image",
+          "narration_role": "Interpret",
+          "narration_goal": "Learners will grasp the key enabling technologies such as AI, quantum computing, and nanotechnology that characterize this generation.",
+          "reasoning": "The abstract and complex nature of emerging technologies benefits from visual support alongside concise explanations to build intuition.",
+          "slide_id": "sub_4_df4eeb_s2",
+          "blueprint_file": "title_with_bullets_and_image/image_left.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required",
+            "image": "Left side, 40-50% width",
+            "bullet_cards": {
+              "count": [
+                3,
+                4
+              ],
+              "format": "Icon + heading + text"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              3,
+              4
+            ],
+            "sentence_count": null,
+            "style": "visual_reference",
+            "structure": "",
+            "note": "Fewer points due to image taking space"
+          },
+          "image_generator": "dalle",
+          "image_generator_reasoning": "The slide covers emerging, forward‑looking technologies and abstract future concepts, which are best visualized with conceptual illustrations rather than precise historical depictions.",
+          "requires_high_accuracy": false
+        },
+        {
+          "slide_title": "Timeline of Sixth Generation Computer Milestones",
+          "slide_purpose": "process",
+          "selected_template": "Timeline",
+          "narration_role": "Guide",
+          "narration_goal": "Learners will understand the chronological progression and key developments from early 2000s to present.",
+          "reasoning": "A timeline effectively organizes historical and technological advances, helping learners link events and innovations over time.",
+          "slide_id": "sub_4_df4eeb_s3",
+          "blueprint_file": "timeline/default.html",
+          "content_type": "TIMELINE_STEPS",
+          "visual_elements": {
+            "main_title": "Left-aligned, medium size",
+            "timeline_items": {
+              "count": [
+                2,
+                4
+              ],
+              "per_item": {
+                "dot": "Circle on left line",
+                "phase_title": "Bold heading",
+                "description": "Paragraph text, variable length based on count"
+              }
+            }
+          },
+          "narration_format": "sequential_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "chronological",
+            "structure": "One narration point per timeline step",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Comparing Sixth Generation with Previous Generations",
+          "slide_purpose": "comparison",
+          "selected_template": "Two columns",
+          "narration_role": "Contrast",
+          "narration_goal": "Learners will be able to differentiate sixth generation computers from earlier generations in terms of technology and capabilities.",
+          "reasoning": "Two columns allow clear side-by-side comparison of features, highlighting evolution and breakthroughs.",
+          "slide_id": "sub_4_df4eeb_s4",
+          "blueprint_file": "columns/two_columns.html",
+          "content_type": "TWO_COLUMN_TEXT",
+          "visual_elements": {
+            "main_title": "Top of slide",
+            "columns": {
+              "count": 2,
+              "per_column": {
+                "column_title": "Bold heading with underline",
+                "text": "Paragraph format, ~60-100 words"
+              }
+            }
+          },
+          "narration_format": "comparative_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "contrasting",
+            "structure": "Balanced comparison between sides",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Architecture and System Design Innovations",
+          "slide_purpose": "visualization",
+          "selected_template": "Diagram",
+          "narration_role": "Emphasize",
+          "narration_goal": "Learners will visualize the complex system architectures including quantum processors and AI integration in sixth generation computers.",
+          "reasoning": "A detailed diagram with labels and a key takeaway sidebar helps unpack complex, abstract system designs effectively.",
+          "slide_id": "sub_4_df4eeb_s5",
+          "blueprint_file": "diagrams/bargraph.html",
+          "content_type": "CHART_WITH_ANALYSIS",
+          "visual_elements": {
+            "chart": "Main visual element",
+            "sidebar_analysis": "Text area, 40-60 words"
+          },
+          "narration_format": "data_interpretation",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "analytical",
+            "structure": "",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Key Emerging Technologies Impacting Future Directions",
+          "slide_purpose": "reinforcement",
+          "selected_template": "Icons with text",
+          "narration_role": "Reinforce",
+          "narration_goal": "Learners will consolidate understanding of critical emerging technologies like AI, quantum computing, and bio-computing shaping future computers.",
+          "reasoning": "Icons with text provide a visually engaging summary of key technologies facilitating retention and recall.",
+          "slide_id": "sub_4_df4eeb_s6",
+          "blueprint_file": "cards_and_toggles/icons_with_text.html",
+          "content_type": "ICON_GRID",
+          "visual_elements": {
+            "main_title": "Centered, large",
+            "subtitle": "Centered, below accent line",
+            "icon_items": {
+              "count": [
+                3,
+                6
+              ],
+              "layout": "3 cols (3 items), 2x2 (4), 3-2 (5), 3x2 (6)",
+              "per_item": {
+                "icon": "Circular, floating",
+                "heading": "Bold, 3-5 words",
+                "text": "1-2 sentences, 12-20 words"
+              }
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              3,
+              6
+            ],
+            "sentence_count": null,
+            "style": "key_takeaways",
+            "structure": "Brief statement per icon",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Challenges and Future Research Directions",
+          "slide_purpose": "reinforcement",
+          "selected_template": "Large bullet list",
+          "narration_role": "Connect",
+          "narration_goal": "Learners will recognize current challenges and ongoing research that will influence the evolution of sixth generation computing.",
+          "reasoning": "A large bullet list allows detailed points on challenges and research to be clearly presented and emphasized for advanced learners.",
+          "slide_id": "sub_4_df4eeb_s7",
+          "blueprint_file": "title_with_bullets/default.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required, scalable font",
+            "subtitle": "Optional",
+            "bullet_cards": {
+              "icon": "Required for each",
+              "heading": "Bold, 3-6 words",
+              "text": "1-2 sentences per bullet"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              6
+            ],
+            "sentence_count": null,
+            "style": "explanatory",
+            "structure": "Each narration point = one bullet to generate",
+            "note": ""
+          }
+        }
+      ]
+    },
+    "sub_5_782c71": {
+      "subtopic_name": "Comparison and Evolution of Computer Generations",
+      "slides": [
+        {
+          "slide_title": "Evolution of Computer Generations",
+          "slide_purpose": "definition",
+          "selected_template": "Title card",
+          "narration_role": "Introduce",
+          "narration_goal": "Learners should understand the concept of computer generations and why their evolution matters in computing history.",
+          "reasoning": "Starting with a Title card provides a clear, impactful introduction to the subtopic, setting context and engaging learners with a thematic visual.",
+          "slide_id": "sub_5_782c71_s1",
+          "blueprint_file": "title_card/default.html",
+          "content_type": "NO_NARRATION_POINTS",
+          "visual_elements": {
+            "heading_badge": "Required (e.g., 'Chapter 1')",
+            "main_title": "1-2 lines, 5-8 words total",
+            "subtitle": "1-2 sentences, 20-40 words",
+            "hero_image": "Required, right-side placement"
+          },
+          "narration_format": "paragraph",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "motivational_hook",
+            "structure": "",
+            "note": "Narration is SEPARATE from visual content - just spoken introduction"
+          },
+          "image_generator": "gemini",
+          "image_generator_reasoning": "The slide needs accurate depictions of specific historical computer hardware (vacuum tubes, transistors, integrated circuits) across different generations, which requires high technical and historical precision.",
+          "requires_high_accuracy": true
+        },
+        {
+          "slide_title": "Characteristics of Each Computer Generation",
+          "slide_purpose": "comparison",
+          "selected_template": "Four columns",
+          "narration_role": "Contrast",
+          "narration_goal": "Learners will grasp key features that differentiate the first four computer generations.",
+          "reasoning": "Four columns efficiently categorize and compare the main features of four generations side-by-side, using concise text and icons to aid retention.",
+          "slide_id": "sub_5_782c71_s2",
+          "blueprint_file": "columns/four_columns.html",
+          "content_type": "FOUR_COLUMN_CARDS",
+          "visual_elements": {
+            "columns": {
+              "count": 4,
+              "per_column": {
+                "icon": "Required",
+                "title": "2-3 words",
+                "description": "12-18 words (concise)"
+              }
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": 4,
+            "sentence_count": null,
+            "style": "concise_categorical",
+            "structure": "Brief point per column",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Timeline of Computer Generations",
+          "slide_purpose": "process",
+          "selected_template": "Timeline",
+          "narration_role": "Guide",
+          "narration_goal": "Learners will understand the chronological progression and major milestones of computer generations.",
+          "reasoning": "A timeline visually organizes historical progression, making it easier to follow the evolution over time with clear dates and context.",
+          "slide_id": "sub_5_782c71_s3",
+          "blueprint_file": "timeline/default.html",
+          "content_type": "TIMELINE_STEPS",
+          "visual_elements": {
+            "main_title": "Left-aligned, medium size",
+            "timeline_items": {
+              "count": [
+                2,
+                4
+              ],
+              "per_item": {
+                "dot": "Circle on left line",
+                "phase_title": "Bold heading",
+                "description": "Paragraph text, variable length based on count"
+              }
+            }
+          },
+          "narration_format": "sequential_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "chronological",
+            "structure": "One narration point per timeline step",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Key Technological Advances Driving Evolution",
+          "slide_purpose": "intuition",
+          "selected_template": "Title with bullets and image",
+          "narration_role": "Interpret",
+          "narration_goal": "Learners will connect specific technological breakthroughs to changes in computer generations.",
+          "reasoning": "Using bullets with an image supports understanding abstract technology concepts by pairing textual explanations with visual metaphors.",
+          "slide_id": "sub_5_782c71_s4",
+          "blueprint_file": "title_with_bullets_and_image/image_left.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required",
+            "image": "Left side, 40-50% width",
+            "bullet_cards": {
+              "count": [
+                3,
+                4
+              ],
+              "format": "Icon + heading + text"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              3,
+              4
+            ],
+            "sentence_count": null,
+            "style": "visual_reference",
+            "structure": "",
+            "note": "Fewer points due to image taking space"
+          },
+          "image_generator": "gemini",
+          "image_generator_reasoning": "The slide compares specific historical computer generations, requiring accurate depiction of real hardware like vacuum tubes, transistors, and microprocessors, which fits Gemini's high‑accuracy strengths.",
+          "requires_high_accuracy": true
+        },
+        {
+          "slide_title": "Comparing Early and Modern Computer Generations",
+          "slide_purpose": "comparison",
+          "selected_template": "Two columns",
+          "narration_role": "Contrast",
+          "narration_goal": "Learners will be able to identify major differences and improvements between early and current computer generations.",
+          "reasoning": "Two columns allow direct comparison of two contrasting groups, balancing word count for clarity and emphasizing evolution.",
+          "slide_id": "sub_5_782c71_s5",
+          "blueprint_file": "columns/two_columns.html",
+          "content_type": "TWO_COLUMN_TEXT",
+          "visual_elements": {
+            "main_title": "Top of slide",
+            "columns": {
+              "count": 2,
+              "per_column": {
+                "column_title": "Bold heading with underline",
+                "text": "Paragraph format, ~60-100 words"
+              }
+            }
+          },
+          "narration_format": "comparative_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "contrasting",
+            "structure": "Balanced comparison between sides",
+            "note": ""
+          }
+        },
+        {
+          "slide_title": "Summary: Evolution Impact and Future Directions",
+          "slide_purpose": "reinforcement",
+          "selected_template": "Large bullet list",
+          "narration_role": "Reinforce",
+          "narration_goal": "Learners will consolidate key takeaways about the evolution and significance of computer generations.",
+          "reasoning": "A large bullet list with full sentences provides a strong summary and revision tool, reinforcing critical points before moving on.",
+          "slide_id": "sub_5_782c71_s6",
+          "blueprint_file": "title_with_bullets/default.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required, scalable font",
+            "subtitle": "Optional",
+            "bullet_cards": {
+              "icon": "Required for each",
+              "heading": "Bold, 3-6 words",
+              "text": "1-2 sentences per bullet"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              6
+            ],
+            "sentence_count": null,
+            "style": "explanatory",
+            "structure": "Each narration point = one bullet to generate",
+            "note": ""
+          }
+        }
+      ]
+    }
+  },
+  "slides": {
+    "sub_1_582521": [
+      {
+        "slide_title": "Introduction to Computer Generations",
+        "slide_purpose": "definition",
+        "selected_template": "Title card",
+        "narration_role": "Introduce",
+        "narration_goal": "Learners will understand what computer generations are and why studying them is important for grasping computer evolution.",
+        "reasoning": "Starting with a Title card provides a clear, high-impact introduction to the subtopic and hooks learners with a concise explanation of its relevance.",
+        "slide_id": "sub_1_582521_s1",
+        "blueprint_file": "title_card/default.html",
+        "content_type": "NO_NARRATION_POINTS",
+        "visual_elements": {
+          "heading_badge": "Required (e.g., 'Chapter 1')",
+          "main_title": "1-2 lines, 5-8 words total",
+          "subtitle": "1-2 sentences, 20-40 words",
+          "hero_image": "Required, right-side placement"
+        },
+        "narration_format": "paragraph",
+        "narration_constraints": {
+          "point_count": null,
+          "sentence_count": [
+            3,
+            5
+          ],
+          "style": "motivational_hook",
+          "structure": "",
+          "note": "Narration is SEPARATE from visual content - just spoken introduction"
+        },
+        "image_generator": "gemini",
+        "image_generator_reasoning": "The slide covers historical computer generations, requiring accurate depictions of specific hardware (vacuum tubes, transistors, integrated circuits). Gemini provides the high‑precision, historically correct visuals needed.",
+        "requires_high_accuracy": true,
+        "narration_text": "Understanding computer generations is like taking a journey through time to see how technology has evolved. Each generation marks a significant leap in the design, speed, and capabilities of computers, shaping the way we live and work today. By studying these generations, we gain insight into the innovations that paved the way for modern computing and appreciate the rapid progress that continues to transform our world.",
+        "visual_content": {
+          "subtitle": "Understanding computer generations is like taking a journey through time to see how technology has e..."
+        }
+      },
+      {
+        "slide_title": "Overview of the Five Computer Generations",
+        "slide_purpose": "visualization",
+        "selected_template": "Timeline",
+        "narration_role": "Guide",
+        "narration_goal": "Learners will be able to identify the five generations of computers in chronological order along with their key characteristics.",
+        "reasoning": "A timeline is ideal for showing historical progression and helps learners visualize how computer technology has evolved over time.",
+        "slide_id": "sub_1_582521_s2",
+        "blueprint_file": "timeline/default.html",
+        "content_type": "TIMELINE_STEPS",
+        "visual_elements": {
+          "main_title": "Left-aligned, medium size",
+          "timeline_items": {
+            "count": [
+              2,
+              4
+            ],
+            "per_item": {
+              "dot": "Circle on left line",
+              "phase_title": "Bold heading",
+              "description": "Paragraph text, variable length based on count"
+            }
+          }
+        },
+        "narration_format": "sequential_points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            4
+          ],
+          "sentence_count": null,
+          "style": "chronological",
+          "structure": "One narration point per timeline step",
+          "note": ""
+        },
+        "narration_text": "Let's begin by understanding that computers have evolved through five distinct generations, each marked by significant technological advancements. The first generation, starting in the 1940s, used vacuum tubes for circuitry and magnetic drums for memory, making computers large and power-hungry. Next, the second generation introduced transistors in the 1950s, which were smaller, faster, and more reliable than vacuum tubes, leading to more efficient machines. The third generation, beginning in the 1960s, brought integrated circuits that combined multiple transistors on a single chip, further reducing size and cost while improving performance. In the 1970s and 1980s, the fourth generation saw the rise of microprocessors, which integrated the CPU onto a single chip, making personal computers possible. Finally, the fifth generation focuses on artificial intelligence and advanced computing technologies, aiming to create machines that can learn and reason like humans. Understanding these generations helps us appreciate how computer technology has progressed over time and shaped the devices we use today.",
+        "visual_content": {
+          "timeline_items": [
+            {
+              "phase_title": "1940s-1956: First Generation",
+              "description": "The first generation of computers used vacuum tubes for circuitry and magnetic drums for memory, making them large, expensive, and power-hungry. These machines were primarily used for scientific calculations and military applications during and after World War II. Programming was done in machine language, and computers required extensive maintenance. This generation laid the foundation for future computing advancements."
+            },
+            {
+              "phase_title": "1956-1964: Second Generation",
+              "description": "The second generation introduced transistors, which replaced vacuum tubes and made computers smaller, faster, and more reliable. Transistors consumed less power and generated less heat, improving efficiency significantly. Computers of this era used assembly language and early high-level programming languages. This generation marked the beginning of commercial computer use in businesses and government."
+            },
+            {
+              "phase_title": "1964-1971: Third Generation",
+              "description": "The third generation saw the development of integrated circuits, which combined multiple transistors on a single silicon chip. This innovation further reduced computer size and cost while boosting performance and reliability. Operating systems and multiprogramming became common, allowing multiple applications to run simultaneously. This period also witnessed wider adoption of computers in various industries."
+            },
+            {
+              "phase_title": "1970s-1980s: Fourth Generation",
+              "description": "The fourth generation was defined by the invention of the microprocessor, integrating the CPU onto a single chip. This breakthrough made personal computers affordable and accessible to the general public. Graphical user interfaces and networking technologies emerged, transforming computing into a mainstream activity. The era set the stage for the digital revolution and modern computing devices."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Key Features of Each Computer Generation",
+        "slide_purpose": "intuition",
+        "selected_template": "Three columns",
+        "narration_role": "Interpret",
+        "narration_goal": "Learners will understand the distinct technological advancements and features that define each generation.",
+        "reasoning": "Using three columns allows categorization of generations (e.g., early, middle, recent) with concise descriptions, making complex information easier to digest visually.",
+        "slide_id": "sub_1_582521_s3",
+        "blueprint_file": "columns/three_columns.html",
+        "content_type": "THREE_COLUMN_CARDS",
+        "visual_elements": {
+          "columns": {
+            "count": 3,
+            "per_column": {
+              "icon_or_number": "Optional",
+              "column_title": "3-4 words",
+              "description": "20-30 words"
+            }
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": 3,
+          "sentence_count": null,
+          "style": "categorical",
+          "structure": "One point per column",
+          "note": ""
+        },
+        "narration_text": "First, the earliest generation of computers used vacuum tubes, which made them large, slow, and power-hungry, but they introduced the basic concept of programmable machines. Next, the second generation brought transistors, which were smaller, faster, and more reliable, allowing computers to become more accessible and efficient. Finally, the third generation introduced integrated circuits, combining many transistors on a single chip, which greatly increased processing speed and reduced size, paving the way for the computers we use today.",
+        "visual_content": {
+          "columns": [
+            {
+              "title": "Vacuum Tube Era",
+              "text": "The first generation of computers used vacuum tubes, which were large, slow, and consumed a lot of power. Despite these limitations, they introduced the fundamental concept of programmable machines, laying the groundwork for future computer development."
+            },
+            {
+              "title": "Transistor Technology",
+              "text": "The second generation replaced vacuum tubes with transistors, making computers smaller, faster, and more reliable. This innovation improved efficiency and accessibility, enabling broader use of computers in various fields."
+            },
+            {
+              "title": "Integrated Circuits",
+              "text": "The third generation introduced integrated circuits that combined many transistors on a single chip. This advancement dramatically increased processing speed, reduced size, and set the stage for modern computer technology."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Summary of Computer Generations",
+        "slide_purpose": "reinforcement",
+        "selected_template": "Large bullet list",
+        "narration_role": "Reinforce",
+        "narration_goal": "Learners will consolidate their understanding of the main points about computer generations for review and retention.",
+        "reasoning": "A large bullet list is effective for summarizing and reinforcing key takeaways, ensuring learners leave with a clear grasp of the topic.",
+        "slide_id": "sub_1_582521_s4",
+        "blueprint_file": "title_with_bullets/default.html",
+        "content_type": "BULLET_POINTS",
+        "visual_elements": {
+          "main_title": "Required, scalable font",
+          "subtitle": "Optional",
+          "bullet_cards": {
+            "icon": "Required for each",
+            "heading": "Bold, 3-6 words",
+            "text": "1-2 sentences per bullet"
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            6
+          ],
+          "sentence_count": null,
+          "style": "explanatory",
+          "structure": "Each narration point = one bullet to generate",
+          "note": ""
+        },
+        "narration_text": "Let's review the key points about computer generations to strengthen your understanding. First, each generation of computers is defined by major technological advancements, starting from vacuum tubes in the first generation to artificial intelligence in the fifth. Second, these advancements brought improvements in speed, size, reliability, and efficiency, making computers more powerful and accessible over time. Third, understanding the differences between generations helps us appreciate how far computing technology has evolved and how it continues to shape our world. Finally, remembering the main features and innovations of each generation will give you a solid foundation to explore more complex computer concepts in the future.",
+        "visual_content": {
+          "bullets": [
+            {
+              "heading": "Defining Computer Generations",
+              "description": "Each generation is marked by major technological advances, from vacuum tubes to artificial intelligence.",
+              "icon": "ri-computer"
+            },
+            {
+              "heading": "Key Technological Advances",
+              "description": "Generations progressed from vacuum tubes to transistors, integrated circuits, microprocessors, and AI.",
+              "icon": "ri-code-ai"
+            },
+            {
+              "heading": "Improvements Over Time",
+              "description": "Computers became faster, smaller, more reliable, and more efficient with each generation.",
+              "icon": "ri-arrow-up"
+            },
+            {
+              "heading": "Understanding Evolution",
+              "description": "Knowing generation differences shows how computing technology has evolved and impacts our world today.",
+              "icon": "ri-arrow-right"
+            },
+            {
+              "heading": "Foundation for Learning",
+              "description": "Remembering main features of each generation builds a strong base for exploring advanced computer concepts.",
+              "icon": "ri-book"
+            }
+          ]
+        }
+      }
+    ],
+    "sub_2_c5c5fe": [
+      {
+        "slide_title": "First Generation Computers: Vacuum Tubes Era",
+        "slide_purpose": "definition",
+        "selected_template": "Title card",
+        "narration_role": "Introduce",
+        "narration_goal": "Learners will understand the historical context and importance of vacuum tubes in first generation computers.",
+        "reasoning": "Starting with a Title card sets the stage with a clear, impactful introduction and a hook to engage learners about why vacuum tubes matter in computing history.",
+        "slide_id": "sub_2_c5c5fe_s1",
+        "blueprint_file": "title_card/default.html",
+        "content_type": "NO_NARRATION_POINTS",
+        "visual_elements": {
+          "heading_badge": "Required (e.g., 'Chapter 1')",
+          "main_title": "1-2 lines, 5-8 words total",
+          "subtitle": "1-2 sentences, 20-40 words",
+          "hero_image": "Required, right-side placement"
+        },
+        "narration_format": "paragraph",
+        "narration_constraints": {
+          "point_count": null,
+          "sentence_count": [
+            3,
+            5
+          ],
+          "style": "motivational_hook",
+          "structure": "",
+          "note": "Narration is SEPARATE from visual content - just spoken introduction"
+        },
+        "image_generator": "gemini",
+        "image_generator_reasoning": "The slide requires a historically accurate depiction of 1940s‑1950s vacuum‑tube computers, which demands precise technical detail and period‑specific visuals.",
+        "requires_high_accuracy": true,
+        "narration_text": "Imagine a time when computers were enormous machines, filling entire rooms and using thousands of tiny glass tubes to process information. These vacuum tubes were the heart of the very first generation of computers, enabling early breakthroughs in computing despite their size and heat. Understanding this era helps us appreciate how far technology has come and why vacuum tubes were a crucial stepping stone in the history of computers.",
+        "visual_content": {
+          "subtitle": "Imagine a time when computers were enormous machines, filling entire rooms and using thousands of ti..."
+        }
+      },
+      {
+        "slide_title": "What Are Vacuum Tubes?",
+        "slide_purpose": "definition",
+        "selected_template": "Title with bullets",
+        "narration_role": "Interpret",
+        "narration_goal": "Learners will grasp the basic function and characteristics of vacuum tubes used in early computers.",
+        "reasoning": "A text-only bullet list is ideal here because the concept is primarily technical and definitional, benefiting from concise, clear points without needing imagery.",
+        "slide_id": "sub_2_c5c5fe_s2",
+        "blueprint_file": "title_with_bullets/default.html",
+        "content_type": "BULLET_POINTS",
+        "visual_elements": {
+          "main_title": "Required, scalable font",
+          "subtitle": "Optional",
+          "bullet_cards": {
+            "icon": "Required for each",
+            "heading": "Bold, 3-6 words",
+            "text": "1-2 sentences per bullet"
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            6
+          ],
+          "sentence_count": null,
+          "style": "explanatory",
+          "structure": "Each narration point = one bullet to generate",
+          "note": ""
+        },
+        "narration_text": "Vacuum tubes are electronic components that control the flow of electricity in early computers. They work by allowing electrons to move through a vacuum inside a sealed glass tube, acting like tiny switches or amplifiers. These tubes were essential because they could turn electrical signals on and off, which is the basic principle behind digital computing. However, vacuum tubes were large, generated a lot of heat, and used a lot of power, which made early computers bulky and less reliable. Despite these challenges, vacuum tubes paved the way for the development of modern electronic devices.",
+        "visual_content": {
+          "bullets": [
+            {
+              "heading": "Definition of Vacuum Tubes",
+              "description": "Electronic components that control electricity flow by allowing electrons to move through a vacuum inside a sealed glass tube.",
+              "icon": "ri-tv"
+            },
+            {
+              "heading": "Function as Switches and Amplifiers",
+              "description": "Vacuum tubes act like tiny switches or amplifiers, enabling control of electrical signals.",
+              "icon": "ri-tv"
+            },
+            {
+              "heading": "Role in Early Computers",
+              "description": "They were essential for turning electrical signals on and off, forming the basis of digital computing.",
+              "icon": "ri-apps"
+            },
+            {
+              "heading": "Limitations of Vacuum Tubes",
+              "description": "Large size, high heat generation, and significant power use made early computers bulky and less reliable.",
+              "icon": "ri-tv-2"
+            },
+            {
+              "heading": "Legacy of Vacuum Tubes",
+              "description": "Despite challenges, vacuum tubes paved the way for the development of modern electronic devices.",
+              "icon": "ri-tv"
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Vacuum Tubes in Computer Architecture",
+        "slide_purpose": "visualization",
+        "selected_template": "Diagram",
+        "narration_role": "Guide",
+        "narration_goal": "Learners will understand how vacuum tubes fit into the architecture of first generation computers.",
+        "reasoning": "A diagram with detailed labels helps visualize the system architecture, clarifying the role of vacuum tubes within the complex hardware.",
+        "slide_id": "sub_2_c5c5fe_s3",
+        "blueprint_file": "diagrams/bargraph.html",
+        "content_type": "CHART_WITH_ANALYSIS",
+        "visual_elements": {
+          "chart": "Main visual element",
+          "sidebar_analysis": "Text area, 40-60 words"
+        },
+        "narration_format": "data_interpretation",
+        "narration_constraints": {
+          "point_count": null,
+          "sentence_count": [
+            3,
+            5
+          ],
+          "style": "analytical",
+          "structure": "",
+          "note": ""
+        },
+        "narration_text": "Let's explore how vacuum tubes were essential components in early computer architecture. Vacuum tubes acted as electronic switches, controlling the flow of electrical signals to perform calculations and data processing. They were arranged systematically to form circuits that could execute basic operations like addition and data storage. Although bulky and prone to overheating, vacuum tubes enabled the first generation of computers to function and paved the way for modern digital systems. Understanding their role helps us appreciate the foundation on which today's computers are built.",
+        "visual_content": {}
+      },
+      {
+        "slide_title": "Advantages and Limitations of Vacuum Tubes",
+        "slide_purpose": "comparison",
+        "selected_template": "Two columns",
+        "narration_role": "Contrast",
+        "narration_goal": "Learners will be able to compare the benefits and drawbacks of using vacuum tubes in early computers.",
+        "reasoning": "Two columns effectively contrast pros and cons side-by-side, making it easier for learners to evaluate both aspects equally.",
+        "slide_id": "sub_2_c5c5fe_s4",
+        "blueprint_file": "columns/two_columns.html",
+        "content_type": "TWO_COLUMN_TEXT",
+        "visual_elements": {
+          "main_title": "Top of slide",
+          "columns": {
+            "count": 2,
+            "per_column": {
+              "column_title": "Bold heading with underline",
+              "text": "Paragraph format, ~60-100 words"
+            }
+          }
+        },
+        "narration_format": "comparative_points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            4
+          ],
+          "sentence_count": null,
+          "style": "contrasting",
+          "structure": "Balanced comparison between sides",
+          "note": ""
+        },
+        "narration_text": "Vacuum tubes were a groundbreaking technology in the early days of computing, and they brought several important advantages. For one, they could amplify electrical signals, which made it possible to process data electronically and perform complex calculations much faster than mechanical devices. Additionally, vacuum tubes were relatively easy to understand and manufacture at the time, which helped jumpstart the development of the first computers. However, these benefits came with significant limitations. Vacuum tubes were large and bulky, which made early computers enormous and less practical for everyday use. They also consumed a lot of power and generated excessive heat, leading to frequent failures and the need for constant maintenance. So, while vacuum tubes enabled the birth of modern computing, their size, power consumption, and reliability issues eventually led to the search for better alternatives like transistors.",
+        "visual_content": {
+          "columns": [
+            {
+              "title": "Advantages",
+              "text": "Vacuum tubes could amplify electrical signals, enabling electronic data processing and faster calculations compared to mechanical devices. They were also relatively simple to understand and manufacture, which facilitated the early development of computers and helped kickstart the computing revolution."
+            },
+            {
+              "title": "Limitations",
+              "text": "Vacuum tubes were large, bulky, and consumed significant power, causing early computers to be enormous and inefficient. They generated excessive heat, leading to frequent failures and high maintenance needs. These drawbacks ultimately drove the search for more reliable and compact alternatives like transistors."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Evolution Timeline: Vacuum Tubes to Transistors",
+        "slide_purpose": "process",
+        "selected_template": "Timeline",
+        "narration_role": "Connect",
+        "narration_goal": "Learners will understand the historical progression from vacuum tubes to transistor-based computers.",
+        "reasoning": "A timeline is the best format to show chronological development and transitions in technology over the decades.",
+        "slide_id": "sub_2_c5c5fe_s5",
+        "blueprint_file": "timeline/default.html",
+        "content_type": "TIMELINE_STEPS",
+        "visual_elements": {
+          "main_title": "Left-aligned, medium size",
+          "timeline_items": {
+            "count": [
+              2,
+              4
+            ],
+            "per_item": {
+              "dot": "Circle on left line",
+              "phase_title": "Bold heading",
+              "description": "Paragraph text, variable length based on count"
+            }
+          }
+        },
+        "narration_format": "sequential_points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            4
+          ],
+          "sentence_count": null,
+          "style": "chronological",
+          "structure": "One narration point per timeline step",
+          "note": ""
+        },
+        "narration_text": "Let's begin by looking at the era of first-generation computers, which relied heavily on vacuum tubes. These vacuum tubes were essential for processing and memory but were large, generated a lot of heat, and were prone to frequent failures. As technology advanced, the invention of the transistor in the late 1940s marked a significant breakthrough. Transistors were much smaller, more reliable, and consumed less power compared to vacuum tubes. This innovation led to the development of second-generation computers in the 1950s, which were faster and more efficient. Understanding this progression helps us appreciate how moving from vacuum tubes to transistors laid the foundation for modern computing technology.",
+        "visual_content": {
+          "timeline_items": [
+            {
+              "phase_title": "1945-1954: First Generation - Vacuum Tube Era",
+              "description": "The first generation of computers relied heavily on vacuum tubes as the main electronic components for processing and memory. These vacuum tubes were large, generated significant heat, and were prone to frequent failures, which limited the reliability and efficiency of early computers. Despite these challenges, they laid the groundwork for electronic computing and were used in early mainframes and calculators."
+            },
+            {
+              "phase_title": "Late 1940s: Invention of the Transistor",
+              "description": "The invention of the transistor in the late 1940s marked a pivotal breakthrough in electronic technology. Transistors were much smaller, more reliable, and consumed less power compared to vacuum tubes. This innovation drastically improved the performance and durability of computing devices, enabling the transition to more compact and efficient machines."
+            },
+            {
+              "phase_title": "1955-1964: Second Generation - Transistor Revolution",
+              "description": "The second generation of computers saw the widespread adoption of transistors, replacing vacuum tubes as the fundamental electronic component. This era produced faster, more reliable, and energy-efficient computers that were smaller in size. The transistor revolution set the stage for further advances in computing technology and increased accessibility of computers."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Key Takeaways: Vacuum Tubes in Computing History",
+        "slide_purpose": "reinforcement",
+        "selected_template": "Icons with text",
+        "narration_role": "Reinforce",
+        "narration_goal": "Learners will recall the essential points about vacuum tubes and their impact on early computing.",
+        "reasoning": "Icons with text allow reinforcement of key concepts visually and textually, aiding memory retention through a structured summary.",
+        "slide_id": "sub_2_c5c5fe_s6",
+        "blueprint_file": "cards_and_toggles/icons_with_text.html",
+        "content_type": "ICON_GRID",
+        "visual_elements": {
+          "main_title": "Centered, large",
+          "subtitle": "Centered, below accent line",
+          "icon_items": {
+            "count": [
+              3,
+              6
+            ],
+            "layout": "3 cols (3 items), 2x2 (4), 3-2 (5), 3x2 (6)",
+            "per_item": {
+              "icon": "Circular, floating",
+              "heading": "Bold, 3-5 words",
+              "text": "1-2 sentences, 12-20 words"
+            }
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            3,
+            6
+          ],
+          "sentence_count": null,
+          "style": "key_takeaways",
+          "structure": "Brief statement per icon",
+          "note": ""
+        },
+        "narration_text": "Vacuum tubes were the fundamental building blocks of the first generation of computers, enabling electronic switching before transistors existed. They made it possible to process data much faster than mechanical parts, marking a major leap in computing speed. However, vacuum tubes were large, generated a lot of heat, and were prone to failure, which limited the reliability and size of early computers. Despite these challenges, their use laid the groundwork for future innovations in computer technology. Understanding vacuum tubes helps us appreciate how far computing has evolved from bulky, power-hungry machines to the compact devices we use today.",
+        "visual_content": {}
+      }
+    ],
+    "sub_3_650855": [
+      {
+        "slide_title": "Evolution of Computers: 2nd to 5th Generations",
+        "slide_purpose": "definition",
+        "selected_template": "Timeline",
+        "narration_role": "Introduce",
+        "narration_goal": "Learners will understand the chronological progression and key technologies defining each computer generation from the 1950s to 2000s.",
+        "reasoning": "A timeline is ideal to present the historical progression of computer generations in clear sequential steps, helping learners grasp the evolution over time.",
+        "slide_id": "sub_3_650855_s1",
+        "blueprint_file": "timeline/default.html",
+        "content_type": "TIMELINE_STEPS",
+        "visual_elements": {
+          "main_title": "Left-aligned, medium size",
+          "timeline_items": {
+            "count": [
+              2,
+              4
+            ],
+            "per_item": {
+              "dot": "Circle on left line",
+              "phase_title": "Bold heading",
+              "description": "Paragraph text, variable length based on count"
+            }
+          }
+        },
+        "narration_format": "sequential_points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            4
+          ],
+          "sentence_count": null,
+          "style": "chronological",
+          "structure": "One narration point per timeline step",
+          "note": ""
+        },
+        "narration_text": "Starting with the second generation of computers in the 1950s, we saw the replacement of bulky vacuum tubes with transistors, which made computers faster, smaller, and more reliable. Next, the third generation introduced integrated circuits in the 1960s, allowing multiple transistors to be placed on a single chip, further increasing efficiency and reducing size. Moving into the 1970s and 1980s, the fourth generation brought microprocessors, which integrated the computer's central processing unit onto a single chip, making computers even more compact and affordable for personal use. Finally, the fifth generation, beginning in the 1980s and continuing into the 2000s, focuses on artificial intelligence and advanced computing technologies, aiming to create machines that can learn, reason, and interact more naturally with humans.",
+        "visual_content": {
+          "timeline_items": [
+            {
+              "phase_title": "1956-1963: Second Generation",
+              "description": "The second generation of computers replaced bulky vacuum tubes with transistors, which were invented in 1947 by Bell Labs. This change made computers faster, smaller, more energy-efficient, and more reliable. Transistors significantly improved computing power and reduced heat output compared to the first generation."
+            },
+            {
+              "phase_title": "1964-1971: Third Generation",
+              "description": "The third generation introduced integrated circuits, which allowed multiple transistors to be placed on a single silicon chip. This advancement further increased processing speed and efficiency while reducing the size and cost of computers. These machines also supported higher-level programming languages and more sophisticated operating systems."
+            },
+            {
+              "phase_title": "1971-1980s: Fourth Generation",
+              "description": "The fourth generation was marked by the development of microprocessors, integrating the computer's central processing unit onto a single chip. This innovation made computers more compact, affordable, and accessible to individuals and small businesses. Personal computers became widespread during this era, transforming computing from specialized labs to everyday use."
+            },
+            {
+              "phase_title": "1980s-2000s: Fifth Generation",
+              "description": "The fifth generation focuses on artificial intelligence and advanced computing technologies. Efforts during this period aimed to create machines capable of learning, reasoning, and interacting more naturally with humans. This generation emphasizes parallel processing, quantum computing research, and natural language processing to push the boundaries of intelligent computing."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Second Generation Computers: Transistors",
+        "slide_purpose": "intuition",
+        "selected_template": "Title with bullets and image",
+        "narration_role": "Interpret",
+        "narration_goal": "Learners will understand how transistors replaced vacuum tubes and improved computer performance during the second generation.",
+        "reasoning": "Using bullets with an image supports explaining the abstract concept of transistors with a visual representation, enhancing intuitive understanding.",
+        "slide_id": "sub_3_650855_s2",
+        "blueprint_file": "title_with_bullets_and_image/image_left.html",
+        "content_type": "BULLET_POINTS",
+        "visual_elements": {
+          "main_title": "Required",
+          "image": "Left side, 40-50% width",
+          "bullet_cards": {
+            "count": [
+              3,
+              4
+            ],
+            "format": "Icon + heading + text"
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            3,
+            4
+          ],
+          "sentence_count": null,
+          "style": "visual_reference",
+          "structure": "",
+          "note": "Fewer points due to image taking space"
+        },
+        "image_generator": "gemini",
+        "image_generator_reasoning": "The slide requires accurate depiction of a specific historical technology (second‑generation computers and transistors), which calls for high technical and period fidelity.",
+        "requires_high_accuracy": true,
+        "narration_text": "Let's explore how transistors revolutionized computers in the 1950s. First, transistors replaced bulky vacuum tubes, making computers smaller, faster, and more reliable. Unlike vacuum tubes that generated a lot of heat and were prone to failure, transistors used less power and lasted much longer. This improvement allowed computers to perform more complex calculations with greater speed and efficiency. As a result, second generation computers became more accessible and practical for businesses and scientific research, setting the stage for future technological advances.",
+        "visual_content": {
+          "bullets": [
+            {
+              "heading": "Transistors Replace Vacuum Tubes",
+              "description": "Transistors replaced bulky vacuum tubes, making second generation computers smaller, faster, and more reliable.",
+              "icon": "ri-cpu"
+            },
+            {
+              "heading": "Reduced Heat and Power Usage",
+              "description": "Transistors generated less heat and consumed less power compared to vacuum tubes, improving efficiency.",
+              "icon": "ri-battery"
+            },
+            {
+              "heading": "Increased Durability and Lifespan",
+              "description": "Transistors lasted much longer and were less prone to failure than vacuum tubes, enhancing computer reliability.",
+              "icon": "ri-shield"
+            },
+            {
+              "heading": "Enabled Complex, Faster Computing",
+              "description": "These improvements allowed second generation computers to perform more complex calculations with greater speed.",
+              "icon": "ri-computer"
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Third Generation: Integrated Circuits",
+        "slide_purpose": "intuition",
+        "selected_template": "Image and text",
+        "narration_role": "Guide",
+        "narration_goal": "Learners will grasp how integrated circuits miniaturized components and increased reliability and speed in third-generation computers.",
+        "reasoning": "A narrative style with a strong image helps build intuition about integrated circuits by combining detailed explanation with visual context.",
+        "slide_id": "sub_3_650855_s3",
+        "blueprint_file": "title_with_bullets_and_image/image_left.html",
+        "content_type": "BULLET_POINTS",
+        "visual_elements": {
+          "main_title": "Required",
+          "image": "Left side, 40-50% width",
+          "bullet_cards": {
+            "count": [
+              3,
+              4
+            ],
+            "format": "Icon + heading + text"
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            3,
+            4
+          ],
+          "sentence_count": null,
+          "style": "visual_reference",
+          "structure": "",
+          "note": "Fewer points due to image taking space"
+        },
+        "image_generator": "gemini",
+        "image_generator_reasoning": "The slide requires accurate depiction of specific historical technology (integrated circuits, transistors, early microprocessors) to convey intuition about computer generations, which calls for high technical and historical precision.",
+        "requires_high_accuracy": true,
+        "narration_text": "Let's start by understanding what made third-generation computers special. They used integrated circuits, which are tiny chips that combined many electronic components into a single unit. This miniaturization meant computers could be much smaller than before. Next, because these components were all on one chip, the connections were shorter and more reliable, which helped reduce errors and increased the overall speed of processing. Finally, this innovation made computers more affordable and energy-efficient, paving the way for the more powerful and compact machines we use today.",
+        "visual_content": {
+          "bullets": [
+            {
+              "heading": "Introduction of Integrated Circuits",
+              "description": "Third-generation computers (1965-1971) used integrated circuits, combining many components on a single silicon chip.",
+              "icon": "ri-tv"
+            },
+            {
+              "heading": "Smaller and More Compact",
+              "description": "Integrated circuits miniaturized components, making computers significantly smaller than previous generations.",
+              "icon": "ri-tv"
+            },
+            {
+              "heading": "Increased Speed and Reliability",
+              "description": "Shorter connections on chips reduced errors and boosted processing speed and efficiency.",
+              "icon": "ri-cpu"
+            },
+            {
+              "heading": "Affordable and Energy-Efficient",
+              "description": "This innovation lowered costs and energy use, enabling more powerful, compact machines.",
+              "icon": "ri-wallet-2"
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Fourth Generation: Microprocessors",
+        "slide_purpose": "definition",
+        "selected_template": "Title with bullets",
+        "narration_role": "Emphasize",
+        "narration_goal": "Learners will identify the microprocessor as the defining technology of the fourth generation and understand its impact on computing power and size.",
+        "reasoning": "A bullet list efficiently breaks down the key features and significance of microprocessors in a clear, focused manner without requiring visuals.",
+        "slide_id": "sub_3_650855_s4",
+        "blueprint_file": "title_with_bullets/default.html",
+        "content_type": "BULLET_POINTS",
+        "visual_elements": {
+          "main_title": "Required, scalable font",
+          "subtitle": "Optional",
+          "bullet_cards": {
+            "icon": "Required for each",
+            "heading": "Bold, 3-6 words",
+            "text": "1-2 sentences per bullet"
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            6
+          ],
+          "sentence_count": null,
+          "style": "explanatory",
+          "structure": "Each narration point = one bullet to generate",
+          "note": ""
+        },
+        "narration_text": "The fourth generation of computers is defined by the invention of the microprocessor, a tiny chip that contains the entire central processing unit on a single integrated circuit. This breakthrough dramatically increased computing power while reducing the size and cost of computers. Microprocessors allowed computers to become more accessible and portable, paving the way for personal computers and modern devices. By integrating all processing functions into one chip, microprocessors made computers faster, more efficient, and more reliable than ever before. Understanding the microprocessor helps us see how computing evolved from large machines to the compact devices we use today.",
+        "visual_content": {
+          "bullets": [
+            {
+              "heading": "Microprocessor Innovation",
+              "description": "The microprocessor is a tiny chip that contains the entire CPU on a single integrated circuit.",
+              "icon": "ri-cpu"
+            },
+            {
+              "heading": "Increased Computing Power",
+              "description": "Microprocessors dramatically improved speed, accuracy, and reliability of computers.",
+              "icon": "ri-cpu"
+            },
+            {
+              "heading": "Smaller and Affordable Computers",
+              "description": "Microprocessors reduced computer size and cost, making them more accessible and portable.",
+              "icon": "ri-computer"
+            },
+            {
+              "heading": "Foundation for Personal Computers",
+              "description": "This technology paved the way for personal computers and modern compact devices.",
+              "icon": "ri-computer"
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Fifth Generation: Artificial Intelligence",
+        "slide_purpose": "intuition",
+        "selected_template": "Two columns",
+        "narration_role": "Contrast",
+        "narration_goal": "Learners will compare traditional computing with AI-driven computing to appreciate the advancements and challenges introduced by AI.",
+        "reasoning": "A two-column comparison highlights differences and advancements between conventional computers and AI, making abstract AI concepts more concrete.",
+        "slide_id": "sub_3_650855_s5",
+        "blueprint_file": "columns/two_columns.html",
+        "content_type": "TWO_COLUMN_TEXT",
+        "visual_elements": {
+          "main_title": "Top of slide",
+          "columns": {
+            "count": 2,
+            "per_column": {
+              "column_title": "Bold heading with underline",
+              "text": "Paragraph format, ~60-100 words"
+            }
+          }
+        },
+        "narration_format": "comparative_points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            4
+          ],
+          "sentence_count": null,
+          "style": "contrasting",
+          "structure": "Balanced comparison between sides",
+          "note": ""
+        },
+        "narration_text": "Traditional computing relies on explicit instructions and follows a fixed set of rules to solve problems. It excels at tasks that are well-defined and predictable, like calculations or data processing. In contrast, AI-driven computing aims to mimic human intelligence, allowing machines to learn from experience, recognize patterns, and make decisions even when faced with uncertainty. While traditional computers process information sequentially and require precise programming, AI systems can adapt and improve over time through techniques like machine learning. However, this flexibility comes with challenges, such as the need for large amounts of data and the difficulty in understanding how AI reaches certain conclusions. By comparing these approaches, we see how AI represents a significant leap forward, introducing both exciting possibilities and new complexities in computing.",
+        "visual_content": {
+          "columns": [
+            {
+              "title": "Traditional Computing",
+              "text": "Traditional computing relies on explicit instructions and fixed rules to solve well-defined, predictable tasks such as calculations and data processing. It processes information sequentially and requires precise programming to function effectively."
+            },
+            {
+              "title": "AI-Driven Computing",
+              "text": "AI-driven computing mimics human intelligence by learning from experience, recognizing patterns, and making decisions under uncertainty. It adapts and improves over time using techniques like machine learning, though it requires large data sets and can be challenging to interpret."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Summary: Key Advances from 2nd to 5th Generations",
+        "slide_purpose": "reinforcement",
+        "selected_template": "Icons with text",
+        "narration_role": "Reinforce",
+        "narration_goal": "Learners will recall and reinforce the major technological breakthroughs and their impacts across the second to fifth computer generations.",
+        "reasoning": "Icons with text provide a visually engaging summary that reinforces key takeaways, supporting memory retention and review.",
+        "slide_id": "sub_3_650855_s6",
+        "blueprint_file": "cards_and_toggles/icons_with_text.html",
+        "content_type": "ICON_GRID",
+        "visual_elements": {
+          "main_title": "Centered, large",
+          "subtitle": "Centered, below accent line",
+          "icon_items": {
+            "count": [
+              3,
+              6
+            ],
+            "layout": "3 cols (3 items), 2x2 (4), 3-2 (5), 3x2 (6)",
+            "per_item": {
+              "icon": "Circular, floating",
+              "heading": "Bold, 3-5 words",
+              "text": "1-2 sentences, 12-20 words"
+            }
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            3,
+            6
+          ],
+          "sentence_count": null,
+          "style": "key_takeaways",
+          "structure": "Brief statement per icon",
+          "note": ""
+        },
+        "narration_text": "Let's review the major breakthroughs that shaped computer technology from the second to the fifth generation. First, the second generation introduced transistors, which replaced bulky vacuum tubes, making computers smaller, faster, and more reliable. Next, the third generation brought integrated circuits, allowing thousands of transistors to fit on a single chip, further boosting speed and efficiency. Then, the fourth generation introduced microprocessors, combining the entire processing unit onto one chip, which paved the way for personal computers. Finally, the fifth generation focuses on artificial intelligence, aiming to create machines that can learn, reason, and solve complex problems, pushing computing into new frontiers. Together, these advances show a clear progression toward more powerful, compact, and intelligent systems that have transformed how we live and work.",
+        "visual_content": {}
+      }
+    ],
+    "sub_4_df4eeb": [
+      {
+        "slide_title": "Sixth Generation Computers: Emerging Technologies",
+        "slide_purpose": "definition",
+        "selected_template": "Title card",
+        "narration_role": "Introduce",
+        "narration_goal": "Learners will understand the scope and significance of sixth generation computers and their emerging technologies.",
+        "reasoning": "A Title card sets a strong thematic introduction highlighting the importance and timeframe of sixth generation computers to orient advanced learners.",
+        "slide_id": "sub_4_df4eeb_s1",
+        "blueprint_file": "title_card/default.html",
+        "content_type": "NO_NARRATION_POINTS",
+        "visual_elements": {
+          "heading_badge": "Required (e.g., 'Chapter 1')",
+          "main_title": "1-2 lines, 5-8 words total",
+          "subtitle": "1-2 sentences, 20-40 words",
+          "hero_image": "Required, right-side placement"
+        },
+        "narration_format": "paragraph",
+        "narration_constraints": {
+          "point_count": null,
+          "sentence_count": [
+            3,
+            5
+          ],
+          "style": "motivational_hook",
+          "structure": "",
+          "note": "Narration is SEPARATE from visual content - just spoken introduction"
+        },
+        "image_generator": "dalle",
+        "image_generator_reasoning": "The slide covers abstract, forward‑looking technologies (AI, quantum computing, nanotech) where conceptual metaphors and generic icons are sufficient, so a medium‑accuracy generator is ideal.",
+        "requires_high_accuracy": false,
+        "narration_text": "Imagine a world where computers not only process information but also learn, adapt, and interact with us naturally. Sixth generation computers are making this vision a reality through groundbreaking technologies like artificial intelligence, quantum computing, and advanced robotics. These innovations are transforming how we live, work, and solve complex problems, opening doors to possibilities we once only dreamed of. Understanding these emerging technologies helps us appreciate the incredible potential of modern computing and prepares us for the exciting future ahead.",
+        "visual_content": {
+          "subtitle": "Imagine a world where computers not only process information but also learn, adapt, and interact wit..."
+        }
+      },
+      {
+        "slide_title": "Core Technologies Driving Sixth Generation Computers",
+        "slide_purpose": "intuition",
+        "selected_template": "Title with bullets and image",
+        "narration_role": "Interpret",
+        "narration_goal": "Learners will grasp the key enabling technologies such as AI, quantum computing, and nanotechnology that characterize this generation.",
+        "reasoning": "The abstract and complex nature of emerging technologies benefits from visual support alongside concise explanations to build intuition.",
+        "slide_id": "sub_4_df4eeb_s2",
+        "blueprint_file": "title_with_bullets_and_image/image_left.html",
+        "content_type": "BULLET_POINTS",
+        "visual_elements": {
+          "main_title": "Required",
+          "image": "Left side, 40-50% width",
+          "bullet_cards": {
+            "count": [
+              3,
+              4
+            ],
+            "format": "Icon + heading + text"
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            3,
+            4
+          ],
+          "sentence_count": null,
+          "style": "visual_reference",
+          "structure": "",
+          "note": "Fewer points due to image taking space"
+        },
+        "image_generator": "dalle",
+        "image_generator_reasoning": "The slide covers emerging, forward‑looking technologies and abstract future concepts, which are best visualized with conceptual illustrations rather than precise historical depictions.",
+        "requires_high_accuracy": false,
+        "narration_text": "To understand what makes sixth generation computers unique, we need to look at the key technologies powering them. First, artificial intelligence plays a central role by enabling machines to learn, reason, and make decisions, moving beyond simple programmed instructions. Next, quantum computing introduces a new way of processing information using quantum bits, which can solve complex problems much faster than traditional computers. Additionally, nanotechnology allows us to build incredibly small and efficient components, pushing the limits of speed and miniaturization. Together, these technologies create a powerful foundation for smarter, faster, and more adaptable computers that are shaping the future of computing.",
+        "visual_content": {
+          "bullets": [
+            {
+              "heading": "Artificial Intelligence (AI)",
+              "description": "Enables machines to learn, reason, and make decisions beyond basic programmed instructions.",
+              "icon": "ri-code-ai"
+            },
+            {
+              "heading": "Quantum Computing",
+              "description": "Uses quantum bits to process information faster and solve complex problems efficiently.",
+              "icon": "ri-code"
+            },
+            {
+              "heading": "Nanotechnology",
+              "description": "Allows building smaller, more efficient components, enhancing speed and miniaturization in computers.",
+              "icon": "ri-tv"
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Timeline of Sixth Generation Computer Milestones",
+        "slide_purpose": "process",
+        "selected_template": "Timeline",
+        "narration_role": "Guide",
+        "narration_goal": "Learners will understand the chronological progression and key developments from early 2000s to present.",
+        "reasoning": "A timeline effectively organizes historical and technological advances, helping learners link events and innovations over time.",
+        "slide_id": "sub_4_df4eeb_s3",
+        "blueprint_file": "timeline/default.html",
+        "content_type": "TIMELINE_STEPS",
+        "visual_elements": {
+          "main_title": "Left-aligned, medium size",
+          "timeline_items": {
+            "count": [
+              2,
+              4
+            ],
+            "per_item": {
+              "dot": "Circle on left line",
+              "phase_title": "Bold heading",
+              "description": "Paragraph text, variable length based on count"
+            }
+          }
+        },
+        "narration_format": "sequential_points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            4
+          ],
+          "sentence_count": null,
+          "style": "chronological",
+          "structure": "One narration point per timeline step",
+          "note": ""
+        },
+        "narration_text": "Let's begin by looking at the early 2000s, when sixth generation computers started to emerge with the integration of advanced technologies like artificial intelligence and quantum computing research. As we move through the 2010s, we see significant progress in mobile computing and cloud technology, which transformed how we access and process information. In the most recent years, from the late 2010s to today, developments in machine learning, natural language processing, and edge computing have driven smarter, faster, and more efficient systems, shaping the future of computing as we know it.",
+        "visual_content": {
+          "timeline_items": [
+            {
+              "phase_title": "1990s: Emergence of Sixth Generation Computers",
+              "description": "The sixth generation of computers began around 1990, marked by the introduction of advanced operating systems such as Microsoft Windows 3.0, which enhanced user interaction and compatibility with DOS. This era saw the integration of artificial intelligence concepts and early research into quantum computing, setting the foundation for more intelligent and efficient computing systems."
+            },
+            {
+              "phase_title": "2000s-2010s: Growth of Mobile and Cloud Computing",
+              "description": "During the 2000s and into the 2010s, significant advancements in mobile computing and cloud technologies transformed how data was accessed and processed. Portable devices became widespread, and cloud infrastructure enabled scalable, on-demand computing resources, greatly enhancing connectivity and computational power for users and organizations worldwide."
+            },
+            {
+              "phase_title": "Late 2010s to Present: AI and Edge Computing Revolution",
+              "description": "From the late 2010s to today, developments in machine learning, natural language processing, and edge computing have driven smarter, faster, and more efficient computer systems. These technologies enable real-time data processing closer to the source, improving responsiveness and enabling new applications in various fields, thus shaping the future trajectory of sixth generation computing."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Comparing Sixth Generation with Previous Generations",
+        "slide_purpose": "comparison",
+        "selected_template": "Two columns",
+        "narration_role": "Contrast",
+        "narration_goal": "Learners will be able to differentiate sixth generation computers from earlier generations in terms of technology and capabilities.",
+        "reasoning": "Two columns allow clear side-by-side comparison of features, highlighting evolution and breakthroughs.",
+        "slide_id": "sub_4_df4eeb_s4",
+        "blueprint_file": "columns/two_columns.html",
+        "content_type": "TWO_COLUMN_TEXT",
+        "visual_elements": {
+          "main_title": "Top of slide",
+          "columns": {
+            "count": 2,
+            "per_column": {
+              "column_title": "Bold heading with underline",
+              "text": "Paragraph format, ~60-100 words"
+            }
+          }
+        },
+        "narration_format": "comparative_points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            4
+          ],
+          "sentence_count": null,
+          "style": "contrasting",
+          "structure": "Balanced comparison between sides",
+          "note": ""
+        },
+        "narration_text": "Let's explore how sixth generation computers differ from earlier generations. First, earlier generations relied on hardware improvements like transistors and integrated circuits, while sixth generation computers focus heavily on artificial intelligence and advanced software capabilities. Second, previous generations were mainly designed for specific tasks and required manual programming, but sixth generation machines are more adaptive, capable of learning and making decisions on their own. Third, earlier computers were larger, slower, and less energy-efficient, whereas sixth generation systems are compact, faster, and use energy more efficiently thanks to modern technologies like quantum computing and nanotechnology. Finally, the connectivity and user interaction have evolved; older generations had limited communication abilities, but sixth generation computers are highly connected through the internet and support natural language processing, making human-computer interaction much more intuitive. These contrasts highlight the significant leap in technology and capabilities that define the sixth generation.",
+        "visual_content": {
+          "columns": [
+            {
+              "title": "Hardware & Efficiency",
+              "text": "Earlier generations used transistors and integrated circuits, resulting in larger, slower, and less energy-efficient machines. Sixth generation computers leverage advanced technologies like quantum computing and nanotechnology, making them compact, faster, and more energy-efficient, marking a significant leap in hardware capabilities."
+            },
+            {
+              "title": "Intelligence & Interaction",
+              "text": "Previous computers required manual programming and were task-specific, with limited connectivity. Sixth generation systems focus on artificial intelligence, enabling learning and decision-making, and feature enhanced connectivity and natural language processing, providing more intuitive human-computer interactions."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Architecture and System Design Innovations",
+        "slide_purpose": "visualization",
+        "selected_template": "Diagram",
+        "narration_role": "Emphasize",
+        "narration_goal": "Learners will visualize the complex system architectures including quantum processors and AI integration in sixth generation computers.",
+        "reasoning": "A detailed diagram with labels and a key takeaway sidebar helps unpack complex, abstract system designs effectively.",
+        "slide_id": "sub_4_df4eeb_s5",
+        "blueprint_file": "diagrams/bargraph.html",
+        "content_type": "CHART_WITH_ANALYSIS",
+        "visual_elements": {
+          "chart": "Main visual element",
+          "sidebar_analysis": "Text area, 40-60 words"
+        },
+        "narration_format": "data_interpretation",
+        "narration_constraints": {
+          "point_count": null,
+          "sentence_count": [
+            3,
+            5
+          ],
+          "style": "analytical",
+          "structure": "",
+          "note": ""
+        },
+        "narration_text": "Let's explore how sixth generation computers bring together advanced system designs that were once only theoretical. At the heart of these innovations are quantum processors, which use principles of quantum mechanics to perform complex calculations much faster than traditional processors. Alongside these, artificial intelligence integration allows systems to learn, adapt, and optimize performance dynamically. This combination creates architectures that are highly parallel, flexible, and capable of handling vast amounts of data in real time. By understanding these relationships, we can appreciate how these technologies work together to push computing power into new realms, setting the stage for future breakthroughs.",
+        "visual_content": {}
+      },
+      {
+        "slide_title": "Key Emerging Technologies Impacting Future Directions",
+        "slide_purpose": "reinforcement",
+        "selected_template": "Icons with text",
+        "narration_role": "Reinforce",
+        "narration_goal": "Learners will consolidate understanding of critical emerging technologies like AI, quantum computing, and bio-computing shaping future computers.",
+        "reasoning": "Icons with text provide a visually engaging summary of key technologies facilitating retention and recall.",
+        "slide_id": "sub_4_df4eeb_s6",
+        "blueprint_file": "cards_and_toggles/icons_with_text.html",
+        "content_type": "ICON_GRID",
+        "visual_elements": {
+          "main_title": "Centered, large",
+          "subtitle": "Centered, below accent line",
+          "icon_items": {
+            "count": [
+              3,
+              6
+            ],
+            "layout": "3 cols (3 items), 2x2 (4), 3-2 (5), 3x2 (6)",
+            "per_item": {
+              "icon": "Circular, floating",
+              "heading": "Bold, 3-5 words",
+              "text": "1-2 sentences, 12-20 words"
+            }
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            3,
+            6
+          ],
+          "sentence_count": null,
+          "style": "key_takeaways",
+          "structure": "Brief statement per icon",
+          "note": ""
+        },
+        "narration_text": "First, artificial intelligence is transforming computers by enabling them to learn, adapt, and make decisions, making technology smarter and more responsive. Next, quantum computing introduces a new way of processing information using quantum bits, which can solve complex problems much faster than traditional computers. Then, bio-computing merges biology and technology, using biological materials to create more efficient and sustainable computing systems. Together, these technologies are driving the future of computing, opening possibilities we are just beginning to explore.",
+        "visual_content": {}
+      },
+      {
+        "slide_title": "Challenges and Future Research Directions",
+        "slide_purpose": "reinforcement",
+        "selected_template": "Large bullet list",
+        "narration_role": "Connect",
+        "narration_goal": "Learners will recognize current challenges and ongoing research that will influence the evolution of sixth generation computing.",
+        "reasoning": "A large bullet list allows detailed points on challenges and research to be clearly presented and emphasized for advanced learners.",
+        "slide_id": "sub_4_df4eeb_s7",
+        "blueprint_file": "title_with_bullets/default.html",
+        "content_type": "BULLET_POINTS",
+        "visual_elements": {
+          "main_title": "Required, scalable font",
+          "subtitle": "Optional",
+          "bullet_cards": {
+            "icon": "Required for each",
+            "heading": "Bold, 3-6 words",
+            "text": "1-2 sentences per bullet"
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            6
+          ],
+          "sentence_count": null,
+          "style": "explanatory",
+          "structure": "Each narration point = one bullet to generate",
+          "note": ""
+        },
+        "narration_text": "One major challenge in sixth generation computing is managing the enormous amounts of data generated every second, which requires more advanced processing and storage solutions. Another important area is improving energy efficiency, as powerful computers often consume a lot of electricity, so researchers are exploring new materials and designs to reduce this impact. Security is also a critical concern, with the need to protect systems from increasingly sophisticated cyber threats while maintaining user privacy. Additionally, developing more intuitive and human-like artificial intelligence remains a goal, pushing the boundaries of machine learning and natural language understanding. Finally, ongoing research focuses on integrating emerging technologies like quantum computing and nanotechnology, which promise to revolutionize computing but also bring new challenges to overcome. Together, these challenges guide the future direction of computing innovation.",
+        "visual_content": {
+          "bullets": [
+            {
+              "heading": "Data Management Challenges",
+              "description": "Handling enormous data volumes requires advanced processing and storage solutions.",
+              "icon": "ri-database"
+            },
+            {
+              "heading": "Energy Efficiency Improvements",
+              "description": "Reducing electricity consumption through new materials and designs is a key research focus.",
+              "icon": "ri-leaf"
+            },
+            {
+              "heading": "Security and Privacy",
+              "description": "Protecting systems from sophisticated cyber threats while maintaining user privacy is critical.",
+              "icon": "ri-door-lock"
+            },
+            {
+              "heading": "Advancing Human-like AI",
+              "description": "Developing intuitive AI pushes boundaries in machine learning and natural language understanding.",
+              "icon": "ri-code-ai"
+            },
+            {
+              "heading": "Integrating Emerging Technologies",
+              "description": "Quantum computing and nanotechnology integration offers revolutionary potential but presents new challenges.",
+              "icon": "ri-bell"
+            }
+          ]
+        }
+      }
+    ],
+    "sub_5_782c71": [
+      {
+        "slide_title": "Evolution of Computer Generations",
+        "slide_purpose": "definition",
+        "selected_template": "Title card",
+        "narration_role": "Introduce",
+        "narration_goal": "Learners should understand the concept of computer generations and why their evolution matters in computing history.",
+        "reasoning": "Starting with a Title card provides a clear, impactful introduction to the subtopic, setting context and engaging learners with a thematic visual.",
+        "slide_id": "sub_5_782c71_s1",
+        "blueprint_file": "title_card/default.html",
+        "content_type": "NO_NARRATION_POINTS",
+        "visual_elements": {
+          "heading_badge": "Required (e.g., 'Chapter 1')",
+          "main_title": "1-2 lines, 5-8 words total",
+          "subtitle": "1-2 sentences, 20-40 words",
+          "hero_image": "Required, right-side placement"
+        },
+        "narration_format": "paragraph",
+        "narration_constraints": {
+          "point_count": null,
+          "sentence_count": [
+            3,
+            5
+          ],
+          "style": "motivational_hook",
+          "structure": "",
+          "note": "Narration is SEPARATE from visual content - just spoken introduction"
+        },
+        "image_generator": "gemini",
+        "image_generator_reasoning": "The slide needs accurate depictions of specific historical computer hardware (vacuum tubes, transistors, integrated circuits) across different generations, which requires high technical and historical precision.",
+        "requires_high_accuracy": true,
+        "narration_text": "Understanding the evolution of computer generations helps us see how technology has rapidly advanced over time, shaping the devices we use today. Each generation represents a leap in innovation, from bulky machines using vacuum tubes to sleek computers powered by microprocessors. This progression not only highlights improvements in speed and efficiency but also shows how computing has become more accessible and powerful. By exploring these changes, we gain insight into the foundations of modern computing and why these developments matter.",
+        "visual_content": {
+          "subtitle": "Understanding the evolution of computer generations helps us see how technology has rapidly advanced..."
+        }
+      },
+      {
+        "slide_title": "Characteristics of Each Computer Generation",
+        "slide_purpose": "comparison",
+        "selected_template": "Four columns",
+        "narration_role": "Contrast",
+        "narration_goal": "Learners will grasp key features that differentiate the first four computer generations.",
+        "reasoning": "Four columns efficiently categorize and compare the main features of four generations side-by-side, using concise text and icons to aid retention.",
+        "slide_id": "sub_5_782c71_s2",
+        "blueprint_file": "columns/four_columns.html",
+        "content_type": "FOUR_COLUMN_CARDS",
+        "visual_elements": {
+          "columns": {
+            "count": 4,
+            "per_column": {
+              "icon": "Required",
+              "title": "2-3 words",
+              "description": "12-18 words (concise)"
+            }
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": 4,
+          "sentence_count": null,
+          "style": "concise_categorical",
+          "structure": "Brief point per column",
+          "note": ""
+        },
+        "narration_text": "First-generation computers used vacuum tubes, making them large and power-hungry, with limited speed and reliability. Second-generation machines switched to transistors, which were smaller, faster, and more energy-efficient, improving performance noticeably. Third-generation computers introduced integrated circuits, allowing even greater miniaturization and speed while reducing cost and heat. Fourth-generation computers brought microprocessors, enabling personal computers with high speed, compact size, and widespread accessibility. Each generation shows clear advancements in technology that improved efficiency, size, and usability.",
+        "visual_content": {
+          "columns": [
+            {
+              "title": "First Generation",
+              "text": "Used vacuum tubes, making computers large and power-hungry. These machines had limited speed and reliability, which restricted their overall performance and practical use."
+            },
+            {
+              "title": "Second Generation",
+              "text": "Introduced transistors, which were smaller, faster, and more energy-efficient than vacuum tubes. This advancement noticeably improved computer performance and reduced size and power consumption."
+            },
+            {
+              "title": "Third Generation",
+              "text": "Featured integrated circuits that allowed greater miniaturization and speed. These computers were more cost-effective and generated less heat, enhancing reliability and usability."
+            },
+            {
+              "title": "Fourth Generation",
+              "text": "Brought microprocessors that enabled personal computers to be compact, fast, and widely accessible. This generation marked a significant leap in efficiency, size reduction, and user availability."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Timeline of Computer Generations",
+        "slide_purpose": "process",
+        "selected_template": "Timeline",
+        "narration_role": "Guide",
+        "narration_goal": "Learners will understand the chronological progression and major milestones of computer generations.",
+        "reasoning": "A timeline visually organizes historical progression, making it easier to follow the evolution over time with clear dates and context.",
+        "slide_id": "sub_5_782c71_s3",
+        "blueprint_file": "timeline/default.html",
+        "content_type": "TIMELINE_STEPS",
+        "visual_elements": {
+          "main_title": "Left-aligned, medium size",
+          "timeline_items": {
+            "count": [
+              2,
+              4
+            ],
+            "per_item": {
+              "dot": "Circle on left line",
+              "phase_title": "Bold heading",
+              "description": "Paragraph text, variable length based on count"
+            }
+          }
+        },
+        "narration_format": "sequential_points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            4
+          ],
+          "sentence_count": null,
+          "style": "chronological",
+          "structure": "One narration point per timeline step",
+          "note": ""
+        },
+        "narration_text": "Let's begin by exploring the earliest generation of computers, which emerged in the 1940s. These first-generation machines used vacuum tubes and were large, slow, and consumed a lot of power. Next, in the 1950s and 1960s, the second generation introduced transistors, which made computers smaller, faster, and more reliable. Following that, the third generation, starting in the mid-1960s, brought integrated circuits, allowing even greater miniaturization and efficiency. Finally, the fourth generation, from the 1970s onward, saw the rise of microprocessors, leading to the personal computers we use today, marking a significant leap in accessibility and performance.",
+        "visual_content": {
+          "timeline_items": [
+            {
+              "phase_title": "First Generation: Vacuum Tubes (1946-1959)",
+              "description": "The earliest generation of computers appeared in the late 1940s and used vacuum tubes as their main electronic component. These machines were large, consumed a lot of power, and generated significant heat. They were relatively slow and prone to frequent failures. Despite these limitations, they laid the foundation for modern computing."
+            },
+            {
+              "phase_title": "Second Generation: Transistors (1959-1965)",
+              "description": "The second generation of computers replaced vacuum tubes with transistors, which were smaller, faster, and more reliable. Transistors also generated less heat, improving the overall efficiency and durability of machines. This advancement allowed computers to become more compact and accessible for broader scientific and business applications."
+            },
+            {
+              "phase_title": "Third Generation: Integrated Circuits (1965-1971)",
+              "description": "Starting in the mid-1960s, the third generation introduced integrated circuits, which combined multiple transistors into a single chip. This innovation significantly reduced the size and cost of computers while increasing their speed and efficiency. Operating systems also emerged during this period, enabling better management of hardware and software resources."
+            },
+            {
+              "phase_title": "Fourth Generation: Microprocessors (1971-Present)",
+              "description": "The fourth generation began with the development of microprocessors, which integrated the computer's central processing unit onto a single chip. This breakthrough led to the creation of personal computers and made computing technology widely accessible. It also spurred the development of graphical user interfaces, the mouse, and portable devices, revolutionizing how people interact with computers."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Key Technological Advances Driving Evolution",
+        "slide_purpose": "intuition",
+        "selected_template": "Title with bullets and image",
+        "narration_role": "Interpret",
+        "narration_goal": "Learners will connect specific technological breakthroughs to changes in computer generations.",
+        "reasoning": "Using bullets with an image supports understanding abstract technology concepts by pairing textual explanations with visual metaphors.",
+        "slide_id": "sub_5_782c71_s4",
+        "blueprint_file": "title_with_bullets_and_image/image_left.html",
+        "content_type": "BULLET_POINTS",
+        "visual_elements": {
+          "main_title": "Required",
+          "image": "Left side, 40-50% width",
+          "bullet_cards": {
+            "count": [
+              3,
+              4
+            ],
+            "format": "Icon + heading + text"
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            3,
+            4
+          ],
+          "sentence_count": null,
+          "style": "visual_reference",
+          "structure": "",
+          "note": "Fewer points due to image taking space"
+        },
+        "image_generator": "gemini",
+        "image_generator_reasoning": "The slide compares specific historical computer generations, requiring accurate depiction of real hardware like vacuum tubes, transistors, and microprocessors, which fits Gemini's high‑accuracy strengths.",
+        "requires_high_accuracy": true,
+        "narration_text": "Let's explore how major technological breakthroughs have shaped the evolution of computers. First, the invention of the transistor replaced bulky vacuum tubes, making computers smaller, faster, and more reliable. Next, the development of integrated circuits allowed many transistors to be packed onto a single chip, further boosting speed and reducing cost. Then came the microprocessor, which combined the computer's brain onto one chip, enabling personal computers and a new era of accessibility. Finally, advances in software and memory technology have continuously improved how efficiently computers operate, driving ongoing innovation across generations.",
+        "visual_content": {
+          "bullets": [
+            {
+              "heading": "Invention of the Transistor",
+              "description": "Replaced bulky vacuum tubes, making computers smaller, faster, and more reliable after World War II.",
+              "icon": "ri-cpu"
+            },
+            {
+              "heading": "Development of Integrated Circuits",
+              "description": "Allowed many transistors on a single chip, boosting speed and reducing computer costs significantly.",
+              "icon": "ri-cpu"
+            },
+            {
+              "heading": "Introduction of the Microprocessor",
+              "description": "Combined the computer's brain onto one chip, enabling personal computers and wider accessibility.",
+              "icon": "ri-cpu"
+            },
+            {
+              "heading": "Advances in Software and Memory",
+              "description": "Continuous improvements in software and memory technologies have enhanced computer efficiency and innovation.",
+              "icon": "ri-code"
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Comparing Early and Modern Computer Generations",
+        "slide_purpose": "comparison",
+        "selected_template": "Two columns",
+        "narration_role": "Contrast",
+        "narration_goal": "Learners will be able to identify major differences and improvements between early and current computer generations.",
+        "reasoning": "Two columns allow direct comparison of two contrasting groups, balancing word count for clarity and emphasizing evolution.",
+        "slide_id": "sub_5_782c71_s5",
+        "blueprint_file": "columns/two_columns.html",
+        "content_type": "TWO_COLUMN_TEXT",
+        "visual_elements": {
+          "main_title": "Top of slide",
+          "columns": {
+            "count": 2,
+            "per_column": {
+              "column_title": "Bold heading with underline",
+              "text": "Paragraph format, ~60-100 words"
+            }
+          }
+        },
+        "narration_format": "comparative_points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            4
+          ],
+          "sentence_count": null,
+          "style": "contrasting",
+          "structure": "Balanced comparison between sides",
+          "note": ""
+        },
+        "narration_text": "Let's explore the key differences between early and modern computer generations. Early computers were large, often filling entire rooms, while modern computers are compact and portable. The processing speed has dramatically improved; where early machines performed thousands of calculations per second, today’s computers handle billions effortlessly. Additionally, early computers used vacuum tubes, which were less reliable and consumed a lot of power, whereas modern computers rely on integrated circuits and microprocessors, making them faster and more energy-efficient. Finally, the cost and accessibility have changed significantly: early computers were extremely expensive and limited to large organizations, but modern computers are affordable and widely available to individuals around the world.",
+        "visual_content": {
+          "columns": [
+            {
+              "title": "Size & Performance",
+              "text": "Early computers were massive, often occupying entire rooms, and performed thousands of calculations per second. In contrast, modern computers are compact and portable, capable of handling billions of calculations effortlessly, showcasing a significant advancement in processing speed and design efficiency."
+            },
+            {
+              "title": "Technology & Accessibility",
+              "text": "Early computers used vacuum tubes, which were unreliable and power-hungry, making them expensive and limited to large organizations. Modern computers utilize integrated circuits and microprocessors, resulting in faster, energy-efficient devices that are affordable and widely accessible to individuals worldwide."
+            }
+          ]
+        }
+      },
+      {
+        "slide_title": "Summary: Evolution Impact and Future Directions",
+        "slide_purpose": "reinforcement",
+        "selected_template": "Large bullet list",
+        "narration_role": "Reinforce",
+        "narration_goal": "Learners will consolidate key takeaways about the evolution and significance of computer generations.",
+        "reasoning": "A large bullet list with full sentences provides a strong summary and revision tool, reinforcing critical points before moving on.",
+        "slide_id": "sub_5_782c71_s6",
+        "blueprint_file": "title_with_bullets/default.html",
+        "content_type": "BULLET_POINTS",
+        "visual_elements": {
+          "main_title": "Required, scalable font",
+          "subtitle": "Optional",
+          "bullet_cards": {
+            "icon": "Required for each",
+            "heading": "Bold, 3-6 words",
+            "text": "1-2 sentences per bullet"
+          }
+        },
+        "narration_format": "points",
+        "narration_constraints": {
+          "point_count": [
+            2,
+            6
+          ],
+          "sentence_count": null,
+          "style": "explanatory",
+          "structure": "Each narration point = one bullet to generate",
+          "note": ""
+        },
+        "narration_text": "Understanding the evolution of computer generations helps us see how technology has advanced from simple mechanical devices to powerful, compact machines that shape our daily lives. Each generation brought significant improvements, such as faster processing speeds, smaller sizes, and greater reliability, which allowed computers to become more accessible and useful. These changes not only impacted industries but also transformed how we communicate, work, and solve problems. Looking ahead, future developments promise even more intelligent, energy-efficient, and interconnected systems that will continue to expand the possibilities of computing. Remembering this journey highlights the importance of innovation and adaptation in technology’s ongoing story.",
+        "visual_content": {
+          "bullets": [
+            {
+              "heading": "Technological Progression",
+              "description": "Computer generations evolved from simple mechanical devices to powerful, compact machines shaping daily life.",
+              "icon": "ri-computer"
+            },
+            {
+              "heading": "Key Improvements Over Time",
+              "description": "Each generation brought faster processing, smaller sizes, and greater reliability, enhancing accessibility and usefulness.",
+              "icon": "ri-arrow-up"
+            },
+            {
+              "heading": "Impact on Society",
+              "description": "Advancements transformed industries and changed how we communicate, work, and solve problems.",
+              "icon": "ri-user"
+            },
+            {
+              "heading": "Future Innovations",
+              "description": "Upcoming developments promise more intelligent, energy-efficient, and interconnected computing systems.",
+              "icon": "ri-apps-ai"
+            },
+            {
+              "heading": "Importance of Innovation",
+              "description": "Understanding this evolution highlights the role of innovation and adaptation in technology’s ongoing story.",
+              "icon": "ri-lightbulb"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "intro_text": "",
+  "lesson_intro_narration": {
+    "narration_text": "Welcome to our lesson on Computer Generations, I'm thrilled to have you on board. As we embark on this journey, it's essential to understand the evolution of computers and how they've transformed over time. Mastering this topic will give you a solid foundation in computer science, allowing you to appreciate the advancements and innovations that have shaped the technology we use today. By the end of this lesson, you'll have a comprehensive understanding of the different computer generations, their characteristics, and the significance of each milestone in the development of modern computing. Let's explore this fascinating topic together and discover how it has revolutionized the way we live and work."
+  },
+  "subtopic_intro_narrations": {
+    "sub_1_582521": {
+      "narration_text": "To understand the evolution of computers, we'll start by examining the concept of computer generations, which categorizes the development of computers into distinct phases based on technological advancements and innovations."
+    },
+    "sub_2_c5c5fe": {
+      "narration_text": "To understand the foundation of computer evolution, we'll examine the first generation of computers, which emerged in the 1940s-1950s and were characterized by their use of vacuum tubes as the primary electronic component."
+    },
+    "sub_3_650855": {
+      "narration_text": "As we delve into the specifics of computer evolution, we'll examine the significant technological advancements of the second to fifth generations, which introduced transistors, integrated circuits, microprocessors, and artificial intelligence, revolutionizing the size, speed, and capabilities of computers."
+    },
+    "sub_4_df4eeb": {
+      "narration_text": "As we move into the sixth generation of computers, we'll explore the emerging technologies and future directions that have defined this era, including artificial intelligence, nanotechnology, and the Internet of Things, which have significantly impacted the development of modern computing systems."
+    },
+    "sub_5_782c71": {
+      "narration_text": "To deepen our understanding of computer science, we will now delve into the 'Comparison and Evolution of Computer Generations', examining the key advancements, technological shifts, and innovations that distinguish each generation from its predecessors."
+    }
+  },
+  "messages": []
+}

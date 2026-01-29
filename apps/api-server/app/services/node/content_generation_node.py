@@ -15,65 +15,33 @@ import json
 import re
 from typing import Dict, Any, List
 import os
+import sys  # Need this for all path manipulations
 from dotenv import load_dotenv
 from tavily import TavilyClient
 
 try:
-    from ..llm.model_loader import load_openai, load_groq_fast
+    from ..llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
+    from ..state import TutorState
 except ImportError:
-    import sys
-    import os
-
+    # Fallback for direct script execution
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    from llm.model_loader import load_openai, load_groq_fast
+    from llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
+    from state import TutorState
+
+# Import icon selector
+try:
+    from ..icon_selector import select_icons_batch
+except ImportError:
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+    from icon_selector import select_icons_batch
 
 load_dotenv()
 tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
 
-# Icon mapping for different content types
-ICON_SUGGESTIONS = {
-    "technology": [
-        "ri-cpu-line",
-        "ri-dashboard-line",
-        "ri-settings-3-line",
-        "ri-database-line",
-    ],
-    "process": [
-        "ri-play-circle-line",
-        "ri-arrow-right-circle-line",
-        "ri-refresh-line",
-        "ri-tools-line",
-    ],
-    "benefit": [
-        "ri-check-double-line",
-        "ri-star-line",
-        "ri-medal-line",
-        "ri-rocket-line",
-    ],
-    "feature": [
-        "ri-flashlight-line",
-        "ri-shield-check-line",
-        "ri-speed-line",
-        "ri-focus-3-line",
-    ],
-    "concept": [
-        "ri-lightbulb-line",
-        "ri-book-open-line",
-        "ri-stack-line",
-        "ri-file-list-line",
-    ],
-    "comparison": ["ri-scales-line", "ri-contrast-2-line", "ri-arrow-left-right-line"],
-    "warning": ["ri-alert-line", "ri-error-warning-line", "ri-shield-alert-line"],
-    "time": ["ri-time-line", "ri-calendar-line", "ri-history-line"],
-    "location": ["ri-map-pin-line", "ri-global-line", "ri-compass-line"],
-    "people": ["ri-user-line", "ri-team-line", "ri-group-line"],
-    "generic": [
-        "ri-circle-line",
-        "ri-checkbox-blank-circle-line",
-        "ri-stop-circle-line",
-    ],
-}
+# ═══════════════════════════════════════════════════════════════════════════
+# HELPER FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════
 
 
 def should_fact_check(slide_title: str, slide_purpose: str, subtopic_name: str) -> bool:
@@ -153,14 +121,10 @@ def generate_bullet_content(
     - Accuracy is ABSOLUTELY CRITICAL for this educational content
     
     Each bullet card must have:
-    1. **Icon** - A RemixIcon class name (e.g., "ri-flashlight-line", "ri-cpu-line")
-    2. **Heading** - Bold, concise title (3-6 words)
-    3. **Description** - 1-2 sentence explanation (12-20 words)
+    1. **Heading** - Bold, concise title (3-6 words)
+    2. **Description** - 1-2 sentence explanation (12-20 words)
     
-    ICON SUGGESTIONS:
-    {json.dumps(ICON_SUGGESTIONS, indent=2)}
-    
-    Choose icons that match the semantic meaning of each point.
+    NOTE: Icons will be automatically selected based on semantic meaning, so focus on clear headings.
     
     OUTPUT RULES:
     - Output EXACTLY {min_points} to {max_points} bullets
@@ -173,7 +137,6 @@ def generate_bullet_content(
     {{
       "bullets": [
         {{
-          "icon": "ri-flashlight-line",
           "heading": "Concise Title",
           "description": "Brief explanation of this point in 1-2 sentences."
         }}
@@ -187,6 +150,23 @@ def generate_bullet_content(
         result = json.loads(content)
 
         bullets = result.get("bullets", [])
+
+        # ⭐ USE ICON SELECTOR - Intelligently select icons based on content
+        print(f"   🎨 Selecting icons for {len(bullets)} bullets...")
+        selected_icons = select_icons_batch(
+            items=bullets,
+            context={
+                "slide_title": slide_title,
+                "slide_purpose": slide_purpose,
+                "subtopic_name": subtopic_name,
+            },
+        )
+
+        # Add icons to bullets
+        for i, bullet in enumerate(bullets):
+            bullet["icon"] = (
+                selected_icons[i] if i < len(selected_icons) else "ri-circle-line"
+            )
 
         # Validate count
         if min_points <= len(bullets) <= max_points:

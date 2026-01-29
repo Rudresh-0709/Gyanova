@@ -1,37 +1,65 @@
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel
+"""
+State Definition for AI Teaching System
+
+Using TypedDict for LangGraph compatibility - allows dictionary-style access
+while maintaining type hints and IDE support.
+"""
+
+from typing import TypedDict, Optional, List, Dict, Any
 
 
-class Slide(BaseModel):
-    title: Optional[str] = None
-    narration: Optional[str] = None
+class TutorState(TypedDict, total=False):
+    """
+    State for the AI teaching workflow.
 
-    audio_url: Optional[str] = None
-    image_url: Optional[str] = None
+    TypedDict allows:
+    - Dictionary-style access: state.get("key"), state["key"]
+    - Type hints for IDE support
+    - LangGraph compatibility
 
+    Fields are marked total=False so all keys are optional.
+    """
 
-class TutorState(BaseModel):
-    user_input: Optional[str] = None
-    topic: Optional[str] = None
-    slide_plan: Optional[Dict[str, Any]] = None
-    lesson_intro_narration: Optional[Dict[str, Any]] = None
-    subtopic_intro_narrations: Optional[Dict[str, Any]] = None
-    topic_granularity: Optional[str] = None
-    sub_topics: Optional[List[str]] = None
-    preffered_method: Optional[str] = None
+    # User Input
+    user_input: str
 
-    teacher_id: Optional[int] = None
-    teacher_voice_id: Optional[int] = None
-    teacher_gender: Optional[str] = "Male"
+    # Topic Extraction
+    topic: str
+    granularity: str
 
-    current_slide: Optional[int] = 0
-    slides: Optional[Slide] = None
+    # Subtopics
+    sub_topics: List[Dict[str, Any]]
 
-    user_interruption: Optional[str] = None
-    ai_response: Optional[str] = None
-    last_completed_node: Optional[str] = None
+    # Slide Planning & Content
+    slide_plan: Dict[str, Any]
+    slides: Dict[str, List[Dict[str, Any]]]  # subtopic_id -> list of slides
 
-    error: Optional[str] = None
+    # Narration
+    intro_text: str
+    lesson_intro_narration: Dict[str, Any]
+    subtopic_intro_narrations: Dict[str, Any]
 
-    is_paused: Optional[bool] = False
-    timestamp: Optional[str] = None
+    # Teacher Info
+    teacher_id: int
+    teacher_voice_id: int
+    teacher_gender: str
+
+    # Preferences
+    preferred_method: str
+    topic_granularity: str
+
+    # State Management
+    current_slide: int
+    last_completed_node: str
+
+    # Interaction
+    user_interruption: str
+    ai_response: str
+    messages: List[Dict[str, str]]
+
+    # Error Handling
+    error: str
+
+    # Flags
+    is_paused: bool
+    timestamp: str
