@@ -85,6 +85,21 @@
             color: #1a1a1a;
             line-height: 1.2;
             max-width: 900px;
+
+            /* Animation */
+            animation: titleFadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Blue accent line under title */

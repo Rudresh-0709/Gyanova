@@ -205,12 +205,223 @@ def generate_narration_for_slide(
         }
 
 
+def generate_narrations_batch(slides, subtopic_name, narration_style, difficulty_level):
+    """
+    Generate narrations for all slides in a subtopic using optimized batch approach.
+    Uses style-neutral examples to show length/structure without biasing content.
+    """
+    llm = load_openai()
+
+    # STYLE-NEUTRAL EXAMPLES (show length/structure, NOT style)
+    STYLE_NEUTRAL_EXAMPLES = f"""
+⚠️ THESE EXAMPLES SHOW TARGET LENGTH AND STRUCTURE ONLY - NOT STYLE!
+
+EXAMPLE 1 - Paragraph Format (142 words):
+Slide: "Introduction to Topic X"
+Narration: "Topic X represents a fundamental concept in this domain. It can be defined as the systematic approach to solving problems through structured methodology. This concept emerged during the period when researchers recognized the need for standardized processes. Understanding Topic X is important because it provides a framework for analysis, enables consistent results across different contexts, and forms the foundation for more advanced concepts. When we examine Topic X in detail, we observe three key characteristics: first, it emphasizes systematic organization; second, it relies on verifiable principles; third, it produces reproducible outcomes. These characteristics distinguish it from alternative approaches that may be less structured. By mastering Topic X, learners will be able to apply these principles in practical situations and recognize when this approach is most appropriate."
+
+EXAMPLE 2 - Points Format (156 words):
+Slide: "How Process Y Works"
+Narration: "Process Y operates through a series of distinct stages. First, the initial phase involves gathering necessary inputs and establishing baseline parameters, which sets the foundation for subsequent operations. Second, the transformation stage applies specific procedures to modify the inputs according to predetermined rules, ensuring consistency and accuracy throughout the process. Third, the validation phase checks that outputs meet required specifications, identifying any deviations that need correction. Fourth, the integration stage combines validated outputs with existing systems, maintaining compatibility and functionality. Finally, the optimization cycle reviews overall performance and identifies opportunities for improvement, creating a feedback loop that enhances future iterations. Each stage plays a critical role in ensuring the process functions correctly. Understanding these stages helps learners grasp both the technical mechanics and the logical flow of the overall process."
+
+📝 KEY OBSERVATION: Notice both examples are 120-180 words and provide COMPLETE explanations.
+Your narrations should match this LENGTH and DEPTH, but use the user's specified style: "{narration_style}"
+"""
+
+    # Build slide info blocks with strong separators
+    slides_info = []
+    for i, slide in enumerate(slides, 1):
+        narration_format = slide.get("narration_format", "points")
+        slide_block = f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 SLIDE {i} OF {len(slides)}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 METADATA:
+- Title: {slide.get('slide_title')}
+- Purpose: {slide.get('slide_purpose')}
+- Role: {slide.get('narration_role')}
+- Goal: {slide.get('narration_goal')}
+- Format: {narration_format} ({'paragraph' if narration_format == 'paragraph' else 'distinct teaching points'})
+- Constraints: {slide.get('narration_constraints', {})}
+
+⚠️ REQUIREMENTS FOR THIS SLIDE:
+1. Write 120-180 WORDS (count carefully!)
+2. Treat INDEPENDENTLY (no "as mentioned before", "in this slide")
+3. Follow role: {slide.get('narration_role')}
+4. Use THIS style: {narration_style}
+5. Format: {narration_format}
+"""
+        slides_info.append(slide_block)
+
+    # Build batch prompt with style-neutral examples
+    BATCH_PROMPT = f"""
+You are an expert teacher creating spoken narrations for a lesson.
+
+🎯 CONTEXT:
+- Subtopic: {subtopic_name}
+- Difficulty: {difficulty_level}
+- Narration Style: {narration_style}
+- Total Slides: {len(slides)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 LENGTH & STRUCTURE EXAMPLES (NOT STYLE EXAMPLES!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{STYLE_NEUTRAL_EXAMPLES}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎭 CRITICAL: YOUR STYLE TO USE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The examples above show LENGTH (120-180 words) and STRUCTURE requirements ONLY.
+
+✅ DO copy: Word count, depth of explanation, completeness
+❌ DO NOT copy: Tone, word choice, or writing approach from examples
+
+✅ YOUR NARRATIONS MUST USE THIS STYLE: "{narration_style}"
+
+Let the user's style guide ALL aspects of your writing:
+- Word choice and vocabulary
+- Sentence structure and flow  
+- Tone and personality
+- Teaching approach
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ CRITICAL INSTRUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **LENGTH**: Each narration MUST be 120-180 words
+   - This equals 60-90 seconds of spoken content
+   - Provide COMPLETE, DETAILED explanations (not summaries)
+   
+2. **INDEPENDENCE**: Process each slide SEPARATELY
+   - Don't say "as mentioned before", "next we'll see", "in this slide"
+   - Each narration stands alone as a teaching moment
+   
+3. **STYLE CONSISTENCY**: Use "{narration_style}" for ALL slides
+   - Maintain this style throughout every single narration
+   
+4. **FORMAT COMPLIANCE**: Follow each slide's required format
+   - "paragraph": Natural flowing sentences
+   - "points": Distinct teaching points (First... Second... Third...)
+   - "sequential_points": Step-by-step progression
+   - "comparative_points": Balanced comparison
+   
+5. **QUALITY**: Be thorough, engaging, pedagogically effective
+   - Adapt to slide purpose (definition, visualization, process, etc.)
+   - Use appropriate techniques for the content type
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 SLIDES TO NARRATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{chr(10).join(slides_info)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OUTPUT FORMAT (JSON):
+{{
+  "narrations": [
+    {{
+      "slide_number": 1,
+      "slide_title": "...",
+      "narration_text": "...",
+      "word_count": <actual word count>
+    }},
+    ...
+  ]
+}}
+
+REMEMBER: 120-180 words per narration. Style: "{narration_style}" (NOT the example style!)
+"""
+
+    response = llm.invoke(
+        [
+            {
+                "role": "system",
+                "content": "You are an expert educational content generator focused on quality and depth.",
+            },
+            {"role": "user", "content": BATCH_PROMPT},
+        ]
+    )
+
+    # Parse and validate
+    try:
+        cleaned = clean_json_output(response.content)
+        batch_result = json.loads(cleaned)
+        narrations = batch_result.get("narrations", [])
+
+        results = []
+        regeneration_count = 0
+
+        for i, slide in enumerate(slides):
+            if i < len(narrations):
+                narration_text = narrations[i].get("narration_text", "")
+                word_count = len(narration_text.split())
+
+                # Quality gate: regenerate if too short
+                if word_count < 80:
+                    print(
+                        f"  ⚠️  Slide {i+1} too short ({word_count} words) - regenerating individually..."
+                    )
+                    individual_result = generate_narration_for_slide(
+                        slide, subtopic_name, narration_style, difficulty_level
+                    )
+                    narration_data = {
+                        "narration_text": individual_result.get("narration_text", ""),
+                        "regenerated": True,
+                    }
+                    regeneration_count += 1
+                else:
+                    narration_data = {
+                        "narration_text": narration_text,
+                        "regenerated": False,
+                    }
+            else:
+                # Missing from batch - regenerate
+                print(
+                    f"  ⚠️  Slide {i+1} missing from batch - regenerating individually..."
+                )
+                individual_result = generate_narration_for_slide(
+                    slide, subtopic_name, narration_style, difficulty_level
+                )
+                narration_data = {
+                    "narration_text": individual_result.get("narration_text", ""),
+                    "regenerated": True,
+                }
+                regeneration_count += 1
+
+            results.append({**slide, **narration_data})
+
+        if regeneration_count > 0:
+            print(
+                f"  ✓ Regenerated {regeneration_count}/{len(slides)} slides individually"
+            )
+
+        return results
+
+    except Exception as e:
+        # Full fallback: regenerate all individually
+        print(
+            f"  ❌ Batch generation failed ({e}) - falling back to individual generation"
+        )
+        results = []
+        for slide in slides:
+            individual_result = generate_narration_for_slide(
+                slide, subtopic_name, narration_style, difficulty_level
+            )
+            results.append({**slide, **individual_result})
+        return results
+
+
 def generate_all_narrations(state: TutorState):
-    """Processes the slide_plan to generate spoken narrations for every slide."""
+    """Processes the slide_plan to generate spoken narrations using optimized batch approach."""
     slide_plan = state.get("slide_plan", {})
     narration_style = state.get(
         "narration_style", "Clear and engaging educational style"
     )
+    difficulty = state.get("difficulty", "Beginner")
 
     # We will store final slide objects in state["slides"]
     if "slides" not in state or not isinstance(state["slides"], dict):
@@ -219,21 +430,18 @@ def generate_all_narrations(state: TutorState):
     for sub_id, plan_entry in slide_plan.items():
         subtopic_name = plan_entry.get("subtopic_name")
         planned_slides = plan_entry.get("slides", [])
-        difficulty = state.get("difficulty", "Beginner")  # Overall course difficulty
 
-        generated_slides = []
-        for slide_meta in planned_slides:
-            print(f"Generating narration for: {slide_meta.get('slide_title')}...")
-            narration_data = generate_narration_for_slide(
-                slide=slide_meta,
-                subtopic_name=subtopic_name,
-                narration_style=narration_style,
-                difficulty_level=difficulty,
-            )
+        print(
+            f"\n📚 Generating narrations for: {subtopic_name} ({len(planned_slides)} slides)"
+        )
 
-            # Combine planning metadata with generated narration
-            final_slide = {**slide_meta, **narration_data}
-            generated_slides.append(final_slide)
+        # Use optimized batch generation
+        generated_slides = generate_narrations_batch(
+            slides=planned_slides,
+            subtopic_name=subtopic_name,
+            narration_style=narration_style,
+            difficulty_level=difficulty,
+        )
 
         state["slides"][sub_id] = generated_slides
 

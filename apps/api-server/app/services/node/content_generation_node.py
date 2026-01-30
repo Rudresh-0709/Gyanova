@@ -372,13 +372,9 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 print(f"   → Generated {len(timeline_items)} timeline items")
 
             elif content_type == "NO_NARRATION_POINTS":
-                # Title card - just subtitle
+                # Title card - use full narration as subtitle
                 slide["visual_content"] = {
-                    "subtitle": (
-                        narration_text[:100] + "..."
-                        if len(narration_text) > 100
-                        else narration_text
-                    )
+                    "subtitle": narration_text  # Use full text, template will handle overflow
                 }
                 print(f"   → Generated title card subtitle")
 

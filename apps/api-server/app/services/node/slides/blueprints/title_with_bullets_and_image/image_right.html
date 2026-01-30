@@ -44,6 +44,21 @@
             font-weight: 800;
             letter-spacing: -0.02em;
             line-height: 1.1;
+
+            /* Animation */
+            animation: titleFadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .slide-accent {

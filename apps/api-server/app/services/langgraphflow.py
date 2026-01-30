@@ -15,7 +15,11 @@ Image Generation: Commented out for MVP (will use Banana.dev/Replicate later)
 New Systems Integrated:
 - Two-layer fact retrieval (Wikipedia → Tavily)
 - Smart icon selection (Groq-based semantic matching)
+- LangSmith tracing and monitoring (automatic)
 """
+
+# Import LangSmith configuration (enables automatic tracing)
+from .langsmith_config import configure_langsmith
 
 from .node.topic_node import extract_topic
 from .node.sub_topic_node import extract_sub_topic

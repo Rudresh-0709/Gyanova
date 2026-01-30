@@ -1,0 +1,10 @@
+{
+  "summary": {
+    "a_wins": 9,
+    "b_wins": 1,
+    "ties": 0,
+    "avg_score_a": 8.8,
+    "avg_score_b": 6.5,
+    "avg_words_a": 109.2,
+    "avg_words_b": 59.0,
+    "verdict": 

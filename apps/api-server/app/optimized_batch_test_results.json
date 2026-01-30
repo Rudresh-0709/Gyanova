@@ -1,0 +1,720 @@
+[
+  {
+    "subtopic": "Introduction to Computer Generations",
+    "approach_a": {
+      "approach": "A - Current (Per-Slide)",
+      "api_calls": 4,
+      "time_seconds": 23.62,
+      "slides_processed": 4,
+      "avg_time_per_slide": 5.9,
+      "results": [
+        {
+          "slide_title": "Introduction to Computer Generations",
+          "slide_purpose": "definition",
+          "selected_template": "Title card",
+          "narration_role": "Introduce",
+          "narration_goal": "Learners will understand what computer generations are and why studying them is important for grasping computer evolution.",
+          "reasoning": "Starting with a Title card provides a clear, high-impact introduction to the subtopic and hooks learners with a concise explanation of its relevance.",
+          "slide_id": "sub_1_582521_s1",
+          "blueprint_file": "title_card/default.html",
+          "content_type": "NO_NARRATION_POINTS",
+          "visual_elements": {
+            "heading_badge": "Required (e.g., 'Chapter 1')",
+            "main_title": "1-2 lines, 5-8 words total",
+            "subtitle": "1-2 sentences, 20-40 words",
+            "hero_image": "Required, right-side placement"
+          },
+          "narration_format": "paragraph",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "motivational_hook",
+            "structure": "",
+            "note": "Narration is SEPARATE from visual content - just spoken introduction"
+          },
+          "image_generator": "gemini",
+          "image_generator_reasoning": "The slide covers historical computer generations, requiring accurate depictions of specific hardware (vacuum tubes, transistors, integrated circuits). Gemini provides the high‑precision, historically correct visuals needed.",
+          "requires_high_accuracy": true,
+          "narration_text": "Understanding computer generations is like tracing the incredible journey of technology through time. Each generation marks a significant leap in how computers are designed, built, and used, reflecting breakthroughs in hardware and software. By studying these generations, we gain insight into the evolution of computing power, efficiency, and accessibility, helping us appreciate where we started and how far we've come. This foundation not only deepens our knowledge but also prepares us to anticipate future innovations in the world of computers."
+        },
+        {
+          "slide_title": "Overview of the Five Computer Generations",
+          "slide_purpose": "visualization",
+          "selected_template": "Timeline",
+          "narration_role": "Guide",
+          "narration_goal": "Learners will be able to identify the five generations of computers in chronological order along with their key characteristics.",
+          "reasoning": "A timeline is ideal for showing historical progression and helps learners visualize how computer technology has evolved over time.",
+          "slide_id": "sub_1_582521_s2",
+          "blueprint_file": "timeline/default.html",
+          "content_type": "TIMELINE_STEPS",
+          "visual_elements": {
+            "main_title": "Left-aligned, medium size",
+            "timeline_items": {
+              "count": [
+                2,
+                4
+              ],
+              "per_item": {
+                "dot": "Circle on left line",
+                "phase_title": "Bold heading",
+                "description": "Paragraph text, variable length based on count"
+              }
+            }
+          },
+          "narration_format": "sequential_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "chronological",
+            "structure": "One narration point per timeline step",
+            "note": ""
+          },
+          "narration_text": "Let's begin by exploring the evolution of computers through five distinct generations, each marked by significant technological advancements. The first generation, from the 1940s to the mid-1950s, used vacuum tubes for circuitry and magnetic drums for memory, making these machines large, expensive, and power-hungry. Next, the second generation introduced transistors in the late 1950s, which were smaller, faster, and more reliable, leading to more efficient computers. The third generation, starting in the mid-1960s, brought integrated circuits, allowing many transistors to be packed into a single chip, greatly improving performance and reducing size and cost. Then, the fourth generation, beginning in the 1970s, saw the rise of microprocessors, which integrated the CPU onto a single chip, paving the way for personal computers and widespread use. Finally, the fifth generation, which is ongoing, focuses on artificial intelligence, parallel processing, and advanced computing technologies that continue to push the boundaries of what computers can do."
+        },
+        {
+          "slide_title": "Key Features of Each Computer Generation",
+          "slide_purpose": "intuition",
+          "selected_template": "Three columns",
+          "narration_role": "Interpret",
+          "narration_goal": "Learners will understand the distinct technological advancements and features that define each generation.",
+          "reasoning": "Using three columns allows categorization of generations (e.g., early, middle, recent) with concise descriptions, making complex information easier to digest visually.",
+          "slide_id": "sub_1_582521_s3",
+          "blueprint_file": "columns/three_columns.html",
+          "content_type": "THREE_COLUMN_CARDS",
+          "visual_elements": {
+            "columns": {
+              "count": 3,
+              "per_column": {
+                "icon_or_number": "Optional",
+                "column_title": "3-4 words",
+                "description": "20-30 words"
+              }
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": 3,
+            "sentence_count": null,
+            "style": "categorical",
+            "structure": "One point per column",
+            "note": ""
+          },
+          "narration_text": "Let's start by understanding the foundational shift that each generation brought to computing. The first generation relied on vacuum tubes, which were large, power-hungry, and prone to failure, but they laid the groundwork for programmable machines. Moving into the second generation, transistors replaced vacuum tubes, making computers smaller, faster, and more reliable, which was a huge leap forward in efficiency and accessibility. Finally, the third generation introduced integrated circuits, combining multiple transistors into a single chip, drastically reducing size and cost while boosting performance, setting the stage for the modern computers we use today."
+        },
+        {
+          "slide_title": "Summary of Computer Generations",
+          "slide_purpose": "reinforcement",
+          "selected_template": "Large bullet list",
+          "narration_role": "Reinforce",
+          "narration_goal": "Learners will consolidate their understanding of the main points about computer generations for review and retention.",
+          "reasoning": "A large bullet list is effective for summarizing and reinforcing key takeaways, ensuring learners leave with a clear grasp of the topic.",
+          "slide_id": "sub_1_582521_s4",
+          "blueprint_file": "title_with_bullets/default.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required, scalable font",
+            "subtitle": "Optional",
+            "bullet_cards": {
+              "icon": "Required for each",
+              "heading": "Bold, 3-6 words",
+              "text": "1-2 sentences per bullet"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              6
+            ],
+            "sentence_count": null,
+            "style": "explanatory",
+            "structure": "Each narration point = one bullet to generate",
+            "note": ""
+          },
+          "narration_text": "Let's recap the key developments across the computer generations to solidify your understanding. First, we started with the first generation, where vacuum tubes were the main technology, making computers large, slow, and power-hungry. Then came the second generation, which introduced transistors, allowing computers to become smaller, faster, and more reliable. The third generation brought integrated circuits, further shrinking size and boosting performance while reducing costs. In the fourth generation, microprocessors revolutionized computing by integrating the entire CPU onto a single chip, leading to personal computers and widespread accessibility. Finally, the fifth generation focuses on artificial intelligence and advanced parallel processing, aiming to create more intelligent and efficient systems. Understanding these stages helps us appreciate how technology evolved and set the foundation for modern computing."
+        }
+      ]
+    },
+    "approach_c": {
+      "approach": "C - Optimized Batch",
+      "api_calls": 1,
+      "time_seconds": 14.55,
+      "batch_time": 14.55,
+      "regeneration_count": 0,
+      "slides_processed": 4,
+      "avg_time_per_slide": 3.64,
+      "results": [
+        {
+          "slide_title": "Introduction to Computer Generations",
+          "slide_purpose": "definition",
+          "selected_template": "Title card",
+          "narration_role": "Introduce",
+          "narration_goal": "Learners will understand what computer generations are and why studying them is important for grasping computer evolution.",
+          "reasoning": "Starting with a Title card provides a clear, high-impact introduction to the subtopic and hooks learners with a concise explanation of its relevance.",
+          "slide_id": "sub_1_582521_s1",
+          "blueprint_file": "title_card/default.html",
+          "content_type": "NO_NARRATION_POINTS",
+          "visual_elements": {
+            "heading_badge": "Required (e.g., 'Chapter 1')",
+            "main_title": "1-2 lines, 5-8 words total",
+            "subtitle": "1-2 sentences, 20-40 words",
+            "hero_image": "Required, right-side placement"
+          },
+          "narration_format": "paragraph",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "motivational_hook",
+            "structure": "",
+            "note": "Narration is SEPARATE from visual content - just spoken introduction"
+          },
+          "image_generator": "gemini",
+          "image_generator_reasoning": "The slide covers historical computer generations, requiring accurate depictions of specific hardware (vacuum tubes, transistors, integrated circuits). Gemini provides the high‑precision, historically correct visuals needed.",
+          "requires_high_accuracy": true,
+          "narration_text": "Imagine being able to travel through time and witness how computers have transformed from massive machines filling entire rooms to sleek devices we carry in our pockets. That’s exactly what studying computer generations allows us to do. Computer generations are distinct phases in the history of computing, each characterized by significant technological breakthroughs that changed how computers are designed, built, and used. By understanding these generations, we get a clear picture of the evolution of technology—from the earliest mechanical and electronic components to the sophisticated microprocessors powering today’s devices. This journey not only reveals the innovations that shaped modern computing but also highlights the challenges engineers overcame along the way. So, diving into computer generations helps us appreciate the past, understand the present, and get inspired about future possibilities in the world of technology.",
+          "regenerated": false
+        },
+        {
+          "slide_title": "Overview of the Five Computer Generations",
+          "slide_purpose": "visualization",
+          "selected_template": "Timeline",
+          "narration_role": "Guide",
+          "narration_goal": "Learners will be able to identify the five generations of computers in chronological order along with their key characteristics.",
+          "reasoning": "A timeline is ideal for showing historical progression and helps learners visualize how computer technology has evolved over time.",
+          "slide_id": "sub_1_582521_s2",
+          "blueprint_file": "timeline/default.html",
+          "content_type": "TIMELINE_STEPS",
+          "visual_elements": {
+            "main_title": "Left-aligned, medium size",
+            "timeline_items": {
+              "count": [
+                2,
+                4
+              ],
+              "per_item": {
+                "dot": "Circle on left line",
+                "phase_title": "Bold heading",
+                "description": "Paragraph text, variable length based on count"
+              }
+            }
+          },
+          "narration_format": "sequential_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "chronological",
+            "structure": "One narration point per timeline step",
+            "note": ""
+          },
+          "narration_text": "Let’s take a quick tour through the five generations of computers, each marking a leap in technology and performance. The first generation, from the 1940s to the mid-1950s, relied on vacuum tubes for circuitry and magnetic drums for memory, making these machines large and power-hungry. Moving to the second generation, transistors replaced vacuum tubes, allowing computers to become smaller, faster, and more reliable. The third generation introduced integrated circuits in the 1960s, packing multiple transistors onto a single chip, which boosted efficiency and reduced costs. The fourth generation, starting in the 1970s, saw the rise of microprocessors—tiny chips that integrated the computer’s brain onto one piece of silicon, leading to personal computers. Finally, the fifth generation focuses on artificial intelligence and advanced parallel processing, aiming to create smarter machines that can learn and adapt. Each generation builds on the last, showing incredible progress over time.",
+          "regenerated": false
+        },
+        {
+          "slide_title": "Key Features of Each Computer Generation",
+          "slide_purpose": "intuition",
+          "selected_template": "Three columns",
+          "narration_role": "Interpret",
+          "narration_goal": "Learners will understand the distinct technological advancements and features that define each generation.",
+          "reasoning": "Using three columns allows categorization of generations (e.g., early, middle, recent) with concise descriptions, making complex information easier to digest visually.",
+          "slide_id": "sub_1_582521_s3",
+          "blueprint_file": "columns/three_columns.html",
+          "content_type": "THREE_COLUMN_CARDS",
+          "visual_elements": {
+            "columns": {
+              "count": 3,
+              "per_column": {
+                "icon_or_number": "Optional",
+                "column_title": "3-4 words",
+                "description": "20-30 words"
+              }
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": 3,
+            "sentence_count": null,
+            "style": "categorical",
+            "structure": "One point per column",
+            "note": ""
+          },
+          "narration_text": "Understanding the key features of each computer generation helps us appreciate how technology advanced step by step. First, the initial generation was defined by vacuum tubes, which were bulky and inefficient but essential for early computing. These machines were slow and generated a lot of heat, but they laid the groundwork. Next, the second generation’s hallmark was the transistor, which was smaller, more durable, and consumed less power, significantly improving speed and reliability. Moving forward, the third generation introduced integrated circuits, allowing thousands of transistors to be embedded on a single chip, making computers smaller, faster, and more affordable. These features paved the way for the fourth generation’s microprocessors, which integrated all processing components into one chip, enabling personal computing and portability. Finally, the fifth generation focuses on artificial intelligence and quantum computing, pushing boundaries with machines that can learn, reason, and solve complex problems, promising a future full of exciting possibilities.",
+          "regenerated": false
+        },
+        {
+          "slide_title": "Summary of Computer Generations",
+          "slide_purpose": "reinforcement",
+          "selected_template": "Large bullet list",
+          "narration_role": "Reinforce",
+          "narration_goal": "Learners will consolidate their understanding of the main points about computer generations for review and retention.",
+          "reasoning": "A large bullet list is effective for summarizing and reinforcing key takeaways, ensuring learners leave with a clear grasp of the topic.",
+          "slide_id": "sub_1_582521_s4",
+          "blueprint_file": "title_with_bullets/default.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required, scalable font",
+            "subtitle": "Optional",
+            "bullet_cards": {
+              "icon": "Required for each",
+              "heading": "Bold, 3-6 words",
+              "text": "1-2 sentences per bullet"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              6
+            ],
+            "sentence_count": null,
+            "style": "explanatory",
+            "structure": "Each narration point = one bullet to generate",
+            "note": ""
+          },
+          "narration_text": "Let’s recap the main points about computer generations to solidify our understanding. First, each generation represents a major technological breakthrough, from vacuum tubes to transistors, integrated circuits, microprocessors, and now artificial intelligence. Second, these advancements have consistently made computers faster, smaller, more reliable, and more accessible to people worldwide. Third, the evolution reflects not just hardware improvements but also changes in software and user interaction, shaping how we use computers daily. Fourth, studying these generations helps us appreciate the challenges and innovations that have driven computing forward. Finally, knowing this history inspires us to think creatively about the future, where emerging technologies like quantum computing and AI may redefine what computers can do. This overview provides a foundation to understand how far we’ve come and where we might be headed next.",
+          "regenerated": false
+        }
+      ]
+    }
+  },
+  {
+    "subtopic": "First Generation Computers (1940s-1950s): Vacuum Tubes",
+    "approach_a": {
+      "approach": "A - Current (Per-Slide)",
+      "api_calls": 6,
+      "time_seconds": 36.02,
+      "slides_processed": 6,
+      "avg_time_per_slide": 6.0,
+      "results": [
+        {
+          "slide_title": "First Generation Computers: Vacuum Tubes Era",
+          "slide_purpose": "definition",
+          "selected_template": "Title card",
+          "narration_role": "Introduce",
+          "narration_goal": "Learners will understand the historical context and importance of vacuum tubes in first generation computers.",
+          "reasoning": "Starting with a Title card sets the stage with a clear, impactful introduction and a hook to engage learners about why vacuum tubes matter in computing history.",
+          "slide_id": "sub_2_c5c5fe_s1",
+          "blueprint_file": "title_card/default.html",
+          "content_type": "NO_NARRATION_POINTS",
+          "visual_elements": {
+            "heading_badge": "Required (e.g., 'Chapter 1')",
+            "main_title": "1-2 lines, 5-8 words total",
+            "subtitle": "1-2 sentences, 20-40 words",
+            "hero_image": "Required, right-side placement"
+          },
+          "narration_format": "paragraph",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "motivational_hook",
+            "structure": "",
+            "note": "Narration is SEPARATE from visual content - just spoken introduction"
+          },
+          "image_generator": "gemini",
+          "image_generator_reasoning": "The slide requires a historically accurate depiction of 1940s‑1950s vacuum‑tube computers, which demands precise technical detail and period‑specific visuals.",
+          "requires_high_accuracy": true,
+          "narration_text": "Imagine a time when computers were massive machines, filling entire rooms and powered by thousands of tiny glass tubes called vacuum tubes. These vacuum tubes were the heart of the first generation computers, enabling early digital calculations and data processing in the 1940s and 1950s. Although bulky and prone to overheating, vacuum tubes represented a groundbreaking leap from mechanical calculators to electronic computing, laying the foundation for all modern computers. Understanding this era helps us appreciate how far technology has come and the innovative spirit that drove those early pioneers."
+        },
+        {
+          "slide_title": "What Are Vacuum Tubes?",
+          "slide_purpose": "definition",
+          "selected_template": "Title with bullets",
+          "narration_role": "Interpret",
+          "narration_goal": "Learners will grasp the basic function and characteristics of vacuum tubes used in early computers.",
+          "reasoning": "A text-only bullet list is ideal here because the concept is primarily technical and definitional, benefiting from concise, clear points without needing imagery.",
+          "slide_id": "sub_2_c5c5fe_s2",
+          "blueprint_file": "title_with_bullets/default.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required, scalable font",
+            "subtitle": "Optional",
+            "bullet_cards": {
+              "icon": "Required for each",
+              "heading": "Bold, 3-6 words",
+              "text": "1-2 sentences per bullet"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              6
+            ],
+            "sentence_count": null,
+            "style": "explanatory",
+            "structure": "Each narration point = one bullet to generate",
+            "note": ""
+          },
+          "narration_text": "Vacuum tubes are electronic components that control the flow of electricity in early computers, acting like switches or amplifiers. They work by allowing electrons to move through a vacuum inside a sealed glass tube, which enables the tube to regulate electrical signals. These tubes were essential in the first generation of computers because they could turn circuits on and off, representing the binary code of zeros and ones. However, vacuum tubes were quite large, generated a lot of heat, and were prone to burning out, which made early computers bulky and less reliable compared to later technologies. Despite these drawbacks, vacuum tubes laid the groundwork for modern computing by enabling the first programmable machines to function."
+        },
+        {
+          "slide_title": "Vacuum Tubes in Computer Architecture",
+          "slide_purpose": "visualization",
+          "selected_template": "Diagram",
+          "narration_role": "Guide",
+          "narration_goal": "Learners will understand how vacuum tubes fit into the architecture of first generation computers.",
+          "reasoning": "A diagram with detailed labels helps visualize the system architecture, clarifying the role of vacuum tubes within the complex hardware.",
+          "slide_id": "sub_2_c5c5fe_s3",
+          "blueprint_file": "diagrams/bargraph.html",
+          "content_type": "CHART_WITH_ANALYSIS",
+          "visual_elements": {
+            "chart": "Main visual element",
+            "sidebar_analysis": "Text area, 40-60 words"
+          },
+          "narration_format": "data_interpretation",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "analytical",
+            "structure": "",
+            "note": ""
+          },
+          "narration_text": "Let's explore how vacuum tubes were the fundamental building blocks in the architecture of first generation computers. These tubes acted as switches and amplifiers, enabling the machine to process and store information by controlling electrical signals. Notice how each vacuum tube corresponds to a binary state, either on or off, which forms the basis of digital computation. While they allowed computers to perform complex calculations, their size, heat generation, and power consumption significantly influenced the overall design and limitations of these early machines. Understanding this relationship helps us appreciate the challenges engineers faced and the innovations that followed in computer technology."
+        },
+        {
+          "slide_title": "Advantages and Limitations of Vacuum Tubes",
+          "slide_purpose": "comparison",
+          "selected_template": "Two columns",
+          "narration_role": "Contrast",
+          "narration_goal": "Learners will be able to compare the benefits and drawbacks of using vacuum tubes in early computers.",
+          "reasoning": "Two columns effectively contrast pros and cons side-by-side, making it easier for learners to evaluate both aspects equally.",
+          "slide_id": "sub_2_c5c5fe_s4",
+          "blueprint_file": "columns/two_columns.html",
+          "content_type": "TWO_COLUMN_TEXT",
+          "visual_elements": {
+            "main_title": "Top of slide",
+            "columns": {
+              "count": 2,
+              "per_column": {
+                "column_title": "Bold heading with underline",
+                "text": "Paragraph format, ~60-100 words"
+              }
+            }
+          },
+          "narration_format": "comparative_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "contrasting",
+            "structure": "Balanced comparison between sides",
+            "note": ""
+          },
+          "narration_text": "Vacuum tubes were revolutionary in their time, offering the ability to amplify electrical signals and switch currents rapidly, which made early computing possible. On the advantage side, they provided relatively fast switching speeds for the era and could handle high voltages, which was essential for complex calculations. However, these benefits came with significant drawbacks. Vacuum tubes were bulky and generated a lot of heat, leading to frequent failures and maintenance challenges. Additionally, their large size limited how compact early computers could be. So, while vacuum tubes enabled the first generation of computers to function, their physical and reliability issues ultimately paved the way for more efficient technologies like transistors."
+        },
+        {
+          "slide_title": "Evolution Timeline: Vacuum Tubes to Transistors",
+          "slide_purpose": "process",
+          "selected_template": "Timeline",
+          "narration_role": "Connect",
+          "narration_goal": "Learners will understand the historical progression from vacuum tubes to transistor-based computers.",
+          "reasoning": "A timeline is the best format to show chronological development and transitions in technology over the decades.",
+          "slide_id": "sub_2_c5c5fe_s5",
+          "blueprint_file": "timeline/default.html",
+          "content_type": "TIMELINE_STEPS",
+          "visual_elements": {
+            "main_title": "Left-aligned, medium size",
+            "timeline_items": {
+              "count": [
+                2,
+                4
+              ],
+              "per_item": {
+                "dot": "Circle on left line",
+                "phase_title": "Bold heading",
+                "description": "Paragraph text, variable length based on count"
+              }
+            }
+          },
+          "narration_format": "sequential_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "chronological",
+            "structure": "One narration point per timeline step",
+            "note": ""
+          },
+          "narration_text": "Let's start by looking back at the 1940s, when the first generation of computers relied heavily on vacuum tubes. These tubes acted as switches to control electrical signals, enabling the earliest forms of digital computation. However, vacuum tubes were bulky, consumed a lot of power, and generated significant heat, which limited their efficiency and reliability. As technology progressed into the late 1940s and early 1950s, engineers sought alternatives, leading to the invention of the transistor in 1947. Transistors were much smaller, used less power, and were far more durable than vacuum tubes. This breakthrough sparked the transition from first-generation vacuum tube computers to second-generation transistor-based machines, marking a major leap forward in computing technology. Understanding this shift helps us appreciate how innovations in hardware components can dramatically reshape computing capabilities and pave the way for modern electronics."
+        },
+        {
+          "slide_title": "Key Takeaways: Vacuum Tubes in Computing History",
+          "slide_purpose": "reinforcement",
+          "selected_template": "Icons with text",
+          "narration_role": "Reinforce",
+          "narration_goal": "Learners will recall the essential points about vacuum tubes and their impact on early computing.",
+          "reasoning": "Icons with text allow reinforcement of key concepts visually and textually, aiding memory retention through a structured summary.",
+          "slide_id": "sub_2_c5c5fe_s6",
+          "blueprint_file": "cards_and_toggles/icons_with_text.html",
+          "content_type": "ICON_GRID",
+          "visual_elements": {
+            "main_title": "Centered, large",
+            "subtitle": "Centered, below accent line",
+            "icon_items": {
+              "count": [
+                3,
+                6
+              ],
+              "layout": "3 cols (3 items), 2x2 (4), 3-2 (5), 3x2 (6)",
+              "per_item": {
+                "icon": "Circular, floating",
+                "heading": "Bold, 3-5 words",
+                "text": "1-2 sentences, 12-20 words"
+              }
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              3,
+              6
+            ],
+            "sentence_count": null,
+            "style": "key_takeaways",
+            "structure": "Brief statement per icon",
+            "note": ""
+          },
+          "narration_text": "Vacuum tubes were the fundamental building blocks of the first generation of computers, enabling electronic switching before transistors existed. They allowed computers to perform calculations much faster than mechanical devices, marking a huge leap in technology. However, vacuum tubes were large, consumed a lot of power, and generated significant heat, which limited the size and reliability of early machines. Despite these drawbacks, their use paved the way for modern computing by demonstrating the potential of electronic digital processing. Understanding their role helps us appreciate how far computer technology has evolved."
+        }
+      ]
+    },
+    "approach_c": {
+      "approach": "C - Optimized Batch",
+      "api_calls": 1,
+      "time_seconds": 20.28,
+      "batch_time": 20.28,
+      "regeneration_count": 0,
+      "slides_processed": 6,
+      "avg_time_per_slide": 3.38,
+      "results": [
+        {
+          "slide_title": "First Generation Computers: Vacuum Tubes Era",
+          "slide_purpose": "definition",
+          "selected_template": "Title card",
+          "narration_role": "Introduce",
+          "narration_goal": "Learners will understand the historical context and importance of vacuum tubes in first generation computers.",
+          "reasoning": "Starting with a Title card sets the stage with a clear, impactful introduction and a hook to engage learners about why vacuum tubes matter in computing history.",
+          "slide_id": "sub_2_c5c5fe_s1",
+          "blueprint_file": "title_card/default.html",
+          "content_type": "NO_NARRATION_POINTS",
+          "visual_elements": {
+            "heading_badge": "Required (e.g., 'Chapter 1')",
+            "main_title": "1-2 lines, 5-8 words total",
+            "subtitle": "1-2 sentences, 20-40 words",
+            "hero_image": "Required, right-side placement"
+          },
+          "narration_format": "paragraph",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "motivational_hook",
+            "structure": "",
+            "note": "Narration is SEPARATE from visual content - just spoken introduction"
+          },
+          "image_generator": "gemini",
+          "image_generator_reasoning": "The slide requires a historically accurate depiction of 1940s‑1950s vacuum‑tube computers, which demands precise technical detail and period‑specific visuals.",
+          "requires_high_accuracy": true,
+          "narration_text": "Welcome to the fascinating world of first generation computers, where vacuum tubes were the stars of the show! During the 1940s and 1950s, these early machines revolutionized computing by using vacuum tubes as their fundamental components. Think of vacuum tubes as the powerful yet delicate switches that controlled the flow of electricity, enabling computers to process information for the very first time. This era laid the groundwork for everything we use today, despite the challenges engineers faced with size, heat, and reliability. Understanding the vacuum tube era is like stepping back to the dawn of digital technology, appreciating both the innovation and the hurdles that shaped modern computing. Let’s dive in and explore how these glowing glass tubes powered the first steps into our digital future!",
+          "regenerated": false
+        },
+        {
+          "slide_title": "What Are Vacuum Tubes?",
+          "slide_purpose": "definition",
+          "selected_template": "Title with bullets",
+          "narration_role": "Interpret",
+          "narration_goal": "Learners will grasp the basic function and characteristics of vacuum tubes used in early computers.",
+          "reasoning": "A text-only bullet list is ideal here because the concept is primarily technical and definitional, benefiting from concise, clear points without needing imagery.",
+          "slide_id": "sub_2_c5c5fe_s2",
+          "blueprint_file": "title_with_bullets/default.html",
+          "content_type": "BULLET_POINTS",
+          "visual_elements": {
+            "main_title": "Required, scalable font",
+            "subtitle": "Optional",
+            "bullet_cards": {
+              "icon": "Required for each",
+              "heading": "Bold, 3-6 words",
+              "text": "1-2 sentences per bullet"
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              6
+            ],
+            "sentence_count": null,
+            "style": "explanatory",
+            "structure": "Each narration point = one bullet to generate",
+            "note": ""
+          },
+          "narration_text": "Let’s break down what vacuum tubes actually are and how they worked in early computers. First, vacuum tubes are glass tubes with a vacuum inside, designed to control the flow of electric current by acting like switches or amplifiers. This means they could either allow electricity to pass or block it, which was essential for processing binary data. Second, vacuum tubes amplified weak electrical signals, making it possible for computers to perform calculations and store information. Third, they were quite large and fragile, which made early computers bulky and prone to overheating. Fourth, their ability to switch on and off rapidly made them the backbone of first generation computer circuits. Finally, while they were revolutionary at the time, their size and heat issues eventually led to the search for better technology. Understanding these points gives us a clear picture of why vacuum tubes were both groundbreaking and challenging.",
+          "regenerated": false
+        },
+        {
+          "slide_title": "Vacuum Tubes in Computer Architecture",
+          "slide_purpose": "visualization",
+          "selected_template": "Diagram",
+          "narration_role": "Guide",
+          "narration_goal": "Learners will understand how vacuum tubes fit into the architecture of first generation computers.",
+          "reasoning": "A diagram with detailed labels helps visualize the system architecture, clarifying the role of vacuum tubes within the complex hardware.",
+          "slide_id": "sub_2_c5c5fe_s3",
+          "blueprint_file": "diagrams/bargraph.html",
+          "content_type": "CHART_WITH_ANALYSIS",
+          "visual_elements": {
+            "chart": "Main visual element",
+            "sidebar_analysis": "Text area, 40-60 words"
+          },
+          "narration_format": "data_interpretation",
+          "narration_constraints": {
+            "point_count": null,
+            "sentence_count": [
+              3,
+              5
+            ],
+            "style": "analytical",
+            "structure": "",
+            "note": ""
+          },
+          "narration_text": "In first generation computers, vacuum tubes were the core components that formed the building blocks of computer architecture. Imagine a complex network where thousands of vacuum tubes worked together to control the flow of electrical signals, acting as switches to represent the binary digits zero and one. These tubes were arranged in circuits to perform logical operations and store data temporarily. Because each tube could switch states very quickly, they allowed computers to execute instructions and calculations at speeds unimaginable before. However, this architecture required a large number of tubes, which made the machines enormous and power-hungry. Despite these limitations, vacuum tubes enabled the earliest computers to perform tasks like codebreaking, scientific calculations, and data processing, setting the stage for future innovations. By understanding their role in architecture, we appreciate the complexity and ingenuity of these pioneering machines.",
+          "regenerated": false
+        },
+        {
+          "slide_title": "Advantages and Limitations of Vacuum Tubes",
+          "slide_purpose": "comparison",
+          "selected_template": "Two columns",
+          "narration_role": "Contrast",
+          "narration_goal": "Learners will be able to compare the benefits and drawbacks of using vacuum tubes in early computers.",
+          "reasoning": "Two columns effectively contrast pros and cons side-by-side, making it easier for learners to evaluate both aspects equally.",
+          "slide_id": "sub_2_c5c5fe_s4",
+          "blueprint_file": "columns/two_columns.html",
+          "content_type": "TWO_COLUMN_TEXT",
+          "visual_elements": {
+            "main_title": "Top of slide",
+            "columns": {
+              "count": 2,
+              "per_column": {
+                "column_title": "Bold heading with underline",
+                "text": "Paragraph format, ~60-100 words"
+              }
+            }
+          },
+          "narration_format": "comparative_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "contrasting",
+            "structure": "Balanced comparison between sides",
+            "note": ""
+          },
+          "narration_text": "Vacuum tubes brought significant advantages to early computing, but they also came with notable drawbacks. On the positive side, vacuum tubes were capable of switching electrical signals very quickly, which allowed first generation computers to perform calculations much faster than mechanical devices. They also amplified signals, making it possible to process and transmit data effectively. However, these benefits came with challenges. Vacuum tubes were large and bulky, which made computers enormous and difficult to maintain. They generated a lot of heat, often causing failures and requiring complex cooling systems. Additionally, vacuum tubes had a limited lifespan, leading to frequent replacements and downtime. So, while vacuum tubes were revolutionary and essential for early computing, their size, heat generation, and reliability issues highlighted the need for better technology, paving the way for the invention of transistors.",
+          "regenerated": false
+        },
+        {
+          "slide_title": "Evolution Timeline: Vacuum Tubes to Transistors",
+          "slide_purpose": "process",
+          "selected_template": "Timeline",
+          "narration_role": "Connect",
+          "narration_goal": "Learners will understand the historical progression from vacuum tubes to transistor-based computers.",
+          "reasoning": "A timeline is the best format to show chronological development and transitions in technology over the decades.",
+          "slide_id": "sub_2_c5c5fe_s5",
+          "blueprint_file": "timeline/default.html",
+          "content_type": "TIMELINE_STEPS",
+          "visual_elements": {
+            "main_title": "Left-aligned, medium size",
+            "timeline_items": {
+              "count": [
+                2,
+                4
+              ],
+              "per_item": {
+                "dot": "Circle on left line",
+                "phase_title": "Bold heading",
+                "description": "Paragraph text, variable length based on count"
+              }
+            }
+          },
+          "narration_format": "sequential_points",
+          "narration_constraints": {
+            "point_count": [
+              2,
+              4
+            ],
+            "sentence_count": null,
+            "style": "chronological",
+            "structure": "One narration point per timeline step",
+            "note": ""
+          },
+          "narration_text": "The journey from vacuum tubes to transistors marks a pivotal evolution in computer history. In the 1940s and early 1950s, computers relied heavily on vacuum tubes, which, despite their power, were large, fragile, and prone to overheating. By the late 1940s, scientists and engineers began developing the transistor, a smaller, more reliable device that could perform the same functions as vacuum tubes but with greater efficiency. The breakthrough came in 1947, when the first transistor was invented, setting the stage for the second generation of computers. Throughout the 1950s, transistors gradually replaced vacuum tubes, leading to smaller, faster, and more energy-efficient machines. This transition not only improved computer performance but also opened the door to the miniaturization and widespread adoption of computers in various fields. Understanding this timeline helps us appreciate how innovation continually drives technological progress.",
+          "regenerated": false
+        },
+        {
+          "slide_title": "Key Takeaways: Vacuum Tubes in Computing History",
+          "slide_purpose": "reinforcement",
+          "selected_template": "Icons with text",
+          "narration_role": "Reinforce",
+          "narration_goal": "Learners will recall the essential points about vacuum tubes and their impact on early computing.",
+          "reasoning": "Icons with text allow reinforcement of key concepts visually and textually, aiding memory retention through a structured summary.",
+          "slide_id": "sub_2_c5c5fe_s6",
+          "blueprint_file": "cards_and_toggles/icons_with_text.html",
+          "content_type": "ICON_GRID",
+          "visual_elements": {
+            "main_title": "Centered, large",
+            "subtitle": "Centered, below accent line",
+            "icon_items": {
+              "count": [
+                3,
+                6
+              ],
+              "layout": "3 cols (3 items), 2x2 (4), 3-2 (5), 3x2 (6)",
+              "per_item": {
+                "icon": "Circular, floating",
+                "heading": "Bold, 3-5 words",
+                "text": "1-2 sentences, 12-20 words"
+              }
+            }
+          },
+          "narration_format": "points",
+          "narration_constraints": {
+            "point_count": [
+              3,
+              6
+            ],
+            "sentence_count": null,
+            "style": "key_takeaways",
+            "structure": "Brief statement per icon",
+            "note": ""
+          },
+          "narration_text": "Let’s recap the essential points about vacuum tubes and their role in early computing. First, vacuum tubes were the fundamental components that enabled the first generation of computers to process and amplify electrical signals, acting as switches for binary data. Second, their use allowed early computers to perform complex calculations much faster than previous mechanical devices, marking a major technological leap. Third, despite their groundbreaking role, vacuum tubes were large, generated excessive heat, and were prone to failure, which limited their long-term practicality. Fourth, these limitations inspired the invention of the transistor, which eventually replaced vacuum tubes and revolutionized computing. Finally, understanding vacuum tubes gives us a window into the challenges and achievements of the dawn of the digital age, highlighting how far technology has come. These takeaways help us appreciate the foundation upon which modern computing is built.",
+          "regenerated": false
+        }
+      ]
+    }
+  }
+]
