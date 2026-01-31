@@ -87,30 +87,32 @@ def render_bullet_points(slide: Dict[str, Any], template_html: str) -> str:
     # Remove subtitle if empty (optional subtitle)
     if not slide.get("visual_content", {}).get("subtitle"):
         html = re.sub(
-            r'<div class="slide-accent"></div>\s*<p class="slide-subtitle">.*?</p>',
-            '<div class="slide-accent"></div>',
+            r'<div class="slide-accent"[^>]*></div>\s*<p class="slide-subtitle"[^>]*>.*?</p>',
+            '<div class="slide-accent" data-reveal-step="1"></div>',
             html,
             flags=re.DOTALL,
         )
 
-    # Generate bullet cards HTML
+    # Generate bullet cards HTML with reveal steps on CONTENT, not container
+    # Title is step 1, bullets start at step 2
+    # Card containers stay visible as placeholders
     bullets_html = ""
-    for bullet in bullets:
+    for i, bullet in enumerate(bullets, start=2):
         icon = bullet.get("icon", "ri-circle-line")
         heading = bullet.get("heading", "Heading")
         text = bullet.get("description", "")
 
         bullets_html += f"""
                 <li class="slide-card">
-                    <div class="slide-icon"><i class="{icon}"></i></div>
-                    <h3 class="slide-list-heading">{heading}</h3>
-                    <p class="slide-list-text">{text}</p>
+                    <div class="slide-icon" data-reveal-step="{i}"><i class="{icon}"></i></div>
+                    <h3 class="slide-list-heading" data-reveal-step="{i}">{heading}</h3>
+                    <p class="slide-list-text" data-reveal-step="{i}">{text}</p>
                 </li>"""
 
     # Replace the slide-list content
     html = re.sub(
         r'(<ul class="slide-list"[^>]*>)(.*?)(</ul>)',
-        f"\\1{bullets_html}\n            \\3",
+        f"\\1{bullets_html}\\n            \\3",
         html,
         flags=re.DOTALL,
     )

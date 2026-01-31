@@ -254,21 +254,82 @@
             margin: 0;
             font-weight: 800;
             letter-spacing: -0.02em;
-
-            /* Animation */
-            animation: titleFadeIn 0.8s ease-out forwards;
         }
 
-        @keyframes titleFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
+        /* =========================
+           PROGRESSIVE REVEAL ANIMATIONS
+           ========================= */
+        /* Cards are always visible as placeholders */
+        .slide-card {
+            position: relative;
+        }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        /* Only hide the TEXT CONTENT, not the card structure */
+        .reveal-hidden {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        .reveal-visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 300ms ease-out, transform 300ms ease-out;
+        }
+
+        /* Ensure card backgrounds are always visible as placeholders */
+        .slide-card {
+            background: rgba(0, 0, 0, 0.03) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        }
+
+        /* =========================
+           NAVIGATION CONTROLS
+           ========================= */
+        .slide-nav {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .slide-nav-btn {
+            padding: 10px 20px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .slide-nav-btn:hover:not(:disabled) {
+            background: #333;
+            transform: translateY(-1px);
+        }
+
+        .slide-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .slide-step-indicator {
+            font-size: 0.85rem;
+            color: rgba(0, 0, 0, 0.6);
+            font-weight: 500;
+            min-width: 50px;
+            text-align: center;
         }
 
         .slide-subtitle {
@@ -353,46 +414,189 @@
 <body>
     <div class="slide-root" id="slideRoot">
         <header id="slideHeader">
-            <h1 class="slide-title">The Future of Digital Education</h1>
-            <div class="slide-accent"></div>
-            <p class="slide-subtitle">Exploring the next frontier of pedagogical innovation</p>
+            <h1 class="slide-title" data-reveal-step="1">The Future of Digital Education</h1>
+            <div class="slide-accent" data-reveal-step="1"></div>
+            <p class="slide-subtitle" data-reveal-step="1">Exploring the next frontier of pedagogical innovation</p>
         </header>
 
         <div class="slide-content">
             <ul class="slide-list" id="slideList">
                 <li class="slide-card">
-                    <div class="slide-icon"><i class="ri-focus-3-line"></i></div>
-                    <h3 class="slide-list-heading">Adaptive Learning</h3>
-                    <p class="slide-list-text">Tailoring educational paths to individual student needs.</p>
+                    <div class="slide-icon" data-reveal-step="2"><i class="ri-focus-3-line"></i></div>
+                    <h3 class="slide-list-heading" data-reveal-step="2">Adaptive Learning</h3>
+                    <p class="slide-list-text" data-reveal-step="2">Tailoring educational paths to individual student
+                        needs.</p>
                 </li>
                 <li class="slide-card">
-                    <div class="slide-icon"><i class="ri-focus-3-line"></i></div>
-                    <h3 class="slide-list-heading">Adaptive Learning</h3>
-                    <p class="slide-list-text">Tailoring educational paths to individual student needs.</p>
+                    <div class="slide-icon" data-reveal-step="3"><i class="ri-focus-3-line"></i></div>
+                    <h3 class="slide-list-heading" data-reveal-step="3">Adaptive Learning</h3>
+                    <p class="slide-list-text" data-reveal-step="3">Tailoring educational paths to individual student
+                        needs.</p>
                 </li>
                 <li class="slide-card">
-                    <div class="slide-icon"><i class="ri-focus-3-line"></i></div>
-                    <h3 class="slide-list-heading">Adaptive Learning</h3>
-                    <p class="slide-list-text">Tailoring educational paths to individual student needs.</p>
+                    <div class="slide-icon" data-reveal-step="4"><i class="ri-focus-3-line"></i></div>
+                    <h3 class="slide-list-heading" data-reveal-step="4">Adaptive Learning</h3>
+                    <p class="slide-list-text" data-reveal-step="4">Tailoring educational paths to individual student
+                        needs.</p>
                 </li>
                 <li class="slide-card">
-                    <div class="slide-icon"><i class="ri-focus-3-line"></i></div>
-                    <h3 class="slide-list-heading">Adaptive Learning</h3>
-                    <p class="slide-list-text">Tailoring educational paths to individual student needs.</p>
+                    <div class="slide-icon" data-reveal-step="5"><i class="ri-focus-3-line"></i></div>
+                    <h3 class="slide-list-heading" data-reveal-step="5">Adaptive Learning</h3>
+                    <p class="slide-list-text" data-reveal-step="5">Tailoring educational paths to individual student
+                        needs.</p>
                 </li>
                 <li class="slide-card">
-                    <div class="slide-icon"><i class="ri-focus-3-line"></i></div>
-                    <h3 class="slide-list-heading">Adaptive Learning</h3>
-                    <p class="slide-list-text">Tailoring educational paths to individual student needs.</p>
+                    <div class="slide-icon" data-reveal-step="6"><i class="ri-focus-3-line"></i></div>
+                    <h3 class="slide-list-heading" data-reveal-step="6">Adaptive Learning</h3>
+                    <p class="slide-list-text" data-reveal-step="6">Tailoring educational paths to individual student
+                        needs.</p>
                 </li>
                 <li class="slide-card">
-                    <div class="slide-icon"><i class="ri-focus-3-line"></i></div>
-                    <h3 class="slide-list-heading">Adaptive Learning</h3>
-                    <p class="slide-list-text">Tailoring educational paths to individual student needs.</p>
+                    <div class="slide-icon" data-reveal-step="7"><i class="ri-focus-3-line"></i></div>
+                    <h3 class="slide-list-heading" data-reveal-step="7">Adaptive Learning</h3>
+                    <p class="slide-list-text" data-reveal-step="7">Tailoring educational paths to individual student
+                        needs.</p>
                 </li>
             </ul>
         </div>
     </div>
+
+    <!-- Navigation Controls -->
+    <div class="slide-nav">
+        <button id="slidePrevBtn" class="slide-nav-btn">← Previous</button>
+        <span id="slideStepIndicator" class="slide-step-indicator">0 / 0</span>
+        <button id="slideNextBtn" class="slide-nav-btn">Next →</button>
+    </div>
+
+    <!-- Animation Controller (embedded) -->
+    <script>
+        /**
+         * Slide Animation Controller
+         * Embedded version for progressive reveal
+         */
+        class SlideAnimationController {
+            constructor() {
+                this.currentStep = 0;
+                this.totalSteps = 0;
+                this.elements = [];
+                this.prevBtn = null;
+                this.nextBtn = null;
+            }
+
+            init() {
+                // Find all animatable elements
+                this.elements = Array.from(
+                    document.querySelectorAll('[data-reveal-step]')
+                ).sort((a, b) => {
+                    return parseInt(a.dataset.revealStep) - parseInt(b.dataset.revealStep);
+                });
+
+                this.totalSteps = this.elements.length;
+
+                // CRITICAL: Hide all elements initially
+                this.elements.forEach(el => {
+                    el.classList.add('reveal-hidden');
+                    el.classList.remove('reveal-visible');
+                });
+
+                // Set up navigation buttons
+                this.setupButtons();
+
+                // Start at step 0 (nothing visible)
+                this.currentStep = 0;
+                this.updateButtonStates();
+
+                console.log(`SlideAnimationController initialized: ${this.totalSteps} steps`);
+            }
+
+            setupButtons() {
+                this.prevBtn = document.getElementById('slidePrevBtn');
+                this.nextBtn = document.getElementById('slideNextBtn');
+
+                if (this.prevBtn) {
+                    this.prevBtn.addEventListener('click', () => this.previous());
+                }
+
+                if (this.nextBtn) {
+                    this.nextBtn.addEventListener('click', () => this.next());
+                }
+
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.next();
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.previous();
+                    }
+                });
+            }
+
+            next() {
+                if (this.currentStep < this.totalSteps) {
+                    this.currentStep++;
+                    this.goToStep(this.currentStep);
+                }
+            }
+
+            previous() {
+                if (this.currentStep > 0) {
+                    this.currentStep--;
+                    this.goToStep(this.currentStep);
+                }
+            }
+
+            goToStep(step) {
+                this.currentStep = Math.max(0, Math.min(step, this.totalSteps));
+
+                // Update visibility for all elements
+                this.elements.forEach((el, index) => {
+                    const elementStep = index + 1; // 1-indexed
+
+                    if (elementStep <= this.currentStep) {
+                        // Show this element
+                        el.classList.remove('reveal-hidden');
+                        el.classList.add('reveal-visible');
+                    } else {
+                        // Hide this element
+                        el.classList.remove('reveal-visible');
+                        el.classList.add('reveal-hidden');
+                    }
+                });
+
+                this.updateButtonStates();
+            }
+
+            updateButtonStates() {
+                if (this.prevBtn) {
+                    this.prevBtn.disabled = this.currentStep === 0;
+                }
+
+                if (this.nextBtn) {
+                    this.nextBtn.disabled = this.currentStep === this.totalSteps;
+                }
+
+                // Update step indicator
+                const indicator = document.getElementById('slideStepIndicator');
+                if (indicator) {
+                    indicator.textContent = `${this.currentStep} / ${this.totalSteps}`;
+                }
+            }
+        }
+
+        // Initialize controller IMMEDIATELY when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                window.slideController = new SlideAnimationController();
+                window.slideController.init();
+            });
+        } else {
+            // DOM already loaded
+            window.slideController = new SlideAnimationController();
+            window.slideController.init();
+        }
+    </script>
 
     <script>
         function updateLayout() {

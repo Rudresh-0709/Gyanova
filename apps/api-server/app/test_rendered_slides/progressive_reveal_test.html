@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progressive Reveal Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0 0 30px 0;
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.03);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.3rem;
+        }
+
+        .card p {
+            margin: 0;
+            color: rgba(0, 0, 0, 0.7);
+        }
+
+        /* PROGRESSIVE REVEAL STYLES */
+        .reveal-hidden {
+            opacity: 0;
+            transform: translateY(15px);
+            pointer-events: none;
+        }
+
+        .reveal-visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 300ms ease-out, transform 300ms ease-out;
+            pointer-events: auto;
+        }
+
+        /* NAVIGATION */
+        .nav {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav button {
+            padding: 10px 20px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav button:hover:not(:disabled) {
+            background: #333;
+            transform: translateY(-1px);
+        }
+
+        .nav button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .step-indicator {
+            font-size: 0.85rem;
+            color: rgba(0, 0, 0, 0.6);
+            font-weight: 500;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            color: #1565c0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="instructions">
+            <strong>Test Instructions:</strong> Click "Next" to reveal elements one by one. On page load, all content
+            should be hidden except this instruction box.
+        </div>
+
+        <h1 data-reveal-step="1">Progressive Reveal Test</h1>
+
+        <div class="card" data-reveal-step="2">
+            <h3>Step 1: Title Appears</h3>
+            <p>Click Next to see the title appear first with a subtle fade and slide-up animation.</p>
+        </div>
+
+        <div class="card" data-reveal-step="3">
+            <h3>Step 2: First Card</h3>
+            <p>This card should appear after the title, with the same smooth animation.</p>
+        </div>
+
+        <div class="card" data-reveal-step="4">
+            <h3>Step 3: Second Card</h3>
+            <p>Each element appears one at a time, building the content progressively.</p>
+        </div>
+
+        <div class="card" data-reveal-step="5">
+            <h3>Step 4: Third Card</h3>
+            <p>This mimics how narration would work - reveal content as the audio explains each point.</p>
+        </div>
+
+        <div class="card" data-reveal-step="6">
+            <h3>Step 5: Final Card</h3>
+            <p>Once revealed, elements stay visible (no exit animations).</p>
+        </div>
+    </div>
+
+    <div class="nav">
+        <button id="prevBtn">← Previous</button>
+        <span id="indicator" class="step-indicator">0 / 0</span>
+        <button id="nextBtn">Next →</button>
+    </div>
+
+    <script>
+        class SlideAnimationController {
+            constructor() {
+                this.currentStep = 0;
+                this.totalSteps = 0;
+                this.elements = [];
+                this.prevBtn = document.getElementById('prevBtn');
+                this.nextBtn = document.getElementById('nextBtn');
+            }
+
+            init() {
+                // Find all elements with data-reveal-step
+                this.elements = Array.from(
+                    document.querySelectorAll('[data-reveal-step]')
+                ).sort((a, b) => {
+                    return parseInt(a.dataset.revealStep) - parseInt(b.dataset.revealStep);
+                });
+
+                this.totalSteps = this.elements.length;
+
+                console.log(`Found ${this.totalSteps} elements to animate`);
+
+                // Hide all elements initially
+                this.elements.forEach((el, index) => {
+                    el.classList.add('reveal-hidden');
+                    console.log(`Hidden element ${index + 1}: ${el.tagName}`);
+                });
+
+                // Set up buttons
+                this.prevBtn.addEventListener('click', () => this.previous());
+                this.nextBtn.addEventListener('click', () => this.next());
+
+                // Keyboard support
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.next();
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.previous();
+                    }
+                });
+
+                this.updateUI();
+                console.log('Controller initialized!');
+            }
+
+            next() {
+                if (this.currentStep < this.totalSteps) {
+                    this.currentStep++;
+                    console.log(`Advancing to step ${this.currentStep}`);
+                    this.reveal();
+                }
+            }
+
+            previous() {
+                if (this.currentStep > 0) {
+                    this.currentStep--;
+                    console.log(`Going back to step ${this.currentStep}`);
+                    this.reveal();
+                }
+            }
+
+            reveal() {
+                this.elements.forEach((el, index) => {
+                    const elementStep = index + 1;
+
+                    if (elementStep <= this.currentStep) {
+                        el.classList.remove('reveal-hidden');
+                        el.classList.add('reveal-visible');
+                    } else {
+                        el.classList.remove('reveal-visible');
+                        el.classList.add('reveal-hidden');
+                    }
+                });
+
+                this.updateUI();
+            }
+
+            updateUI() {
+                this.prevBtn.disabled = this.currentStep === 0;
+                this.nextBtn.disabled = this.currentStep === this.totalSteps;
+                document.getElementById('indicator').textContent = `${this.currentStep} / ${this.totalSteps}`;
+            }
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                const controller = new SlideAnimationController();
+                controller.init();
+            });
+        } else {
+            const controller = new SlideAnimationController();
+            controller.init();
+        }
+    </script>
+</body>
+
+</html>
