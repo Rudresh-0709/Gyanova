@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamma-Style Slide</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../../blocks/styles/base.css">
+    <link rel="stylesheet" href="../../blocks/styles/gamma_blocks.css">
+</head>
+<body>
+    <div class="slide-root block-based" id="complete_demo">
+        <section class="slide-section" data-purpose="title">
+
+        <h1 class="block-heading block-heading-1" data-reveal-step="0">
+            Evolution of Computers
+        </h1>
+    
+        <p class="block-paragraph" data-reveal-step="1">
+            A journey through technological innovation
+        </p>
+    </section>
+<section class="slide-section" data-purpose="content">
+
+        <h2 class="block-heading block-heading-2" data-reveal-step="2">
+            Historical Timeline
+        </h2>
+    <div class="block-timeline" data-event-count="4">
+
+        <div class="timeline-event" data-reveal-step="3">
+            <div class="timeline-year">1940s-1950s</div>
+            <div class="timeline-description">First Generation: Vacuum tubes enabled the first programmable computers</div>
+        </div>
+        
+        <div class="timeline-event" data-reveal-step="4">
+            <div class="timeline-year">1950s-1960s</div>
+            <div class="timeline-description">Second Generation: Transistors replaced tubes, improving reliability</div>
+        </div>
+        
+        <div class="timeline-event" data-reveal-step="5">
+            <div class="timeline-year">1960s-1970s</div>
+            <div class="timeline-description">Third Generation: Integrated circuits enabled compact designs</div>
+        </div>
+        
+        <div class="timeline-event" data-reveal-step="6">
+            <div class="timeline-year">1970s-Present</div>
+            <div class="timeline-description">Fourth Generation: Microprocessors revolutionized computing</div>
+        </div>
+        </div>
+</section>
+<section class="slide-section" data-purpose="content">
+
+        <div class="block-divider" data-reveal-step="7"></div>
+    <div class="block-columns">
+    <div class="column" style="flex: 0 0 50.0%;">
+
+        <h2 class="block-heading block-heading-2" data-reveal-step="8">
+            Key Innovations
+        </h2>
+    <div class="block-smart-bullets">
+
+        <div class="smart-bullet" data-reveal-step="8">
+            <div class="smart-bullet-icon"><i class="ri-arrow-down-line"></i></div>
+            <div class="smart-bullet-text">Miniaturization of components</div>
+        </div>
+        
+        <div class="smart-bullet" data-reveal-step="9">
+            <div class="smart-bullet-icon"><i class="ri-speed-line"></i></div>
+            <div class="smart-bullet-text">Exponential processing power</div>
+        </div>
+        
+        <div class="smart-bullet" data-reveal-step="10">
+            <div class="smart-bullet-icon"><i class="ri-leaf-line"></i></div>
+            <div class="smart-bullet-text">Energy efficiency gains</div>
+        </div>
+        </div>
+    </div>
+    <div class="column" style="flex: 0 0 50.0%;">
+
+        <h2 class="block-heading block-heading-2" data-reveal-step="8">
+            Impact Statistics
+        </h2>
+    <div class="block-stats-grid" data-stat-count="3">
+
+        <div class="stat-item" data-reveal-step="8">
+            <div class="stat-value">1M×</div>
+            <div class="stat-label">Faster</div>
+        </div>
+        
+        <div class="stat-item" data-reveal-step="9">
+            <div class="stat-value">100K×</div>
+            <div class="stat-label">Smaller</div>
+        </div>
+        
+        <div class="stat-item" data-reveal-step="10">
+            <div class="stat-value">1000×</div>
+            <div class="stat-label">Cheaper</div>
+        </div>
+        </div>
+    </div>
+</div>
+</section>
+<section class="slide-section" data-purpose="takeaway">
+
+        <div class="block-takeaway" data-reveal-step="9">
+            <strong>Key Insight:</strong> Each generation of computers brought exponential improvements in size, speed, and cost-effectiveness
+        </div>
+    </section>
+
+    </div>
+    
+    <!-- Navigation Controls -->
+    <div class="slide-nav">
+        <button id="slidePrevBtn" class="slide-nav-btn">← Previous</button>
+        <span id="slideStepIndicator" class="slide-step-indicator">0 / 10</span>
+        <button id="slideNextBtn" class="slide-nav-btn">Next →</button>
+    </div>
+    
+    <!-- Animation Controller -->
+    <script>
+        class SlideAnimationController {
+            constructor() {
+                this.currentStep = 0;
+                this.totalSteps = 10;
+                this.elements = [];
+                this.prevBtn = null;
+                this.nextBtn = null;
+            }
+
+            init() {
+                this.elements = Array.from(
+                    document.querySelectorAll('[data-reveal-step]')
+                ).sort((a, b) => {
+                    return parseInt(a.dataset.revealStep) - parseInt(b.dataset.revealStep);
+                });
+
+                this.elements.forEach(el => {
+                    el.classList.remove('reveal-visible');
+                });
+
+                this.setupButtons();
+                this.currentStep = 0;
+                this.updateButtonStates();
+
+                console.log(`Slide initialized: ${this.totalSteps} steps`);
+            }
+
+            setupButtons() {
+                this.prevBtn = document.getElementById('slidePrevBtn');
+                this.nextBtn = document.getElementById('slideNextBtn');
+
+                if (this.prevBtn) {
+                    this.prevBtn.addEventListener('click', () => this.previous());
+                }
+
+                if (this.nextBtn) {
+                    this.nextBtn.addEventListener('click', () => this.next());
+                }
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.next();
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.previous();
+                    }
+                });
+            }
+
+            next() {
+                if (this.currentStep < this.totalSteps) {
+                    this.currentStep++;
+                    this.goToStep(this.currentStep);
+                }
+            }
+
+            previous() {
+                if (this.currentStep > 0) {
+                    this.currentStep--;
+                    this.goToStep(this.currentStep);
+                }
+            }
+
+            goToStep(step) {
+                this.currentStep = Math.max(0, Math.min(step, this.totalSteps));
+
+                this.elements.forEach((el, index) => {
+                    const elementStep = index + 1;
+
+                    if (elementStep <= this.currentStep) {
+                        el.classList.add('reveal-visible');
+                    } else {
+                        el.classList.remove('reveal-visible');
+                    }
+                });
+
+                this.updateButtonStates();
+            }
+
+            updateButtonStates() {
+                if (this.prevBtn) {
+                    this.prevBtn.disabled = this.currentStep === 0;
+                }
+
+                if (this.nextBtn) {
+                    this.nextBtn.disabled = this.currentStep === this.totalSteps;
+                }
+
+                const indicator = document.getElementById('slideStepIndicator');
+                if (indicator) {
+                    indicator.textContent = `${this.currentStep} / ${this.totalSteps}`;
+                }
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                window.slideController = new SlideAnimationController();
+                window.slideController.init();
+            });
+        } else {
+            window.slideController = new SlideAnimationController();
+            window.slideController.init();
+        }
+    </script>
+</body>
+</html>

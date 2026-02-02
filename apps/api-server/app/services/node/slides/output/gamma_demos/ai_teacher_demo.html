@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamma-Style Slide</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../../blocks/styles/base.css">
+    <link rel="stylesheet" href="../../blocks/styles/gamma_blocks.css">
+</head>
+<body>
+    <div class="slide-root block-based" id="ai_teacher_demo">
+        <section class="slide-section" data-purpose="introduction">
+
+        <h1 class="block-heading block-heading-1" data-reveal-step="0">
+            AI Teacher Platform Features
+        </h1>
+    
+        <p class="block-paragraph" data-reveal-step="1">
+            Revolutionizing education through intelligent content generation
+        </p>
+    </section>
+<section class="slide-section" data-purpose="content">
+<div class="block-columns">
+    <div class="column" style="flex: 0 0 50.0%;">
+
+        <h2 class="block-heading block-heading-2" data-reveal-step="2">
+            Core Capabilities
+        </h2>
+    <div class="block-smart-bullets">
+
+        <div class="smart-bullet" data-reveal-step="2">
+            <div class="smart-bullet-icon"><i class="ri-robot-line"></i></div>
+            <div class="smart-bullet-text">AI-powered content generation</div>
+        </div>
+        
+        <div class="smart-bullet" data-reveal-step="3">
+            <div class="smart-bullet-icon"><i class="ri-presentation-line"></i></div>
+            <div class="smart-bullet-text">Dynamic slide creation</div>
+        </div>
+        
+        <div class="smart-bullet" data-reveal-step="4">
+            <div class="smart-bullet-icon"><i class="ri-lightbulb-line"></i></div>
+            <div class="smart-bullet-text">Smart icon selection</div>
+        </div>
+        
+        <div class="smart-bullet" data-reveal-step="5">
+            <div class="smart-bullet-icon"><i class="ri-shield-check-line"></i></div>
+            <div class="smart-bullet-text">Fact verification system</div>
+        </div>
+        </div>
+    </div>
+    <div class="column" style="flex: 0 0 50.0%;">
+
+        <h2 class="block-heading block-heading-2" data-reveal-step="2">
+            Platform Stats
+        </h2>
+    <div class="block-stats-grid" data-stat-count="3">
+
+        <div class="stat-item" data-reveal-step="2">
+            <div class="stat-value">8</div>
+            <div class="stat-label">Node Pipeline</div>
+        </div>
+        
+        <div class="stat-item" data-reveal-step="3">
+            <div class="stat-value">100%</div>
+            <div class="stat-label">Automated</div>
+        </div>
+        
+        <div class="stat-item" data-reveal-step="4">
+            <div class="stat-value">∞</div>
+            <div class="stat-label">Possibilities</div>
+        </div>
+        </div>
+    </div>
+</div>
+</section>
+<section class="slide-section" data-purpose="content">
+
+        <div class="block-divider" data-reveal-step="3"></div>
+    
+        <h2 class="block-heading block-heading-2" data-reveal-step="4">
+            Development Timeline
+        </h2>
+    <div class="block-timeline" data-event-count="4">
+
+        <div class="timeline-event" data-reveal-step="5">
+            <div class="timeline-year">Phase 1</div>
+            <div class="timeline-description">Content generation with LangGraph workflow</div>
+        </div>
+        
+        <div class="timeline-event" data-reveal-step="6">
+            <div class="timeline-year">Phase 2</div>
+            <div class="timeline-description">Smart layouts and responsive blocks</div>
+        </div>
+        
+        <div class="timeline-event" data-reveal-step="7">
+            <div class="timeline-year">Phase 3</div>
+            <div class="timeline-description">Gamma-style markup integration</div>
+        </div>
+        
+        <div class="timeline-event" data-reveal-step="8">
+            <div class="timeline-year">Current</div>
+            <div class="timeline-description">Full-featured slide generation system</div>
+        </div>
+        </div>
+</section>
+<section class="slide-section" data-purpose="takeaway">
+
+        <div class="block-takeaway" data-reveal-step="9">
+            <strong>Key Achievement:</strong> Successfully integrated Gamma's responsive, markup-driven approach with existing block-based rendering system
+        </div>
+    </section>
+
+    </div>
+    
+    <!-- Navigation Controls -->
+    <div class="slide-nav">
+        <button id="slidePrevBtn" class="slide-nav-btn">← Previous</button>
+        <span id="slideStepIndicator" class="slide-step-indicator">0 / 10</span>
+        <button id="slideNextBtn" class="slide-nav-btn">Next →</button>
+    </div>
+    
+    <!-- Animation Controller -->
+    <script>
+        class SlideAnimationController {
+            constructor() {
+                this.currentStep = 0;
+                this.totalSteps = 10;
+                this.elements = [];
+                this.prevBtn = null;
+                this.nextBtn = null;
+            }
+
+            init() {
+                this.elements = Array.from(
+                    document.querySelectorAll('[data-reveal-step]')
+                ).sort((a, b) => {
+                    return parseInt(a.dataset.revealStep) - parseInt(b.dataset.revealStep);
+                });
+
+                this.elements.forEach(el => {
+                    el.classList.remove('reveal-visible');
+                });
+
+                this.setupButtons();
+                this.currentStep = 0;
+                this.updateButtonStates();
+
+                console.log(`Slide initialized: ${this.totalSteps} steps`);
+            }
+
+            setupButtons() {
+                this.prevBtn = document.getElementById('slidePrevBtn');
+                this.nextBtn = document.getElementById('slideNextBtn');
+
+                if (this.prevBtn) {
+                    this.prevBtn.addEventListener('click', () => this.previous());
+                }
+
+                if (this.nextBtn) {
+                    this.nextBtn.addEventListener('click', () => this.next());
+                }
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.next();
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.previous();
+                    }
+                });
+            }
+
+            next() {
+                if (this.currentStep < this.totalSteps) {
+                    this.currentStep++;
+                    this.goToStep(this.currentStep);
+                }
+            }
+
+            previous() {
+                if (this.currentStep > 0) {
+                    this.currentStep--;
+                    this.goToStep(this.currentStep);
+                }
+            }
+
+            goToStep(step) {
+                this.currentStep = Math.max(0, Math.min(step, this.totalSteps));
+
+                this.elements.forEach((el, index) => {
+                    const elementStep = index + 1;
+
+                    if (elementStep <= this.currentStep) {
+                        el.classList.add('reveal-visible');
+                    } else {
+                        el.classList.remove('reveal-visible');
+                    }
+                });
+
+                this.updateButtonStates();
+            }
+
+            updateButtonStates() {
+                if (this.prevBtn) {
+                    this.prevBtn.disabled = this.currentStep === 0;
+                }
+
+                if (this.nextBtn) {
+                    this.nextBtn.disabled = this.currentStep === this.totalSteps;
+                }
+
+                const indicator = document.getElementById('slideStepIndicator');
+                if (indicator) {
+                    indicator.textContent = `${this.currentStep} / ${this.totalSteps}`;
+                }
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                window.slideController = new SlideAnimationController();
+                window.slideController.init();
+            });
+        } else {
+            window.slideController = new SlideAnimationController();
+            window.slideController.init();
+        }
+    </script>
+</body>
+</html>

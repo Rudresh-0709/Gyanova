@@ -1,0 +1,68 @@
+/* Layout and contextual spacing rules */
+
+/* Heading + Paragraph */
+.block-heading+.block-paragraph {
+    margin-top: 20px;
+}
+
+/* Heading + Card Grid */
+.block-heading+.block-card-grid {
+    margin-top: 48px;
+}
+
+/* Paragraph + Card Grid */
+.block-paragraph+.block-card-grid {
+    margin-top: 40px;
+}
+
+/* Card Grid + Takeaway */
+.block-card-grid+.block-takeaway {
+    margin-top: 50px;
+}
+
+/* Paragraph + Bullet List */
+.block-paragraph+.block-bullet-list {
+    margin-top: 24px;
+}
+
+/* Heading + Step List */
+.block-heading+.block-step-list {
+    margin-top: 40px;
+}
+
+/* Bullet List + Takeaway */
+.block-bullet-list+.block-takeaway {
+    margin-top: 40px;
+}
+
+/* Step List + Takeaway */
+.block-step-list+.block-takeaway {
+    margin-top: 40px;
+}
+
+/* Divider spacing */
+.block-divider+.block-heading {
+    margin-top: 40px;
+}
+
+.block-paragraph+.block-divider {
+    margin-top: 32px;
+}
+
+/* Image spacing */
+.block-heading+.block-image {
+    margin-top: 40px;
+}
+
+.block-image+.block-paragraph {
+    margin-top: 32px;
+}
+
+/* Stat spacing */
+.block-heading+.block-stat {
+    margin-top: 40px;
+}
+
+.block-stat+.block-paragraph {
+    margin-top: 32px;
+}
