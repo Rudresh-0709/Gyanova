@@ -1,0 +1,159 @@
+/*
+ * GyML Base Styles
+ * 
+ * Core structural styles for GyML elements.
+ * These define the layout behavior, not visual appearance.
+ */
+
+/* Reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Section - atomic slide unit */
+section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: var(--spacing-xl, 2rem);
+    overflow: hidden;
+}
+
+/* Image layout variants */
+section[data-image-layout="right"] {
+    flex-direction: row;
+    gap: var(--spacing-xl, 2rem);
+}
+
+section[data-image-layout="left"] {
+    flex-direction: row-reverse;
+    gap: var(--spacing-xl, 2rem);
+}
+
+section[data-image-layout="top"] {
+    flex-direction: column-reverse;
+    gap: var(--spacing-lg, 1.5rem);
+}
+
+section[data-image-layout="behind"] {
+    position: relative;
+}
+
+section[data-image-layout="behind"] .accent-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.15;
+    z-index: 0;
+}
+
+/* Accent image - sibling of body */
+.accent-image {
+    flex-shrink: 0;
+    max-width: 40%;
+    height: auto;
+    object-fit: cover;
+    border-radius: var(--radius-lg, 0.75rem);
+}
+
+/* Body container - vertical flow */
+.body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md, 1rem);
+    z-index: 1;
+}
+
+/* Columns - flex container */
+.columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg, 1.5rem);
+    width: 100%;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm, 0.5rem);
+    min-width: 0;
+    /* Prevent flex overflow */
+}
+
+/* Smart layout - grid container */
+.smart-layout {
+    display: grid;
+    gap: var(--spacing-md, 1rem);
+    width: 100%;
+}
+
+/* Default grid: auto-fill based on cellsize */
+.smart-layout {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* Explicit column counts based on item count */
+.smart-layout[data-item-count="1"] {
+    grid-template-columns: 1fr;
+}
+
+.smart-layout[data-item-count="2"] {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.smart-layout[data-item-count="3"] {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.smart-layout[data-item-count="4"] {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.smart-layout[data-item-count="5"],
+.smart-layout[data-item-count="6"] {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Smart layout item */
+.smart-layout-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm, 0.5rem);
+    padding: var(--spacing-md, 1rem);
+}
+
+/* Divider */
+hr.divider {
+    border: none;
+    height: 1px;
+    width: 100%;
+    margin: var(--spacing-md, 1rem) 0;
+}
+
+/* Inline images */
+.body>img,
+.column>img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md, 0.5rem);
+}
+
+/* Typography base structure */
+h1,
+h2,
+h3,
+h4 {
+    line-height: 1.2;
+}
+
+p {
+    line-height: 1.6;
+}

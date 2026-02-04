@@ -70,78 +70,75 @@ def should_fact_check(slide_title: str, slide_purpose: str, subtopic_name: str) 
     return any(keyword in combined for keyword in fact_check_keywords)
 
 
-def generate_bullet_content(
+def load_llm_schema() -> str:
+    """Load the LLM content schema."""
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        schema_path = os.path.join(current_dir, "slides", "gyml", "llm_schema.json")
+        with open(schema_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception as e:
+        print(f"   ⚠ Failed to load LLM schema: {e}")
+        return "{}"
+
+
+def generate_slide_content(
     narration_text: str,
-    point_count_range: List[int],
     slide_title: str,
     slide_purpose: str,
-    subtopic_name: str = "",
-) -> List[Dict[str, str]]:
+    subtopic_name: str,
+    blueprint_hint: str = "",
+    constraints: Dict = None,
+) -> Dict[str, Any]:
     """
-    Generates structured bullet point content from narration.
-    Each bullet has: icon, heading, description text.
-    Uses Tavily for factual verification when dealing with historical/technical content.
+    Unified generation function using the Expanded Content Schema.
+
+    Flow:
+    1. Check if fact-checking is needed (Tavily).
+    2. Load JSON Schema.
+    3. Prompt LLM to generate valid JSON matching schema.
+    4. Return structured content.
     """
     llm = load_openai()
+    schema_json = load_llm_schema()
+    constraints = constraints or {}
 
-    min_points, max_points = point_count_range
-
-    # ⭐ Tavily Search for Factual Accuracy
+    # 1. Fact Checking
     search_context = ""
     if should_fact_check(slide_title, slide_purpose, subtopic_name):
         try:
-            search_query = f"{subtopic_name} {slide_title} accurate facts details"
-            print(f"   🔍 Fact-checking with Tavily: {search_query[:50]}...")
+            search_query = f"{subtopic_name} {slide_title} facts details"
+            print(f"   🔍 Fact-checking: {search_query[:50]}...")
             search_results = tavily.search(query=search_query, max_results=3)
-            search_context = f"\n\n📚 VERIFIED FACTS (Use these for accuracy):\n{json.dumps(search_results.get('results', []), indent=2)}\n"
+            search_context = f"\\n\\n📚 VERIFIED CONTEXT (Use these facts):\\n{json.dumps(search_results.get('results', []), indent=2)}\\n"
         except Exception as e:
             print(f"   ⚠ Tavily search failed: {e}")
-            search_context = ""
 
+    # 2. Construct Prompt
     PROMPT = f"""
-    You are generating visual bullet point content for an educational slide.
-    
+    You are an expert educational content designer.
+    Your task is to convert the Teacher's Narration into a structured visual slide.
+
     SLIDE CONTEXT:
     - Title: {slide_title}
     - Purpose: {slide_purpose}
-    - Subtopic: {subtopic_name}
-    - Required: {min_points}-{max_points} bullet points
-    
-    NARRATION TEXT (Teacher's spoken script):
-    {narration_text}
+    - Blueprint Hint: {blueprint_hint} (Use this to guide your layout choice)
+    - Narration: {narration_text}
+
     {search_context}
-    
-    YOUR TASK:
-    Extract {min_points}-{max_points} distinct teaching points from the narration and structure them as bullet cards.
-    
-    ⚠️ CRITICAL - FACTUAL ACCURACY:
-    - If VERIFIED FACTS are provided above, YOU MUST use them for dates, numbers, names, and technical details
-    - DO NOT make up facts, dates, or statistics
-    - If unsure about a specific detail, use general accurate descriptions
-    - Accuracy is ABSOLUTELY CRITICAL for this educational content
-    
-    Each bullet card must have:
-    1. **Heading** - Bold, concise title (3-6 words)
-    2. **Description** - 1-2 sentence explanation (12-20 words)
-    
-    NOTE: Icons will be automatically selected based on semantic meaning, so focus on clear headings.
-    
-    OUTPUT RULES:
-    - Output EXACTLY {min_points} to {max_points} bullets
-    - Each bullet must be a standalone, complete idea
-    - Descriptions should be concise but informative
-    - Icons should be semantically meaningful
-    - USE VERIFIED FACTS when available - accuracy is paramount
-    
-    OUTPUT FORMAT (JSON only):
-    {{
-      "bullets": [
-        {{
-          "heading": "Concise Title",
-          "description": "Brief explanation of this point in 1-2 sentences."
-        }}
-      ]
-    }}
+
+    STRICT OUTPUT SCHEMA (JSON ONLY):
+    {schema_json}
+
+    INSTRUCTIONS:
+    1. Analyze the narration to determine the best 'intent' and 'contentBlocks'.
+    2. RICH CONTENT RULE: Most slides should have multiple blocks.
+       - A slide with just a Timeline or just a Table is boring.
+       - ALWAYS include a short introductory 'paragraph' block before complex blocks (Timeline, Code, Table) to provide context.
+    3. If the Blueprint Hint suggests a structure (e.g. TIMELINE_STEPS -> timeline), use it as the PRIMARY block.
+    4. If the hint is generic (BULLET_POINTS), you may choose a better visualization (e.g. card_grid, step_list).
+    5. Ensure all content is FACTUALLY ACCURATE using the provided Context.
+    6. Output MUST be valid JSON matching the schema exactly.
     """
 
     try:
@@ -149,163 +146,24 @@ def generate_bullet_content(
         content = response.content.replace("```json", "").replace("```", "").strip()
         result = json.loads(content)
 
-        bullets = result.get("bullets", [])
+        # Post-processing: Add specific icons if needed (optional, can be done by Composer/Renderer)
+        # For now, we trust the LLM or let the Composer handle defaults.
 
-        # ⭐ USE ICON SELECTOR - Intelligently select icons based on content
-        print(f"   🎨 Selecting icons for {len(bullets)} bullets...")
-        selected_icons = select_icons_batch(
-            items=bullets,
-            context={
-                "slide_title": slide_title,
-                "slide_purpose": slide_purpose,
-                "subtopic_name": subtopic_name,
-            },
-        )
-
-        # Add icons to bullets
-        for i, bullet in enumerate(bullets):
-            bullet["icon"] = (
-                selected_icons[i] if i < len(selected_icons) else "ri-circle-line"
-            )
-
-        # Validate count
-        if min_points <= len(bullets) <= max_points:
-            return bullets
-        else:
-            print(
-                f"   ⚠ Generated {len(bullets)} bullets, expected {min_points}-{max_points}"
-            )
-            # Trim or pad to fit range
-            if len(bullets) < min_points:
-                return bullets + [
-                    {
-                        "icon": "ri-circle-line",
-                        "heading": "Additional Point",
-                        "description": "Placeholder",
-                    }
-                ] * (min_points - len(bullets))
-            else:
-                return bullets[:max_points]
+        return result
 
     except Exception as e:
-        print(f"   ❌ Bullet generation failed: {e}")
-        # Fallback: create generic bullets
-        return [
-            {
-                "icon": "ri-circle-line",
-                "heading": f"Point {i+1}",
-                "description": "Content extraction failed. Manual review needed.",
-            }
-            for i in range(min_points)
-        ]
-
-
-def generate_column_content(
-    narration_text: str, column_count: int, slide_title: str
-) -> List[Dict[str, str]]:
-    """
-    Generates content for column-based layouts (two/three/four columns).
-    Each column has: title, text content.
-    """
-    llm = load_openai()
-
-    PROMPT = f"""
-    Generate content for a {column_count}-column slide layout.
-    
-    SLIDE TITLE: {slide_title}
-    NARRATION: {narration_text}
-    
-    Extract {column_count} distinct concepts/categories from the narration.
-    
-    Each column should have:
-    - **Column Title**: 2-4 words
-    - **Text**: 40-60 words of explanation
-    
-    OUTPUT FORMAT (JSON):
-    {{
-      "columns": [
-        {{
-          "title": "Column Title",
-          "text": "Explanation text for this column..."
-        }}
-      ]
-    }}
-    """
-
-    try:
-        response = llm.invoke([{"role": "user", "content": PROMPT}])
-        content = response.content.replace("```json", "").replace("```", "").strip()
-        result = json.loads(content)
-        return result.get("columns", [])[:column_count]
-    except:
-        return [
-            {"title": f"Column {i+1}", "text": "Content generation failed"}
-            for i in range(column_count)
-        ]
-
-
-def generate_timeline_content(
-    narration_text: str,
-    item_count_range: List[int],
-    slide_title: str,
-    subtopic_name: str = "",
-) -> List[Dict[str, str]]:
-    """
-    Generates timeline items from sequential narration.
-    Each item has: phase_title, description.
-    Uses Tavily for historical accuracy.
-    """
-    llm = load_openai()
-
-    min_items, max_items = item_count_range
-
-    # Timelines often need accurate dates
-    search_context = ""
-    if should_fact_check(slide_title, "", subtopic_name):
-        try:
-            search_query = f"{subtopic_name} {slide_title} timeline chronology dates"
-            print(f"   🔍 Verifying timeline with Tavily...")
-            search_results = tavily.search(query=search_query, max_results=3)
-            search_context = f"\n\n📚 VERIFIED TIMELINE FACTS:\n{json.dumps(search_results.get('results', []), indent=2)}\n"
-        except:
-            pass
-
-    PROMPT = f"""
-    Generate timeline content for a chronological slide.
-    
-    SLIDE TITLE: {slide_title}
-    NARRATION: {narration_text}
-    {search_context}
-    REQUIRED: {min_items}-{max_items} timeline items
-    
-    ⚠️ ACCURACY CRITICAL: Use verified facts for dates and events. Do not fabricate dates.
-    
-    Each timeline item should have:
-    - **Phase Title**: Short label (e.g., "Phase 1: Planning", "1940s-1950s")
-    - **Description**: 3-5 sentences explaining this stage
-    
-    OUTPUT FORMAT (JSON):
-    {{
-      "timeline_items": [
-        {{
-          "phase_title": "Phase Title",
-          "description": "Detailed explanation..."
-        }}
-      ]
-    }}
-    """
-
-    try:
-        response = llm.invoke([{"role": "user", "content": PROMPT}])
-        content = response.content.replace("```json", "").replace("```", "").strip()
-        result = json.loads(content)
-        items = result.get("timeline_items", [])
-        return items[:max_items]
-    except:
-        return [
-            {"phase_title": f"Step {i+1}", "description": "Content unavailable"}
-            for i in range(min_items)
-        ]
+        print(f"   ❌ Content generation failed: {e}")
+        # Fallback to simple bullet list
+        return {
+            "title": slide_title,
+            "intent": "explain",
+            "contentBlocks": [
+                {
+                    "type": "bullet_list",
+                    "items": ["Content generation failed.", "Please review narration."],
+                }
+            ],
+        }
 
 
 def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -319,68 +177,35 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     for sub_id, slide_list in slides.items():
         for slide in slide_list:
             narration_text = slide.get("narration_text", "")
-            content_type = slide.get("content_type", "")
-            narration_format = slide.get("narration_format", "points")
+            blueprint_type = slide.get("content_type", "")  # Use as hint
             constraints = slide.get("narration_constraints", {})
 
             slide_title = slide.get("slide_title", "")
             slide_purpose = slide.get("slide_purpose", "")
             subtopic_name = slide.get("subtopic_name", "")
 
-            print(f"📝 Generating content for: {slide_title} [{content_type}]")
+            print(f"📝 Generating content for: {slide_title} [Hint: {blueprint_type}]")
 
-            # Generate content based on content type
-            if content_type == "BULLET_POINTS":
-                point_count = constraints.get("point_count", [4, 6])
-                bullets = generate_bullet_content(
-                    narration_text=narration_text,
-                    point_count_range=point_count,
-                    slide_title=slide_title,
-                    slide_purpose=slide_purpose,
-                    subtopic_name=subtopic_name,
-                )
-                slide["visual_content"] = {"bullets": bullets}
-                print(f"   → Generated {len(bullets)} bullets")
+            # Unified Generation
+            generated_content = generate_slide_content(
+                narration_text=narration_text,
+                slide_title=slide_title,
+                slide_purpose=slide_purpose,
+                subtopic_name=subtopic_name,
+                blueprint_hint=blueprint_type,
+                constraints=constraints,
+            )
 
-            elif content_type in [
-                "TWO_COLUMN_TEXT",
-                "THREE_COLUMN_CARDS",
-                "FOUR_COLUMN_CARDS",
-            ]:
-                column_count = {
-                    "TWO_COLUMN_TEXT": 2,
-                    "THREE_COLUMN_CARDS": 3,
-                    "FOUR_COLUMN_CARDS": 4,
-                }[content_type]
-                columns = generate_column_content(
-                    narration_text=narration_text,
-                    column_count=column_count,
-                    slide_title=slide_title,
-                )
-                slide["visual_content"] = {"columns": columns}
-                print(f"   → Generated {len(columns)} columns")
+            # Store the structured content
+            # We store it in 'gyml_content' to distinguish from legacy 'visual_content'
+            slide["gyml_content"] = generated_content
 
-            elif content_type == "TIMELINE_STEPS":
-                item_count = constraints.get("point_count", [2, 4])
-                timeline_items = generate_timeline_content(
-                    narration_text=narration_text,
-                    item_count_range=item_count,
-                    slide_title=slide_title,
-                    subtopic_name=subtopic_name,
-                )
-                slide["visual_content"] = {"timeline_items": timeline_items}
-                print(f"   → Generated {len(timeline_items)} timeline items")
+            # For backward compatibility / debugging
+            slide["visual_content"] = generated_content
 
-            elif content_type == "NO_NARRATION_POINTS":
-                # Title card - use full narration as subtitle
-                slide["visual_content"] = {
-                    "subtitle": narration_text  # Use full text, template will handle overflow
-                }
-                print(f"   → Generated title card subtitle")
-
-            else:
-                print(f"   ⚠ Unknown content type: {content_type}, skipping")
-                slide["visual_content"] = {}
+            print(
+                f"   → Generated {len(generated_content.get('contentBlocks', []))} blocks"
+            )
 
     state["slides"] = slides
     return state

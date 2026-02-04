@@ -1,0 +1,270 @@
+"""
+GyML Type Definitions
+
+Two distinct type families:
+1. Composer IR (Intermediate Representation) - GyML-agnostic
+2. GyML Node Types - Exact spec representation
+"""
+
+from __future__ import annotations
+from dataclasses import dataclass, field
+from typing import List, Optional, Dict, Any, Union, Literal
+from enum import Enum
+
+
+# =============================================================================
+# COMPOSER IR TYPES (GyML-Agnostic)
+# =============================================================================
+
+
+class Emphasis(Enum):
+    """Emphasis levels for slide elements."""
+
+    PRIMARY = "primary"  # Heading or dominant visual
+    SECONDARY = "secondary"  # Supporting blocks
+    TERTIARY = "tertiary"  # Details, examples, callouts
+
+
+@dataclass
+class ComposedBlock:
+    """
+    A single block in the composed slide.
+    Format-agnostic - can serialize to any output format.
+    """
+
+    type: str  # BlockType value as string
+    content: Dict[str, Any]
+    emphasis: Emphasis = Emphasis.SECONDARY
+
+    def word_count(self) -> int:
+        """Count words in this block's text content."""
+        text = ""
+        if "text" in self.content:
+            text = self.content["text"]
+        elif "items" in self.content:
+            text = " ".join(str(item) for item in self.content["items"])
+        return len(text.split()) if text else 0
+
+
+@dataclass
+class ComposedSection:
+    """
+    A semantic section in the composed slide.
+    Represents intent (introduction, explanation, summary), not layout.
+    """
+
+    purpose: str  # "introduction", "content", "takeaway", etc.
+    blocks: List[ComposedBlock] = field(default_factory=list)
+
+
+@dataclass
+class ComposedSlide:
+    """
+    Output of the composer - format-agnostic intermediate representation.
+    Can be serialized to GyML, JSON, or any other format.
+    """
+
+    id: str
+    intent: str  # Intent value as string
+    sections: List[ComposedSection] = field(default_factory=list)
+
+    # Optional metadata
+    accent_image_url: Optional[str] = None
+    accent_image_alt: Optional[str] = None
+    image_layout: str = "blank"  # ImageLayout value
+
+    def total_word_count(self) -> int:
+        """Calculate total word count across all sections."""
+        return sum(
+            block.word_count() for section in self.sections for block in section.blocks
+        )
+
+    def block_count(self) -> int:
+        """Count total blocks."""
+        return sum(len(section.blocks) for section in self.sections)
+
+    def get_primary_emphasis_block(self) -> Optional[ComposedBlock]:
+        """Find the block with primary emphasis."""
+        for section in self.sections:
+            for block in section.blocks:
+                if block.emphasis == Emphasis.PRIMARY:
+                    return block
+        return None
+
+
+# =============================================================================
+# GYML NODE TYPES (Spec-Compliant)
+# =============================================================================
+
+# Type alias for any GyML node
+GyMLNode = Union[
+    "GyMLHeading",
+    "GyMLParagraph",
+    "GyMLColumns",
+    "GyMLSmartLayout",
+    "GyMLImage",
+    "GyMLDivider",
+    "GyMLTable",
+    "GyMLCode",
+]
+
+
+@dataclass
+class GyMLIcon:
+    """Icon element inside smart-layout-item."""
+
+    alt: str  # Icon identifier (e.g., "atom", "ri-check-line")
+
+
+@dataclass
+class GyMLHeading:
+    """Text heading element (h1-h4)."""
+
+    level: int  # 1-4
+    text: str
+
+    def __post_init__(self):
+        if not 1 <= self.level <= 4:
+            raise ValueError(f"Heading level must be 1-4, got {self.level}")
+
+
+@dataclass
+class GyMLParagraph:
+    """Paragraph text element."""
+
+    text: str
+
+
+@dataclass
+class GyMLImage:
+    """Image element - can be accent or inline."""
+
+    src: str
+    alt: str = ""
+    is_accent: bool = False  # True if accent image (sibling of body)
+
+
+@dataclass
+class GyMLDivider:
+    """Horizontal divider element."""
+
+    pass
+
+
+@dataclass
+class GyMLSmartLayoutItem:
+    """
+    Item inside a smart-layout.
+    Contains icon and content div.
+    """
+
+    icon: Optional[GyMLIcon] = None
+    heading: Optional[str] = None
+    description: Optional[str] = None
+
+    # For timeline variant
+    year: Optional[str] = None
+
+    # For stats variant
+    value: Optional[str] = None
+    label: Optional[str] = None
+
+
+@dataclass
+class GyMLSmartLayout:
+    """
+    Smart layout container - grid-based structural pattern.
+
+    From gyanova_markup_language.md §8:
+    - Explicit tag, not inferred
+    - variant encodes semantic intent
+    - Items are equal peers
+    - Renderer decides grid structure
+    """
+
+    variant: str  # SmartLayoutVariant value
+    items: List[GyMLSmartLayoutItem] = field(default_factory=list)
+    cellsize: int = 15  # Cell size hint for renderer
+
+
+@dataclass
+class GyMLColumnDiv:
+    """A single column container."""
+
+    children: List[GyMLNode] = field(default_factory=list)
+
+
+@dataclass
+class GyMLColumns:
+    """
+    Columns layout container - flex-based parallel layout.
+
+    From gyanova_markup_language.md §7:
+    - Creates horizontal layout
+    - colwidths is a hard constraint
+    - Children must be div (GyMLColumnDiv)
+    - On mobile, columns stack vertically
+    """
+
+    colwidths: List[int]  # e.g., [50, 50] or [60, 40]
+    columns: List[GyMLColumnDiv] = field(default_factory=list)
+
+    def __post_init__(self):
+        if len(self.colwidths) != len(self.columns):
+            # Allow empty columns to be filled later
+            if len(self.columns) == 0:
+                self.columns = [GyMLColumnDiv() for _ in self.colwidths]
+
+
+@dataclass
+class GyMLBody:
+    """
+    Body container - exactly one per section.
+
+    From gyanova_markup_language.md §4:
+    - Everything visible (except accent images) lives inside body
+    - Body is a vertical flow container
+    """
+
+    children: List[GyMLNode] = field(default_factory=list)
+
+
+@dataclass
+class GyMLSection:
+    """
+    Section element - the atomic slide unit.
+
+    From gyanova_markup_language.md §3:
+    - Sections stack vertically
+    - Sections have no awareness of neighboring slides
+    - Slides expand/shrink based on content
+    - Slides are portable and reorderable
+    """
+
+    id: str
+    image_layout: Literal["right", "left", "top", "behind", "blank"] = "blank"
+    accent_image: Optional[GyMLImage] = None
+    body: GyMLBody = field(default_factory=GyMLBody)
+
+    def __post_init__(self):
+        # Ensure body exists
+        if self.body is None:
+            self.body = GyMLBody()  # Fixed indentation and method definition
+
+
+@dataclass
+class GyMLCode:
+    """Code block element."""
+
+    code: str
+    language: str = "text"
+    variant: str = "snippet"  # snippet, comparison
+
+
+@dataclass
+class GyMLTable:
+    """Table element."""
+
+    headers: List[str]
+    rows: List[List[str]]
+    variant: str = "simple"  # simple, striped, highlight

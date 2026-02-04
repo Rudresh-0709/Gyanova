@@ -69,6 +69,11 @@ graph.add_node("content_generation_node", content_generation_node)
 # 8. Intro Narration (final step)
 graph.add_node("intro_narration_node", intro_narration_node)
 
+# 9. Rendering (GyML -> HTML)
+from .node.rendering_node import rendering_node
+
+graph.add_node("rendering_node", rendering_node)
+
 # ═══════════════════════════════════════════════════════════════════════════
 # WORKFLOW EDGES (Sequential Pipeline)
 # ═══════════════════════════════════════════════════════════════════════════
@@ -83,7 +88,8 @@ graph.add_edge("narration_node", "content_generation_node")
 # graph.add_edge("content_generation_node", "image_generation_node")
 # graph.add_edge("image_generation_node", "intro_narration_node")
 graph.add_edge("content_generation_node", "intro_narration_node")  # Direct to intro
-graph.add_edge("intro_narration_node", END)
+graph.add_edge("intro_narration_node", "rendering_node")
+graph.add_edge("rendering_node", END)
 
 # Compile the graph
 compiled_graph = graph.compile()

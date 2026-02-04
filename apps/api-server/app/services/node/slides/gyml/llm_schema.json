@@ -1,0 +1,368 @@
+{
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string",
+            "description": "Slide title"
+        },
+        "subtitle": {
+            "type": "string",
+            "description": "Optional subtitle"
+        },
+        "intent": {
+            "type": "string",
+            "enum": [
+                "introduce",
+                "explain",
+                "narrate",
+                "compare",
+                "list",
+                "prove",
+                "summarize",
+                "teach",
+                "demo"
+            ],
+            "description": "The semantic intent of the slide"
+        },
+        "contentBlocks": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "timeline"
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "year": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "year",
+                                        "description"
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "items"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "card_grid"
+                            },
+                            "cards": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "heading": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "icon": {
+                                            "type": "string",
+                                            "description": "RemixIcon name, e.g. ri-user-line"
+                                        }
+                                    },
+                                    "required": [
+                                        "heading",
+                                        "text"
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "cards"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "stats"
+                            },
+                            "stats": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string"
+                                        },
+                                        "label": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "value",
+                                        "label"
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "stats"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "code"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "language": {
+                                "type": "string",
+                                "default": "python"
+                            },
+                            "variant": {
+                                "type": "string",
+                                "enum": [
+                                    "snippet",
+                                    "comparison"
+                                ],
+                                "default": "snippet"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "code"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "table"
+                            },
+                            "headers": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "rows": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "variant": {
+                                "type": "string",
+                                "enum": [
+                                    "simple",
+                                    "striped",
+                                    "highlight"
+                                ],
+                                "default": "simple"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "headers",
+                            "rows"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "quote"
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "author": {
+                                "type": "string"
+                            },
+                            "source": {
+                                "type": "string"
+                            },
+                            "variant": {
+                                "type": "string",
+                                "enum": [
+                                    "quote",
+                                    "quoteTestimonial",
+                                    "quoteCitation"
+                                ],
+                                "default": "quote"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "text",
+                            "author"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "comparison"
+                            },
+                            "variant": {
+                                "type": "string",
+                                "enum": [
+                                    "comparison",
+                                    "comparisonProsCons",
+                                    "comparisonBeforeAfter"
+                                ],
+                                "default": "comparison"
+                            },
+                            "left": {
+                                "type": "object",
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "points": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "label",
+                                    "points"
+                                ]
+                            },
+                            "right": {
+                                "type": "object",
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "points": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "label",
+                                    "points"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "left",
+                            "right"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "definition"
+                            },
+                            "term": {
+                                "type": "string"
+                            },
+                            "definition": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "term",
+                            "definition"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "step_list"
+                            },
+                            "steps": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "steps"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "bullet_list"
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "items"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "const": "image"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "caption": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "url"
+                        ]
+                    }
+                ]
+            }
+        },
+        "takeaway": {
+            "type": "string",
+            "description": "Key takeaway message"
+        },
+        "imagePrompt": {
+            "type": "string",
+            "description": "Prompt for generative image"
+        }
+    },
+    "required": [
+        "title",
+        "intent",
+        "contentBlocks"
+    ]
+}

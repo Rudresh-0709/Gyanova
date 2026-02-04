@@ -1,0 +1,88 @@
+/*
+ * GyML Responsive Styles
+ * 
+ * Responsive breakpoints and layout adjustments.
+ * From gyanova_markup_language.md §7: On mobile, columns stack vertically.
+ */
+
+/* Tablet and below */
+@media (max-width: 768px) {
+
+    /* Section adjustments */
+    section {
+        min-height: auto;
+        padding: var(--spacing-lg, 1.5rem);
+    }
+
+    /* Image layouts become vertical on mobile */
+    section[data-image-layout="right"],
+    section[data-image-layout="left"] {
+        flex-direction: column;
+    }
+
+    /* Accent image becomes full width */
+    .accent-image {
+        max-width: 100%;
+        margin-bottom: var(--spacing-md, 1rem);
+    }
+
+    /* Columns stack vertically */
+    .columns {
+        flex-direction: column;
+    }
+
+    .column {
+        flex: 1 1 100% !important;
+    }
+
+    /* Smart layout becomes single column */
+    .smart-layout {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Mobile small */
+@media (max-width: 480px) {
+    section {
+        padding: var(--spacing-md, 1rem);
+    }
+
+    .smart-layout-item {
+        padding: var(--spacing-sm, 0.5rem);
+    }
+}
+
+/* Desktop and above - larger sections */
+@media (min-width: 1024px) {
+    section {
+        padding: var(--spacing-2xl, 3rem);
+    }
+
+    .accent-image {
+        max-width: 45%;
+    }
+}
+
+/* Wide screens */
+@media (min-width: 1280px) {
+    section {
+        padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
+    }
+}
+
+/* Print styles */
+@media print {
+    section {
+        min-height: auto;
+        page-break-inside: avoid;
+        page-break-after: always;
+    }
+
+    .accent-image {
+        max-width: 30%;
+    }
+
+    .columns {
+        flex-wrap: nowrap;
+    }
+}
