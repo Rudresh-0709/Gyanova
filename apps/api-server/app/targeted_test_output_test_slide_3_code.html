@@ -40,10 +40,10 @@ body {
     max-width: 100%;
     margin: 0;
     padding: 0;
-    overflow-y: scroll; /* Allow scrolling */
-    scroll-snap-type: y mandatory; /* Snap to slides */
-    scrollbar-width: none; /* Firefox: Hide scrollbar */
-    -ms-overflow-style: none; /* IE/Edge: Hide scrollbar */
+    overflow: hidden; /* Prevent scrolling */
+    scroll-snap-type: none;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 /* Chrome/Safari: Hide scrollbar */
@@ -805,40 +805,34 @@ th {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_e229eb16_0" data-image-layout="blank">
+<section id="slide_ca466e2a_0" data-image-layout="blank">
 <div class="body">
 <div class="columns" data-colwidths="40,60">
 <div class="column" style="flex: 0 0 calc(40% - 1rem);">
 <h1>Python List Comprehension</h1>
-<div class="smart-layout" data-variant="bigBullets" data-item-count="5">
+<div class="smart-layout" data-variant="bigBullets" data-item-count="4">
 <div class="card" data-index="0">
 <div class="card-number">1</div>
 <div class="card-content">
-<p class="card-text">List comprehensions allow concise and readable list creation in Python.</p>
+<p class="card-text">List comprehensions provide a concise and readable way to create lists in Python.</p>
 </div>
 </div>
 <div class="card" data-index="1">
 <div class="card-number">2</div>
 <div class="card-content">
-<p class="card-text">They condense multi-line for-loops into a single line expression.</p>
+<p class="card-text">They replace verbose multi-line for-loops with a single-line expression.</p>
 </div>
 </div>
 <div class="card" data-index="2">
 <div class="card-number">3</div>
 <div class="card-content">
-<p class="card-text">Example: squaring numbers 0 to 9 → [x**2 for x in range(10)].</p>
+<p class="card-text">Example: squaring numbers from 0 to 9 is written as [x**2 for x in range(10)].</p>
 </div>
 </div>
 <div class="card" data-index="3">
 <div class="card-number">4</div>
 <div class="card-content">
-<p class="card-text">More &#x27;Pythonic&#x27;, easier to read, and often faster than using append() in loops.</p>
-</div>
-</div>
-<div class="card" data-index="4">
-<div class="card-number">5</div>
-<div class="card-content">
-<p class="card-text">Essential for data scientists working with large arrays to reduce clutter and improve maintainability.</p>
+<p class="card-text">List comprehensions are more Pythonic, easier to read, and often faster than using append() in loops.</p>
 </div>
 </div>
 </div>
@@ -850,25 +844,25 @@ th {
 </div>
 </section>
 
-<section id="slide_e229eb16_1" data-image-layout="blank">
+<section id="slide_ca466e2a_1" data-image-layout="blank">
 <div class="body">
 <div class="smart-layout" data-variant="stats" data-item-count="3">
 <div class="card" data-index="0">
 <div class="card-content">
-<div class="card-value">Single-line</div>
-<div class="card-label">Concise syntax</div>
+<div class="card-value">Concise</div>
+<div class="card-label">Reduces code clutter</div>
 </div>
 </div>
 <div class="card" data-index="1">
 <div class="card-content">
-<div class="card-value">More readable</div>
-<div class="card-label">Improved clarity</div>
+<div class="card-value">Readable</div>
+<div class="card-label">Improves maintainability</div>
 </div>
 </div>
 <div class="card" data-index="2">
 <div class="card-content">
-<div class="card-value">Faster</div>
-<div class="card-label">Performance vs append()</div>
+<div class="card-value">Efficient</div>
+<div class="card-label">Often faster than loops with append()</div>
 </div>
 </div>
 </div>

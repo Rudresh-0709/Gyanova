@@ -35,6 +35,7 @@ class ComposedBlock:
     type: str  # BlockType value as string
     content: Dict[str, Any]
     emphasis: Emphasis = Emphasis.SECONDARY
+    role: Optional[str] = None  # Semantic role (e.g., CodeRole.PRIMARY)
 
     def word_count(self) -> int:
         """Count words in this block's text content."""

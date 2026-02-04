@@ -22,6 +22,17 @@ class ImageLayout(Enum):
     BLANK = "blank"  # No accent image
 
 
+class CodeRole(Enum):
+    """
+    Semantic role for code blocks.
+    Determines emphasis and layout placement.
+    """
+
+    PRIMARY = "primary"  # Dominates slide (Full width or main column)
+    EXAMPLE = "example"  # Anchored/Supporting (Side column)
+    REFERENCE = "reference"  # Appendix / Pushed to end
+
+
 class Relationship(Enum):
     """
     Semantic relationships between content blocks.
@@ -63,7 +74,8 @@ class SmartLayoutVariant(Enum):
     BULLET_CROSS = "bulletCross"  # X marks
 
     # Step list variants
-    PROCESS_STEPS = "processSteps"  # Numbered vertical
+    PROCESS_STEPS = "processSteps"  # Vertical steps with arrows
+    # Numbered vertical
     PROCESS_ARROW = "processArrow"  # Steps with arrows
     PROCESS_ACCORDION = "processAccordion"  # Expandable
 

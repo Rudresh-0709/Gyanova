@@ -22,6 +22,7 @@ from .constants import (
     Limits,
     INTENT_KEYWORDS,
     Relationship,
+    CodeRole,
 )
 from .rules import (
     BLOCK_ORDER_GRAMMAR,
@@ -340,6 +341,19 @@ class SlideComposer:
         Enforce implicit limits, auto-split if exceeded.
         From slide_engine.md §6, §13.
         """
+        # Rule: Card Grid > 3 items -> Split or Promote
+        for section in slide.sections:
+            for block in section.blocks:
+                if block.type == BlockType.TIMELINE.value:
+                    events = block.content.get("events", [])
+                    if len(events) > 5:
+                        return self._split_slide(slide)
+
+                if block.type == BlockType.CARD_GRID.value:
+                    cards = block.content.get("cards", [])
+                    if len(cards) > 5:
+                        return self._split_slide(slide)
+                        
         word_count = slide.total_word_count()
         block_count = slide.block_count()
 
@@ -511,49 +525,87 @@ class SlideComposer:
 
     def _assign_emphasis(self, slide: ComposedSlide) -> ComposedSlide:
         """
-        Assign emphasis levels.
-        From slide_engine.md §9.
-
-        Primary: Heading OR dominant visual (only one allowed)
-        Secondary: Supporting blocks
-        Tertiary: Details, examples, callouts
+        Assign emphasis and roles.
+        Enforces Rule: Exactly ONE dominant block per slide.
         """
-        has_primary = False
-
         for section in slide.sections:
-            for block in section.blocks:
-                # Heading gets primary if no primary yet
-                if block.type == BlockType.HEADING.value and not has_primary:
-                    block.emphasis = Emphasis.PRIMARY
-                    has_primary = True
-
-                # Dominant visual structures get primary
-                elif (
-                    block.type
-                    in [
-                        BlockType.CARD_GRID.value,
+            blocks = section.blocks # Access all blocks via property
+            
+            # Reset all to secondary initially
+            for b in blocks:
+                b.emphasis = Emphasis.SECONDARY
+                
+            # 1. Identify Candidate for Dominance
+            dominant_candidate = None
+            
+            # Check for explicitly assigned roles (e.g. Code Primary)
+            for b in blocks:
+                if b.role == CodeRole.PRIMARY.value:
+                    dominant_candidate = b
+                    break
+            
+            # If no explicit role, find heaviest visual
+            if not dominant_candidate:
+                for b in blocks:
+                    if b.type in [
                         BlockType.TIMELINE.value,
+                        BlockType.CARD_GRID.value,
                         BlockType.SMART_LAYOUT.value,
-                    ]
-                    and not has_primary
-                ):
-                    block.emphasis = Emphasis.PRIMARY
-                    has_primary = True
+                        BlockType.STATS.value,
+                        BlockType.COMPARISON.value,
+                        BlockType.TABLE.value,
+                        BlockType.DIAGRAM.value,
+                    ]:
+                        dominant_candidate = b
+                        break
+            
+            # If still none, check for Code (default to primary if it's the only complex thing)
+            if not dominant_candidate:
+                for b in blocks:
+                    if b.type == BlockType.CODE.value:
+                         # Default role if not set
+                         if not b.role: b.role = CodeRole.PRIMARY.value
+                         dominant_candidate = b
+                         break
 
-                # Callouts and images are tertiary
-                elif block.type in [
-                    BlockType.CALLOUT.value,
-                    BlockType.IMAGE.value,
-                    BlockType.TAKEAWAY.value,
-                ]:
-                    block.emphasis = Emphasis.TERTIARY
+            # If still none, Heading is dominant
+            if not dominant_candidate:
+                for b in blocks:
+                    if b.type == BlockType.HEADING.value:
+                        dominant_candidate = b
+                        break
 
-                # Everything else is secondary
+            # 2. Apply Dominance
+            if dominant_candidate:
+                dominant_candidate.emphasis = Emphasis.PRIMARY
+                
+                # Check for Code Role conflicts
+                if dominant_candidate.type == BlockType.CODE.value:
+                    if not dominant_candidate.role:
+                         dominant_candidate.role = CodeRole.PRIMARY.value
+            
+            # 3. Mark others as supporting (Tertiary/Secondary)
+            for b in blocks:
+                if b == dominant_candidate:
+                    continue
+                
+                # Code that isn't dominant is Example or Reference
+                if b.type == BlockType.CODE.value:
+                    if not b.role:
+                        b.role = CodeRole.EXAMPLE.value
+                    
+                    if b.role == CodeRole.EXAMPLE.value:
+                        b.emphasis = Emphasis.SECONDARY # Supports
+                    elif b.role == CodeRole.REFERENCE.value:
+                        b.emphasis = Emphasis.TERTIARY # Push to end (implied)
+                
+                elif b.type in [BlockType.CALLOUT.value, BlockType.IMAGE.value]:
+                    b.emphasis = Emphasis.TERTIARY
                 else:
-                    if block.emphasis != Emphasis.PRIMARY:
-                        block.emphasis = Emphasis.SECONDARY
-
+                    b.emphasis = Emphasis.SECONDARY
+                    
         return slide
+
 
     # =========================================================================
     # VARIETY

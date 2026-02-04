@@ -40,10 +40,10 @@ body {
     max-width: 100%;
     margin: 0;
     padding: 0;
-    overflow-y: scroll; /* Allow scrolling */
-    scroll-snap-type: y mandatory; /* Snap to slides */
-    scrollbar-width: none; /* Firefox: Hide scrollbar */
-    -ms-overflow-style: none; /* IE/Edge: Hide scrollbar */
+    overflow: hidden; /* Prevent scrolling */
+    scroll-snap-type: none;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 /* Chrome/Safari: Hide scrollbar */
@@ -805,46 +805,34 @@ th {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_cf02ab9f_0" data-image-layout="blank">
+<section id="slide_ddd15019_0" data-image-layout="blank">
 <div class="body">
 <div class="columns" data-colwidths="40,60">
 <div class="column" style="flex: 0 0 calc(40% - 1rem);">
 <h1>Supervised vs Unsupervised Learning</h1>
-<div class="smart-layout" data-variant="bigBullets" data-item-count="6">
+<div class="smart-layout" data-variant="bigBullets" data-item-count="4">
 <div class="card" data-index="0">
 <div class="card-number">1</div>
 <div class="card-content">
-<p class="card-text">Machine Learning is broadly divided into two main paradigms.</p>
+<p class="card-text">Machine Learning has two main paradigms: Supervised and Unsupervised Learning.</p>
 </div>
 </div>
 <div class="card" data-index="1">
 <div class="card-number">2</div>
 <div class="card-content">
-<p class="card-text">Supervised Learning is like a classroom setting where the model learns from labeled examples and corrects itself using error minimization.</p>
+<p class="card-text">Supervised Learning uses labeled data where the model learns from known answers and corrects errors.</p>
 </div>
 </div>
 <div class="card" data-index="2">
 <div class="card-number">3</div>
 <div class="card-content">
-<p class="card-text">It requires massive annotated datasets but is highly accurate for specific classification tasks.</p>
+<p class="card-text">Unsupervised Learning works with unlabeled data, discovering hidden patterns without guidance.</p>
 </div>
 </div>
 <div class="card" data-index="3">
 <div class="card-number">4</div>
 <div class="card-content">
-<p class="card-text">Unsupervised Learning is like self-discovery where the model analyzes raw, unlabeled data to find hidden patterns or structures.</p>
-</div>
-</div>
-<div class="card" data-index="4">
-<div class="card-number">5</div>
-<div class="card-content">
-<p class="card-text">While less precise for specific targets, Unsupervised Learning is essential for discovering new insights and clustering data without human bias.</p>
-</div>
-</div>
-<div class="card" data-index="5">
-<div class="card-number">6</div>
-<div class="card-content">
-<p class="card-text">Both paradigms are critical components of a complete AI system.</p>
+<p class="card-text">Both paradigms are essential for building comprehensive AI systems.</p>
 </div>
 </div>
 </div>
@@ -854,22 +842,21 @@ th {
 <div class="card" data-index="0">
 <div class="card-content">
 <h4 class="card-title">Supervised Learning</h4>
-<p class="card-text">Learns from labeled data with known outcomes
-Uses error minimization to improve accuracy
-Requires large annotated datasets
-Highly accurate for classification tasks
-Analogous to a classroom setting</p>
+<p class="card-text">Learns from labeled examples (known answers).
+Uses error minimization to improve accuracy.
+Requires large annotated datasets.
+Highly accurate for specific classification tasks.
+Analogous to a classroom setting.</p>
 </div>
 </div>
 <div class="card" data-index="1">
 <div class="card-content">
 <h4 class="card-title">Unsupervised Learning</h4>
-<p class="card-text">Learns from raw, unlabeled data
-Finds hidden patterns or structures independently
-Does not require annotated datasets
-Less precise for specific targets
-Essential for discovering new insights and clustering
-Analogous to self-discovery</p>
+<p class="card-text">Learns from raw, unlabeled data.
+Finds hidden patterns or structures autonomously.
+Does not require annotated datasets.
+Less precise for specific targets but good for clustering.
+Analogous to self-discovery.</p>
 </div>
 </div>
 </div>
@@ -878,13 +865,13 @@ Analogous to self-discovery</p>
 </div>
 </section>
 
-<section id="slide_cf02ab9f_1" data-image-layout="blank">
+<section id="slide_ddd15019_1" data-image-layout="blank">
 <div class="body">
 <div class="smart-layout" data-variant="quote" data-item-count="1">
 <div class="card" data-index="0">
 <div class="card-content">
 <h4 class="card-title">AI Education Expert</h4>
-<p class="card-text">Both supervised and unsupervised learning are critical for building a complete and effective AI system.</p>
+<p class="card-text">Both supervised and unsupervised learning are critical for a complete AI system, balancing accuracy and discovery.</p>
 </div>
 </div>
 </div>

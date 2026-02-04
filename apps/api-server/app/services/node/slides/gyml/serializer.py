@@ -59,7 +59,7 @@ class GyMLSerializer:
         """
         # Determine image layout (base preference)
         image_layout = self._parse_image_layout(slide.image_layout)
-        
+
         # Base accent image (from metadata)
         accent_image = None
         if slide.accent_image_url:
@@ -71,35 +71,37 @@ class GyMLSerializer:
 
         # Build body nodes and check for override relationships
         body_children: List[GyMLNode] = []
-        
+
         for section in slide.sections:
             rel = section.relationship
-            
+
             # CASE: PARALLEL -> Columns
             if rel == Relationship.PARALLEL.value:
                 # Left Column: Secondary Blocks (Text)
                 col1_nodes = []
                 for b in section.secondary_blocks:
                     n = self._serialize_block(b)
-                    if n: col1_nodes.append(n)
-                    
+                    if n:
+                        col1_nodes.append(n)
+
                 # Right Column: Primary Block (Visual)
                 col2_nodes = []
                 if section.primary_block:
                     n = self._serialize_block(section.primary_block)
-                    if n: col2_nodes.append(n)
-                
+                    if n:
+                        col2_nodes.append(n)
+
                 # Create Columns Node (40/60 split implicit for Text/Visual)
                 if col1_nodes or col2_nodes:
                     columns_node = GyMLColumns(
                         colwidths=[40, 60],
                         columns=[
                             GyMLColumnDiv(children=col1_nodes),
-                            GyMLColumnDiv(children=col2_nodes)
-                        ]
+                            GyMLColumnDiv(children=col2_nodes),
+                        ],
                     )
                     body_children.append(columns_node)
-            
+
             # CASE: ANCHORED -> Accent Image
             elif rel == Relationship.ANCHORED.value and section.primary_block:
                 # Override accent image
@@ -110,21 +112,24 @@ class GyMLSerializer:
                     # Ensure layout is not blank if we have an image
                     if image_layout == "blank":
                         image_layout = "right"
-                
+
                 # Add secondary blocks to body
                 for b in section.secondary_blocks:
                     n = self._serialize_block(b)
-                    if n: body_children.append(n)
+                    if n:
+                        body_children.append(n)
 
             # CASE: FLOW (Default)
             else:
                 if section.primary_block:
                     n = self._serialize_block(section.primary_block)
-                    if n: body_children.append(n)
-                
+                    if n:
+                        body_children.append(n)
+
                 for b in section.secondary_blocks:
                     n = self._serialize_block(b)
-                    if n: body_children.append(n)
+                    if n:
+                        body_children.append(n)
 
         return GyMLSection(
             id=slide.id,

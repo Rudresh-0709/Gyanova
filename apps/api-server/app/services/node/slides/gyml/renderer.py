@@ -99,10 +99,35 @@ class GyMLRenderer:
     def _render_body(self, body: GyMLBody) -> str:
         """Render body container."""
         children_html = []
-        for child in body.children:
+        for i, child in enumerate(body.children):
             rendered = self._render_node(child)
             if rendered:
                 children_html.append(rendered)
+
+                # Add separator logic (between distinct major blocks)
+                if i < len(body.children) - 1:
+                    next_child = body.children[i + 1]
+
+                    # Geometry Rule: Separator between Dense (Visual) and Flow (Text)
+                    is_dense_current = isinstance(
+                        child, (GyMLColumns, GyMLSmartLayout, GyMLTable, GyMLCode)
+                    )
+                    is_dense_next = isinstance(
+                        next_child, (GyMLColumns, GyMLSmartLayout, GyMLTable, GyMLCode)
+                    )
+
+                    # Flow elements: Paragraph, Heading
+                    is_flow_current = isinstance(child, (GyMLParagraph, GyMLHeading))
+                    is_flow_next = isinstance(next_child, (GyMLParagraph, GyMLHeading))
+
+                    should_separate = (
+                        (is_dense_current and is_dense_next)  # Between two visuals
+                        or (is_dense_current and is_flow_next)  # Visual -> Text
+                        or (is_flow_current and is_dense_next)  # Text -> Visual
+                    )
+
+                    if should_separate:
+                        children_html.append('<div class="block-separator"></div>')
 
         return f'<div class="body">\n{chr(10).join(children_html)}\n</div>'
 
@@ -315,10 +340,10 @@ body {
     max-width: 100%;
     margin: 0;
     padding: 0;
-    overflow-y: scroll; /* Allow scrolling */
-    scroll-snap-type: y mandatory; /* Snap to slides */
-    scrollbar-width: none; /* Firefox: Hide scrollbar */
-    -ms-overflow-style: none; /* IE/Edge: Hide scrollbar */
+    overflow: hidden; /* Prevent scrolling */
+    scroll-snap-type: none;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 /* Chrome/Safari: Hide scrollbar */
@@ -334,7 +359,7 @@ section {
     position: relative;
     width: 100%;
     height: 100vh;
-    padding: 3rem 5rem;
+    padding: 2rem 3rem; /* Reduced from 3rem 5rem */
     background: var(--bg-secondary, #ffffff);
     overflow: hidden;
     display: flex;
@@ -347,14 +372,14 @@ section {
 section[data-image-layout="right"] {
     display: grid;
     grid-template-columns: 1fr 45%;
-    gap: 3rem;
+    gap: 2rem; /* Reduced from 3rem */
     align-items: center;
 }
 
 section[data-image-layout="left"] {
     display: grid;
     grid-template-columns: 45% 1fr;
-    gap: 3rem;
+    gap: 2rem;
     align-items: center;
 }
 
@@ -369,7 +394,7 @@ section[data-image-layout="top"] {
 
 section[data-image-layout="top"] .accent-image-wrapper {
     order: -1;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 section[data-image-layout="behind"] {
@@ -414,7 +439,7 @@ section[data-image-layout="behind"] .body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem; /* Reduced from 1.5rem */
     overflow: hidden;
     justify-content: center;
 }
@@ -424,12 +449,12 @@ section[data-image-layout="behind"] .body {
    ================================================ */
 
 h1 {
-    font-size: 2.75rem;
+    font-size: 2.25rem; /* Reduced from 2.75rem */
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -0.03em;
     color: var(--text-primary, #1a1a1a);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem; /* Reduced */
 }
 
 h2 {
