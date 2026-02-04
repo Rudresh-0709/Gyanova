@@ -21,6 +21,7 @@ from .constants import (
     SectionPurpose,
     Limits,
     INTENT_KEYWORDS,
+    Relationship,
 )
 from .rules import (
     BLOCK_ORDER_GRAMMAR,
@@ -254,7 +255,9 @@ class SlideComposer:
             if title and index == 0:
                 title_section = ComposedSection(
                     purpose=SectionPurpose.INTRODUCTION.value,
-                    blocks=[
+                    relationship=Relationship.FLOW.value,
+                    primary_block=None,
+                    secondary_blocks=[
                         ComposedBlock(
                             type=BlockType.HEADING.value,
                             content={"text": title, "level": 1},
@@ -277,7 +280,9 @@ class SlideComposer:
 
                 content_section = ComposedSection(
                     purpose=SectionPurpose.CONTENT.value,
-                    blocks=content_blocks,
+                    relationship=Relationship.FLOW.value,
+                    primary_block=None,
+                    secondary_blocks=content_blocks,
                 )
                 sections.append(content_section)
 
@@ -308,7 +313,9 @@ class SlideComposer:
             sections=[
                 ComposedSection(
                     purpose=SectionPurpose.CONTENT.value,
-                    blocks=[
+                    relationship=Relationship.FLOW.value,
+                    primary_block=None,
+                    secondary_blocks=[
                         ComposedBlock(
                             type=BlockType.HEADING.value,
                             content={"text": content.get("title", "Slide"), "level": 1},
@@ -386,7 +393,9 @@ class SlideComposer:
                 sections=[
                     ComposedSection(
                         purpose=SectionPurpose.CONTENT.value,
-                        blocks=chunk,
+                        relationship=Relationship.FLOW.value,
+                        primary_block=None,
+                        secondary_blocks=chunk,
                     )
                 ],
                 image_layout=slide.image_layout if i == 0 else "blank",
@@ -400,20 +409,99 @@ class SlideComposer:
     # ORDERING
     # =========================================================================
 
+    # =========================================================================
+    # OPTIMIZATION (AUTO-LAYOUT)
+    # =========================================================================
+
+    def _resolve_relationships(self, slide: ComposedSlide) -> ComposedSlide:
+        """
+        Decide content relationships (FLOW vs PARALLEL vs ANCHORED).
+        
+        Replaces _optimize_layout.
+        Does NOT decide columns or grids - just relationships.
+        """
+        for section in slide.sections:
+            # Start with FLOW (Primary=None, all in Secondary)
+            blocks = section.secondary_blocks 
+            
+            # Identify candidates
+            text_blocks = []
+            visual_block = None
+            
+            # 1. Scan for Visuals
+            for block in blocks:
+                if block.type in [
+                    BlockType.TIMELINE.value,
+                    BlockType.CARD_GRID.value,
+                    BlockType.SMART_LAYOUT.value,
+                    BlockType.CODE.value,
+                    BlockType.TABLE.value,
+                    BlockType.STATS.value,
+                    BlockType.COMPARISON.value,
+                    BlockType.IMAGE.value,
+                ]:
+                    if visual_block is None:
+                        visual_block = block
+                
+                if block.type in [
+                    BlockType.PARAGRAPH.value,
+                    BlockType.CALLOUT.value,
+                    BlockType.TAKEAWAY.value,
+                    BlockType.QUOTE.value,
+                    BlockType.BULLET_LIST.value,
+                    BlockType.STEP_LIST.value,
+                ]:
+                    text_blocks.append(block)
+
+            # 2. Decision Logic
+            
+            # CASE A: Parallel (Text + Heavy Visual)
+            if text_blocks and visual_block:
+                section.relationship = Relationship.PARALLEL.value
+                section.primary_block = visual_block
+                
+                # Remove visual from secondary pool
+                new_secondary = []
+                for b in blocks:
+                    if b == visual_block:
+                        continue
+                    new_secondary.append(b)
+                section.secondary_blocks = new_secondary
+
+            # CASE B: Anchored (Text + Image)
+            elif visual_block and visual_block.type == BlockType.IMAGE.value and text_blocks:
+                 section.relationship = Relationship.ANCHORED.value
+                 section.primary_block = visual_block
+                 
+                 new_secondary = []
+                 for b in blocks:
+                    if b == visual_block:
+                        continue
+                    new_secondary.append(b)
+                 section.secondary_blocks = new_secondary
+            
+        return slide
+
+
     def _apply_ordering(self, slide: ComposedSlide) -> ComposedSlide:
         """
         Apply block ordering grammar.
         From slide_engine.md §8.
         """
         for section in slide.sections:
-            # Sort blocks by grammar position
-            section.blocks.sort(
-                key=lambda b: (
-                    BLOCK_ORDER_GRAMMAR.index(get_block_grammar_position(b.type))
-                    if get_block_grammar_position(b.type) in BLOCK_ORDER_GRAMMAR
-                    else 2
+            # Sort secondary_blocks by grammar position
+            # (primary_block is usually None at this stage as we init as FLOW)
+            if section.secondary_blocks:
+                section.secondary_blocks.sort(
+                    key=lambda b: (
+                        BLOCK_ORDER_GRAMMAR.index(get_block_grammar_position(b.type))
+                        if get_block_grammar_position(b.type) in BLOCK_ORDER_GRAMMAR
+                        else 2
+                    )
                 )
-            )
+
+        # Relationship pass: Decide FLOW vs PARALLEL vs ANCHORED
+        slide = self._resolve_relationships(slide)
 
         return slide
 

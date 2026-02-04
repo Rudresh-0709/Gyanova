@@ -32,6 +32,7 @@ from .constants import (
     BlockType,
     ImageLayout,
     SmartLayoutVariant,
+    Relationship,
 )
 
 
@@ -56,10 +57,10 @@ class GyMLSerializer:
         Returns:
             GyMLSection ready for validation and rendering
         """
-        # Determine image layout
+        # Determine image layout (base preference)
         image_layout = self._parse_image_layout(slide.image_layout)
-
-        # Serialize accent image if present
+        
+        # Base accent image (from metadata)
         accent_image = None
         if slide.accent_image_url:
             accent_image = GyMLImage(
@@ -68,14 +69,68 @@ class GyMLSerializer:
                 is_accent=True,
             )
 
-        # Serialize body
-        body = self._serialize_body(slide.sections)
+        # Build body nodes and check for override relationships
+        body_children: List[GyMLNode] = []
+        
+        for section in slide.sections:
+            rel = section.relationship
+            
+            # CASE: PARALLEL -> Columns
+            if rel == Relationship.PARALLEL.value:
+                # Left Column: Secondary Blocks (Text)
+                col1_nodes = []
+                for b in section.secondary_blocks:
+                    n = self._serialize_block(b)
+                    if n: col1_nodes.append(n)
+                    
+                # Right Column: Primary Block (Visual)
+                col2_nodes = []
+                if section.primary_block:
+                    n = self._serialize_block(section.primary_block)
+                    if n: col2_nodes.append(n)
+                
+                # Create Columns Node (40/60 split implicit for Text/Visual)
+                if col1_nodes or col2_nodes:
+                    columns_node = GyMLColumns(
+                        colwidths=[40, 60],
+                        columns=[
+                            GyMLColumnDiv(children=col1_nodes),
+                            GyMLColumnDiv(children=col2_nodes)
+                        ]
+                    )
+                    body_children.append(columns_node)
+            
+            # CASE: ANCHORED -> Accent Image
+            elif rel == Relationship.ANCHORED.value and section.primary_block:
+                # Override accent image
+                img_node = self._serialize_block(section.primary_block)
+                if isinstance(img_node, GyMLImage):
+                    img_node.is_accent = True
+                    accent_image = img_node
+                    # Ensure layout is not blank if we have an image
+                    if image_layout == "blank":
+                        image_layout = "right"
+                
+                # Add secondary blocks to body
+                for b in section.secondary_blocks:
+                    n = self._serialize_block(b)
+                    if n: body_children.append(n)
+
+            # CASE: FLOW (Default)
+            else:
+                if section.primary_block:
+                    n = self._serialize_block(section.primary_block)
+                    if n: body_children.append(n)
+                
+                for b in section.secondary_blocks:
+                    n = self._serialize_block(b)
+                    if n: body_children.append(n)
 
         return GyMLSection(
             id=slide.id,
             image_layout=image_layout,
             accent_image=accent_image,
-            body=body,
+            body=GyMLBody(children=body_children),
         )
 
     def serialize_many(self, slides: List[ComposedSlide]) -> List[GyMLSection]:
@@ -95,25 +150,6 @@ class GyMLSerializer:
             return ImageLayout(layout_lower).value
         except ValueError:
             return "blank"
-
-    def _serialize_body(self, sections: List[ComposedSection]) -> GyMLBody:
-        """
-        Serialize sections into GyML body.
-
-        From gyanova_markup_language.md §4:
-        - Exactly one div.body per section
-        - Everything visible lives inside body
-        - Body is a vertical flow container
-        """
-        children: List[GyMLNode] = []
-
-        for section in sections:
-            for block in section.blocks:
-                node = self._serialize_block(block)
-                if node:
-                    children.append(node)
-
-        return GyMLBody(children=children)
 
     def _serialize_block(self, block: ComposedBlock) -> Optional[GyMLNode]:
         """
@@ -378,16 +414,28 @@ class GyMLSerializer:
         columns_data = content.get("columns", [])
 
         columns = []
-        for col_blocks in columns_data:
+        for col_data in columns_data:
             col_children = []
 
-            for block in col_blocks:
-                # Create ComposedBlock from raw block data
-                composed = ComposedBlock(
-                    type=block.get("type", BlockType.PARAGRAPH.value),
-                    content=block.get("content", block),
-                )
-                node = self._serialize_block(composed)
+            # col_data can be {"blocks": [...]} (from optimizer) or [block1, block2] (raw)
+            blocks_list = (
+                col_data.get("blocks", col_data)
+                if isinstance(col_data, dict)
+                else col_data
+            )
+
+            for block in blocks_list:
+                # If block is already ComposedBlock (from optimizer), use it directly
+                if isinstance(block, ComposedBlock):
+                    node = self._serialize_block(block)
+                # If block is raw dict (from LLM), wrap it
+                else:
+                    composed = ComposedBlock(
+                        type=block.get("type", BlockType.PARAGRAPH.value),
+                        content=block.get("content", block),
+                    )
+                    node = self._serialize_block(composed)
+
                 if node:
                     col_children.append(node)
 

@@ -50,11 +50,22 @@ class ComposedBlock:
 class ComposedSection:
     """
     A semantic section in the composed slide.
-    Represents intent (introduction, explanation, summary), not layout.
+    Represents intent and relationship, not layout.
     """
 
     purpose: str  # "introduction", "content", "takeaway", etc.
-    blocks: List[ComposedBlock] = field(default_factory=list)
+    relationship: str = "flow"  # Relationship value
+    primary_block: Optional[ComposedBlock] = None
+    secondary_blocks: List[ComposedBlock] = field(default_factory=list)
+
+    @property
+    def blocks(self) -> List[ComposedBlock]:
+        """Backward compatibility: return all blocks in order."""
+        all_blocks = []
+        if self.primary_block:
+            all_blocks.append(self.primary_block)
+        all_blocks.extend(self.secondary_blocks)
+        return all_blocks
 
 
 @dataclass
@@ -86,7 +97,12 @@ class ComposedSlide:
     def get_primary_emphasis_block(self) -> Optional[ComposedBlock]:
         """Find the block with primary emphasis."""
         for section in self.sections:
-            for block in section.blocks:
+            if (
+                section.primary_block
+                and section.primary_block.emphasis == Emphasis.PRIMARY
+            ):
+                return section.primary_block
+            for block in section.secondary_blocks:
                 if block.emphasis == Emphasis.PRIMARY:
                     return block
         return None

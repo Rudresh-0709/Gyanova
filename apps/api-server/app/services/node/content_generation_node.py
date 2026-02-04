@@ -132,11 +132,15 @@ def generate_slide_content(
 
     INSTRUCTIONS:
     1. Analyze the narration to determine the best 'intent' and 'contentBlocks'.
-    2. RICH CONTENT RULE: Most slides should have multiple blocks.
-       - A slide with just a Timeline or just a Table is boring.
-       - ALWAYS include a short introductory 'paragraph' block before complex blocks (Timeline, Code, Table) to provide context.
-    3. If the Blueprint Hint suggests a structure (e.g. TIMELINE_STEPS -> timeline), use it as the PRIMARY block.
-    4. If the hint is generic (BULLET_POINTS), you may choose a better visualization (e.g. card_grid, step_list).
+    2. 💎 RICHNESS REQUIREMENT (CRITICAL):
+       - A slide MUST have high information density. Aim for 3-4 distinct content blocks.
+       - NEVER output a slide with only 1 or 2 blocks (unless it's a Title card).
+       - MANDATORY STRUCTURE:
+         [1] Context: A paragraph introducing the concept.
+         [2] Primary: The main visualization (Timeline, Table, Code, Card Grid, etc.).
+         [3] Supplementary: A 'Callout', 'Quote', 'Stat', or 'Takeaway' that reinforces the point.
+    3. If the Blueprint Hint suggests a structure, use it as the [2] Primary block.
+    4. Synthesize the supplementary content from the context if it's not explicitly in the narration (e.g., extract a key stat or a quotable summary).
     5. Ensure all content is FACTUALLY ACCURATE using the provided Context.
     6. Output MUST be valid JSON matching the schema exactly.
     """

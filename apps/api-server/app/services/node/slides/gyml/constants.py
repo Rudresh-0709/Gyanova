@@ -22,6 +22,17 @@ class ImageLayout(Enum):
     BLANK = "blank"  # No accent image
 
 
+class Relationship(Enum):
+    """
+    Semantic relationships between content blocks.
+    Determines how the serializer maps them to layout.
+    """
+
+    FLOW = "flow"  # Sequential / Stacked
+    PARALLEL = "parallel"  # Coexisting / Side-by-side
+    ANCHORED = "anchored"  # Primary content + Accent
+
+
 class SmartLayoutVariant(Enum):
     """
     Smart layout semantic variants.
