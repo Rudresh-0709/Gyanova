@@ -9,7 +9,7 @@ Designed to match Gamma-style professional slides.
 from typing import List, Optional
 import html
 
-from .types import (
+from .definitions import (
     GyMLSection,
     GyMLBody,
     GyMLHeading,
@@ -25,6 +25,8 @@ from .types import (
     GyMLNode,
 )
 from .theme import Theme, THEMES
+from .responsive import ResponsiveConstraints
+from .hierarchy import VisualHierarchy
 
 
 class GyMLRenderer:
@@ -33,16 +35,49 @@ class GyMLRenderer:
     Gamma-style professional output.
     """
 
-    def __init__(self, theme: Optional[Theme] = None):
+    def __init__(
+        self,
+        theme: Optional[Theme] = None,
+        responsive_constraints: Optional[ResponsiveConstraints] = None,
+    ):
         self.theme = theme or THEMES.get("gamma_light")
+        self.responsive_constraints = (
+            responsive_constraints or ResponsiveConstraints.default()
+        )
 
     def render(self, section: GyMLSection) -> str:
         """Passively render GyML section to HTML."""
         lines = []
 
+        # Generate hierarchy CSS variables if present
+        style_attr = ""
+        if section.hierarchy:
+            vars_list = []
+            # Typography
+            vars_list.append(f"--h1-size: {section.hierarchy.typography.h1}")
+            vars_list.append(f"--h2-size: {section.hierarchy.typography.h2}")
+            vars_list.append(f"--p-size: {section.hierarchy.typography.body}")
+            vars_list.append(
+                f"--line-height: {section.hierarchy.typography.line_height_base}"
+            )
+
+            # Spacing
+            vars_list.append(
+                f"--section-padding: {section.hierarchy.spacing.section_padding}"
+            )
+            vars_list.append(f"--block-gap: {section.hierarchy.spacing.block_gap}")
+            vars_list.append(
+                f"--card-padding: {section.hierarchy.spacing.card_padding}"
+            )
+
+            style_attr = f' style="{"; ".join(vars_list)}"'
+
         lines.append(
             f'<section id="{self._escape(section.id)}" '
-            f'data-image-layout="{section.image_layout}">'
+            f'class="slide-section" '
+            f'role="region" aria-label="Slide {section.id}" '
+            f'data-image-layout="{section.image_layout}"'
+            f"{style_attr}>"
         )
 
         if section.accent_image:
@@ -73,6 +108,7 @@ class GyMLRenderer:
     <style>
 {self._get_gamma_styles()}
 {self.theme.to_css_vars() if self.theme else ""}
+{self._get_responsive_styles()}
     </style>
 </head>
 <body>
@@ -82,17 +118,65 @@ class GyMLRenderer:
 </body>
 </html>"""
 
+    def _get_responsive_styles(self) -> str:
+        """Generate responsive CSS from constraints."""
+        c = self.responsive_constraints
+        css = ["/* Dynamic Responsive Styles */"]
+
+        # 1. Breakpoints
+        for bp_name, width in c.breakpoints.items():
+            fallback_padding = c.viewport_padding.get(bp_name, "1rem")
+            scale = c.typography_scale.get(bp_name, 1.0)
+
+            css.append(f"@media (max-width: {width}px) {{")
+
+            # Global adjustments
+            css.append("  :root {")
+            css.append(f"    --section-padding: {fallback_padding};")
+            # We can scale the base font size if we used rems correctly
+            css.append(f"    font-size: {scale * 100}%;")
+            css.append("  }")
+
+            # Apply layout fallbacks
+            if c.layout_fallbacks.get("columns") == "stack":
+                css.append("  .columns { flex-direction: column; }")
+                css.append("  .column { flex: 1 1 100% !important; }")
+
+            if c.layout_fallbacks.get("image_layout") == "stack":
+                css.append(
+                    "  section[data-image-layout='right'], section[data-image-layout='left'] {"
+                )
+                css.append(
+                    "    grid-template-columns: 1fr; display: flex; flex-direction: column;"
+                )
+                css.append("  }")
+                css.append("  .accent-image { max-width: 100%; margin-bottom: 1rem; }")
+
+            css.append("}")
+
+        return "\n".join(css)
+
     # =========================================================================
     # ELEMENT RENDERERS
     # =========================================================================
 
     def _render_accent_image(self, image: GyMLImage) -> str:
         """Render accent image."""
+        if image.src == "placeholder":
+            return (
+                f'<div class="accent-image-placeholder">'
+                f'<div class="placeholder-content">'
+                f'<span class="placeholder-icon">🖼️</span>'
+                f'<span class="placeholder-text">{self._escape(image.alt)}</span>'
+                f"</div>"
+                f"</div>"
+            )
+
         return (
             f'<div class="accent-image-wrapper">'
             f'<img class="accent-image" '
             f'src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt)}" />'
+            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
             f"</div>"
         )
 
@@ -171,7 +255,7 @@ class GyMLRenderer:
         return (
             f'<figure class="inline-image">'
             f'<img src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt)}" />'
+            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
             f"</figure>"
         )
 
@@ -359,7 +443,7 @@ section {
     position: relative;
     width: 100%;
     height: 100vh;
-    padding: 2rem 3rem; /* Reduced from 3rem 5rem */
+    padding: var(--section-padding, 2rem 3rem);
     background: var(--bg-secondary, #ffffff);
     overflow: hidden;
     display: flex;
@@ -368,78 +452,28 @@ section {
     flex-shrink: 0; /* Prevent shrinking */
 }
 
-/* Image Layouts */
+/* ... image layouts ... */
 section[data-image-layout="right"] {
     display: grid;
     grid-template-columns: 1fr 45%;
-    gap: 2rem; /* Reduced from 3rem */
+    gap: var(--block-gap, 2rem);
     align-items: center;
 }
 
 section[data-image-layout="left"] {
     display: grid;
     grid-template-columns: 45% 1fr;
-    gap: 2rem;
+    gap: var(--block-gap, 2rem);
     align-items: center;
 }
 
-section[data-image-layout="left"] .accent-image-wrapper {
-    order: -1;
-}
-
-section[data-image-layout="top"] {
-    display: flex;
-    flex-direction: column;
-}
-
-section[data-image-layout="top"] .accent-image-wrapper {
-    order: -1;
-    margin-bottom: 1.5rem;
-}
-
-section[data-image-layout="behind"] {
-    position: relative;
-}
-
-section[data-image-layout="behind"] .accent-image-wrapper {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-}
-
-section[data-image-layout="behind"] .accent-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.15;
-}
-
-section[data-image-layout="behind"] .body {
-    position: relative;
-    z-index: 1;
-}
-
-/* Accent Image */
-.accent-image-wrapper {
-    border-radius: 0.5rem;
-    overflow: hidden;
-}
-
-.accent-image {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-/* ================================================
-   BODY - Content Container (Fills viewport)
-   ================================================ */
+/* ... */
 
 .body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1rem; /* Reduced from 1.5rem */
+    gap: var(--block-gap, 1rem);
     overflow: hidden;
     justify-content: center;
 }
@@ -449,7 +483,7 @@ section[data-image-layout="behind"] .body {
    ================================================ */
 
 h1 {
-    font-size: 2.25rem; /* Reduced from 2.75rem */
+    font-size: var(--h1-size, 2.25rem);
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -0.03em;
@@ -458,7 +492,7 @@ h1 {
 }
 
 h2 {
-    font-size: 2rem;
+    font-size: var(--h2-size, 2rem);
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.02em;
@@ -466,21 +500,21 @@ h2 {
 }
 
 h3 {
-    font-size: 1.5rem;
+    font-size: var(--h3-size, 1.5rem);
     font-weight: 600;
     color: var(--text-primary, #1a1a1a);
 }
 
 h4 {
-    font-size: 1.125rem;
+    font-size: var(--h4-size, 1.125rem);
     font-weight: 600;
     color: var(--text-primary, #1a1a1a);
     line-height: 1.3;
 }
 
 p {
-    font-size: 1rem;
-    line-height: 1.7;
+    font-size: var(--p-size, 1rem);
+    line-height: var(--line-height, 1.7);
     color: var(--text-secondary, #4a4a4a);
 }
 
@@ -537,7 +571,8 @@ p {
     padding: 1.5rem;
     background: var(--bg-secondary, #ffffff);
     border: 1px solid var(--border-color, #e5e5e5);
-    border-radius: 4px;
+    border-radius: var(--card-radius, 0.5rem);
+    box-shadow: var(--card-shadow, none);
     transition: box-shadow 0.2s ease;
 }
 
@@ -641,6 +676,37 @@ p {
     height: 12px;
     background: var(--timeline-color, #2d8a6e);
     border-radius: 50%;
+}
+
+/* Primary Item (First) */
+.smart-layout[data-variant="timeline"] .card:first-child .card-text {
+    color: var(--text-primary, #1a1a1a);
+    font-size: 1.1rem;
+}
+
+.smart-layout[data-variant="timeline"] .card:first-child::before {
+    background: var(--accent, #6366f1);
+    width: 16px;
+    height: 16px;
+    left: -1.875rem;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+}
+
+/* Secondary Items (Rest) */
+.smart-layout[data-variant="timeline"] .card:not(:first-child) {
+    opacity: 0.85;
+}
+
+.smart-layout[data-variant="timeline"] .card:not(:first-child) .card-text {
+    font-size: 1rem;
+}
+
+.smart-layout[data-variant="timeline"] .card:not(:first-child)::before {
+    top: 1.625rem; /* Adjust for smaller size alignment */
+    width: 10px;
+    height: 10px;
+    left: -1.6875rem; /* Re-center */
+    background: var(--text-tertiary, #a0a0a0);
 }
 
 .smart-layout[data-variant="timeline"] .card-number {
@@ -1043,6 +1109,42 @@ th {
 }
 
 /* ================================================
+   PLACEHOLDER IMAGE
+   ================================================ */
+
+.accent-image-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    background: var(--bg-tertiary, #f0f0f0);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed var(--border-color, #e0e0e0);
+}
+
+.placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-secondary, #888);
+}
+
+.placeholder-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.placeholder-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ================================================
    RESPONSIVE
    ================================================ */
 
@@ -1082,6 +1184,14 @@ th {
     
     h2 {
         font-size: 1.5rem;
+    }
+    /* Component Overrides */
+    hr, .divider {
+        background: none !important;
+        height: 0 !important;
+        border: 0;
+        border-top: 1px var(--divider-style, solid) var(--border-color, #e5e5e5);
+        margin: 2rem 0;
     }
 }
 """

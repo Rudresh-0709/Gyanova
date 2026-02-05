@@ -8,7 +8,7 @@ Ensures all nesting and hierarchy constraints are met before rendering.
 from dataclasses import dataclass, field
 from typing import List, Optional, Set
 
-from .types import (
+from .definitions import (
     GyMLSection,
     GyMLBody,
     GyMLHeading,

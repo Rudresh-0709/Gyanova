@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Union, Literal
 from enum import Enum
 
+from .hierarchy import VisualHierarchy
+
 
 # =============================================================================
 # COMPOSER IR TYPES (GyML-Agnostic)
@@ -84,6 +86,9 @@ class ComposedSlide:
     accent_image_url: Optional[str] = None
     accent_image_alt: Optional[str] = None
     image_layout: str = "blank"  # ImageLayout value
+
+    # Visual Hierarchy Rules (Assigned by Composer)
+    hierarchy: Optional[VisualHierarchy] = None
 
     def total_word_count(self) -> int:
         """Calculate total word count across all sections."""
@@ -205,6 +210,17 @@ class GyMLSmartLayout:
 
 
 @dataclass
+class LayoutConstraints:
+    """Constraints for a specific smart layout variant."""
+
+    min_items: int = 1
+    max_items: int = 6
+    max_words_per_item: int = 100
+    requires_image: bool = False
+    min_density_score: float = 0.3
+
+
+@dataclass
 class GyMLColumnDiv:
     """A single column container."""
 
@@ -262,6 +278,9 @@ class GyMLSection:
     image_layout: Literal["right", "left", "top", "behind", "blank"] = "blank"
     accent_image: Optional[GyMLImage] = None
     body: GyMLBody = field(default_factory=GyMLBody)
+
+    # Hierarchy Profile - passed from Composer
+    hierarchy: Optional[VisualHierarchy] = None
 
     def __post_init__(self):
         # Ensure body exists

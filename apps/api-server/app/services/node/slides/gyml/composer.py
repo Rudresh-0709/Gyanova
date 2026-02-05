@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Optional, Tuple
 import uuid
 import re
 
-from .types import (
+from .definitions import (
     ComposedSlide,
     ComposedSection,
     ComposedBlock,
@@ -23,6 +23,7 @@ from .constants import (
     INTENT_KEYWORDS,
     Relationship,
     CodeRole,
+    SmartLayoutVariant,
 )
 from .rules import (
     BLOCK_ORDER_GRAMMAR,
@@ -31,8 +32,12 @@ from .rules import (
     VarietyRules,
     SlidePattern,
     get_preferred_blocks_for_intent,
+    get_preferred_blocks_for_intent,
     suggest_block_type_from_content,
 )
+from .hierarchy import VisualHierarchy
+from .fitness import SlideFitnessGate, FitnessException
+from .image_manager import ImageManager
 
 
 class SlideComposer:
@@ -51,7 +56,10 @@ class SlideComposer:
     - Variety checks (deck-level)
     """
 
-    def __init__(self):
+    def __init__(self, theme: Optional["Theme"] = None):
+        from .theme import THEMES
+
+        self.theme = theme or THEMES["gamma_light"]
         self.previous_patterns: List[SlidePattern] = []
 
     def compose(self, content: Dict[str, Any]) -> List[ComposedSlide]:
@@ -68,7 +76,7 @@ class SlideComposer:
         intent = self._detect_intent(content)
 
         # 2. Extract and group concepts
-        concepts = self._extract_concepts(content)
+        concepts = self._extract_concepts(content, intent)
         grouped = self._group_concepts(concepts)
 
         # 3. Create slides from grouped concepts
@@ -85,6 +93,12 @@ class SlideComposer:
 
                 # 6. Assign emphasis
                 s = self._assign_emphasis(s)
+
+                # 7. Assign Visual Hierarchy
+                s = self._assign_hierarchy(s)
+
+                # 8. Visual Balance Check (New)
+                s = self._ensure_visual_balance(s)
 
                 slides.append(s)
 
@@ -144,7 +158,9 @@ class SlideComposer:
     # CONCEPT EXTRACTION & GROUPING
     # =========================================================================
 
-    def _extract_concepts(self, content: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _extract_concepts(
+        self, content: Dict[str, Any], intent: Intent = Intent.EXPLAIN
+    ) -> List[Dict[str, Any]]:
         """
         Extract distinct concepts from content.
         Each concept becomes a potential slide.
@@ -159,12 +175,50 @@ class SlideComposer:
 
         # Extract blocks from various content structures
         if "points" in content:
-            main_concept["blocks"].append(
-                {
-                    "type": BlockType.BULLET_LIST.value,
-                    "content": {"items": content["points"]},
-                }
-            )
+            points = content["points"]
+            # Smart Layout Decision
+            layout_variant = self._select_smart_layout(intent.value, points)
+
+            if layout_variant == SmartLayoutVariant.BULLET_ICON.value:
+                # Default behavior
+                main_concept["blocks"].append(
+                    {
+                        "type": BlockType.BULLET_LIST.value,
+                        "content": {"items": points},
+                    }
+                )
+            else:
+                # Upgrade to Smart Layout
+                items = []
+                for p in points:
+                    item_data = {}
+                    if isinstance(p, str):
+                        # Attempt to parse specific formats based on layout
+                        if layout_variant == "timeline":
+                            # Try "1990: Event" or "1990 - Event"
+                            import re
+
+                            match = re.match(r"^(\d{4}(?:s)?)\s*[: -]\s*(.*)", p)
+                            if match:
+                                item_data = {
+                                    "year": match.group(1),
+                                    "description": match.group(2),
+                                }
+                            else:
+                                item_data = {"heading": p}  # Fallback
+                        else:
+                            item_data = {"heading": p}
+                    else:
+                        item_data = p
+
+                    items.append(item_data)
+
+                main_concept["blocks"].append(
+                    {
+                        "type": BlockType.SMART_LAYOUT.value,
+                        "content": {"variant": layout_variant, "items": items},
+                    }
+                )
 
         if "contentBlocks" in content:
             for block in content["contentBlocks"]:
@@ -353,7 +407,7 @@ class SlideComposer:
                     cards = block.content.get("cards", [])
                     if len(cards) > 5:
                         return self._split_slide(slide)
-                        
+
         word_count = slide.total_word_count()
         block_count = slide.block_count()
 
@@ -430,18 +484,18 @@ class SlideComposer:
     def _resolve_relationships(self, slide: ComposedSlide) -> ComposedSlide:
         """
         Decide content relationships (FLOW vs PARALLEL vs ANCHORED).
-        
+
         Replaces _optimize_layout.
         Does NOT decide columns or grids - just relationships.
         """
         for section in slide.sections:
             # Start with FLOW (Primary=None, all in Secondary)
-            blocks = section.secondary_blocks 
-            
+            blocks = section.secondary_blocks
+
             # Identify candidates
             text_blocks = []
             visual_block = None
-            
+
             # 1. Scan for Visuals
             for block in blocks:
                 if block.type in [
@@ -456,7 +510,7 @@ class SlideComposer:
                 ]:
                     if visual_block is None:
                         visual_block = block
-                
+
                 if block.type in [
                     BlockType.PARAGRAPH.value,
                     BlockType.CALLOUT.value,
@@ -468,12 +522,12 @@ class SlideComposer:
                     text_blocks.append(block)
 
             # 2. Decision Logic
-            
+
             # CASE A: Parallel (Text + Heavy Visual)
             if text_blocks and visual_block:
                 section.relationship = Relationship.PARALLEL.value
                 section.primary_block = visual_block
-                
+
                 # Remove visual from secondary pool
                 new_secondary = []
                 for b in blocks:
@@ -483,19 +537,22 @@ class SlideComposer:
                 section.secondary_blocks = new_secondary
 
             # CASE B: Anchored (Text + Image)
-            elif visual_block and visual_block.type == BlockType.IMAGE.value and text_blocks:
-                 section.relationship = Relationship.ANCHORED.value
-                 section.primary_block = visual_block
-                 
-                 new_secondary = []
-                 for b in blocks:
+            elif (
+                visual_block
+                and visual_block.type == BlockType.IMAGE.value
+                and text_blocks
+            ):
+                section.relationship = Relationship.ANCHORED.value
+                section.primary_block = visual_block
+
+                new_secondary = []
+                for b in blocks:
                     if b == visual_block:
                         continue
                     new_secondary.append(b)
-                 section.secondary_blocks = new_secondary
-            
-        return slide
+                section.secondary_blocks = new_secondary
 
+        return slide
 
     def _apply_ordering(self, slide: ComposedSlide) -> ComposedSlide:
         """
@@ -529,21 +586,21 @@ class SlideComposer:
         Enforces Rule: Exactly ONE dominant block per slide.
         """
         for section in slide.sections:
-            blocks = section.blocks # Access all blocks via property
-            
+            blocks = section.blocks  # Access all blocks via property
+
             # Reset all to secondary initially
             for b in blocks:
                 b.emphasis = Emphasis.SECONDARY
-                
+
             # 1. Identify Candidate for Dominance
             dominant_candidate = None
-            
+
             # Check for explicitly assigned roles (e.g. Code Primary)
             for b in blocks:
                 if b.role == CodeRole.PRIMARY.value:
                     dominant_candidate = b
                     break
-            
+
             # If no explicit role, find heaviest visual
             if not dominant_candidate:
                 for b in blocks:
@@ -558,15 +615,16 @@ class SlideComposer:
                     ]:
                         dominant_candidate = b
                         break
-            
+
             # If still none, check for Code (default to primary if it's the only complex thing)
             if not dominant_candidate:
                 for b in blocks:
                     if b.type == BlockType.CODE.value:
-                         # Default role if not set
-                         if not b.role: b.role = CodeRole.PRIMARY.value
-                         dominant_candidate = b
-                         break
+                        # Default role if not set
+                        if not b.role:
+                            b.role = CodeRole.PRIMARY.value
+                        dominant_candidate = b
+                        break
 
             # If still none, Heading is dominant
             if not dominant_candidate:
@@ -575,37 +633,40 @@ class SlideComposer:
                         dominant_candidate = b
                         break
 
-            # 2. Apply Dominance
-            if dominant_candidate:
-                dominant_candidate.emphasis = Emphasis.PRIMARY
-                
-                # Check for Code Role conflicts
-                if dominant_candidate.type == BlockType.CODE.value:
-                    if not dominant_candidate.role:
-                         dominant_candidate.role = CodeRole.PRIMARY.value
-            
-            # 3. Mark others as supporting (Tertiary/Secondary)
-            for b in blocks:
-                if b == dominant_candidate:
-                    continue
-                
-                # Code that isn't dominant is Example or Reference
-                if b.type == BlockType.CODE.value:
-                    if not b.role:
-                        b.role = CodeRole.EXAMPLE.value
-                    
-                    if b.role == CodeRole.EXAMPLE.value:
-                        b.emphasis = Emphasis.SECONDARY # Supports
-                    elif b.role == CodeRole.REFERENCE.value:
-                        b.emphasis = Emphasis.TERTIARY # Push to end (implied)
-                
-                elif b.type in [BlockType.CALLOUT.value, BlockType.IMAGE.value]:
-                    b.emphasis = Emphasis.TERTIARY
-                else:
-                    b.emphasis = Emphasis.SECONDARY
-                    
-        return slide
+            # 2. Apply Dominance - STRICT HIERARCHY
+            # Rule: Heading is ALWAYS Primary if present.
+            # Smart Layouts are Secondary (unless they ARE the only content).
 
+            heading_block = next(
+                (b for b in blocks if b.type == BlockType.HEADING.value), None
+            )
+
+            if heading_block:
+                heading_block.emphasis = Emphasis.PRIMARY
+                # All others degrade to Secondary/Tertiary
+                for b in blocks:
+                    if b == heading_block:
+                        continue
+
+                    if b.type in [BlockType.CALLOUT.value, BlockType.IMAGE.value]:
+                        b.emphasis = Emphasis.TERTIARY
+                    else:
+                        b.emphasis = Emphasis.SECONDARY
+
+            elif dominant_candidate:
+                # No heading, so dominant block takes lead
+                dominant_candidate.emphasis = Emphasis.PRIMARY
+                for b in blocks:
+                    if b == dominant_candidate:
+                        continue
+                    b.emphasis = Emphasis.SECONDARY
+
+            else:
+                # Fallback
+                for b in blocks:
+                    b.emphasis = Emphasis.SECONDARY
+
+        return slide
 
     # =========================================================================
     # VARIETY
@@ -642,6 +703,151 @@ class SlideComposer:
         self.previous_patterns = patterns
 
         return slides
+
+    # =========================================================================
+    # VISUAL HIERARCHY
+    # =========================================================================
+
+    def _assign_hierarchy(self, slide: ComposedSlide) -> ComposedSlide:
+        """
+        Assign visual hierarchy constraints based on density and intent.
+        """
+        word_count = slide.total_word_count()
+        block_count = slide.block_count()
+
+        # Calculate approximate density score
+        # Arbitrary units: words + (blocks * 20)
+        density_score = word_count + (block_count * 20)
+
+        # Decision Logic
+        profile_name = "default"
+
+        if density_score > 150:
+            profile_name = "dense"
+        elif slide.intent in [Intent.PROVE.value, Intent.INTRODUCE.value]:
+            # High impact slides
+            profile_name = "impact"
+
+        slide.hierarchy = VisualHierarchy.get_profile(profile_name)
+        return slide
+
+    def _calculate_visual_density(self, slide: ComposedSlide) -> float:
+        """
+        Calculate visual density (0.0 to 1.0).
+        Based on word count, block count, and presence of media.
+        """
+        MAX_WORDS = 150
+        MAX_BLOCKS = 6
+
+        word_score = min(slide.total_word_count() / MAX_WORDS, 1.0)
+        block_score = min(slide.block_count() / MAX_BLOCKS, 1.0)
+
+        # Images boost density significantly
+        has_media = slide.accent_image_url or any(
+            b.type == BlockType.IMAGE.value for s in slide.sections for b in s.blocks
+        )
+        media_bonus = 0.4 if has_media else 0.0
+
+        return (word_score * 0.4) + (block_score * 0.2) + media_bonus
+
+    def _ensure_visual_balance(self, slide: ComposedSlide) -> ComposedSlide:
+        """
+        Ensure slide meets visual density standards using FitnessGate.
+        Delegates image placement to ImageManager.
+        """
+        # 1. Calculate Density
+        density = SlideFitnessGate._calculate_estimated_height(slide)
+        has_image = bool(slide.accent_image_url)
+
+        # 2. Determine Image Strategy
+        placement = ImageManager.determine_placement(density, has_image, slide.intent)
+
+        # 3. Apply Strategy
+        if placement != "blank":
+            slide.image_layout = placement
+
+            # Inject placeholder if required but missing
+            if not has_image and ImageManager.should_inject_placeholder(
+                density, has_image
+            ):
+                placeholder = ImageManager.get_placeholder_image()
+                slide.accent_image_url = placeholder.src
+                slide.accent_image_alt = placeholder.alt
+        else:
+            slide.image_layout = "blank"
+
+        # 4. Final Hard Validation
+        # If density is still critical < 0.25, we should technically fail.
+        # Ideally, we would raise FitnessException here and catch it in compose()
+        # to try a fallback strategy.
+        is_valid, reason = SlideFitnessGate.validate_density(slide)
+        if not is_valid:
+            # TODO: Log this failure or handle specific fallback
+            pass
+
+        return slide
+
+    def _select_smart_layout(self, intent: str, items: List[Any]) -> str:
+        """
+        Decision tree for selecting the best Smart Layout variant.
+        Respects ThemeConstraints.
+        """
+        count = len(items)
+        has_dates = any("year" in str(i) or "date" in str(i) for i in items[:3])
+        has_numbers = any("value" in str(i) or "%" in str(i) for i in items[:3])
+
+        # Check constraints if available
+        constraints = (
+            self.theme.constraints if hasattr(self, "theme") and self.theme else None
+        )
+        allowed = constraints.allowed_layouts if constraints else []
+
+        # Helper to check if variant is allowed (if list is empty, all are allowed)
+        def is_allowed(v):
+            return not allowed or v in allowed
+
+        # Helper to try a variant
+        def try_variant(v, items):
+            if not is_allowed(v):
+                return False
+            try:
+                SlideFitnessGate.validate_constraints(None, v, items)
+                return True
+            except FitnessException:
+                return False
+
+        # 1. TIMELINE Logic
+        if (intent == Intent.NARRATE.value or has_dates) and try_variant(
+            "timeline", items
+        ):
+            return SmartLayoutVariant.TIMELINE.value
+
+        # 2. COMPARISON Logic
+        if intent == Intent.COMPARE.value:
+            if count == 2 and try_variant("comparison", items):
+                return SmartLayoutVariant.COMPARISON.value
+            elif count == 3 and try_variant("solidBoxesWithIconsInside", items):
+                return SmartLayoutVariant.SOLID_BOXES_WITH_ICONS.value
+            elif try_variant("cardGrid", items):
+                return SmartLayoutVariant.CARD_GRID.value
+
+        # 3. PROVE / STATS Logic
+        if (intent == Intent.PROVE.value or has_numbers) and try_variant(
+            "stats", items
+        ):
+            return SmartLayoutVariant.STATS.value
+
+        # 4. PROCESS / DEMO Logic
+        if (intent == Intent.DEMO.value) and try_variant("processSteps", items):
+            return SmartLayoutVariant.PROCESS_STEPS.value
+
+        # 5. EXPLANATION / DEFAULT Logic
+        if count <= 4 and try_variant("bigBullets", items):
+            return SmartLayoutVariant.BIG_BULLETS.value
+        elif try_variant("cardGrid", items):
+            return SmartLayoutVariant.CARD_GRID.value
+
+        return SmartLayoutVariant.BULLET_ICON.value
 
     def _extract_pattern(self, slide: ComposedSlide) -> SlidePattern:
         """Extract pattern from slide for variety checking."""

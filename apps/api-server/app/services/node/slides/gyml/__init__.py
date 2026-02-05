@@ -12,7 +12,7 @@ Public API:
     - Theme, THEMES: Theme configuration
 """
 
-from .types import (
+from .definitions import (
     # Composer IR types
     ComposedSlide,
     ComposedSection,

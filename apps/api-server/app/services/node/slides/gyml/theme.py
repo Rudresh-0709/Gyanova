@@ -5,7 +5,7 @@ Gamma-style themes: clean, professional, light.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict
+from typing import Dict, Optional, List
 
 
 def hex_to_rgb(hex_color: str) -> str:
@@ -17,6 +17,29 @@ def hex_to_rgb(hex_color: str) -> str:
     g = int(hex_color[2:4], 16)
     b = int(hex_color[4:6], 16)
     return f"{r}, {g}, {b}"
+
+
+@dataclass
+class ThemeConstraints:
+    """Constraints imposed by the theme."""
+
+    allowed_block_types: list[str] = field(
+        default_factory=lambda: []
+    )  # Empty = all allowed
+    allowed_layouts: list[str] = field(
+        default_factory=lambda: []
+    )  # Empty = all allowed
+    max_items_per_slide: int = 6
+
+
+@dataclass
+class ComponentStyle:
+    """Visual styles for specific components."""
+
+    card_shadow: str = "none"
+    card_radius: str = "0.5rem"
+    divider_style: str = "solid"  # solid, dashed, dotted
+    font_family_override: Optional[str] = None
 
 
 @dataclass
@@ -40,6 +63,10 @@ class Theme:
     font_heading: str = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
     font_body: str = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
 
+    # Advanced Configuration
+    constraints: ThemeConstraints = field(default_factory=ThemeConstraints)
+    component_styles: ComponentStyle = field(default_factory=ComponentStyle)
+
     def to_css_vars(self) -> str:
         """Generate CSS custom properties."""
         return f"""
@@ -56,6 +83,11 @@ class Theme:
     --timeline-color: #2d8a6e;
     --font-heading: {self.font_heading};
     --font-body: {self.font_body};
+    
+    /* Component Styles */
+    --card-shadow: {self.component_styles.card_shadow};
+    --card-radius: {self.component_styles.card_radius};
+    --divider-style: {self.component_styles.divider_style};
 }}
 """
 

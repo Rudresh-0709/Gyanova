@@ -7,7 +7,7 @@ Converts format-agnostic IR to spec-compliant GyML nodes.
 
 from typing import List, Optional
 
-from .types import (
+from .definitions import (
     # IR types
     ComposedSlide,
     ComposedSection,
@@ -136,6 +136,7 @@ class GyMLSerializer:
             image_layout=image_layout,
             accent_image=accent_image,
             body=GyMLBody(children=body_children),
+            hierarchy=slide.hierarchy,
         )
 
     def serialize_many(self, slides: List[ComposedSlide]) -> List[GyMLSection]:
@@ -267,6 +268,9 @@ class GyMLSerializer:
                             icon=GyMLIcon(alt=icon_alt) if icon_alt else None,
                             heading=item.get("heading", ""),
                             description=item.get("text", item.get("description", "")),
+                            year=item.get("year", ""),
+                            value=item.get("value", ""),
+                            label=item.get("label", ""),
                         )
                     )
                 else:

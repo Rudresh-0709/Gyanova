@@ -59,7 +59,7 @@ section {
     position: relative;
     width: 100%;
     height: 100vh;
-    padding: 2rem 3rem; /* Reduced from 3rem 5rem */
+    padding: var(--section-padding, 2rem 3rem);
     background: var(--bg-secondary, #ffffff);
     overflow: hidden;
     display: flex;
@@ -68,78 +68,28 @@ section {
     flex-shrink: 0; /* Prevent shrinking */
 }
 
-/* Image Layouts */
+/* ... image layouts ... */
 section[data-image-layout="right"] {
     display: grid;
     grid-template-columns: 1fr 45%;
-    gap: 2rem; /* Reduced from 3rem */
+    gap: var(--block-gap, 2rem);
     align-items: center;
 }
 
 section[data-image-layout="left"] {
     display: grid;
     grid-template-columns: 45% 1fr;
-    gap: 2rem;
+    gap: var(--block-gap, 2rem);
     align-items: center;
 }
 
-section[data-image-layout="left"] .accent-image-wrapper {
-    order: -1;
-}
-
-section[data-image-layout="top"] {
-    display: flex;
-    flex-direction: column;
-}
-
-section[data-image-layout="top"] .accent-image-wrapper {
-    order: -1;
-    margin-bottom: 1.5rem;
-}
-
-section[data-image-layout="behind"] {
-    position: relative;
-}
-
-section[data-image-layout="behind"] .accent-image-wrapper {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-}
-
-section[data-image-layout="behind"] .accent-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.15;
-}
-
-section[data-image-layout="behind"] .body {
-    position: relative;
-    z-index: 1;
-}
-
-/* Accent Image */
-.accent-image-wrapper {
-    border-radius: 0.5rem;
-    overflow: hidden;
-}
-
-.accent-image {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-/* ================================================
-   BODY - Content Container (Fills viewport)
-   ================================================ */
+/* ... */
 
 .body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1rem; /* Reduced from 1.5rem */
+    gap: var(--block-gap, 1rem);
     overflow: hidden;
     justify-content: center;
 }
@@ -149,7 +99,7 @@ section[data-image-layout="behind"] .body {
    ================================================ */
 
 h1 {
-    font-size: 2.25rem; /* Reduced from 2.75rem */
+    font-size: var(--h1-size, 2.25rem);
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -0.03em;
@@ -158,7 +108,7 @@ h1 {
 }
 
 h2 {
-    font-size: 2rem;
+    font-size: var(--h2-size, 2rem);
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.02em;
@@ -166,21 +116,21 @@ h2 {
 }
 
 h3 {
-    font-size: 1.5rem;
+    font-size: var(--h3-size, 1.5rem);
     font-weight: 600;
     color: var(--text-primary, #1a1a1a);
 }
 
 h4 {
-    font-size: 1.125rem;
+    font-size: var(--h4-size, 1.125rem);
     font-weight: 600;
     color: var(--text-primary, #1a1a1a);
     line-height: 1.3;
 }
 
 p {
-    font-size: 1rem;
-    line-height: 1.7;
+    font-size: var(--p-size, 1rem);
+    line-height: var(--line-height, 1.7);
     color: var(--text-secondary, #4a4a4a);
 }
 
@@ -237,7 +187,8 @@ p {
     padding: 1.5rem;
     background: var(--bg-secondary, #ffffff);
     border: 1px solid var(--border-color, #e5e5e5);
-    border-radius: 4px;
+    border-radius: var(--card-radius, 0.5rem);
+    box-shadow: var(--card-shadow, none);
     transition: box-shadow 0.2s ease;
 }
 
@@ -341,6 +292,37 @@ p {
     height: 12px;
     background: var(--timeline-color, #2d8a6e);
     border-radius: 50%;
+}
+
+/* Primary Item (First) */
+.smart-layout[data-variant="timeline"] .card:first-child .card-text {
+    color: var(--text-primary, #1a1a1a);
+    font-size: 1.1rem;
+}
+
+.smart-layout[data-variant="timeline"] .card:first-child::before {
+    background: var(--accent, #6366f1);
+    width: 16px;
+    height: 16px;
+    left: -1.875rem;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+}
+
+/* Secondary Items (Rest) */
+.smart-layout[data-variant="timeline"] .card:not(:first-child) {
+    opacity: 0.85;
+}
+
+.smart-layout[data-variant="timeline"] .card:not(:first-child) .card-text {
+    font-size: 1rem;
+}
+
+.smart-layout[data-variant="timeline"] .card:not(:first-child)::before {
+    top: 1.625rem; /* Adjust for smaller size alignment */
+    width: 10px;
+    height: 10px;
+    left: -1.6875rem; /* Re-center */
+    background: var(--text-tertiary, #a0a0a0);
 }
 
 .smart-layout[data-variant="timeline"] .card-number {
@@ -743,6 +725,42 @@ th {
 }
 
 /* ================================================
+   PLACEHOLDER IMAGE
+   ================================================ */
+
+.accent-image-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    background: var(--bg-tertiary, #f0f0f0);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed var(--border-color, #e0e0e0);
+}
+
+.placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-secondary, #888);
+}
+
+.placeholder-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.placeholder-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ================================================
    RESPONSIVE
    ================================================ */
 
@@ -783,87 +801,112 @@ th {
     h2 {
         font-size: 1.5rem;
     }
+    /* Component Overrides */
+    hr, .divider {
+        background: none !important;
+        height: 0 !important;
+        border: 0;
+        border-top: 1px var(--divider-style, solid) var(--border-color, #e5e5e5);
+        margin: 2rem 0;
+    }
 }
 
 
 :root {
-    --bg-primary: #0a0f1a;
-    --bg-secondary: #0f172a;
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --accent: #38bdf8;
-    --border-color: #1e293b;
-    --number-bg: #1e293b;
-    --callout-bg: #1e293b;
-    --icon-bg: #38bdf8;
+    --bg-primary: #f5f7fa;
+    --bg-secondary: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --accent: #3b82f6;
+    --border-color: #e2e8f0;
+    --number-bg: #eff6ff;
+    --callout-bg: #f0f9ff;
+    --icon-bg: #1e40af;
     --timeline-color: #2d8a6e;
     --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* Component Styles */
+    --card-shadow: none;
+    --card-radius: 0.5rem;
+    --divider-style: solid;
 }
 
+/* Dynamic Responsive Styles */
+@media (max-width: 480px) {
+  :root {
+    --section-padding: 1rem;
+    font-size: 85.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+@media (max-width: 768px) {
+  :root {
+    --section-padding: 2rem;
+    font-size: 90.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+@media (max-width: 1024px) {
+  :root {
+    --section-padding: 1rem;
+    font-size: 100.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
     </style>
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_05c2dd81_0" data-image-layout="blank">
+<section id="slide_2d246232" class="slide-section" role="region" aria-label="Slide slide_2d246232" data-image-layout="right" style="--h1-size: 2.25rem; --h2-size: 2rem; --p-size: 1rem; --line-height: 1.6; --section-padding: 3rem; --block-gap: 1.5rem; --card-padding: 1.5rem">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
 <div class="body">
-<div class="columns" data-colwidths="40,60">
-<div class="column" style="flex: 0 0 calc(40% - 1rem);">
-<h1>Python List Comprehension</h1>
-<div class="smart-layout" data-variant="bigBullets" data-item-count="4">
+<h1>The Evolution of AI</h1>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="timeline" data-item-count="5">
 <div class="card" data-index="0">
-<div class="card-number">1</div>
 <div class="card-content">
-<p class="card-text">List comprehensions provide a concise and readable way to create lists in Python.</p>
+<div class="card-year">1950</div>
+<p class="card-text">The Turing Test proposed by Alan Turing</p>
 </div>
 </div>
 <div class="card" data-index="1">
-<div class="card-number">2</div>
 <div class="card-content">
-<p class="card-text">They replace verbose multi-line loops with a single line of code.</p>
+<div class="card-year">1956</div>
+<p class="card-text">Dartmouth Conference coin the term &amp;#x27;Artificial Intelligence&amp;#x27;</p>
 </div>
 </div>
 <div class="card" data-index="2">
-<div class="card-number">3</div>
 <div class="card-content">
-<p class="card-text">Example: Squaring numbers from 0 to 9 can be done as [x**2 for x in range(10)].</p>
+<div class="card-year">1997</div>
+<p class="card-text">Deep Blue defeats Garry Kasparov</p>
 </div>
 </div>
 <div class="card" data-index="3">
-<div class="card-number">4</div>
 <div class="card-content">
-<p class="card-text">List comprehensions are often faster and more maintainable than using append() in loops.</p>
+<div class="card-year">2012</div>
+<p class="card-text">AlexNet breakthrough in computer vision</p>
 </div>
 </div>
-</div>
-</div>
-<div class="column" style="flex: 0 0 calc(60% - 1rem);">
-<div class="code-block" data-variant="snippet"><pre><code class="language-python">squares = [x**2 for x in range(10)]
-print(squares)  # Output: [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]</code></pre></div>
-</div>
-</div>
-</div>
-</section>
-
-<section id="slide_05c2dd81_1" data-image-layout="blank">
-<div class="body">
-<div class="smart-layout" data-variant="stats" data-item-count="3">
-<div class="card" data-index="0">
+<div class="card" data-index="4">
 <div class="card-content">
-<div class="card-value">Single line</div>
-<div class="card-label">Code simplicity</div>
-</div>
-</div>
-<div class="card" data-index="1">
-<div class="card-content">
-<div class="card-value">More readable</div>
-<div class="card-label">Pythonic style</div>
-</div>
-</div>
-<div class="card" data-index="2">
-<div class="card-content">
-<div class="card-value">Often faster</div>
-<div class="card-label">Performance vs. append() loop</div>
+<div class="card-year">2017</div>
+<p class="card-text">Transformer architecture introduced by Google</p>
 </div>
 </div>
 </div>
