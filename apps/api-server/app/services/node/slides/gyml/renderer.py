@@ -374,9 +374,9 @@ class GyMLRenderer:
                     f'<h4 class="card-title">{self._escape(item.heading)}</h4>'
                 )
             if item.description:
-                html_parts.append(
-                    f'<p class="card-text">{self._escape(item.description)}</p>'
-                )
+                # Handle multiline descriptions (e.g. from comparison lists)
+                desc_html = self._escape(item.description).replace("\n", "<br>")
+                html_parts.append(f'<p class="card-text">{desc_html}</p>')
 
         html_parts.append("</div>")
         html_parts.append("</div>")
@@ -455,17 +455,23 @@ section {
 /* ... image layouts ... */
 section[data-image-layout="right"] {
     display: grid;
-    grid-template-columns: 1fr 45%;
+    grid-template-columns: 1.5fr 1fr; /* col 1 (Text) = 60%, col 2 (Img) = 40% */
     gap: var(--block-gap, 2rem);
     align-items: center;
 }
+section[data-image-layout="right"] .body { order: 1; grid-column: 1; }
+section[data-image-layout="right"] .accent-image-wrapper,
+section[data-image-layout="right"] .accent-image-placeholder { order: 2; grid-column: 2; }
 
 section[data-image-layout="left"] {
     display: grid;
-    grid-template-columns: 45% 1fr;
+    grid-template-columns: 1fr 1.5fr; /* 40% Image / 60% Text */
     gap: var(--block-gap, 2rem);
     align-items: center;
 }
+section[data-image-layout="left"] .body { order: 2; grid-column: 2; }
+section[data-image-layout="left"] .accent-image-wrapper,
+section[data-image-layout="left"] .accent-image-placeholder { order: 1; grid-column: 1; }
 
 /* ... */
 
@@ -538,9 +544,10 @@ p {
    SMART LAYOUT - Gamma Card Grid
    ================================================ */
 
+
 .smart-layout {
     display: grid;
-    gap: 1.25rem;
+    gap: var(--card-gap, 1.25rem);
     width: 100%;
 }
 
@@ -568,7 +575,7 @@ p {
 .card {
     display: flex;
     flex-direction: column;
-    padding: 1.5rem;
+    padding: var(--card-padding, 1.5rem);
     background: var(--bg-secondary, #ffffff);
     border: 1px solid var(--border-color, #e5e5e5);
     border-radius: var(--card-radius, 0.5rem);
@@ -663,7 +670,7 @@ p {
     position: relative;
     border: none;
     background: transparent;
-    padding: 1.25rem 0;
+    padding: var(--card-padding, 1.25rem) 0;
     border-radius: 0;
 }
 
@@ -947,16 +954,19 @@ p {
 .code-block {
     background: #1e1e1e;
     color: #d4d4d4;
-    padding: 1.5rem;
-    border-radius: 6px;
-    width: 100%;
-    margin: 1rem 0;
-    overflow-x: auto;
+    padding: 1rem;
+    border-radius: 0.5rem;
     font-family: 'Fira Code', 'Roboto Mono', monospace;
+    font-size: 0.875rem;
+    overflow-x: auto; /* Allow scroll if a single word is too long */
+    white-space: pre-wrap; /* Wrap text to avoid horizontal scroll/clip */
+    word-break: break-word; /* Ensure long words break */
+    border: 1px solid var(--border-color, #333);
 }
 
 .code-block pre {
     margin: 0;
+    overflow-x: auto; /* Ensure inner pre also scrolls */
 }
 
 .code-block code {

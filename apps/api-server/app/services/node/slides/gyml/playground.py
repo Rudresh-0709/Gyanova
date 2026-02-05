@@ -22,21 +22,19 @@ from gyml.renderer import GyMLRenderer
 
 MOCK_SCENARIOS = [
     # SCENARIO A: Timeline (Narrate)
-    {
-        "title": "Company History",
-        "intent": "narrate",
-        "summary": "From humble beginnings to global influence, the company’s journey reflects a decade of innovation, resilience, and customer-focused growth. What started as an experimental project eventually evolved into a technology powerhouse shaping modern digital experiences.",
-        "points": [
-            "2010: Founded in a small garage with only two founders, minimal funding, and a dream to build intuitive digital tools.",
-            "2011–2014: Early product iterations attracted a small but passionate user base, fueling gradual growth and inspiring the launch of new feature prototypes.",
-            "2015: Reached 1 million users following a major platform redesign that improved performance, usability, and accessibility.",
-            "2016–2019: Expanded the product ecosystem to include collaboration tools, cloud storage, and a developer API, making it a versatile platform for individuals and small businesses.",
-            "2020: Global expansion accelerated through partnerships across Europe, Asia, and South America, transforming the company into an internationally recognized brand.",
-            "2022–2024: Significant investment in research and development led to breakthroughs in real-time data processing, scalability, and mobile-first design.",
-            "2025: AI Integration—introducing automation features, predictive insights, natural-language interfaces, and personalized user recommendations.",
-        ],
-        "image": {"url": "https://placehold.co/600x400", "layout": "right"},
-    },
+    # {
+    #     "title": "Company History",
+    #     "intent": "narrate",
+    #     "summary": "From humble beginnings to global influence, the company’s journey reflects a decade of innovation, resilience, and customer-focused growth. What started as an experimental project eventually evolved into a technology powerhouse shaping modern digital experiences.",
+    #     "points": [
+    #         "2010: Founded in a small garage with only two founders, minimal funding, and a dream to build intuitive digital tools.",
+    #         "2011–2014: Early product iterations attracted a small but passionate user base, fueling gradual growth and inspiring the launch of new feature prototypes.",
+    #         "2015: Reached 1 million users following a major platform redesign that improved performance, usability, and accessibility.",
+    #         "2016–2019: Expanded the product ecosystem to include collaboration tools, cloud storage, and a developer API, making it a versatile platform for individuals and small businesses.",
+    #         "2020: Global expansion accelerated through partnerships across Europe, Asia, and South America, transforming the company into an internationally recognized brand.",
+    #     ],
+    #     "image": {"url": "https://placehold.co/600x400", "layout": "right"},
+    # },
     # SCENARIO B: Process Steps (Demo)
     # {
     #     "title": "How to deploy",
@@ -63,43 +61,51 @@ MOCK_SCENARIOS = [
     # {
     #     "title": "Monolith vs Microservices",
     #     "intent": "compare",
-    #     # Explicit content blocks allow for detailed comparison structures
+    #     Explicit content blocks allow for detailed comparison structures
     #     "contentBlocks": [
     #         {
     #             "type": "comparison",
     #             "items": [
     #                 {
     #                     "title": "Monolith",
-    #                     "text": "Single codebase, easy to deploy, hard to scale.",
+    #                     "points": [
+    #                         "A monolith is built as a single, unified codebase. All features and components live together in one structure.",
+    #                         "It is generally easy to deploy at the beginning. The simplicity of having everything in one place reduces initial setup complexity.",
+    #                         "However, it becomes difficult to scale horizontally as the system grows. Changes in one part can affect the entire application, making scaling more restrictive.",
+    #                     ],
     #                 },
     #                 {
     #                     "title": "Microservices",
-    #                     "text": "Distributed, complex ops, infinite scaling.",
+    #                     "points": [
+    #                         "Microservices use a distributed architecture. Each service is independent and handles a specific function within the system.",
+    #                         "This approach introduces operational complexity. Managing many services requires strong observability, coordination, and infrastructure.",
+    #                         "However, microservices offer virtually unlimited scaling potential. Each service can scale independently, allowing the system to grow without major rework.",
+    #                     ],
     #                 },
     #             ],
     #         }
     #     ],
     # },
     # SCENARIO E: Coding Tutorial (Teach)
-    # {
-    # "title": "Python Hello World",
-    # "intent": "teach",
-    # "contentBlocks": [
-    #     {
-    #         "type": "paragraph",
-    #         "text": "Below is a simple demonstration of how to print text to the console in Python. Printing is one of the first operations you learn because it's essential for debugging, exploring code behavior, and interacting with users."
-    #     },
-    #     {
-    #         "type": "code",
-    #         "language": "python",
-    #         "code": "print('Hello World')\nprint('This is an expanded example!')\n\n# Mock data to demonstrate printing variables\nname = 'Alice'\nage = 29\nfavorite_languages = ['Python', 'JavaScript', 'Go']\n\nprint(f'Name: {name}')\nprint(f'Age: {age}')\nprint('Favorite Languages:')\nfor lang in favorite_languages:\n    print(' -', lang)"
-    #     },
-    #     {
-    #         "type": "callout",
-    #         "text": "Note: In Python 3, print is a function and requires parentheses. You can also print complex data such as lists, formatted strings, and values stored in variables."
-    #     }
-    # ]
-    # }
+    {
+        "title": "Python Hello World",
+        "intent": "teach",
+        "contentBlocks": [
+            {
+                "type": "paragraph",
+                "text": "Below is a simple demonstration of how to print text to the console in Python. Printing is one of the first operations you learn because it's essential for debugging, exploring code behavior, and interacting with users.",
+            },
+            {
+                "type": "code",
+                "language": "python",
+                "code": "print('Hello World')\nprint('This is an expanded example!')\n\n\nname = 'Alice'\nage = 29\nfavorite_languages = ['Python', 'JavaScript', 'Go']\n\nprint(f'Name: {name}')\nprint(f'Age: {age}')\nprint('Favorite Languages:')\nfor lang in favorite_languages:\n    print(' -', lang)",
+            },
+            {
+                "type": "callout",
+                "text": "Note: In Python 3, print is a function and requires parentheses. You can also print complex data such as lists, formatted strings, and values stored in variables.",
+            },
+        ],
+    }
 ]
 
 # ==========================================

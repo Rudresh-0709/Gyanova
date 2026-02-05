@@ -32,7 +32,6 @@ from .rules import (
     VarietyRules,
     SlidePattern,
     get_preferred_blocks_for_intent,
-    get_preferred_blocks_for_intent,
     suggest_block_type_from_content,
 )
 from .hierarchy import VisualHierarchy
@@ -93,6 +92,9 @@ class SlideComposer:
 
                 # 6. Assign emphasis
                 s = self._assign_emphasis(s)
+
+                # 6b. Distribute Content (Layout Optimization)
+                s = self._distribute_content(s)
 
                 # 7. Assign Visual Hierarchy
                 s = self._assign_hierarchy(s)
@@ -209,7 +211,11 @@ class SlideComposer:
                             # Try "1990: Event" or "1990 - Event"
                             import re
 
-                            match = re.match(r"^(\d{4}(?:s)?)\s*[: -]\s*(.*)", p)
+                            # Regex supports: "2010", "2010s", "2010-2014", "2010–2014" (en-dash)
+                            match = re.match(
+                                r"^(\d{4}(?:s)?(?:[\u2013-]\d{4})?)\s*[:\u2013-]\s*(.*)",
+                                p,
+                            )
                             if match:
                                 item_data = {
                                     "year": match.group(1),
@@ -231,8 +237,10 @@ class SlideComposer:
                     }
                 )
 
-        if "contentBlocks" in content:
-            for block in content["contentBlocks"]:
+        # Support both 'contentBlocks' (legacy) and 'blocks' (playground/new)
+        raw_blocks = content.get("contentBlocks", content.get("blocks", []))
+        if raw_blocks:
+            for block in raw_blocks:
                 # Pass through the block structure directly
                 # The serializer will handle the specific fields (code, table, etc.)
                 main_concept["blocks"].append(
@@ -961,11 +969,151 @@ class SlideComposer:
     # VISUAL HIERARCHY
     # =========================================================================
 
+    def _optimize_sidebar_layout(self, slide: ComposedSlide) -> bool:
+        """
+        Reflow dense slides with secondary content into a 70/30 (or 60/40) sidebar layout.
+        Moves Callouts/Notes under the user image (or injected placeholder).
+        Returns True if optimization was applied.
+        """
+        # 1. Check triggers: Must have Code OR Dense Text
+        has_dense_block = any(
+            b.type in [BlockType.CODE.value, BlockType.TABLE.value]
+            for s in slide.sections
+            for b in s.blocks
+        )
+        is_dense = self._calculate_visual_density(slide) > 0.7
+
+        if not (has_dense_block or is_dense):
+            return False
+
+        # 2. Check for Secondary Content to move (Callouts, small paragraphs)
+        secondary_blocks = []
+        primary_blocks = []
+
+        main_section = slide.sections[0]  # Assuming single section for now
+        print(
+            f"DEBUG: Optimizer Blocks: {[b.type for b in main_section.blocks]}"
+        )  # DEBUG
+
+        for b in main_section.blocks:
+            # Headings and Code always stay primary
+            if b.type in [
+                BlockType.HEADING.value,
+                BlockType.CODE.value,
+                BlockType.TABLE.value,
+            ]:
+                primary_blocks.append(b)
+                continue
+
+            # Callouts always go to sidebar
+            if b.type == BlockType.CALLOUT.value:
+                print("DEBUG: Found Callout")  # DEBUG
+                secondary_blocks.append(b)
+                continue
+
+            # Paragraphs: Heuristic - if short/last, maybe sidebar?
+            if b.type == BlockType.PARAGRAPH.value and b == main_section.blocks[-1]:
+                text = b.content.get("text", "")
+                # Simple check: starts with "Note:" or short
+                if len(text) < 100 or text.startswith("Note:"):
+                    secondary_blocks.append(b)
+                    continue
+
+            primary_blocks.append(b)
+
+        if not secondary_blocks:
+            return False
+
+        # 3. Apply Transformation
+        # Create Right Column Content: Image + Secondary Blocks
+        right_col_blocks = []
+
+        # Image First
+        if slide.accent_image_url:
+            right_col_blocks.append(
+                ComposedBlock(
+                    type=BlockType.IMAGE.value,
+                    content={
+                        "src": slide.accent_image_url,
+                        "alt": slide.accent_image_alt or "",
+                    },
+                )
+            )
+        else:
+            # Force placeholder if no image (user wants visual balance)
+            right_col_blocks.append(
+                ComposedBlock(
+                    type=BlockType.IMAGE.value,
+                    content={"src": "placeholder", "alt": "Decorative reference"},
+                )
+            )
+
+        # Then Secondary Blocks
+        right_col_blocks.extend(secondary_blocks)
+
+        # Create Left Column Content: Primary Blocks
+        left_col_blocks = primary_blocks
+
+        # Create 2-Column Layout Block (IR)
+        columns_block = ComposedBlock(
+            type=BlockType.COLUMNS.value,
+            content={
+                "colwidths": [60, 40],
+                "columns": [{"blocks": left_col_blocks}, {"blocks": right_col_blocks}],
+            },
+        )
+
+        # Replace section content - using property setter hack?
+        # No, blocks is a property returning list. We need to modify underlying storage.
+        # ComposedSection has 'primary_block' and 'secondary_blocks'.
+        # We'll set primary to None and secondary to [columns_block].
+        main_section.primary_block = None
+        main_section.secondary_blocks = [columns_block]
+
+        # Disable default image layout since we moved the image manually
+        slide.image_layout = "blank"
+
+        # Force hierarchy to 'super_dense' for tighter spacing
+        slide.hierarchy = VisualHierarchy.get_profile("super_dense")
+
+        return True
+
     def _assign_hierarchy(self, slide: ComposedSlide) -> ComposedSlide:
         """
         Assign visual hierarchy constraints based on density and intent.
         """
         # Respect manually assigned hierarchy (e.g. from dense reflow)
+        if slide.hierarchy:
+            return slide
+
+        word_count = slide.total_word_count()
+        block_count = slide.block_count()
+
+        # Calculate approximate density score
+        # Arbitrary units: words + (blocks * 20)
+        density_score = word_count + (block_count * 20)
+
+        # Decision Logic
+        profile_name = "default"
+
+        if density_score > 150:
+            profile_name = "dense"
+        elif slide.intent in [Intent.PROVE.value, Intent.INTRODUCE.value]:
+            # High impact slides
+            profile_name = "impact"
+
+        slide.hierarchy = VisualHierarchy.get_profile(profile_name)
+        return slide
+
+    def _distribute_content(self, slide: ComposedSlide) -> ComposedSlide:
+        """
+        Distribute content into appropriate sections/layouts.
+        """
+        # 0. Try Sidebar Optimization first (Code/Callout combo)
+        if self._optimize_sidebar_layout(slide):
+            return slide
+
+        # 1. Try Smart Layouts (if not already optimized)
         if slide.hierarchy:
             return slide
 
@@ -1017,25 +1165,28 @@ class SlideComposer:
         has_columns = any(
             block.type == BlockType.COLUMNS.value
             for section in slide.sections
-            for block in section.secondary_blocks
+            for block in (section.blocks + section.secondary_blocks)
         )
         if has_columns:
             return slide
 
+        print(f"DEBUG: Block Count = {slide.block_count()}")  # DEBUG
         density = SlideFitnessGate._calculate_estimated_height(slide)
+        print(f"DEBUG: Slide Density = {density}")  # DEBUG
         has_image = bool(slide.accent_image_url)
 
         # 2. Determine Image Strategy
         placement = ImageManager.determine_placement(density, has_image, slide.intent)
+        print(f"DEBUG: Image Placement Decision = {placement}")  # DEBUG
 
         # 3. Apply Strategy
         if placement != "blank":
             slide.image_layout = placement
 
             # Inject placeholder if required but missing
-            if not has_image and ImageManager.should_inject_placeholder(
-                density, has_image
-            ):
+            should_inject = ImageManager.should_inject_placeholder(density, has_image)
+            print(f"DEBUG: Should Inject Placeholder? = {should_inject}")  # DEBUG
+            if not has_image and should_inject:
                 placeholder = ImageManager.get_placeholder_image()
                 slide.accent_image_url = placeholder.src
                 slide.accent_image_alt = placeholder.alt

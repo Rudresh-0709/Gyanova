@@ -32,28 +32,23 @@ class ImageManager:
         """
 
         # 1. High Density (Avoid cramping)
-        if slide_density > 0.8:
+        # Relaxed threshold to 0.9 to allow images in dense layouts like Comparison
+        if slide_density > 0.9:
             return "top" if has_user_image else "blank"
 
-        # 2. Low Density (Fill void)
-        if slide_density < 0.5:
-            # Default to split for balance
-            return "right"
-
-        # 3. Medium Density
-        # If user has image, use right/left. If not, maybe blank is fine.
-        if has_user_image:
-            return "right"
-
-        return "blank"
+        # 2. Low & Medium Density
+        # Always prefer filling space with an image (placeholder or user)
+        # unless it's dangerously dense.
+        return "right"
 
     @staticmethod
     def should_inject_placeholder(slide_density: float, has_image: bool) -> bool:
         """
         Return True if we MUST inject a placeholder to save the slide layout.
         """
-        # Strict Rule: If < 50% filled and no image, slide looks broken.
-        return slide_density < 0.5 and not has_image
+        # Strict Rule: If < 90% filled and no image, slide looks broken.
+        # Updated to match relaxed density rule.
+        return slide_density < 0.9 and not has_image
 
     @staticmethod
     def get_placeholder_image() -> GyMLImage:

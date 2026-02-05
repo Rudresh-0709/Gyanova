@@ -334,13 +334,22 @@ class GyMLSerializer:
         elif block_type == BlockType.COMPARISON.value:
             left = content.get("left", {})
             right = content.get("right", {})
+            items_data = content.get("items", [])
+
+            # Map items list to left/right if provided
+            if items_data and len(items_data) >= 2:
+                if not left:
+                    left = items_data[0]
+                if not right:
+                    right = items_data[1]
+
             variant = content.get("variant", SmartLayoutVariant.COMPARISON.value)
 
             items = []
             # Left item
             items.append(
                 GyMLSmartLayoutItem(
-                    heading=left.get("label", "Option A"),
+                    heading=left.get("title", left.get("label", "Option A")),
                     description=(
                         "\n".join(left.get("points", []))
                         if isinstance(left.get("points"), list)
@@ -351,7 +360,7 @@ class GyMLSerializer:
             # Right item
             items.append(
                 GyMLSmartLayoutItem(
-                    heading=right.get("label", "Option B"),
+                    heading=right.get("title", right.get("label", "Option B")),
                     description=(
                         "\n".join(right.get("points", []))
                         if isinstance(right.get("points"), list)
