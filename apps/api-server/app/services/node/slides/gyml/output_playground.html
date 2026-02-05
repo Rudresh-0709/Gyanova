@@ -1,103 +1,4 @@
-"""
-GyML Renderer
-
-PASSIVE renderer: GyML → HTML.
-Maps GyML structure to HTML without any inference or semantic decisions.
-Designed to match Gamma-style professional slides.
-"""
-
-from typing import List, Optional
-import html
-
-from .definitions import (
-    GyMLSection,
-    GyMLBody,
-    GyMLHeading,
-    GyMLParagraph,
-    GyMLColumns,
-    GyMLColumnDiv,
-    GyMLSmartLayout,
-    GyMLSmartLayoutItem,
-    GyMLImage,
-    GyMLDivider,
-    GyMLTable,
-    GyMLCode,
-    GyMLNode,
-)
-from .theme import Theme, THEMES
-from .responsive import ResponsiveConstraints
-from .hierarchy import VisualHierarchy
-
-
-class GyMLRenderer:
-    """
-    PASSIVE renderer: GyML → HTML.
-    Gamma-style professional output.
-    """
-
-    def __init__(
-        self,
-        theme: Optional[Theme] = None,
-        responsive_constraints: Optional[ResponsiveConstraints] = None,
-    ):
-        self.theme = theme or THEMES.get("gamma_light")
-        self.responsive_constraints = (
-            responsive_constraints or ResponsiveConstraints.default()
-        )
-
-    def render(self, section: GyMLSection) -> str:
-        """Passively render GyML section to HTML."""
-        lines = []
-
-        # Generate hierarchy CSS variables if present
-        style_attr = ""
-        if section.hierarchy:
-            vars_list = []
-            # Typography
-            vars_list.append(f"--h1-size: {section.hierarchy.typography.h1}")
-            vars_list.append(f"--h2-size: {section.hierarchy.typography.h2}")
-            vars_list.append(f"--p-size: {section.hierarchy.typography.body}")
-            vars_list.append(
-                f"--line-height: {section.hierarchy.typography.line_height_base}"
-            )
-
-            # Spacing
-            vars_list.append(
-                f"--section-padding: {section.hierarchy.spacing.section_padding}"
-            )
-            vars_list.append(f"--block-gap: {section.hierarchy.spacing.block_gap}")
-            vars_list.append(
-                f"--card-padding: {section.hierarchy.spacing.card_padding}"
-            )
-
-            style_attr = f' style="{"; ".join(vars_list)}"'
-
-        lines.append(
-            f'<section id="{self._escape(section.id)}" '
-            f'class="slide-section" '
-            f'role="region" aria-label="Slide {section.id}" '
-            f'data-image-layout="{section.image_layout}"'
-            f"{style_attr}>"
-        )
-
-        if section.accent_image:
-            lines.append(self._render_accent_image(section.accent_image))
-
-        lines.append(self._render_body(section.body))
-        lines.append("</section>")
-
-        return "\n".join(lines)
-
-    def render_many(self, sections: List[GyMLSection]) -> str:
-        """Render multiple sections."""
-        rendered_sections = [self.render(s) for s in sections]
-        return "\n\n".join(rendered_sections)
-
-    def render_complete(self, sections: List[GyMLSection]) -> str:
-        """Render complete HTML document with Gamma-style styles."""
-        sections_html = self.render_many(sections)
-
-        return f"""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -106,292 +7,7 @@ class GyMLRenderer:
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-{self._get_gamma_styles()}
-{self.theme.to_css_vars() if self.theme else ""}
-{self._get_responsive_styles()}
-    </style>
-</head>
-<body>
-    <div class="gyml-deck">
-{sections_html}
-    </div>
-</body>
-</html>"""
 
-    def _get_responsive_styles(self) -> str:
-        """Generate responsive CSS from constraints."""
-        c = self.responsive_constraints
-        css = ["/* Dynamic Responsive Styles */"]
-
-        # 1. Breakpoints
-        for bp_name, width in c.breakpoints.items():
-            fallback_padding = c.viewport_padding.get(bp_name, "1rem")
-            scale = c.typography_scale.get(bp_name, 1.0)
-
-            css.append(f"@media (max-width: {width}px) {{")
-
-            # Global adjustments
-            css.append("  :root {")
-            css.append(f"    --section-padding: {fallback_padding};")
-            # We can scale the base font size if we used rems correctly
-            css.append(f"    font-size: {scale * 100}%;")
-            css.append("  }")
-
-            # Apply layout fallbacks
-            if c.layout_fallbacks.get("columns") == "stack":
-                css.append("  .columns { flex-direction: column; }")
-                css.append("  .column { flex: 1 1 100% !important; }")
-
-            if c.layout_fallbacks.get("image_layout") == "stack":
-                css.append(
-                    "  section[data-image-layout='right'], section[data-image-layout='left'] {"
-                )
-                css.append(
-                    "    grid-template-columns: 1fr; display: flex; flex-direction: column;"
-                )
-                css.append("  }")
-                css.append("  .accent-image { max-width: 100%; margin-bottom: 1rem; }")
-
-            css.append("}")
-
-        return "\n".join(css)
-
-    # =========================================================================
-    # ELEMENT RENDERERS
-    # =========================================================================
-
-    def _render_accent_image(self, image: GyMLImage) -> str:
-        """Render accent image."""
-        if image.src == "placeholder":
-            return (
-                f'<div class="accent-image-placeholder">'
-                f'<div class="placeholder-content">'
-                f'<span class="placeholder-icon">🖼️</span>'
-                f'<span class="placeholder-text">{self._escape(image.alt)}</span>'
-                f"</div>"
-                f"</div>"
-            )
-
-        return (
-            f'<div class="accent-image-wrapper">'
-            f'<img class="accent-image" '
-            f'src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
-            f"</div>"
-        )
-
-    def _render_body(self, body: GyMLBody) -> str:
-        """Render body container."""
-        children_html = []
-        for i, child in enumerate(body.children):
-            rendered = self._render_node(child)
-            if rendered:
-                children_html.append(rendered)
-
-                # Add separator logic (between distinct major blocks)
-                if i < len(body.children) - 1:
-                    next_child = body.children[i + 1]
-
-                    # Geometry Rule: Separator between Dense (Visual) and Flow (Text)
-                    is_dense_current = isinstance(
-                        child, (GyMLColumns, GyMLSmartLayout, GyMLTable, GyMLCode)
-                    )
-                    is_dense_next = isinstance(
-                        next_child, (GyMLColumns, GyMLSmartLayout, GyMLTable, GyMLCode)
-                    )
-
-                    # Flow elements: Paragraph, Heading
-                    is_flow_current = isinstance(child, (GyMLParagraph, GyMLHeading))
-                    is_flow_next = isinstance(next_child, (GyMLParagraph, GyMLHeading))
-
-                    should_separate = (
-                        (is_dense_current and is_dense_next)  # Between two visuals
-                        or (is_dense_current and is_flow_next)  # Visual -> Text
-                        or (is_flow_current and is_dense_next)  # Text -> Visual
-                    )
-
-                    if should_separate:
-                        children_html.append('<div class="block-separator"></div>')
-
-        return f'<div class="body">\n{chr(10).join(children_html)}\n</div>'
-
-    def _render_node(self, node: GyMLNode) -> Optional[str]:
-        """Render any GyML node by type."""
-        if isinstance(node, GyMLHeading):
-            return self._render_heading(node)
-        elif isinstance(node, GyMLParagraph):
-            return self._render_paragraph(node)
-        elif isinstance(node, GyMLColumns):
-            return self._render_columns(node)
-        elif isinstance(node, GyMLSmartLayout):
-            return self._render_smart_layout(node)
-        elif isinstance(node, GyMLImage):
-            return self._render_inline_image(node)
-        elif isinstance(node, GyMLDivider):
-            return self._render_divider()
-        elif isinstance(node, GyMLCode):
-            return self._render_code(node)
-        elif isinstance(node, GyMLTable):
-            return self._render_table(node)
-        return f"<!-- Unknown node type: {type(node).__name__} -->"
-
-    def _render_heading(self, heading: GyMLHeading) -> str:
-        """Render heading."""
-        level = heading.level
-        text = self._escape(heading.text)
-        return f"<h{level}>{text}</h{level}>"
-
-    def _render_paragraph(self, paragraph: GyMLParagraph) -> str:
-        """Render paragraph."""
-        text = self._escape(paragraph.text)
-        return f"<p>{text}</p>"
-
-    def _render_divider(self) -> str:
-        """Render divider."""
-        return '<hr class="divider" />'
-
-    def _render_inline_image(self, image: GyMLImage) -> str:
-        """Render inline image."""
-        return (
-            f'<figure class="inline-image">'
-            f'<img src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
-            f"</figure>"
-        )
-
-    def _render_code(self, code: GyMLCode) -> str:
-        """Render code block."""
-        return (
-            f'<div class="code-block" data-variant="{self._escape(code.variant)}">'
-            f'<pre><code class="language-{self._escape(code.language)}">'
-            f"{self._escape(code.code)}"
-            f"</code></pre>"
-            f"</div>"
-        )
-
-    def _render_table(self, table: GyMLTable) -> str:
-        """Render table."""
-        headers_html = "".join(f"<th>{self._escape(h)}</th>" for h in table.headers)
-
-        rows_html = []
-        for row in table.rows:
-            cells_html = "".join(f"<td>{self._escape(c)}</td>" for c in row)
-            rows_html.append(f"<tr>{cells_html}</tr>")
-
-        return (
-            f'<div class="table-container" data-variant="{self._escape(table.variant)}">'
-            f"<table>"
-            f"<thead><tr>{headers_html}</tr></thead>"
-            f'<tbody>{"".join(rows_html)}</tbody>'
-            f"</table>"
-            f"</div>"
-        )
-
-    def _render_columns(self, columns: GyMLColumns) -> str:
-        """Render columns as flex container."""
-        widths_str = ",".join(str(w) for w in columns.colwidths)
-
-        html_parts = [f'<div class="columns" data-colwidths="{widths_str}">']
-
-        for i, col in enumerate(columns.columns):
-            width = columns.colwidths[i] if i < len(columns.colwidths) else 50
-            html_parts.append(
-                f'<div class="column" style="flex: 0 0 calc({width}% - 1rem);">'
-            )
-
-            for child in col.children:
-                rendered = self._render_node(child)
-                if rendered:
-                    html_parts.append(rendered)
-
-            html_parts.append("</div>")
-
-        html_parts.append("</div>")
-        return "\n".join(html_parts)
-
-    def _render_smart_layout(self, layout: GyMLSmartLayout) -> str:
-        """Render smart-layout as grid container."""
-        variant = self._escape(layout.variant)
-        item_count = len(layout.items)
-
-        html_parts = [
-            f'<div class="smart-layout" '
-            f'data-variant="{variant}" '
-            f'data-item-count="{item_count}">'
-        ]
-
-        for i, item in enumerate(layout.items):
-            html_parts.append(self._render_smart_layout_item(item, layout.variant, i))
-
-        html_parts.append("</div>")
-        return "\n".join(html_parts)
-
-    def _render_smart_layout_item(
-        self, item: GyMLSmartLayoutItem, variant: str, index: int = 0
-    ) -> str:
-        """Render smart-layout-item Gamma-style."""
-        html_parts = [f'<div class="card" data-index="{index}">']
-
-        # Number badge at top (Gamma style)
-        if variant in ["bigBullets", "processSteps", "cardGrid"]:
-            html_parts.append(f'<div class="card-number">{index + 1}</div>')
-
-        # Icon
-        if item.icon:
-            icon_class = item.icon.alt
-            if not icon_class.startswith("ri-"):
-                icon_class = f"ri-{icon_class}-line"
-            html_parts.append(
-                f'<div class="card-icon"><i class="{self._escape(icon_class)}"></i></div>'
-            )
-
-        # Content
-        html_parts.append('<div class="card-content">')
-
-        if variant == "timeline":
-            if item.year:
-                html_parts.append(
-                    f'<div class="card-year">{self._escape(item.year)}</div>'
-                )
-            if item.description:
-                html_parts.append(
-                    f'<p class="card-text">{self._escape(item.description)}</p>'
-                )
-
-        elif variant == "stats":
-            if item.value:
-                html_parts.append(
-                    f'<div class="card-value">{self._escape(item.value)}</div>'
-                )
-            if item.label:
-                html_parts.append(
-                    f'<div class="card-label">{self._escape(item.label)}</div>'
-                )
-
-        else:
-            if item.heading:
-                html_parts.append(
-                    f'<h4 class="card-title">{self._escape(item.heading)}</h4>'
-                )
-            if item.description:
-                html_parts.append(
-                    f'<p class="card-text">{self._escape(item.description)}</p>'
-                )
-
-        html_parts.append("</div>")
-        html_parts.append("</div>")
-
-        return "\n".join(html_parts)
-
-    def _escape(self, text: str) -> str:
-        """Escape HTML special characters."""
-        if not text:
-            return ""
-        return html.escape(str(text))
-
-    def _get_gamma_styles(self) -> str:
-        """Get Gamma-style CSS."""
-        return """
 /* ================================================
    GAMMA-STYLE SLIDE DESIGN
    Clean, professional, light theme
@@ -1204,4 +820,121 @@ th {
         margin: 2rem 0;
     }
 }
-"""
+
+
+:root {
+    --bg-primary: #f8f7f4;
+    --bg-secondary: #ffffff;
+    --text-primary: #1a1a1a;
+    --text-secondary: #555555;
+    --accent: #666666;
+    --border-color: #e5e5e5;
+    --number-bg: #f0f0f0;
+    --callout-bg: #f5f5f5;
+    --icon-bg: #1a1a1a;
+    --timeline-color: #2d8a6e;
+    --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* Component Styles */
+    --card-shadow: none;
+    --card-radius: 0.5rem;
+    --divider-style: solid;
+}
+
+/* Dynamic Responsive Styles */
+@media (max-width: 480px) {
+  :root {
+    --section-padding: 1rem;
+    font-size: 85.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+@media (max-width: 768px) {
+  :root {
+    --section-padding: 2rem;
+    font-size: 90.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+@media (max-width: 1024px) {
+  :root {
+    --section-padding: 1rem;
+    font-size: 100.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+    </style>
+</head>
+<body>
+    <div class="gyml-deck">
+<section id="slide_b7e04932" class="slide-section" role="region" aria-label="Slide slide_b7e04932" data-image-layout="blank" style="--h1-size: 1.75rem; --h2-size: 1.5rem; --p-size: 0.9rem; --line-height: 1.4; --section-padding: 1.5rem; --block-gap: 0.75rem; --card-padding: 1rem">
+<div class="body">
+<h1>Company History</h1>
+<div class="block-separator"></div>
+<div class="columns" data-colwidths="40,60">
+<div class="column" style="flex: 0 0 calc(40% - 1rem);">
+<figure class="inline-image"><img src="https://placehold.co/600x400" alt="Slide Image" loading="lazy" /></figure>
+<p>From humble beginnings to global influence, the company’s journey reflects a decade of innovation, resilience, and customer-focused growth. What started as an experimental project eventually evolved into a technology powerhouse shaping modern digital experiences.</p>
+</div>
+<div class="column" style="flex: 0 0 calc(60% - 1rem);">
+<div class="smart-layout" data-variant="timeline" data-item-count="7">
+<div class="card" data-index="0">
+<div class="card-content">
+<div class="card-year">2010</div>
+<p class="card-text">Founded in a small garage with only two founders, minimal funding, and a dream to build intuitive digital tools.</p>
+</div>
+</div>
+<div class="card" data-index="1">
+<div class="card-content">
+</div>
+</div>
+<div class="card" data-index="2">
+<div class="card-content">
+<div class="card-year">2015</div>
+<p class="card-text">Reached 1 million users following a major platform redesign that improved performance, usability, and accessibility.</p>
+</div>
+</div>
+<div class="card" data-index="3">
+<div class="card-content">
+</div>
+</div>
+<div class="card" data-index="4">
+<div class="card-content">
+<div class="card-year">2020</div>
+<p class="card-text">Global expansion accelerated through partnerships across Europe, Asia, and South America, transforming the company into an internationally recognized brand.</p>
+</div>
+</div>
+<div class="card" data-index="5">
+<div class="card-content">
+</div>
+</div>
+<div class="card" data-index="6">
+<div class="card-content">
+<div class="card-year">2025</div>
+<p class="card-text">AI Integration—introducing automation features, predictive insights, natural-language interfaces, and personalized user recommendations.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+    </div>
+</body>
+</html>

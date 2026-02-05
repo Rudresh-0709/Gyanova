@@ -45,19 +45,19 @@ class ConstraintRules:
     LAYOUTS: Dict[str, LayoutLimits] = {
         "timeline": LayoutLimits(
             min_items=2,
-            max_items=6,
+            max_items=12,  # Increased to allow splitting (will auto-paginate)
             max_words_per_item=40,
-            min_density_score=0.25,  # Timeline is naturally sparse
+            min_density_score=0.25,
         ),
         "comparison": LayoutLimits(min_items=2, max_items=3, max_words_per_item=60),
         "stats": LayoutLimits(
             min_items=2,
             max_items=4,
-            max_words_per_item=15,  # Numbers + label only
+            max_words_per_item=15,
         ),
-        "processSteps": LayoutLimits(min_items=3, max_items=6, max_words_per_item=50),
-        "bigBullets": LayoutLimits(min_items=1, max_items=5, max_words_per_item=30),
-        "cardGrid": LayoutLimits(min_items=2, max_items=8, max_words_per_item=25),
+        "processSteps": LayoutLimits(min_items=3, max_items=12, max_words_per_item=50),
+        "bigBullets": LayoutLimits(min_items=1, max_items=8, max_words_per_item=30),
+        "cardGrid": LayoutLimits(min_items=2, max_items=12, max_words_per_item=25),
         "solidBoxesWithIconsInside": LayoutLimits(
             min_items=2, max_items=4, max_words_per_item=20
         ),

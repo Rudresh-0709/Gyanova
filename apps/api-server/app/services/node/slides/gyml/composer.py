@@ -173,6 +173,17 @@ class SlideComposer:
             "blocks": [],
         }
 
+        if "summary" in content:
+            main_concept["blocks"].append(
+                {
+                    "type": BlockType.PARAGRAPH.value,
+                    "content": {"text": content["summary"]},
+                }
+            )
+
+        if "image" in content:
+            main_concept["image"] = content["image"]
+
         # Extract blocks from various content structures
         if "points" in content:
             points = content["points"]
@@ -395,18 +406,42 @@ class SlideComposer:
         Enforce implicit limits, auto-split if exceeded.
         From slide_engine.md §6, §13.
         """
-        # Rule: Card Grid > 3 items -> Split or Promote
+        # Rule: Smart Layout > 4 items -> Split Content
         for section in slide.sections:
             for block in section.blocks:
-                if block.type == BlockType.TIMELINE.value:
-                    events = block.content.get("events", [])
-                    if len(events) > 5:
-                        return self._split_slide(slide)
 
-                if block.type == BlockType.CARD_GRID.value:
-                    cards = block.content.get("cards", [])
-                    if len(cards) > 5:
-                        return self._split_slide(slide)
+                # Check for Smart Layout / Card Grid / Timeline
+                items = []
+                layout_type = block.type
+                variant = None
+
+                if block.type == BlockType.SMART_LAYOUT.value:
+                    items = block.content.get("items", [])
+                    variant = block.content.get("variant")
+                elif block.type in [
+                    BlockType.TIMELINE.value,
+                    BlockType.CARD_GRID.value,
+                    BlockType.STEP_LIST.value,
+                ]:
+                    # Legacy or specific types
+                    # Normalized access to items list
+                    if "events" in block.content:
+                        items = block.content["events"]
+                    elif "cards" in block.content:
+                        items = block.content["cards"]
+                    elif "items" in block.content:
+                        items = block.content["items"]
+
+                # Check Limit (MAX 4 for complex layouts, 5 for simple)
+                limit = 4
+                if len(items) > limit:
+                    # Attempt to reflow into columns first (Dense Mode)
+                    reflowed_slide = self._try_reflow_dense_content(slide, block)
+                    if reflowed_slide:
+                        return [reflowed_slide]
+
+                    # Fallback to splitting
+                    return self._split_smart_layout_content(slide, block, items, limit)
 
         word_count = slide.total_word_count()
         block_count = slide.block_count()
@@ -424,7 +459,7 @@ class SlideComposer:
                 ]:
                     container_count += 1
 
-        # Check if splitting is needed
+        # Check if splitting is needed (Standard block splitting)
         should_split = Limits.should_split_slide(
             word_count=word_count,
             concept_count=block_count,  # Approximate
@@ -438,14 +473,209 @@ class SlideComposer:
 
         return [slide]
 
+    def _try_reflow_dense_content(
+        self, slide: ComposedSlide, content_block: ComposedBlock
+    ) -> Optional[ComposedSlide]:
+        """
+        Attempt to reflow a dense slide into a 2-column layout.
+        Strategy:
+        - Col 1 (40%): Accent Image (converted to inline) + Summary/Intro Paragraphs
+        - Col 2 (60%): The oversized Smart Layout (Timeline, Grid, etc.)
+        """
+        # 1. Identify components to move
+        image_url = slide.accent_image_url
+        intro_blocks = []
+
+        # Find intro paragraphs (usually before the smart layout)
+        # We assume the content_block is in the main content section
+        target_section = None
+        for section in slide.sections:
+            if content_block in section.secondary_blocks:
+                target_section = section
+                break
+
+        if not target_section:
+            return None
+
+        # Gather intro blocks (everything before the main content block)
+        for b in target_section.secondary_blocks:
+            if b == content_block:
+                break
+            if b.type == BlockType.PARAGRAPH.value:
+                intro_blocks.append(b)
+
+        # 2. Check if we have enough material to justify columns
+        # We need at least (Image OR Intro) AND Content Block
+        if not (image_url or intro_blocks):
+            return None  # Nothing to put in the side column
+
+        # 3. Construct Columns
+        col1_blocks = []
+
+        # Add Image
+        if image_url:
+            col1_blocks.append(
+                ComposedBlock(
+                    type=BlockType.IMAGE.value,
+                    content={
+                        "src": image_url,
+                        "alt": "Slide Image",
+                        "is_accent": False,
+                    },
+                    emphasis=Emphasis.SECONDARY,
+                )
+            )
+
+        # Add Intro Text
+        col1_blocks.extend(intro_blocks)
+
+        # Col 2 is just the content block
+        col2_blocks = [content_block]
+
+        # Create Column Container
+        columns_block = ComposedBlock(
+            type=BlockType.COLUMNS.value,
+            content={
+                "colwidths": [40, 60],
+                "columns": [
+                    {"blocks": col1_blocks},  # Column 1
+                    {"blocks": col2_blocks},  # Column 2
+                ],
+            },
+            emphasis=Emphasis.PRIMARY,
+        )
+
+        # 4. Rebuild Slide
+        # We keep the Title Section (index 0 usually)
+        # We replace the Content Section body with the new Columns block
+
+        new_sections = []
+        for section in slide.sections:
+            if section == target_section:
+                # Replace this section's content
+                new_section = ComposedSection(
+                    purpose=section.purpose,
+                    relationship=section.relationship,
+                    primary_block=section.primary_block,
+                    secondary_blocks=[columns_block],  # Replaced!
+                )
+                new_sections.append(new_section)
+            else:
+                new_sections.append(section)
+
+        # Create hierarchy profile
+        from .hierarchy import VisualHierarchy
+
+        dense_profile = VisualHierarchy.get_profile("super_dense")
+
+        # Return new slide with "blank" image layout (since we moved image inside)
+        return ComposedSlide(
+            id=slide.id,
+            intent=slide.intent,
+            sections=new_sections,
+            image_layout="blank",
+            accent_image_url=None,  # Removed
+            hierarchy=dense_profile,  # Applied explicit hierarchy
+        )
+
+    def _split_smart_layout_content(
+        self,
+        slide: ComposedSlide,
+        block: ComposedBlock,
+        items: List[Any],
+        chunk_size: int,
+    ) -> List[ComposedSlide]:
+        """
+        Split a single oversized Smart Layout block into multiple slides.
+        """
+        slides = []
+        chunks = [items[i : i + chunk_size] for i in range(0, len(items), chunk_size)]
+
+        total_parts = len(chunks)
+
+        for i, chunk in enumerate(chunks):
+            # Create a Deep Copy of the base slide structure
+            # (Simplest way is to re-instantiate, or use copy module if available)
+            # We'll re-instantiate key parts to be safe.
+
+            # Title suffix: "Title (1/2)"
+            base_title_block = None
+            if slide.sections and slide.sections[0].secondary_blocks:
+                for b in slide.sections[0].secondary_blocks:
+                    if b.type == BlockType.HEADING.value:
+                        base_title_block = b
+                        break
+
+            title_text = (
+                base_title_block.content.get("text", "Slide")
+                if base_title_block
+                else "Slide"
+            )
+            if total_parts > 1:
+                title_text = f"{title_text} ({i+1}/{total_parts})"
+
+            # Reconstruct content block with sliced items
+            new_content = block.content.copy()
+            if block.type == BlockType.SMART_LAYOUT.value:
+                new_content["items"] = chunk
+            elif "events" in new_content:
+                new_content["events"] = chunk
+            elif "cards" in new_content:
+                new_content["cards"] = chunk
+            elif "items" in new_content:
+                new_content["items"] = chunk
+
+            new_block = ComposedBlock(
+                type=block.type, content=new_content, emphasis=Emphasis.PRIMARY
+            )
+
+            # Create Slide
+            new_slide = ComposedSlide(
+                id=f"{slide.id}_part_{i}",
+                intent=slide.intent,
+                sections=[
+                    # Title Section
+                    ComposedSection(
+                        purpose=SectionPurpose.INTRODUCTION.value,
+                        relationship=Relationship.FLOW.value,
+                        primary_block=None,
+                        secondary_blocks=[
+                            ComposedBlock(
+                                type=BlockType.HEADING.value,
+                                content={"text": title_text, "level": 1},
+                                emphasis=Emphasis.PRIMARY,
+                            )
+                        ],
+                    ),
+                    # Content Section
+                    ComposedSection(
+                        purpose=SectionPurpose.CONTENT.value,
+                        relationship=Relationship.FLOW.value,
+                        primary_block=None,
+                        secondary_blocks=[new_block],
+                    ),
+                ],
+                image_layout=(
+                    slide.image_layout if i == 0 else "blank"
+                ),  # Only first slide gets the big image
+                accent_image_url=slide.accent_image_url if i == 0 else None,
+            )
+            slides.append(new_slide)
+
+        return slides
+
     def _split_slide(self, slide: ComposedSlide) -> List[ComposedSlide]:
-        """Split an oversized slide into multiple slides."""
+        """Split an oversized slide (multiple blocks) into multiple slides."""
         slides = []
 
         # Gather all blocks
         all_blocks = []
         for section in slide.sections:
-            all_blocks.extend(section.blocks)
+            if section.purpose == SectionPurpose.CONTENT.value:
+                all_blocks.extend(section.secondary_blocks)
+
+        if not all_blocks:
+            return [slide]  # Nothing to split
 
         # Split blocks into chunks
         chunk_size = Limits.MAX_MAIN_CONTENT_BLOCKS
@@ -459,16 +689,39 @@ class SlideComposer:
                 id=f"{slide.id}_{i}",
                 intent=slide.intent,
                 sections=[
+                    # Title (Reused)
+                    slide.sections[0] if slide.sections else None,
+                    # Content
                     ComposedSection(
                         purpose=SectionPurpose.CONTENT.value,
                         relationship=Relationship.FLOW.value,
                         primary_block=None,
                         secondary_blocks=chunk,
-                    )
+                    ),
                 ],
                 image_layout=slide.image_layout if i == 0 else "blank",
                 accent_image_url=slide.accent_image_url if i == 0 else None,
             )
+            # Fix Title Reuse issue (should clone or just accept it)
+            # For now, simplistic reuse
+            if new_slide.sections[0] is None:
+                # Fallback title
+                new_slide.sections.insert(
+                    0,
+                    ComposedSection(
+                        purpose=SectionPurpose.INTRODUCTION.value,
+                        relationship=Relationship.FLOW.value,
+                        primary_block=None,
+                        secondary_blocks=[
+                            ComposedBlock(
+                                BlockType.HEADING.value,
+                                {"text": "Continued", "level": 1},
+                                Emphasis.PRIMARY,
+                            )
+                        ],
+                    ),
+                )
+
             slides.append(new_slide)
 
         return slides if slides else [slide]
@@ -712,6 +965,10 @@ class SlideComposer:
         """
         Assign visual hierarchy constraints based on density and intent.
         """
+        # Respect manually assigned hierarchy (e.g. from dense reflow)
+        if slide.hierarchy:
+            return slide
+
         word_count = slide.total_word_count()
         block_count = slide.block_count()
 
@@ -756,6 +1013,15 @@ class SlideComposer:
         Delegates image placement to ImageManager.
         """
         # 1. Calculate Density
+        # Skip if slide has explicit COLUMNS layout (Dense Mode)
+        has_columns = any(
+            block.type == BlockType.COLUMNS.value
+            for section in slide.sections
+            for block in section.secondary_blocks
+        )
+        if has_columns:
+            return slide
+
         density = SlideFitnessGate._calculate_estimated_height(slide)
         has_image = bool(slide.accent_image_url)
 

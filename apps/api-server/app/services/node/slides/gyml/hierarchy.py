@@ -65,6 +65,20 @@ class VisualHierarchy:
                 ),
             )
 
+        if name == "super_dense":
+            return VisualHierarchy(
+                name="super_dense",
+                typography=TypographyScale(
+                    h1="1.75rem", h2="1.5rem", body="0.9rem", line_height_base=1.4
+                ),
+                spacing=SpacingProfile(
+                    section_padding="1.5rem",
+                    block_gap="0.75rem",
+                    card_gap="0.75rem",
+                    card_padding="1rem",
+                ),
+            )
+
         if name == "impact":
             return VisualHierarchy(
                 name="impact",

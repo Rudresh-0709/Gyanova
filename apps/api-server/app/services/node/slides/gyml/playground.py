@@ -1,0 +1,146 @@
+"""
+GyML Playground
+Use this file to test the slide engine with your own mock data.
+Run using: python -m gyml.playground
+"""
+
+import os
+import sys
+
+# Ensure import path works if running directly
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+from gyml.composer import SlideComposer
+from gyml.serializer import GyMLSerializer
+from gyml.renderer import GyMLRenderer
+
+# ==========================================
+# 1. DEFINE YOUR MOCK DATA HERE
+# ==========================================
+
+MOCK_SCENARIOS = [
+    # SCENARIO A: Timeline (Narrate)
+    {
+        "title": "Company History",
+        "intent": "narrate",
+        "summary": "From humble beginnings to global influence, the company’s journey reflects a decade of innovation, resilience, and customer-focused growth. What started as an experimental project eventually evolved into a technology powerhouse shaping modern digital experiences.",
+        "points": [
+            "2010: Founded in a small garage with only two founders, minimal funding, and a dream to build intuitive digital tools.",
+            "2011–2014: Early product iterations attracted a small but passionate user base, fueling gradual growth and inspiring the launch of new feature prototypes.",
+            "2015: Reached 1 million users following a major platform redesign that improved performance, usability, and accessibility.",
+            "2016–2019: Expanded the product ecosystem to include collaboration tools, cloud storage, and a developer API, making it a versatile platform for individuals and small businesses.",
+            "2020: Global expansion accelerated through partnerships across Europe, Asia, and South America, transforming the company into an internationally recognized brand.",
+            "2022–2024: Significant investment in research and development led to breakthroughs in real-time data processing, scalability, and mobile-first design.",
+            "2025: AI Integration—introducing automation features, predictive insights, natural-language interfaces, and personalized user recommendations.",
+        ],
+        "image": {"url": "https://placehold.co/600x400", "layout": "right"},
+    },
+    # SCENARIO B: Process Steps (Demo)
+    # {
+    #     "title": "How to deploy",
+    #     "intent": "demo",
+    #     "points": [
+    #         "Install dependencies",
+    #         "Run build script",
+    #         "Deploy to edge",
+    #         "Verify health checks",
+    #     ],
+    # },
+    # SCENARIO C: Stats (Prove)
+    # {
+    #     "title": "Q4 Performance",
+    #     "intent": "prove",
+    #     "points": [
+    #         {"label": "Revenue", "value": "$2.5M"},
+    #         {"label": "Growth", "value": "+120%"},
+    #         {"label": "Churn", "value": "< 1%"},
+    #     ],
+    #     "image": {"url": "https://placehold.co/600x400", "layout": "left"},
+    # },
+    # SCENARIO D: Comparison (Side-by-Side)
+    # {
+    #     "title": "Monolith vs Microservices",
+    #     "intent": "compare",
+    #     # Explicit content blocks allow for detailed comparison structures
+    #     "contentBlocks": [
+    #         {
+    #             "type": "comparison",
+    #             "items": [
+    #                 {
+    #                     "title": "Monolith",
+    #                     "text": "Single codebase, easy to deploy, hard to scale.",
+    #                 },
+    #                 {
+    #                     "title": "Microservices",
+    #                     "text": "Distributed, complex ops, infinite scaling.",
+    #                 },
+    #             ],
+    #         }
+    #     ],
+    # },
+    # SCENARIO E: Coding Tutorial (Teach)
+    # {
+    # "title": "Python Hello World",
+    # "intent": "teach",
+    # "contentBlocks": [
+    #     {
+    #         "type": "paragraph",
+    #         "text": "Below is a simple demonstration of how to print text to the console in Python. Printing is one of the first operations you learn because it's essential for debugging, exploring code behavior, and interacting with users."
+    #     },
+    #     {
+    #         "type": "code",
+    #         "language": "python",
+    #         "code": "print('Hello World')\nprint('This is an expanded example!')\n\n# Mock data to demonstrate printing variables\nname = 'Alice'\nage = 29\nfavorite_languages = ['Python', 'JavaScript', 'Go']\n\nprint(f'Name: {name}')\nprint(f'Age: {age}')\nprint('Favorite Languages:')\nfor lang in favorite_languages:\n    print(' -', lang)"
+    #     },
+    #     {
+    #         "type": "callout",
+    #         "text": "Note: In Python 3, print is a function and requires parentheses. You can also print complex data such as lists, formatted strings, and values stored in variables."
+    #     }
+    # ]
+    # }
+]
+
+# ==========================================
+# 2. RUN PIPELINE
+# ==========================================
+
+
+def run_playground():
+    print(f"🎨 Running GyML Playground with {len(MOCK_SCENARIOS)} scenarios...")
+
+    composer = SlideComposer()
+    serializer = GyMLSerializer()
+    renderer = GyMLRenderer()
+
+    generated_sections = []
+
+    for i, data in enumerate(MOCK_SCENARIOS):
+        print(f"   Processing: {data.get('title')}")
+
+        # 1. Compose (Data -> List of Slide Objects)
+        # We use compose() because it handles splitting (returns list of slides)
+        composed_slides = composer.compose(
+            data
+        )  # compose expects Dict, returns List[ComposedSlide]
+
+        for slide in composed_slides:
+            # 2. Serialize (Slide Object -> GyML AST)
+            section = serializer.serialize(slide)
+
+            # 3. Accumulated for rendering
+            generated_sections.append(section)
+
+    # 4. Render Layout (GyML AST -> HTML)
+    full_html = renderer.render_complete(generated_sections)
+
+    output_path = os.path.join(os.path.dirname(__file__), "output_playground.html")
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(full_html)
+
+    print(f"\n✅ Done! Open this file in your browser:\n{output_path}")
+
+
+if __name__ == "__main__":
+    run_playground()
