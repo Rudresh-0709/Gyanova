@@ -219,58 +219,47 @@ MOCK_SCENARIOS = [
         ],
     },
     {
-        "title": "Super Dense Timeline",
-        "intent": "narrate",
-        "image": {"url": "https://placehold.co/600x400", "layout": "right"},
-        "contentBlocks": [
+          "title": "Key Components of a Microprocessor",
+          "subtitle": "Introduction to Microprocessors and Their History",
+          "intent": "explain",
+          "contentBlocks": [
             {
-                "type": "intro_paragraph",
-                "text": "The evolution of modern distributed systems has transformed how we build, deploy, and scale resilient software architectures at a global scale.",
+              "type": "intro_paragraph",
+              "text": "A microprocessor is the brain of a computer system, composed of several key components working together to process data and execute instructions."
             },
             {
-                "type": "context_paragraph",
-                "text": "This historical overview examines the pivotal shifts from rigid mainframes to flexible cloud-native ecosystems that enabled the massive scale we see today.",
+              "type": "smart_layout",
+              "variant": "cardGridIcon",
+              "items": [
+                {
+                  "heading": "Arithmetic Logic Unit (ALU)",
+                  "text": "Performs all mathematical calculations and logical operations such as addition, subtraction, and comparisons.",
+                  "icon": "ri-function-line"
+                },
+                {
+                  "heading": "Control Unit",
+                  "text": "Acts as the microprocessor\u2019s director by interpreting program instructions and coordinating the actions of other components.",
+                  "icon": "ri-steering-line"
+                },
+                {
+                  "heading": "Registers",
+                  "text": "Small, fast storage locations that temporarily hold data and instructions, serving as the microprocessor\u2019s short-term memory for quick access.",
+                  "icon": "ri-database-2-line"
+                }
+              ]
             },
             {
-                "type": "smart_layout",
-                "variant": "timeline",
-                "items": [
-                    {
-                        "year": "1960s-1980s",
-                        "heading": "The Mainframe Era",
-                        "description": "Centralized computing power dominated the industry, with massive monolithic systems handling all processing in vertically-scaled hardware environments.",
-                    },
-                    {
-                        "year": "1990s",
-                        "heading": "Client-Server Shift",
-                        "description": "The rise of local area networks shifted processing to distributed desktop clients while central servers handled shared database resources and storage.",
-                    },
-                    {
-                        "year": "2010s",
-                        "heading": "Cloud-Native Revolution",
-                        "description": "Mainstream adoption of containerization (Docker) and orchestration (Kubernetes) enabled the delivery of modular microservices across elastic cloud providers.",
-                    },
-                    {
-                        "year": "2020s+",
-                        "heading": "Serverless & Edge",
-                        "description": "Computation is moving closer to the user through serverless functions and edge nodes, further decentralizing logic and minimizing latency in global networks.",
-                    },
-                ],
+              "type": "annotation_paragraph",
+              "text": "Together, the ALU, Control Unit, and registers form the core of the microprocessor, enabling efficient and accurate execution of complex tasks."
             },
             {
-                "type": "annotation_paragraph",
-                "text": "Note: Each era built upon the storage paradigms of the previous one while decentralizing the compute logic.",
-            },
-            {
-                "type": "outro_paragraph",
-                "text": "The trend towards decentralization continue to accelerate, moving logic closer to the user for ultra-low latency.",
-            },
-            {
-                "type": "caption",
-                "text": "Figure 2: The trajectory of compute decentralization over 60 years.",
-            },
-        ],
-    },
+              "type": "outro_paragraph",
+              "text": "Understanding these components helps us appreciate how microprocessors power everything from simple gadgets to advanced computers."
+            }
+          ],
+          "takeaway": "The ALU, Control Unit, and registers are fundamental parts of a microprocessor that work in harmony to execute instructions and process data efficiently.",
+          "imagePrompt": "Detailed diagram illustrating the key components of a microprocessor: Arithmetic Logic Unit (ALU), Control Unit, and Registers, with labels and icons representing their functions."
+        },
     # SCENARIO F: Boxed List (Card Grid)
     # {
     #     "title": "Key Features",

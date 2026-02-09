@@ -31,12 +31,17 @@ except ImportError:
 # Import icon selector
 try:
     from ..icon_selector import select_icons_batch
+    from .slides.gyml.generator import GyMLContentGenerator
 except ImportError:
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
     from icon_selector import select_icons_batch
+    from services.node.slides.gyml.generator import GyMLContentGenerator
 
 load_dotenv()
 tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+
+# Initialize generator
+gyml_generator = GyMLContentGenerator()
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -82,134 +87,137 @@ def load_llm_schema() -> str:
         return "{}"
 
 
-def generate_slide_content(
-    narration_text: str,
-    slide_title: str,
-    slide_purpose: str,
-    subtopic_name: str,
-    blueprint_hint: str = "",
-    constraints: Dict = None,
-) -> Dict[str, Any]:
-    """
-    Unified generation function using the Expanded Content Schema.
+# ═══════════════════════════════════════════════════════════════════════════
+# CORE GENERATION LOGIC
+# ═══════════════════════════════════════════════════════════════════════════
 
-    Flow:
-    1. Check if fact-checking is needed (Tavily).
-    2. Load JSON Schema.
-    3. Prompt LLM to generate valid JSON matching schema.
-    4. Return structured content.
-    """
+
+def plan_slides_for_subtopic(
+    subtopic_name: str, difficulty: str
+) -> List[Dict[str, str]]:
+    """Plans 3-5 slide concepts (titles/goals) for a subtopic without templates."""
     llm = load_openai()
-    schema_json = load_llm_schema()
-    constraints = constraints or {}
 
-    # 1. Fact Checking
-    search_context = ""
-    if should_fact_check(slide_title, slide_purpose, subtopic_name):
-        try:
-            search_query = f"{subtopic_name} {slide_title} facts details"
-            print(f"   🔍 Fact-checking: {search_query[:50]}...")
-            search_results = tavily.search(query=search_query, max_results=3)
-            search_context = f"\\n\\n📚 VERIFIED CONTEXT (Use these facts):\\n{json.dumps(search_results.get('results', []), indent=2)}\\n"
-        except Exception as e:
-            print(f"   ⚠ Tavily search failed: {e}")
+    prompt = f"""
+    You are an AI Curriculum Planner. Plan a series of 3-5 slides for the subtopic: '{subtopic_name}'.
+    Difficulty: {difficulty}
+    
+    For each slide, provide a 'title' and a 'goal' (what the student should learn).
+    Ensure logical progression and high educational value.
+    DO NOT mention layouts or templates.
 
-    # 2. Construct Prompt
-    PROMPT = f"""
-    You are an expert educational content designer.
-    Your task is to convert the Teacher's Narration into a structured visual slide.
-
-    SLIDE CONTEXT:
-    - Title: {slide_title}
-    - Purpose: {slide_purpose}
-    - Blueprint Hint: {blueprint_hint} (Use this to guide your layout choice)
-    - Narration: {narration_text}
-
-    {search_context}
-
-    STRICT OUTPUT SCHEMA (JSON ONLY):
-    {schema_json}
-
-    INSTRUCTIONS:
-    1. Analyze the narration to determine the best 'intent' and 'contentBlocks'.
-    2. 💎 RICHNESS REQUIREMENT (CRITICAL):
-       - A slide MUST have high information density. Aim for 3-4 distinct content blocks.
-       - NEVER output a slide with only 1 or 2 blocks (unless it's a Title card).
-       - MANDATORY STRUCTURE:
-         [1] Context: A paragraph introducing the concept.
-         [2] Primary: The main visualization (Timeline, Table, Code, Card Grid, etc.).
-         [3] Supplementary: A 'Callout', 'Quote', 'Stat', or 'Takeaway' that reinforces the point.
-    3. If the Blueprint Hint suggests a structure, use it as the [2] Primary block.
-    4. Synthesize the supplementary content from the context if it's not explicitly in the narration (e.g., extract a key stat or a quotable summary).
-    5. Ensure all content is FACTUALLY ACCURATE using the provided Context.
-    6. Output MUST be valid JSON matching the schema exactly.
+    Output ONLY valid JSON:
+    {{
+        "slides": [
+            {{"title": "...", "goal": "..."}},
+            ...
+        ]
+    }}
     """
 
+    resp = llm.invoke([{"role": "user", "content": prompt}])
     try:
-        response = llm.invoke([{"role": "user", "content": PROMPT}])
-        content = response.content.replace("```json", "").replace("```", "").strip()
-        result = json.loads(content)
+        content = resp.content.replace("```json", "").replace("```", "").strip()
+        return json.loads(content).get("slides", [])
+    except:
+        return [
+            {"title": subtopic_name, "goal": f"Master the basics of {subtopic_name}."}
+        ]
 
-        # Post-processing: Add specific icons if needed (optional, can be done by Composer/Renderer)
-        # For now, we trust the LLM or let the Composer handle defaults.
 
-        return result
+def generate_narration(
+    slide_title: str, slide_goal: str, subtopic_name: str, context: str = ""
+) -> str:
+    """Generates the spoken narration for a slide."""
+    llm = load_openai()
 
-    except Exception as e:
-        print(f"   ❌ Content generation failed: {e}")
-        # Fallback to simple bullet list
-        return {
-            "title": slide_title,
-            "intent": "explain",
-            "contentBlocks": [
-                {
-                    "type": "bullet_list",
-                    "items": ["Content generation failed.", "Please review narration."],
-                }
-            ],
-        }
+    prompt = f"""
+    You are an expert teacher. Write the spoken narration for a slide.
+    
+    CONTEXT:
+    - Subtopic: {subtopic_name}
+    - Slide Title: {slide_title}
+    - Slide Goal: {slide_goal}
+    {f"📚 RESEARCH CONTEXT:\n{context}" if context else ""}
+    
+    RULES:
+    1. Write exactly what the teacher would say.
+    2. Be engaging, clear, and pedagogically sound.
+    3. 120-180 words.
+    4. NO markdown, NO "In this slide", NO "Moving on".
+    """
+
+    resp = llm.invoke([{"role": "user", "content": prompt}])
+    return resp.content.strip()
 
 
 def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Main content generation node.
-    Reads narration + blueprint metadata and generates structured visual content.
-    Uses Tavily for fact-checking when dealing with historical/technical content.
+    New Structured Content Node.
+    Iterates over subtopics and their slide concepts to generate:
+    1. Narration
+    2. GyML JSON
     """
-    slides = state.get("slides", {})
+    sub_topics = state.get("sub_topics", [])
+    difficulty = state.get("difficulty", "Beginner")
 
-    for sub_id, slide_list in slides.items():
-        for slide in slide_list:
-            narration_text = slide.get("narration_text", "")
-            blueprint_type = slide.get("content_type", "")  # Use as hint
-            constraints = slide.get("narration_constraints", {})
+    if "slides" not in state:
+        state["slides"] = {}
 
-            slide_title = slide.get("slide_title", "")
-            slide_purpose = slide.get("slide_purpose", "")
-            subtopic_name = slide.get("subtopic_name", "")
+    for subtopic in sub_topics:
+        sub_id = subtopic.get("id")
+        subtopic_name = subtopic.get("name")
+        sub_difficulty = subtopic.get("difficulty", difficulty)
 
-            print(f"📝 Generating content for: {slide_title} [Hint: {blueprint_type}]")
+        print(f"\n🎬 Planning and Generating for Subtopic: {subtopic_name}")
 
-            # Unified Generation
-            generated_content = generate_slide_content(
-                narration_text=narration_text,
-                slide_title=slide_title,
-                slide_purpose=slide_purpose,
-                subtopic_name=subtopic_name,
-                blueprint_hint=blueprint_type,
-                constraints=constraints,
+        # Step 1: Internal Planning (Subtopics from sub_topic_node don't have slides)
+        slide_concepts = plan_slides_for_subtopic(subtopic_name, sub_difficulty)
+
+        state["slides"][sub_id] = []
+
+        for i, concept in enumerate(slide_concepts, start=1):
+            title = concept.get("title")
+            goal = concept.get("goal")
+
+            print(f"  📝 Generating Slide {i}: {title}")
+
+            # 1. Fact Check if needed
+            search_context = ""
+            if should_fact_check(title, "explanation", subtopic_name):
+                try:
+                    search_query = f"{subtopic_name} {title} verified facts and details"
+                    search_results = tavily.search(query=search_query, max_results=3)
+                    search_context = json.dumps(
+                        search_results.get("results", []), indent=2
+                    )
+                except Exception as e:
+                    print(f"    ⚠ Search failed: {e}")
+
+            # 2. Generate Narration
+            narration = generate_narration(title, goal, subtopic_name, search_context)
+
+            # 3. Generate GyML JSON
+            generated_content = gyml_generator.generate(
+                narration=narration,
+                title=title,
+                purpose="explain",  # Default purpose
+                subtopic=subtopic_name,
+                context=search_context,
             )
 
-            # Store the structured content
-            # We store it in 'gyml_content' to distinguish from legacy 'visual_content'
-            slide["gyml_content"] = generated_content
-
-            # For backward compatibility / debugging
-            slide["visual_content"] = generated_content
+            # 4. Store
+            slide_obj = {
+                **concept,
+                "subtopic_name": subtopic_name,
+                "narration_text": narration,
+                "gyml_content": generated_content,
+                "visual_content": generated_content,  # Compatibility
+            }
+            state["slides"][sub_id].append(slide_obj)
 
             print(
-                f"   → Generated {len(generated_content.get('contentBlocks', []))} blocks"
+                f"    → Generated {len(generated_content.get('contentBlocks', []))} blocks"
             )
 
-    state["slides"] = slides
     return state

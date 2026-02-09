@@ -1,0 +1,95 @@
+[
+  {
+    "scenario": "The Rise of Microservices",
+    "generated_json": {
+      "title": "The Rise of Microservices",
+      "intent": "narrate",
+      "contentBlocks": [
+        {
+          "type": "intro_paragraph",
+          "text": "In the early 2010s, monolithic architectures dominated software development."
+        },
+        {
+          "type": "context_paragraph",
+          "text": "As companies like Netflix and Amazon scaled rapidly, they transitioned from monoliths to microservices to better handle growth."
+        },
+        {
+          "type": "smart_layout",
+          "variant": "timeline",
+          "items": [
+            {
+              "year": "Early 2010s",
+              "description": "Monoliths were the standard approach for building applications."
+            },
+            {
+              "year": "Mid 2010s",
+              "description": "Netflix and Amazon adopted microservices, enabling independent scaling and faster deployments."
+            },
+            {
+              "year": "Today",
+              "description": "Microservices have become the standard architecture for large-scale applications."
+            }
+          ]
+        },
+        {
+          "type": "outro_paragraph",
+          "text": "Microservices empower organizations to scale efficiently and deploy features rapidly, shaping modern software architecture."
+        }
+      ],
+      "takeaway": "Microservices replaced monoliths to support scalability and agility, becoming the norm for large applications.",
+      "imagePrompt": "A modern software architecture timeline showing the transition from monolithic to microservices, with icons representing Netflix and Amazon, and symbols for scalability and deployment speed."
+    }
+  },
+  {
+    "scenario": "React vs Vue",
+    "generated_json": {
+      "title": "React vs Vue",
+      "subtitle": "Frontend Frameworks",
+      "intent": "compare",
+      "contentBlocks": [
+        {
+          "type": "intro_paragraph",
+          "text": "React and Vue are popular frontend technologies used to build user interfaces."
+        },
+        {
+          "type": "context_paragraph",
+          "text": "React is a library focused on the view layer, utilizing a virtual DOM for efficient rendering."
+        },
+        {
+          "type": "context_paragraph",
+          "text": "Vue is a progressive framework that provides a more opinionated structure to help developers build applications."
+        },
+        {
+          "type": "smart_layout",
+          "variant": "comparison",
+          "items": [
+            {
+              "title": "React",
+              "icon": "ri-reactjs-line",
+              "points": [
+                "Library focused on the view layer",
+                "Uses virtual DOM",
+                "Larger ecosystem"
+              ]
+            },
+            {
+              "title": "Vue",
+              "icon": "ri-vuejs-line",
+              "points": [
+                "Progressive framework",
+                "More opinionated structure",
+                "Often seen as more approachable for beginners"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "outro_paragraph",
+          "text": "Both React and Vue are excellent choices, with React offering a vast ecosystem and Vue providing ease of learning."
+        }
+      ],
+      "takeaway": "React offers a larger ecosystem while Vue is often more approachable for beginners.",
+      "imagePrompt": "A split screen illustration showing React logo on one side with virtual DOM concept and Vue logo on the other side with a structured framework design, representing a comparison of frontend frameworks."
+    }
+  }
+]

@@ -30,6 +30,163 @@
                 "oneOf": [
                     {
                         "type": "object",
+                        "title": "Intro Paragraph",
+                        "properties": {
+                            "type": {
+                                "const": "intro_paragraph"
+                            },
+                            "text": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "text"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "Context Paragraph",
+                        "properties": {
+                            "type": {
+                                "const": "context_paragraph"
+                            },
+                            "text": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "text"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "Annotation Paragraph",
+                        "properties": {
+                            "type": {
+                                "const": "annotation_paragraph"
+                            },
+                            "text": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "text"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "Outro Paragraph",
+                        "properties": {
+                            "type": {
+                                "const": "outro_paragraph"
+                            },
+                            "text": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "text"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "Caption",
+                        "properties": {
+                            "type": {
+                                "const": "caption"
+                            },
+                            "text": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "text"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "Paragraph",
+                        "properties": {
+                            "type": {
+                                "const": "paragraph"
+                            },
+                            "text": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "text"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "Smart Layout",
+                        "properties": {
+                            "type": {
+                                "const": "smart_layout"
+                            },
+                            "variant": {
+                                "type": "string",
+                                "enum": [
+                                    "timeline",
+                                    "timelineHorizontal",
+                                    "timelineSequential",
+                                    "timelineMilestone",
+                                    "cardGrid",
+                                    "cardGridIcon",
+                                    "cardGridSimple",
+                                    "cardGridImage",
+                                    "stats",
+                                    "statsComparison",
+                                    "statsPercentage",
+                                    "bigBullets",
+                                    "bulletIcon",
+                                    "bulletCheck",
+                                    "bulletCross",
+                                    "processSteps",
+                                    "processArrow",
+                                    "processAccordion",
+                                    "comparison",
+                                    "comparisonProsCons",
+                                    "comparisonBeforeAfter",
+                                    "quote",
+                                    "quoteTestimonial",
+                                    "quoteCitation",
+                                    "definition",
+                                    "codeSnippet",
+                                    "codeComparison",
+                                    "diagramFlowchart",
+                                    "diagramHierarchy",
+                                    "diagramCycle",
+                                    "diagramPyramid",
+                                    "table",
+                                    "tableStriped",
+                                    "tableHighlight"
+                                ]
+                            },
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "variant",
+                            "items"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "Timeline (Legacy Format)",
                         "properties": {
                             "type": {
                                 "const": "timeline"
@@ -60,6 +217,7 @@
                     },
                     {
                         "type": "object",
+                        "title": "Card Grid (Legacy Format)",
                         "properties": {
                             "type": {
                                 "const": "card_grid"
@@ -76,8 +234,7 @@
                                             "type": "string"
                                         },
                                         "icon": {
-                                            "type": "string",
-                                            "description": "RemixIcon name, e.g. ri-user-line"
+                                            "type": "string"
                                         }
                                     },
                                     "required": [
@@ -94,6 +251,7 @@
                     },
                     {
                         "type": "object",
+                        "title": "Stats (Legacy Format)",
                         "properties": {
                             "type": {
                                 "const": "stats"
@@ -124,6 +282,7 @@
                     },
                     {
                         "type": "object",
+                        "title": "Code Block",
                         "properties": {
                             "type": {
                                 "const": "code"
@@ -151,6 +310,7 @@
                     },
                     {
                         "type": "object",
+                        "title": "Table",
                         "properties": {
                             "type": {
                                 "const": "table"
@@ -188,6 +348,7 @@
                     },
                     {
                         "type": "object",
+                        "title": "Quote",
                         "properties": {
                             "type": {
                                 "const": "quote"
@@ -219,119 +380,7 @@
                     },
                     {
                         "type": "object",
-                        "properties": {
-                            "type": {
-                                "const": "comparison"
-                            },
-                            "variant": {
-                                "type": "string",
-                                "enum": [
-                                    "comparison",
-                                    "comparisonProsCons",
-                                    "comparisonBeforeAfter"
-                                ],
-                                "default": "comparison"
-                            },
-                            "left": {
-                                "type": "object",
-                                "properties": {
-                                    "label": {
-                                        "type": "string"
-                                    },
-                                    "points": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
-                                "required": [
-                                    "label",
-                                    "points"
-                                ]
-                            },
-                            "right": {
-                                "type": "object",
-                                "properties": {
-                                    "label": {
-                                        "type": "string"
-                                    },
-                                    "points": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
-                                "required": [
-                                    "label",
-                                    "points"
-                                ]
-                            }
-                        },
-                        "required": [
-                            "type",
-                            "left",
-                            "right"
-                        ]
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "const": "definition"
-                            },
-                            "term": {
-                                "type": "string"
-                            },
-                            "definition": {
-                                "type": "string"
-                            }
-                        },
-                        "required": [
-                            "type",
-                            "term",
-                            "definition"
-                        ]
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "const": "step_list"
-                            },
-                            "steps": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "required": [
-                            "type",
-                            "steps"
-                        ]
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "const": "bullet_list"
-                            },
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "required": [
-                            "type",
-                            "items"
-                        ]
-                    },
-                    {
-                        "type": "object",
+                        "title": "Image",
                         "properties": {
                             "type": {
                                 "const": "image"
@@ -341,11 +390,48 @@
                             },
                             "caption": {
                                 "type": "string"
+                            },
+                            "layout": {
+                                "type": "string",
+                                "enum": [
+                                    "left",
+                                    "right",
+                                    "top",
+                                    "behind",
+                                    "blank"
+                                ],
+                                "default": "right"
                             }
                         },
                         "required": [
                             "type",
                             "url"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "Callout / Takeaway",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "enum": [
+                                    "callout",
+                                    "takeaway"
+                                ]
+                            },
+                            "text": {
+                                "type": "string"
+                            },
+                            "label": {
+                                "type": "string"
+                            },
+                            "icon": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "text"
                         ]
                     }
                 ]
@@ -353,7 +439,7 @@
         },
         "takeaway": {
             "type": "string",
-            "description": "Key takeaway message"
+            "description": "Key takeaway message (optional if using takeaway block)"
         },
         "imagePrompt": {
             "type": "string",

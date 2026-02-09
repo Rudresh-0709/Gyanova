@@ -1,16 +1,12 @@
 """
-LangGraph Workflow for AI Teaching System
+LangGraph Workflow for AI Teaching System (GyML-First)
 
-Complete Pipeline (MVP - Without Image Generation):
+Complete Pipeline:
 1. Topic Extraction
 2. Subtopic Breakdown
-3. Slide Planning (pedagogy-first approach)
-4. Blueprint Mapping (visual template assignment)
-5. Narration Generation (with Wikipedia/Tavily fact-checking)
-6. Content Generation (with smart icon selection)
-7. Intro Narration
-
-Image Generation: Commented out for MVP (will use Banana.dev/Replicate later)
+3. Slide JSON Generator (Planning + Rich Content + Narration + GyML)
+4. Intro Narration
+5. Rendering (GyML -> HTML)
 
 New Systems Integrated:
 - Two-layer fact retrieval (Wikipedia → Tavily)
@@ -23,10 +19,6 @@ from .langsmith_config import configure_langsmith
 
 from .node.topic_node import extract_topic
 from .node.sub_topic_node import extract_sub_topic
-from .node.suggest_topic_node import suggest_sub_topic
-from .node.new_slide_planner import slide_planning_node
-from .node.blueprint_mapper import blueprint_mapper_node
-from .node.narration_node import generate_all_narrations
 from .node.content_generation_node import content_generation_node
 
 # from .node.image_generation_node import image_generation_node  # TODO: Add when image APIs ready
@@ -48,25 +40,11 @@ graph.add_node("topic_node", extract_topic)
 # 2. Subtopic Breakdown
 graph.add_node("sub_topic_node", extract_sub_topic)
 
-# 3. Slide Planning (pedagogy-first)
-graph.add_node("slide_planner", slide_planning_node)
-
-# 4. Blueprint Mapping (visual templates)
-graph.add_node("blueprint_mapper", blueprint_mapper_node)
-
-# 5. Narration Generation (with fact-checking)
-# Uses Wikipedia → Tavily fact retrieval system
-graph.add_node("narration_node", generate_all_narrations)
-
-# 6. Content Generation (with smart icon selection)
-# Uses Groq LLM to select contextually appropriate RemixIcons
+# 3. Slide JSON Generator (Planning + Rich Content + Narration + GyML)
+# Uses GyMLContentGenerator for high visual density
 graph.add_node("content_generation_node", content_generation_node)
 
-# 7. Image Generation (DISABLED FOR MVP)
-# TODO: Re-enable when Banana.dev/Replicate/other image API is ready
-# graph.add_node("image_generation_node", image_generation_node)
-
-# 8. Intro Narration (final step)
+# 4. Intro Narration (final step)
 graph.add_node("intro_narration_node", intro_narration_node)
 
 # 9. Rendering (GyML -> HTML)
@@ -80,13 +58,7 @@ graph.add_node("rendering_node", rendering_node)
 
 graph.set_entry_point("topic_node")
 graph.add_edge("topic_node", "sub_topic_node")
-graph.add_edge("sub_topic_node", "slide_planner")
-graph.add_edge("slide_planner", "blueprint_mapper")
-graph.add_edge("blueprint_mapper", "narration_node")
-graph.add_edge("narration_node", "content_generation_node")
-# Skip image generation for MVP
-# graph.add_edge("content_generation_node", "image_generation_node")
-# graph.add_edge("image_generation_node", "intro_narration_node")
+graph.add_edge("sub_topic_node", "content_generation_node")
 graph.add_edge("content_generation_node", "intro_narration_node")  # Direct to intro
 graph.add_edge("intro_narration_node", "rendering_node")
 graph.add_edge("rendering_node", END)
