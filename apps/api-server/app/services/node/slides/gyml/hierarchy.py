@@ -65,6 +65,23 @@ class VisualHierarchy:
                 ),
             )
 
+        if name == "balanced":
+            return VisualHierarchy(
+                name="balanced",
+                typography=TypographyScale(
+                    h1="3.15rem",
+                    h2="2.85rem",
+                    body="1.3rem",
+                    line_height_base=1.8,
+                ),
+                spacing=SpacingProfile(
+                    section_padding="2.5rem",
+                    block_gap="1.25rem",
+                    card_gap="1rem",
+                    card_padding="1.25rem",
+                ),
+            )
+
         if name == "super_dense":
             return VisualHierarchy(
                 name="super_dense",

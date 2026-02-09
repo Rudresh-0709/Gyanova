@@ -89,6 +89,16 @@ section[data-image-layout="left"] .body { order: 2; grid-column: 2; }
 section[data-image-layout="left"] .accent-image-wrapper,
 section[data-image-layout="left"] .accent-image-placeholder { order: 1; grid-column: 1; }
 
+section[data-image-layout="right-wide"] {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr; /* 40% Text / 60% Image */
+    gap: var(--block-gap, 2rem);
+    align-items: center;
+}
+section[data-image-layout="right-wide"] .body { order: 1; grid-column: 1; }
+section[data-image-layout="right-wide"] .accent-image-wrapper,
+section[data-image-layout="right-wide"] .accent-image-placeholder { order: 2; grid-column: 2; }
+
 /* ... */
 
 .body {
@@ -893,32 +903,15 @@ th {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_c61df9bf_0" class="slide-section" role="region" aria-label="Slide slide_c61df9bf_0" data-image-layout="right" style="--h1-size: 2.25rem; --h2-size: 2rem; --p-size: 1rem; --line-height: 1.6; --section-padding: 3rem; --block-gap: 1.5rem; --card-padding: 1.5rem">
+<section id="slide_21c8d690_0" class="slide-section" role="region" aria-label="Slide slide_21c8d690_0" data-image-layout="right" style="--h1-size: 3.15rem; --h2-size: 2.85rem; --p-size: 1.3rem; --line-height: 1.8; --section-padding: 2.5rem; --block-gap: 1.25rem; --card-padding: 1.25rem">
 <div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
 <div class="body">
 <h1>Python Hello World</h1>
-<div class="block-separator"></div>
-<div class="columns" data-colwidths="40,60">
-<div class="column" style="flex: 0 0 calc(40% - 1rem);">
-<p>Below is a simple demonstration of how to print text to the console in Python. Printing is one of the first operations you learn because it&#x27;s essential for debugging, exploring code behavior, and interacting with users.</p>
+<p>Below is a simple demonstration of how to print text to the console in Python. Printing is one of the first operations you learn because it&#x27;s essential.</p>
 <p>Note: In Python 3, print is a function and requires parentheses. You can also print complex data such as lists, formatted strings, and values stored in variables.</p>
-</div>
-<div class="column" style="flex: 0 0 calc(60% - 1rem);">
+<div class="block-separator"></div>
 <div class="code-block" data-variant="snippet"><pre><code class="language-python">print(&#x27;Hello World&#x27;)
-print(&#x27;This is an expanded example!&#x27;)
-
-
-name = &#x27;Alice&#x27;
-age = 29
-favorite_languages = [&#x27;Python&#x27;, &#x27;JavaScript&#x27;, &#x27;Go&#x27;]
-
-print(f&#x27;Name: {name}&#x27;)
-print(f&#x27;Age: {age}&#x27;)
-print(&#x27;Favorite Languages:&#x27;)
-for lang in favorite_languages:
-    print(&#x27; -&#x27;, lang)</code></pre></div>
-</div>
-</div>
+print(&#x27;This is an expanded example!&#x27;)</code></pre></div>
 </div>
 </section>
     </div>

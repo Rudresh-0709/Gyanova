@@ -46,6 +46,8 @@ class ComposedBlock:
             text = self.content["text"]
         elif "items" in self.content:
             text = " ".join(str(item) for item in self.content["items"])
+        elif "cards" in self.content:
+            text = " ".join(str(card) for card in self.content["cards"])
         return len(text.split()) if text else 0
 
 

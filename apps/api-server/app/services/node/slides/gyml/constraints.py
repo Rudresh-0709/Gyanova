@@ -28,7 +28,7 @@ class LayoutLimits:
     requires_image: bool = False
 
     # "Hard" limits (Fitness Gate Failure)
-    min_density_score: float = 0.3  # Reject if below this
+    min_density_score: float = 0.4  # Reject if below this
     max_density_score: float = 0.9  # Reject if above this
 
 

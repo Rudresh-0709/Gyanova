@@ -61,7 +61,6 @@ MOCK_SCENARIOS = [
     # {
     #     "title": "Monolith vs Microservices",
     #     "intent": "compare",
-    #     Explicit content blocks allow for detailed comparison structures
     #     "contentBlocks": [
     #         {
     #             "type": "comparison",
@@ -72,6 +71,7 @@ MOCK_SCENARIOS = [
     #                         "A monolith is built as a single, unified codebase. All features and components live together in one structure.",
     #                         "It is generally easy to deploy at the beginning. The simplicity of having everything in one place reduces initial setup complexity.",
     #                         "However, it becomes difficult to scale horizontally as the system grows. Changes in one part can affect the entire application, making scaling more restrictive.",
+    #                         "Example: A traditional e-commerce website where the frontend, backend, and database are all part of a single application.",
     #                     ],
     #                 },
     #                 {
@@ -80,32 +80,89 @@ MOCK_SCENARIOS = [
     #                         "Microservices use a distributed architecture. Each service is independent and handles a specific function within the system.",
     #                         "This approach introduces operational complexity. Managing many services requires strong observability, coordination, and infrastructure.",
     #                         "However, microservices offer virtually unlimited scaling potential. Each service can scale independently, allowing the system to grow without major rework.",
+    #                         "Example: An e-commerce platform where the frontend, backend, and database are all part of a single application.",
     #                     ],
     #                 },
     #             ],
     #         }
     #     ],
     # },
-    # SCENARIO E: Coding Tutorial (Teach)
     {
         "title": "Python Hello World",
         "intent": "teach",
         "contentBlocks": [
             {
                 "type": "paragraph",
-                "text": "Below is a simple demonstration of how to print text to the console in Python. Printing is one of the first operations you learn because it's essential for debugging, exploring code behavior, and interacting with users.",
+                "text": "Below is a simple demonstration of how to print text to the console in Python. Printing is one of the first operations you learn because it's essential.",
             },
             {
                 "type": "code",
                 "language": "python",
-                "code": "print('Hello World')\nprint('This is an expanded example!')\n\n\nname = 'Alice'\nage = 29\nfavorite_languages = ['Python', 'JavaScript', 'Go']\n\nprint(f'Name: {name}')\nprint(f'Age: {age}')\nprint('Favorite Languages:')\nfor lang in favorite_languages:\n    print(' -', lang)",
+                "code": "print('Hello World')\nprint('This is an expanded example!')",
             },
             {
                 "type": "callout",
                 "text": "Note: In Python 3, print is a function and requires parentheses. You can also print complex data such as lists, formatted strings, and values stored in variables.",
             },
-        ],
-    }
+        ]
+    },
+    # SCENARIO F: Boxed List (Card Grid)
+    # {
+    #     "title": "Key Features",
+    #     "intent": "explain",
+    #     "contentBlocks": [
+    #         {
+    #             "type": "heading",
+    #             "level": 2,
+    #             "text": "Why choose this architecture?",
+    #         },
+    #         {
+    #             "type": "card_grid",
+    #             "cards": [
+    #                 {
+    #                     "title": "Modular Design",
+    #                     "text": "The system is designed around independent, self-contained components that can be developed, tested, and modified in isolation. This modular approach reduces coupling between features, makes the codebase easier to understand, and allows teams to evolve individual parts of the system without risking widespread regressions or unintended side effects.",
+    #                     "icon": "layout-masonry",
+    #                 },
+    #                 {
+    #                     "title": "Scalable",
+    #                     "text": "The architecture is built to grow seamlessly as demand increases. By distributing workload across multiple nodes or services, the system can handle higher traffic, larger datasets, and more concurrent users without performance degradation or major architectural rework.",
+    #                     "icon": "bar-chart",
+    #                 },
+    #                 {
+    #                     "title": "Secure",
+    #                     "text": "Security is treated as a core architectural concern rather than an afterthought. Features such as encryption at rest and in transit, authentication mechanisms, and role-based access control ensure that data and system operations remain protected against unauthorized access and common attack vectors.",
+    #                     "icon": "shield-check",
+    #                 },
+    #                 {
+    #                     "title": "Fast Deployment",
+    #                     "text": "Automated build and deployment pipelines enable teams to release changes quickly and reliably. Continuous integration and continuous delivery practices reduce manual effort, catch issues early, and allow new features, fixes, and improvements to reach users in short, repeatable release cycles.",
+    #                     "icon": "rocket",
+    #                 },
+    #             ],
+    #         },
+    #     ],
+    # }
+    # SCENARIO E: Coding Tutorial (Teach)
+    # {
+    #     "title": "Python Hello World",
+    #     "intent": "teach",
+    #     "contentBlocks": [
+    #         {
+    #             "type": "paragraph",
+    #             "text": "Below is a simple demonstration of how to print text to the console in Python. Printing is one of the first operations you learn because it's essential for debugging, exploring code behavior, and interacting with users.",
+    #         },
+    #         {
+    #             "type": "code",
+    #             "language": "python",
+    #             "code": "print('Hello World')\nprint('This is an expanded example!')\n\n\nname = 'Alice'\nage = 29\nfavorite_languages = ['Python', 'JavaScript', 'Go']\n\nprint(f'Name: {name}')\nprint(f'Age: {age}')\nprint('Favorite Languages:')\nfor lang in favorite_languages:\n    print(' -', lang)",
+    #         },
+    #         {
+    #             "type": "callout",
+    #             "text": "Note: In Python 3, print is a function and requires parentheses. You can also print complex data such as lists, formatted strings, and values stored in variables.",
+    #         },
+    #     ],
+    # }
 ]
 
 # ==========================================

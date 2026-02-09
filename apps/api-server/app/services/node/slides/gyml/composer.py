@@ -783,9 +783,27 @@ class SlideComposer:
                     text_blocks.append(block)
 
             # 2. Decision Logic
+            force_stacked = False
+
+            # Use FitnessGate calculation to match User/Playground metrics.
+            density = SlideFitnessGate._calculate_estimated_height(slide)
+
+            # RULE: Medium Density (0.4 - 0.55) -> Force Vertical Stack (FLOW)
+            if 0.40 <= density < 0.55:
+                force_stacked = True
+
+            # RULE: Ideal Density (0.55 - 0.95)
+            # Adaptive: Force Stacked unless explicitly a Comparison
+            elif 0.55 <= density <= 0.95:
+                is_comparison_intent = slide.intent == Intent.COMPARE.value
+                is_comparison_block = (
+                    visual_block and visual_block.type == BlockType.COMPARISON.value
+                )
+                if not (is_comparison_intent or is_comparison_block):
+                    force_stacked = True
 
             # CASE A: Parallel (Text + Heavy Visual)
-            if text_blocks and visual_block:
+            if not force_stacked and text_blocks and visual_block:
                 section.relationship = Relationship.PARALLEL.value
                 section.primary_block = visual_block
 
@@ -799,7 +817,8 @@ class SlideComposer:
 
             # CASE B: Anchored (Text + Image)
             elif (
-                visual_block
+                not force_stacked
+                and visual_block
                 and visual_block.type == BlockType.IMAGE.value
                 and text_blocks
             ):
@@ -1109,8 +1128,17 @@ class SlideComposer:
         """
         Distribute content into appropriate sections/layouts.
         """
+        # Calculate density early
+        density = SlideFitnessGate._calculate_estimated_height(slide)
+
+        # RULE: Medium Density (0.4 - 0.55) -> Force Vertical Stack
+        # Do NOT attempt sidebar optimization (which splits content into columns).
+        # We want: [Image (Right)] + [Content (Single Column Stack)]
+        if 0.40 <= density <= 0.60:
+            # Skip optimization, fall through to hierarchy assignment
+            pass
         # 0. Try Sidebar Optimization first (Code/Callout combo)
-        if self._optimize_sidebar_layout(slide):
+        elif self._optimize_sidebar_layout(slide):
             return slide
 
         # 1. Try Smart Layouts (if not already optimized)
@@ -1127,10 +1155,20 @@ class SlideComposer:
         # Decision Logic
         profile_name = "default"
 
-        if density_score > 150:
+        # Use consistent FitnessGate density for hierarchy
+        density_pct = SlideFitnessGate._calculate_estimated_height(slide)
+
+        # 1. Super Dense (> 95%)
+        if density_pct > 0.95:
+            profile_name = "super_dense"
+        # 2. Dense (> 80%)
+        elif density_pct > 0.80:
             profile_name = "dense"
+        # 3. Balanced / Ideal (55% - 80%)
+        elif density_pct > 0.55:
+            profile_name = "balanced"
+        # 4. Impact (Explicit High Value)
         elif slide.intent in [Intent.PROVE.value, Intent.INTRODUCE.value]:
-            # High impact slides
             profile_name = "impact"
 
         slide.hierarchy = VisualHierarchy.get_profile(profile_name)
@@ -1182,6 +1220,11 @@ class SlideComposer:
         # 3. Apply Strategy
         if placement != "blank":
             slide.image_layout = placement
+
+            # RULE: Medium Density -> Force 60% Image Width
+            # Upgrade "right" to "right-wide"
+            if placement == "right" and 0.40 <= density <= 0.60:
+                slide.image_layout = "right-wide"
 
             # Inject placeholder if required but missing
             should_inject = ImageManager.should_inject_placeholder(density, has_image)

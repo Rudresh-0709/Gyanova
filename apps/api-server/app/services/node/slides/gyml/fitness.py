@@ -48,8 +48,8 @@ class SlideFitnessGate:
         height = cls._calculate_estimated_height(slide)
 
         # 1. CRITICAL FAILURE: Way too empty
-        # Even with an image, < 30% is just a title and empty space.
-        if height < 0.25:  # Slightly lenient for very succinct slides
+        # Even with an image, < 40% is just a title and empty space.
+        if height < 0.4:
             return (
                 False,
                 f"Slide too sparse (Density: {height:.2f}). Needs more content.",

@@ -473,6 +473,16 @@ section[data-image-layout="left"] .body { order: 2; grid-column: 2; }
 section[data-image-layout="left"] .accent-image-wrapper,
 section[data-image-layout="left"] .accent-image-placeholder { order: 1; grid-column: 1; }
 
+section[data-image-layout="right-wide"] {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr; /* 40% Text / 60% Image */
+    gap: var(--block-gap, 2rem);
+    align-items: center;
+}
+section[data-image-layout="right-wide"] .body { order: 1; grid-column: 1; }
+section[data-image-layout="right-wide"] .accent-image-wrapper,
+section[data-image-layout="right-wide"] .accent-image-placeholder { order: 2; grid-column: 2; }
+
 /* ... */
 
 .body {

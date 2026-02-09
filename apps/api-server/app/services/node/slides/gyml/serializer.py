@@ -145,7 +145,7 @@ class GyMLSerializer:
 
     def _parse_image_layout(self, layout: str) -> str:
         """Parse image layout string to valid GyML value."""
-        valid_layouts = ["right", "left", "top", "behind", "blank"]
+        valid_layouts = ["right", "left", "top", "behind", "blank", "right-wide"]
         layout_lower = layout.lower() if layout else "blank"
 
         if layout_lower in valid_layouts:
