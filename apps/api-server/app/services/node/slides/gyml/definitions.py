@@ -41,14 +41,28 @@ class ComposedBlock:
 
     def word_count(self) -> int:
         """Count words in this block's text content."""
-        text = ""
+        text_parts = []
         if "text" in self.content:
-            text = self.content["text"]
-        elif "items" in self.content:
-            text = " ".join(str(item) for item in self.content["items"])
-        elif "cards" in self.content:
-            text = " ".join(str(card) for card in self.content["cards"])
-        return len(text.split()) if text else 0
+            text_parts.append(str(self.content["text"]))
+
+        items = self.content.get("items") or self.content.get("cards")
+        if items:
+            for item in items:
+                if isinstance(item, dict):
+                    text_parts.extend(str(v) for v in item.values() if v)
+                else:
+                    text_parts.append(str(item))
+
+        full_text = " ".join(text_parts)
+        return len(full_text.split()) if full_text else 0
+
+    def item_count(self) -> int:
+        """Return number of structural items (points, cards, etc.)."""
+        if "items" in self.content:
+            return len(self.content["items"])
+        if "cards" in self.content:
+            return len(self.content["cards"])
+        return 1  # Standard blocks count as 1 item
 
 
 @dataclass
@@ -99,8 +113,14 @@ class ComposedSlide:
         )
 
     def block_count(self) -> int:
-        """Count total blocks."""
+        """Count total top-level blocks."""
         return sum(len(section.blocks) for section in self.sections)
+
+    def structural_count(self) -> int:
+        """Count total structural units (items within blocks)."""
+        return sum(
+            block.item_count() for section in self.sections for block in section.blocks
+        )
 
     def get_primary_emphasis_block(self) -> Optional[ComposedBlock]:
         """Find the block with primary emphasis."""
@@ -157,6 +177,7 @@ class GyMLParagraph:
     """Paragraph text element."""
 
     text: str
+    variant: Optional[str] = None  # semantic type (e.g., "caption", "intro")
 
 
 @dataclass

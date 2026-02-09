@@ -87,24 +87,189 @@ MOCK_SCENARIOS = [
     #         }
     #     ],
     # },
+    # {
+    #     "title": "Unified Component Test",
+    #     "intent": "teach",
+    #     "contentBlocks": [
+    #         {
+    #             "type": "smart_layout",
+    #             "variant": "quote",
+    #             "items": [
+    #                 {
+    #                     "heading": "Steve Jobs",
+    #                     "description": "Design is not just what it looks like and feels like. Design is how it works.",
+    #                 }
+    #             ],
+    #         },
+    #         {
+    #             "type": "smart_layout",
+    #             "variant": "processSteps",
+    #             "items": [
+    #                 {
+    #                     "heading": "Analyze",
+    #                     "description": "Review current system architecture and identify core bottlenecks.",
+    #                 },
+    #                 {
+    #                     "heading": "Deploy",
+    #                     "description": "Execute blue-green deployment across multiple data centers.",
+    #                 },
+    #             ],
+    #         },
+    #         {
+    #             "type": "smart_layout",
+    #             "variant": "definition",
+    #             "items": [
+    #                 {
+    #                     "heading": "Microservices",
+    #                     "description": "An architectural style where applications are composed of small, independent services communicating over lightweight APIs.",
+    #                 },
+    #             ],
+    #         },
+    #     ],
+    # },
+    # {
+    #     "title": "Super Dense Content",
+    #     "intent": "explain",
+    #     "contentBlocks": [
+    #         {
+    #             "type": "paragraph",
+    #             "text": "This slide is intentionally packed with content to test the threshold exceeding 0.95 density. When a slide reaches this level of saturation, the system should automatically switch to the 'super_dense' profile to prevent overflow. This involves significantly reducing font sizes and tightening vertical gaps between elements. We will include multiple paragraphs and a complex card grid to ensure the calculation hits the upper limit.",
+    #         },
+    #         {
+    #             "type": "paragraph",
+    #             "text": "Effective layout management is critical in educational presentations. If a slide is too sparse, it feels empty; if it is too dense, it becomes unreadable. Our adaptive engine balances these extremes by selecting the appropriate hierarchical profile based on estimated vertical height. This specific test ensures that even with massive amounts of text and structural blocks, the presentation remain scanable through compact typography.",
+    #         },
+    #         {
+    #             "type": "smart_layout",
+    #             "variant": "cardGrid",
+    #             "items": [
+    #                 {
+    #                     "heading": "Scalability",
+    #                     "description": "Ensuring the system can handle increased load without performance degradation.",
+    #                 },
+    #                 {
+    #                     "heading": "Reliability",
+    #                     "description": "Guaranteeing consistent operation under varying network conditions.",
+    #                 },
+    #                 {
+    #                     "heading": "Security",
+    #                     "description": "Protecting user data through end-to-end encryption and strict access controls.",
+    #                 },
+    #                 {
+    #                     "heading": "Performance",
+    #                     "description": "Optimizing latency and throughput for a seamless user experience.",
+    #                 },
+    #             ],
+    #         },
+    #     ],
+    # },
+    # {
+    #     "title": "Super Dense Alternative",
+    #     "intent": "teach",
+    #     "contentBlocks": [
+    #         {
+    #             "type": "paragraph",
+    #             "text": "Refactoring monolithic architectures into microservices is a multifaceted challenge that demands a rigorous approach to system design, network reliability, and distributed data consistency. This alternative high-density scenario is crafted to evaluate the 'super_dense' vertical layout logic by combining a voluminous introductory paragraph with a highly descriptive series of bullet points. The objective is to verify that these diverse content types—each packed with technical detail—correctly stack as vertical 'rows' without spilling into parallel columns or triggering an unwanted pagination split. Maintaining readability through precise font scaling and minimal vertical spacing is paramount when the information density reaches its upper limit. This test confirms that our adaptive engine can handle saturated educational content while preserving the expected structural hierarchy and visual rhythm required for effective knowledge transfer in complex technical domains.",
+    #         },
+    #         {
+    #             "type": "smart_layout",
+    #             "variant": "bigBullets",
+    #             "items": [
+    #                 "Design service-to-service communication using idempotent API endpoints and robust retry policies with jittered exponential backoff to ensure resilience against transient failures.",
+    #                 "Implement the transactional outbox pattern to decouple database updates from message publishing, guaranteeing that events are reliably delivered to downstream consumers.",
+    #                 "Deploy centralized observability platforms incorporating distributed tracing and log aggregation to provide deep insights into request lifecycles across the service mesh.",
+    #                 "Enforce strict service boundaries through domain-driven design, ensuring that each microservice manages its own data persistence layer and scales independently of others.",
+    #             ],
+    #         },
+    #     ],
+    # },
     {
-        "title": "Python Hello World",
-        "intent": "teach",
+        "title": "Semantic Paragraph Test",
+        "intent": "explain",
         "contentBlocks": [
             {
-                "type": "paragraph",
-                "text": "Below is a simple demonstration of how to print text to the console in Python. Printing is one of the first operations you learn because it's essential.",
+                "type": "intro_paragraph",
+                "text": "This paragraph introduces the concept of semantic versioning, a widely adopted standard for versioning software. It communicates changes clearly using MAJOR.MINOR.PATCH logic.",
             },
             {
-                "type": "code",
-                "language": "python",
-                "code": "print('Hello World')\nprint('This is an expanded example!')",
+                "type": "context_paragraph",
+                "text": "Historically, versioning was inconsistent across libraries, leading to dependency hell where developers couldn't trust that updates wouldn't break their code.",
             },
             {
-                "type": "callout",
-                "text": "Note: In Python 3, print is a function and requires parentheses. You can also print complex data such as lists, formatted strings, and values stored in variables.",
+                "type": "smart_layout",
+                "variant": "cardGrid",
+                "items": [
+                    {"heading": "MAJOR", "text": "Increment for breaking changes."},
+                    {"heading": "MINOR", "text": "Increment for new features."},
+                    {"heading": "PATCH", "text": "Increment for bug fixes."},
+                ],
             },
-        ]
+            {
+                "type": "annotation_paragraph",
+                "text": "Note: MAJOR version 0 is for initial development where everything can change.",
+            },
+            {
+                "type": "outro_paragraph",
+                "text": "In summary, following SemVer principles reduces complexity and builds trust in the ecosystem.",
+            },
+            {
+                "type": "caption",
+                "text": "Figure 1: The three pillars of semantic versioning logic.",
+            },
+        ],
+    },
+    {
+        "title": "Super Dense Timeline",
+        "intent": "narrate",
+        "image": {"url": "https://placehold.co/600x400", "layout": "right"},
+        "contentBlocks": [
+            {
+                "type": "intro_paragraph",
+                "text": "The evolution of modern distributed systems has transformed how we build, deploy, and scale resilient software architectures at a global scale.",
+            },
+            {
+                "type": "context_paragraph",
+                "text": "This historical overview examines the pivotal shifts from rigid mainframes to flexible cloud-native ecosystems that enabled the massive scale we see today.",
+            },
+            {
+                "type": "smart_layout",
+                "variant": "timeline",
+                "items": [
+                    {
+                        "year": "1960s-1980s",
+                        "heading": "The Mainframe Era",
+                        "description": "Centralized computing power dominated the industry, with massive monolithic systems handling all processing in vertically-scaled hardware environments.",
+                    },
+                    {
+                        "year": "1990s",
+                        "heading": "Client-Server Shift",
+                        "description": "The rise of local area networks shifted processing to distributed desktop clients while central servers handled shared database resources and storage.",
+                    },
+                    {
+                        "year": "2010s",
+                        "heading": "Cloud-Native Revolution",
+                        "description": "Mainstream adoption of containerization (Docker) and orchestration (Kubernetes) enabled the delivery of modular microservices across elastic cloud providers.",
+                    },
+                    {
+                        "year": "2020s+",
+                        "heading": "Serverless & Edge",
+                        "description": "Computation is moving closer to the user through serverless functions and edge nodes, further decentralizing logic and minimizing latency in global networks.",
+                    },
+                ],
+            },
+            {
+                "type": "annotation_paragraph",
+                "text": "Note: Each era built upon the storage paradigms of the previous one while decentralizing the compute logic.",
+            },
+            {
+                "type": "outro_paragraph",
+                "text": "The trend towards decentralization continue to accelerate, moving logic closer to the user for ultra-low latency.",
+            },
+            {
+                "type": "caption",
+                "text": "Figure 2: The trajectory of compute decentralization over 60 years.",
+            },
+        ],
     },
     # SCENARIO F: Boxed List (Card Grid)
     # {

@@ -42,3 +42,12 @@ next-env.d.ts
 
 # vscode
 .vscode/
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/

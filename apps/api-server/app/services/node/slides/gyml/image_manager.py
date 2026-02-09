@@ -32,9 +32,12 @@ class ImageManager:
         """
 
         # 1. High Density (Avoid cramping)
-        # Relaxed threshold to 0.9 to allow images in dense layouts like Comparison
         if slide_density > 0.9:
-            return "top" if has_user_image else "blank"
+            # OVERRIDE: If user explicitly provided an image, respect the 2-column side layout
+            # (only use 'top' for auto-injected or very low value visuals)
+            if has_user_image:
+                return "right"
+            return "blank"
 
         # 2. Low & Medium Density
         # Always prefer filling space with an image (placeholder or user)

@@ -8,7 +8,6 @@ from gyml.definitions import (
     ComposedSection,
     ComposedBlock,
     Emphasis,
-    BlockType,
 )
 
 

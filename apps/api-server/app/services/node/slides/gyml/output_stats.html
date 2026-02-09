@@ -71,17 +71,33 @@ section {
 /* ... image layouts ... */
 section[data-image-layout="right"] {
     display: grid;
-    grid-template-columns: 1fr 45%;
+    grid-template-columns: 1.5fr 1fr; /* col 1 (Text) = 60%, col 2 (Img) = 40% */
     gap: var(--block-gap, 2rem);
     align-items: center;
 }
+section[data-image-layout="right"] .body { order: 1; grid-column: 1; }
+section[data-image-layout="right"] .accent-image-wrapper,
+section[data-image-layout="right"] .accent-image-placeholder { order: 2; grid-column: 2; }
 
 section[data-image-layout="left"] {
     display: grid;
-    grid-template-columns: 45% 1fr;
+    grid-template-columns: 1fr 1.5fr; /* 40% Image / 60% Text */
     gap: var(--block-gap, 2rem);
     align-items: center;
 }
+section[data-image-layout="left"] .body { order: 2; grid-column: 2; }
+section[data-image-layout="left"] .accent-image-wrapper,
+section[data-image-layout="left"] .accent-image-placeholder { order: 1; grid-column: 1; }
+
+section[data-image-layout="right-wide"] {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr; /* 40% Text / 60% Image */
+    gap: var(--block-gap, 2rem);
+    align-items: center;
+}
+section[data-image-layout="right-wide"] .body { order: 1; grid-column: 1; }
+section[data-image-layout="right-wide"] .accent-image-wrapper,
+section[data-image-layout="right-wide"] .accent-image-placeholder { order: 2; grid-column: 2; }
 
 /* ... */
 
@@ -154,9 +170,10 @@ p {
    SMART LAYOUT - Gamma Card Grid
    ================================================ */
 
+
 .smart-layout {
     display: grid;
-    gap: 1.25rem;
+    gap: var(--card-gap, 1.25rem);
     width: 100%;
 }
 
@@ -184,7 +201,7 @@ p {
 .card {
     display: flex;
     flex-direction: column;
-    padding: 1.5rem;
+    padding: var(--card-padding, 1.5rem);
     background: var(--bg-secondary, #ffffff);
     border: 1px solid var(--border-color, #e5e5e5);
     border-radius: var(--card-radius, 0.5rem);
@@ -279,7 +296,7 @@ p {
     position: relative;
     border: none;
     background: transparent;
-    padding: 1.25rem 0;
+    padding: var(--card-padding, 1.25rem) 0;
     border-radius: 0;
 }
 
@@ -563,16 +580,19 @@ p {
 .code-block {
     background: #1e1e1e;
     color: #d4d4d4;
-    padding: 1.5rem;
-    border-radius: 6px;
-    width: 100%;
-    margin: 1rem 0;
-    overflow-x: auto;
+    padding: 1rem;
+    border-radius: 0.5rem;
     font-family: 'Fira Code', 'Roboto Mono', monospace;
+    font-size: 0.875rem;
+    overflow-x: auto; /* Allow scroll if a single word is too long */
+    white-space: pre-wrap; /* Wrap text to avoid horizontal scroll/clip */
+    word-break: break-word; /* Ensure long words break */
+    border: 1px solid var(--border-color, #333);
 }
 
 .code-block pre {
     margin: 0;
+    overflow-x: auto; /* Ensure inner pre also scrolls */
 }
 
 .code-block code {
@@ -718,10 +738,20 @@ th {
     margin: 0;
 }
 
+
 .inline-image img {
     width: 100%;
     height: auto;
     border-radius: 0.5rem;
+}
+
+/* Dense column image constraint */
+.columns .inline-image img {
+    max-height: 40vh;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    align-self: center;
 }
 
 /* ================================================
@@ -873,8 +903,8 @@ th {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_9cdd305a" class="slide-section" role="region" aria-label="Slide slide_9cdd305a" data-image-layout="right" style="--h1-size: 3rem; --h2-size: 2.5rem; --p-size: 1.25rem; --line-height: 1.6; --section-padding: 3rem; --block-gap: 2rem; --card-padding: 2rem">
-<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<section id="slide_0e926577" class="slide-section" role="region" aria-label="Slide slide_0e926577" data-image-layout="right" style="--h1-size: 3.15rem; --h2-size: 2.85rem; --p-size: 1.3rem; --line-height: 1.8; --section-padding: 2.5rem; --block-gap: 1.25rem; --card-padding: 1.25rem">
+<div class="accent-image-wrapper"><img class="accent-image" src="https://example.com/chart.png" alt="" loading="lazy" /></div>
 <div class="body">
 <h1>AI Market Growth</h1>
 <div class="block-separator"></div>

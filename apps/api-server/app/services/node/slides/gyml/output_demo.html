@@ -71,17 +71,33 @@ section {
 /* ... image layouts ... */
 section[data-image-layout="right"] {
     display: grid;
-    grid-template-columns: 1fr 45%;
+    grid-template-columns: 1.5fr 1fr; /* col 1 (Text) = 60%, col 2 (Img) = 40% */
     gap: var(--block-gap, 2rem);
     align-items: center;
 }
+section[data-image-layout="right"] .body { order: 1; grid-column: 1; }
+section[data-image-layout="right"] .accent-image-wrapper,
+section[data-image-layout="right"] .accent-image-placeholder { order: 2; grid-column: 2; }
 
 section[data-image-layout="left"] {
     display: grid;
-    grid-template-columns: 45% 1fr;
+    grid-template-columns: 1fr 1.5fr; /* 40% Image / 60% Text */
     gap: var(--block-gap, 2rem);
     align-items: center;
 }
+section[data-image-layout="left"] .body { order: 2; grid-column: 2; }
+section[data-image-layout="left"] .accent-image-wrapper,
+section[data-image-layout="left"] .accent-image-placeholder { order: 1; grid-column: 1; }
+
+section[data-image-layout="right-wide"] {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr; /* 40% Text / 60% Image */
+    gap: var(--block-gap, 2rem);
+    align-items: center;
+}
+section[data-image-layout="right-wide"] .body { order: 1; grid-column: 1; }
+section[data-image-layout="right-wide"] .accent-image-wrapper,
+section[data-image-layout="right-wide"] .accent-image-placeholder { order: 2; grid-column: 2; }
 
 /* ... */
 
@@ -154,9 +170,10 @@ p {
    SMART LAYOUT - Gamma Card Grid
    ================================================ */
 
+
 .smart-layout {
     display: grid;
-    gap: 1.25rem;
+    gap: var(--card-gap, 1.25rem);
     width: 100%;
 }
 
@@ -181,232 +198,131 @@ p {
    CARD - Gamma Style
    ================================================ */
 
-/* Card Container */
 .card {
     display: flex;
     flex-direction: column;
-    padding: 1.5rem;
+    padding: var(--card-padding, 1.5rem);
     background: var(--bg-secondary, #ffffff);
-    border: 1px solid var(--border-color, #f0f0f0);
-    border-radius: var(--card-radius, 0.75rem);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
+    border: 1px solid var(--border-color, #e5e5e5);
+    border-radius: var(--card-radius, 0.5rem);
+    box-shadow: var(--card-shadow, none);
+    transition: box-shadow 0.2s ease;
 }
 
 .card:hover {
-    transform: translateY(-4px);
-    border-color: var(--accent-light, #e0e7ff);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Header: number + title aligned on one line */
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-}
-
-/* Number badge */
+/* Card Number - Gamma style top badge */
 .card-number {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    font-size: 0.875rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--text-secondary, #888);
-    background: var(--number-bg, #f8f9fa);
-    border-radius: 999px;
-    flex-shrink: 0;
-}
-
-/* Icon */
-.card-icon {
-    width: 2.75rem;
-    height: 2.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--icon-bg-subtle, rgba(26, 26, 26, 0.04));
-    border-radius: 10px;
-    margin-bottom: 1.25rem;
-    transition: all 0.3s ease;
+    width: 100%;
+    padding: 0.75rem;
+    margin: -1.5rem -1.5rem 1.25rem -1.5rem;
+    width: calc(100% + 3rem);
+    background: var(--number-bg, #f0f0f0);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-secondary, #666);
+    border-bottom: 1px solid var(--border-color, #e5e5e5);
+    border-radius: 4px 4px 0 0;
+}
+
+/* Card Icon */
+.card-icon {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--icon-bg, #1a1a1a);
+    border-radius: 50%;
+    margin-bottom: 1rem;
 }
 
 .card-icon i {
-    font-size: 1.2rem;
-    color: var(--icon-color, #1a1a1a);
-}
-
-.card:hover .card-icon {
-    background: var(--icon-bg, #1a1a1a);
-}
-
-.card:hover .card-icon i {
+    font-size: 1.25rem;
     color: #ffffff;
 }
 
-/* Content */
+/* Card Content */
 .card-content {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
 .card-title {
-    font-size: 1.125rem;
+    font-size: 1.0625rem;
     font-weight: 600;
-    line-height: 1.25;
+    color: var(--text-primary, #1a1a1a);
     margin: 0;
-    letter-spacing: -0.01em;
-    color: var(--text-primary, #111111);
+    line-height: 1.4;
 }
 
 .card-text {
     font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--text-secondary, #666666);
+    line-height: 1.65;
+    color: var(--text-secondary, #555);
     margin: 0;
-}
-
-/* Accent line on hover */
-.card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: var(--accent, #6366f1);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.card:hover::after {
-    opacity: 1;
 }
 
 /* ================================================
    TIMELINE VARIANT (Vertical)
    ================================================ */
 
-/* Container Base */
 .smart-layout[data-variant="timeline"] {
     display: flex;
     flex-direction: column;
     gap: 0;
     position: relative;
-    padding-left: 2.5rem; /* Increased for breathing room */
-    transition: all 0.3s ease;
+    padding-left: 2rem;
 }
 
-/* The Vertical Line */
 .smart-layout[data-variant="timeline"]::before {
     content: '';
     position: absolute;
     left: 0.5rem;
-    top: 1rem;
-    bottom: 1rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
     width: 2px;
-    /* Gradient gives a more "refined" look than a solid block */
-    background: linear-gradient(to bottom, 
-        var(--timeline-color, #2d8a6e) 0%, 
-        var(--timeline-color, #2d8a6e) 80%, 
-        transparent 100%
-    );
-    opacity: 0.3; /* Softer line doesn't distract from content */
+    background: var(--timeline-color, #2d8a6e);
 }
 
-/* Card Styling */
 .smart-layout[data-variant="timeline"] .card {
     position: relative;
     border: none;
     background: transparent;
-    padding: 1.5rem 0;
-    margin: 0;
+    padding: var(--card-padding, 1.25rem) 0;
     border-radius: 0;
-    transition: transform 0.2s ease;
 }
 
-/* The Dot (Node) */
 .smart-layout[data-variant="timeline"] .card::before {
     content: '';
     position: absolute;
-    left: -2.05rem; /* Precise alignment with the line */
-    top: 1.8rem;
-    width: 10px;
-    height: 10px;
-    background: #fff; /* White center for a hollow/ring effect */
-    border: 2px solid var(--timeline-color, #2d8a6e);
-    border-radius: 50%;
-    z-index: 2;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* Hover Effects */
-.smart-layout[data-variant="timeline"] .card:hover::before {
-    transform: scale(1.2);
+    left: -1.75rem;
+    top: 1.5rem;
+    width: 12px;
+    height: 12px;
     background: var(--timeline-color, #2d8a6e);
-    box-shadow: 0 0 0 4px rgba(45, 138, 110, 0.1);
+    border-radius: 50%;
 }
 
-/* Content refinement */
-.smart-layout[data-variant="timeline"] .card-title {
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
-    color: var(--text-main, #111);
-}
-
-.smart-layout[data-variant="timeline"] .card-text {
-    color: var(--text-muted, #666);
-    font-size: 0.925rem;
-    line-height: 1.5;
-}
-
-/* Primary/Highlighted Item (First Child) */
+/* Primary Item (First) */
 .smart-layout[data-variant="timeline"] .card:first-child .card-text {
     color: var(--text-primary, #1a1a1a);
-    font-size: 1.05rem;
+    font-size: 1.1rem;
 }
 
 .smart-layout[data-variant="timeline"] .card:first-child::before {
     background: var(--accent, #6366f1);
-    border-color: var(--accent, #6366f1);
-    width: 14px;
-    height: 14px;
-    left: -2.175rem;
-    top: 1.7rem;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-}
-
-/* Subtle "Active" Pulse Animation for the first item (Optional) */
-@keyframes timeline-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-    70% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
-}
-
-.smart-layout[data-variant="timeline"] .card:first-child::before {
-    animation: timeline-pulse 2s infinite;
-}
-
-/* Responsive adjustment */
-@media (max-width: 576px) {
-    .smart-layout[data-variant="timeline"] {
-        padding-left: 2rem;
-    }
-    .smart-layout[data-variant="timeline"]::before {
-        left: 0.35rem;
-    }
-    .smart-layout[data-variant="timeline"] .card::before {
-        left: -1.8rem;
-    }
+    width: 16px;
+    height: 16px;
+    left: -1.875rem;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
 }
 
 /* Secondary Items (Rest) */
@@ -664,16 +580,19 @@ p {
 .code-block {
     background: #1e1e1e;
     color: #d4d4d4;
-    padding: 1.5rem;
-    border-radius: 6px;
-    width: 100%;
-    margin: 1rem 0;
-    overflow-x: auto;
+    padding: 1rem;
+    border-radius: 0.5rem;
     font-family: 'Fira Code', 'Roboto Mono', monospace;
+    font-size: 0.875rem;
+    overflow-x: auto; /* Allow scroll if a single word is too long */
+    white-space: pre-wrap; /* Wrap text to avoid horizontal scroll/clip */
+    word-break: break-word; /* Ensure long words break */
+    border: 1px solid var(--border-color, #333);
 }
 
 .code-block pre {
     margin: 0;
+    overflow-x: auto; /* Ensure inner pre also scrolls */
 }
 
 .code-block code {
@@ -819,10 +738,20 @@ th {
     margin: 0;
 }
 
+
 .inline-image img {
     width: 100%;
     height: auto;
     border-radius: 0.5rem;
+}
+
+/* Dense column image constraint */
+.columns .inline-image img {
+    max-height: 40vh;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    align-self: center;
 }
 
 /* ================================================
@@ -974,7 +903,7 @@ th {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_78ff3c21" class="slide-section" role="region" aria-label="Slide slide_78ff3c21" data-image-layout="right" style="--h1-size: 2.25rem; --h2-size: 2rem; --p-size: 1rem; --line-height: 1.6; --section-padding: 3rem; --block-gap: 1.5rem; --card-padding: 1.5rem">
+<section id="slide_8dc6bc73" class="slide-section" role="region" aria-label="Slide slide_8dc6bc73" data-image-layout="right" style="--h1-size: 2.25rem; --h2-size: 2rem; --p-size: 1rem; --line-height: 1.6; --section-padding: 3rem; --block-gap: 1.5rem; --card-padding: 1.5rem">
 <div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
 <div class="body">
 <h1>How LLMs Work</h1>

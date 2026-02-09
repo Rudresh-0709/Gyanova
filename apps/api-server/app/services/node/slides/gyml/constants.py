@@ -129,6 +129,11 @@ class BlockType(Enum):
     # Text blocks
     HEADING = "heading"
     PARAGRAPH = "paragraph"
+    INTRO_PARAGRAPH = "intro_paragraph"
+    CONTEXT_PARAGRAPH = "context_paragraph"
+    ANNOTATION_PARAGRAPH = "annotation_paragraph"
+    OUTRO_PARAGRAPH = "outro_paragraph"
+    CAPTION = "caption"
 
     # Primary content blocks (only one per slide)
     TIMELINE = "timeline"

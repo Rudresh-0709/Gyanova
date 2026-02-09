@@ -60,6 +60,10 @@ class GyMLRenderer:
             vars_list.append(
                 f"--line-height: {section.hierarchy.typography.line_height_base}"
             )
+            vars_list.append(
+                f"--card-number-size: {section.hierarchy.typography.card_number}"
+            )
+            vars_list.append(f"--card-text-size: {section.hierarchy.typography.small}")
 
             # Spacing
             vars_list.append(
@@ -69,6 +73,11 @@ class GyMLRenderer:
             vars_list.append(
                 f"--card-padding: {section.hierarchy.spacing.card_padding}"
             )
+            h_gap = (
+                section.hierarchy.spacing.heading_gap
+                or section.hierarchy.spacing.block_gap
+            )
+            vars_list.append(f"--heading-gap: {h_gap}")
 
             style_attr = f' style="{"; ".join(vars_list)}"'
 
@@ -244,7 +253,8 @@ class GyMLRenderer:
     def _render_paragraph(self, paragraph: GyMLParagraph) -> str:
         """Render paragraph."""
         text = self._escape(paragraph.text)
-        return f"<p>{text}</p>"
+        variant_class = f' class="p-{paragraph.variant}"' if paragraph.variant else ""
+        return f"<p{variant_class}>{text}</p>"
 
     def _render_divider(self) -> str:
         """Render divider."""
@@ -406,7 +416,8 @@ class GyMLRenderer:
 
 html, body {
     height: 100%;
-    overflow: hidden; /* Hide main scrollbar */
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -424,8 +435,9 @@ body {
     max-width: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevent scrolling */
-    scroll-snap-type: none;
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden;
+    scroll-snap-type: y mandatory; /* Enable snap scrolling */
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -504,7 +516,7 @@ h1 {
     line-height: 1.15;
     letter-spacing: -0.03em;
     color: var(--text-primary, #1a1a1a);
-    margin-bottom: 0.25rem; /* Reduced */
+    margin-bottom: var(--heading-gap, 0.25rem);
 }
 
 h2 {
@@ -513,6 +525,7 @@ h2 {
     line-height: 1.2;
     letter-spacing: -0.02em;
     color: var(--text-primary, #1a1a1a);
+    margin-bottom: var(--heading-gap, 0.25rem);
 }
 
 h3 {
@@ -532,6 +545,42 @@ p {
     font-size: var(--p-size, 1rem);
     line-height: var(--line-height, 1.7);
     color: var(--text-secondary, #4a4a4a);
+}
+
+.p-intro {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-primary, #1a1a1a);
+    margin-bottom: 0.5rem;
+}
+
+.p-context {
+    font-style: italic;
+    color: var(--text-tertiary, #666);
+    opacity: 0.9;
+}
+
+.p-annotation {
+    font-size: 0.875rem;
+    background: #fbfbfb;
+    padding: 0.75rem;
+    border-left: 3px solid var(--accent-subtle, #e5e7eb);
+    margin: 0.5rem 0;
+}
+
+.p-outro {
+    font-weight: 500;
+    border-top: 1px dashed #ddd;
+    padding-top: 0.75rem;
+    margin-top: 1rem;
+}
+
+.p-caption {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary, #888);
+    text-align: center;
+    margin-top: 0.5rem;
+    line-height: 1.4;
 }
 
 /* ================================================
@@ -593,6 +642,13 @@ p {
     transition: box-shadow 0.2s ease;
 }
 
+.block-separator {
+    width: 100%;
+    height: 1px;
+    background: #b0b0b0;
+    margin: 1.25rem 0;
+}
+
 .card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
@@ -607,7 +663,7 @@ p {
     margin: -1.5rem -1.5rem 1.25rem -1.5rem;
     width: calc(100% + 3rem);
     background: var(--number-bg, #f0f0f0);
-    font-size: 1.125rem;
+    font-size: var(--card-number-size, 1.125rem);
     font-weight: 600;
     color: var(--text-secondary, #666);
     border-bottom: 1px solid var(--border-color, #e5e5e5);
@@ -648,8 +704,8 @@ p {
 }
 
 .card-text {
-    font-size: 0.9375rem;
-    line-height: 1.65;
+    font-size: var(--card-text-size, var(--p-size, 0.9375rem));
+    line-height: var(--line-height, 1.65);
     color: var(--text-secondary, #555);
     margin: 0;
 }

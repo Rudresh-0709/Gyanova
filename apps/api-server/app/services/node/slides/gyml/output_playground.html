@@ -22,7 +22,8 @@
 
 html, body {
     height: 100%;
-    overflow: hidden; /* Hide main scrollbar */
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -40,8 +41,9 @@ body {
     max-width: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Prevent scrolling */
-    scroll-snap-type: none;
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden;
+    scroll-snap-type: y mandatory; /* Enable snap scrolling */
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -120,7 +122,7 @@ h1 {
     line-height: 1.15;
     letter-spacing: -0.03em;
     color: var(--text-primary, #1a1a1a);
-    margin-bottom: 0.25rem; /* Reduced */
+    margin-bottom: var(--heading-gap, 0.25rem);
 }
 
 h2 {
@@ -129,6 +131,7 @@ h2 {
     line-height: 1.2;
     letter-spacing: -0.02em;
     color: var(--text-primary, #1a1a1a);
+    margin-bottom: var(--heading-gap, 0.25rem);
 }
 
 h3 {
@@ -148,6 +151,42 @@ p {
     font-size: var(--p-size, 1rem);
     line-height: var(--line-height, 1.7);
     color: var(--text-secondary, #4a4a4a);
+}
+
+.p-intro {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-primary, #1a1a1a);
+    margin-bottom: 0.5rem;
+}
+
+.p-context {
+    font-style: italic;
+    color: var(--text-tertiary, #666);
+    opacity: 0.9;
+}
+
+.p-annotation {
+    font-size: 0.875rem;
+    background: #fbfbfb;
+    padding: 0.75rem;
+    border-left: 3px solid var(--accent-subtle, #e5e7eb);
+    margin: 0.5rem 0;
+}
+
+.p-outro {
+    font-weight: 500;
+    border-top: 1px dashed #ddd;
+    padding-top: 0.75rem;
+    margin-top: 1rem;
+}
+
+.p-caption {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary, #888);
+    text-align: center;
+    margin-top: 0.5rem;
+    line-height: 1.4;
 }
 
 /* ================================================
@@ -209,6 +248,13 @@ p {
     transition: box-shadow 0.2s ease;
 }
 
+.block-separator {
+    width: 100%;
+    height: 1px;
+    background: #b0b0b0;
+    margin: 1.25rem 0;
+}
+
 .card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
@@ -223,7 +269,7 @@ p {
     margin: -1.5rem -1.5rem 1.25rem -1.5rem;
     width: calc(100% + 3rem);
     background: var(--number-bg, #f0f0f0);
-    font-size: 1.125rem;
+    font-size: var(--card-number-size, 1.125rem);
     font-weight: 600;
     color: var(--text-secondary, #666);
     border-bottom: 1px solid var(--border-color, #e5e5e5);
@@ -264,8 +310,8 @@ p {
 }
 
 .card-text {
-    font-size: 0.9375rem;
-    line-height: 1.65;
+    font-size: var(--card-text-size, var(--p-size, 0.9375rem));
+    line-height: var(--line-height, 1.65);
     color: var(--text-secondary, #555);
     margin: 0;
 }
@@ -903,15 +949,92 @@ th {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_21c8d690_0" class="slide-section" role="region" aria-label="Slide slide_21c8d690_0" data-image-layout="right" style="--h1-size: 3.15rem; --h2-size: 2.85rem; --p-size: 1.3rem; --line-height: 1.8; --section-padding: 2.5rem; --block-gap: 1.25rem; --card-padding: 1.25rem">
+<section id="slide_5e50f496_0" class="slide-section" role="region" aria-label="Slide slide_5e50f496_0" data-image-layout="right" style="--h1-size: 2.75rem; --h2-size: 2.25rem; --p-size: 1.25rem; --line-height: 1.6; --card-number-size: 1.9rem; --card-text-size: 0.875rem; --section-padding: 2.5rem; --block-gap: 2.0rem; --card-padding: 1.25rem; --heading-gap: 3.0rem">
 <div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
 <div class="body">
-<h1>Python Hello World</h1>
-<p>Below is a simple demonstration of how to print text to the console in Python. Printing is one of the first operations you learn because it&#x27;s essential.</p>
-<p>Note: In Python 3, print is a function and requires parentheses. You can also print complex data such as lists, formatted strings, and values stored in variables.</p>
+<h1>Semantic Paragraph Test</h1>
+<p class="p-intro">This paragraph introduces the concept of semantic versioning, a widely adopted standard for versioning software. It communicates changes clearly using MAJOR.MINOR.PATCH logic.</p>
+<p class="p-context">Historically, versioning was inconsistent across libraries, leading to dependency hell where developers couldn&#x27;t trust that updates wouldn&#x27;t break their code.</p>
 <div class="block-separator"></div>
-<div class="code-block" data-variant="snippet"><pre><code class="language-python">print(&#x27;Hello World&#x27;)
-print(&#x27;This is an expanded example!&#x27;)</code></pre></div>
+<div class="smart-layout" data-variant="cardGrid" data-item-count="3">
+<div class="card" data-index="0">
+<div class="card-number">1</div>
+<div class="card-content">
+<h4 class="card-title">MAJOR</h4>
+<p class="card-text">Increment for breaking changes.</p>
+</div>
+</div>
+<div class="card" data-index="1">
+<div class="card-number">2</div>
+<div class="card-content">
+<h4 class="card-title">MINOR</h4>
+<p class="card-text">Increment for new features.</p>
+</div>
+</div>
+<div class="card" data-index="2">
+<div class="card-number">3</div>
+<div class="card-content">
+<h4 class="card-title">PATCH</h4>
+<p class="card-text">Increment for bug fixes.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="slide_5e50f496_1" class="slide-section" role="region" aria-label="Slide slide_5e50f496_1" data-image-layout="right" style="--h1-size: 2.75rem; --h2-size: 2.25rem; --p-size: 1.25rem; --line-height: 1.6; --card-number-size: 1.9rem; --card-text-size: 0.875rem; --section-padding: 2.5rem; --block-gap: 2.0rem; --card-padding: 1.25rem; --heading-gap: 3.0rem">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<div class="body">
+<h1>Semantic Paragraph Test</h1>
+<p class="p-annotation">Note: MAJOR version 0 is for initial development where everything can change.</p>
+<p class="p-caption">Figure 1: The three pillars of semantic versioning logic.</p>
+<p class="p-outro">In summary, following SemVer principles reduces complexity and builds trust in the ecosystem.</p>
+</div>
+</section>
+
+<section id="slide_1acfe111_0" class="slide-section" role="region" aria-label="Slide slide_1acfe111_0" data-image-layout="right" style="--h1-size: 2.4rem; --h2-size: 1.75rem; --p-size: 1rem; --line-height: 1.4; --card-number-size: 1.25rem; --card-text-size: 0.95rem; --section-padding: 1.5rem; --block-gap: 0.75rem; --card-padding: 1rem; --heading-gap: 0.75rem">
+<div class="accent-image-wrapper"><img class="accent-image" src="https://placehold.co/600x400" alt="" loading="lazy" /></div>
+<div class="body">
+<h1>Super Dense Timeline</h1>
+<p class="p-intro">The evolution of modern distributed systems has transformed how we build, deploy, and scale resilient software architectures at a global scale.</p>
+<p class="p-context">This historical overview examines the pivotal shifts from rigid mainframes to flexible cloud-native ecosystems that enabled the massive scale we see today.</p>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="timeline" data-item-count="4">
+<div class="card" data-index="0">
+<div class="card-content">
+<div class="card-year">1960s-1980s</div>
+<p class="card-text">Centralized computing power dominated the industry, with massive monolithic systems handling all processing in vertically-scaled hardware environments.</p>
+</div>
+</div>
+<div class="card" data-index="1">
+<div class="card-content">
+<div class="card-year">1990s</div>
+<p class="card-text">The rise of local area networks shifted processing to distributed desktop clients while central servers handled shared database resources and storage.</p>
+</div>
+</div>
+<div class="card" data-index="2">
+<div class="card-content">
+<div class="card-year">2010s</div>
+<p class="card-text">Mainstream adoption of containerization (Docker) and orchestration (Kubernetes) enabled the delivery of modular microservices across elastic cloud providers.</p>
+</div>
+</div>
+<div class="card" data-index="3">
+<div class="card-content">
+<div class="card-year">2020s+</div>
+<p class="card-text">Computation is moving closer to the user through serverless functions and edge nodes, further decentralizing logic and minimizing latency in global networks.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="slide_1acfe111_1" class="slide-section" role="region" aria-label="Slide slide_1acfe111_1" data-image-layout="right" style="--h1-size: 2.75rem; --h2-size: 2.25rem; --p-size: 1.25rem; --line-height: 1.6; --card-number-size: 1.9rem; --card-text-size: 0.875rem; --section-padding: 2.5rem; --block-gap: 2.0rem; --card-padding: 1.25rem; --heading-gap: 3.0rem">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<div class="body">
+<h1>Super Dense Timeline</h1>
+<p class="p-annotation">Note: Each era built upon the storage paradigms of the previous one while decentralizing the compute logic.</p>
+<p class="p-caption">Figure 2: The trajectory of compute decentralization over 60 years.</p>
+<p class="p-outro">The trend towards decentralization continue to accelerate, moving logic closer to the user for ultra-low latency.</p>
 </div>
 </section>
     </div>

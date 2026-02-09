@@ -26,18 +26,36 @@ class SlideFitnessGate:
     def _calculate_estimated_height(slide: ComposedSlide) -> float:
         """
         Estimate content height percentage (0.0 - 1.0+).
-        Based on word count, block count, and image presence.
+        Based on word count, structural items, and image presence.
+
+        Refined Rules:
+        - Base Block: 0.1 (10%)
+        - Internal Item (Points/Cards): 0.05 (5%)
+        - Word Capacity: Total / 180
+        - Accent Image: 0.4 (40%)
         """
-        # Base capacity: ~180 words fills a slide
+        # 1. Word Utilization
         word_utilization = slide.total_word_count() / ConstraintRules.MAX_SLIDE_WORDS
 
-        # Block overhead (padding/margins)
-        block_utilization = slide.block_count() * 0.1
+        # 2. Structural Utilization
+        # Each top-level block costs 0.1 base
+        base_blocks = slide.block_count()
 
-        # Image impact
+        # Each internal item (if count > 1) costs an additional 0.05
+        # (Standard blocks like Paragraph return 1 from item_count(), so extra=0)
+        extra_items = 0
+        for section in slide.sections:
+            for block in section.blocks:
+                count = block.item_count()
+                if count > 1:
+                    extra_items += count
+
+        structural_utilization = (base_blocks * 0.1) + (extra_items * 0.05)
+
+        # 3. Image Impact
         image_utilization = 0.4 if slide.accent_image_url else 0.0
 
-        return min(word_utilization + block_utilization + image_utilization, 1.2)
+        return word_utilization + structural_utilization + image_utilization
 
     @classmethod
     def validate_density(cls, slide: ComposedSlide) -> Tuple[bool, str]:

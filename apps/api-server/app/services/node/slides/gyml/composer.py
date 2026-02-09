@@ -442,11 +442,18 @@ class SlideComposer:
 
                 # Check Limit (MAX 4 for complex layouts, 5 for simple)
                 limit = 4
+                density = SlideFitnessGate._calculate_estimated_height(slide)
                 if len(items) > limit:
-                    # Attempt to reflow into columns first (Dense Mode)
-                    reflowed_slide = self._try_reflow_dense_content(slide, block)
-                    if reflowed_slide:
-                        return [reflowed_slide]
+                    # RULE: Skip column reflow for Medium (0.4-0.55) and Super Dense (0.95-1.25)
+                    # These ranges preference a vertical "2 row" approach.
+                    if (0.40 <= density <= 0.55) or (0.95 <= density <= 1.25):
+                        # Fall through to splitting instead of reflow
+                        pass
+                    else:
+                        # Attempt to reflow into columns first (Dense Mode)
+                        reflowed_slide = self._try_reflow_dense_content(slide, block)
+                        if reflowed_slide:
+                            return [reflowed_slide]
 
                     # Fallback to splitting
                     return self._split_smart_layout_content(slide, block, items, limit)
@@ -785,21 +792,35 @@ class SlideComposer:
             # 2. Decision Logic
             force_stacked = False
 
+            # Identify if an inline image exists in this section
+            has_inline_image = any(b.type == BlockType.IMAGE.value for b in blocks)
+            # Identify if a slide-level accent image exists
+            has_accent_image = bool(slide.accent_image_url)
+
             # Use FitnessGate calculation to match User/Playground metrics.
             density = SlideFitnessGate._calculate_estimated_height(slide)
 
-            # RULE: Medium Density (0.4 - 0.55) -> Force Vertical Stack (FLOW)
-            if 0.40 <= density < 0.55:
+            # RULE: Medium Density (0.4 - 0.55) OR Super Dense (0.95 - 1.25) -> Force Vertical Stack (FLOW)
+            # OVERRIDE: If INLINE image is present, allow side-by-side (Parallel/Anchored)
+            # NOTE: If we have an accent image, we stay stacked to maintain a 2-column Body vs Image slide.
+            if (
+                (0.40 <= density <= 0.55) or (0.95 <= density <= 1.25)
+            ) and not has_inline_image:
                 force_stacked = True
 
             # RULE: Ideal Density (0.55 - 0.95)
-            # Adaptive: Force Stacked unless explicitly a Comparison
+            # Adaptive: Force Stacked unless explicitly a Comparison OR has an Image
             elif 0.55 <= density <= 0.95:
                 is_comparison_intent = slide.intent == Intent.COMPARE.value
                 is_comparison_block = (
                     visual_block and visual_block.type == BlockType.COMPARISON.value
                 )
-                if not (is_comparison_intent or is_comparison_block):
+                if not (
+                    is_comparison_intent
+                    or is_comparison_block
+                    or has_inline_image
+                    or has_accent_image
+                ):
                     force_stacked = True
 
             # CASE A: Parallel (Text + Heavy Visual)
@@ -1010,10 +1031,6 @@ class SlideComposer:
         primary_blocks = []
 
         main_section = slide.sections[0]  # Assuming single section for now
-        print(
-            f"DEBUG: Optimizer Blocks: {[b.type for b in main_section.blocks]}"
-        )  # DEBUG
-
         for b in main_section.blocks:
             # Headings and Code always stay primary
             if b.type in [
@@ -1026,7 +1043,6 @@ class SlideComposer:
 
             # Callouts always go to sidebar
             if b.type == BlockType.CALLOUT.value:
-                print("DEBUG: Found Callout")  # DEBUG
                 secondary_blocks.append(b)
                 continue
 
@@ -1131,10 +1147,9 @@ class SlideComposer:
         # Calculate density early
         density = SlideFitnessGate._calculate_estimated_height(slide)
 
-        # RULE: Medium Density (0.4 - 0.55) -> Force Vertical Stack
+        # RULE: Medium Density (0.4 - 0.55) OR Super Dense (0.95 - 1.25) -> Force Vertical Stack
         # Do NOT attempt sidebar optimization (which splits content into columns).
-        # We want: [Image (Right)] + [Content (Single Column Stack)]
-        if 0.40 <= density <= 0.60:
+        if (0.40 <= density <= 0.55) or (0.95 <= density <= 1.25):
             # Skip optimization, fall through to hierarchy assignment
             pass
         # 0. Try Sidebar Optimization first (Code/Callout combo)
@@ -1161,18 +1176,63 @@ class SlideComposer:
         # 1. Super Dense (> 95%)
         if density_pct > 0.95:
             profile_name = "super_dense"
-        # 2. Dense (> 80%)
-        elif density_pct > 0.80:
-            profile_name = "dense"
-        # 3. Balanced / Ideal (55% - 80%)
+        # 2. Balanced / Ideal (55% - 95%)
         elif density_pct > 0.55:
             profile_name = "balanced"
-        # 4. Impact (Explicit High Value)
+        # 3. Impact (Explicit High Value)
         elif slide.intent in [Intent.PROVE.value, Intent.INTRODUCE.value]:
             profile_name = "impact"
 
-        slide.hierarchy = VisualHierarchy.get_profile(profile_name)
+        profile = VisualHierarchy.get_profile(profile_name)
+
+        # ADAPTIVE SPACING: If Ideal Density (0.55 - 0.95) and <= 3 blocks, increase gap
+        if 0.55 <= density_pct <= 0.95:
+            content_block_count = self._count_top_level_content_blocks(slide)
+            if content_block_count <= 3:
+                # Override gaps for sparse content
+                # User requested: increase header margin by 0.5 and decrease others by 0.5
+                profile.spacing.heading_gap = "3.0rem"  # Base was 2.5
+                profile.spacing.block_gap = "2.0rem"  # Base was 2.5
+
+        slide.hierarchy = profile
         return slide
+
+    def _count_top_level_content_blocks(self, slide: ComposedSlide) -> int:
+        """
+        Count top-level semantic content blocks for adaptive spacing.
+        Excluded: images, dividers.
+        Grouped: Card grids, lists, timelines (one unit each).
+        """
+        count = 0
+        from gyml.constants import BlockType
+
+        content_types = {
+            BlockType.HEADING.value,
+            BlockType.PARAGRAPH.value,
+            BlockType.CODE.value,
+            BlockType.CALLOUT.value,
+            BlockType.CARD_GRID.value,
+            BlockType.BULLET_LIST.value,
+            BlockType.STEP_LIST.value,
+            BlockType.TIMELINE.value,
+            BlockType.STATS.value,
+            BlockType.QUOTE.value,
+            BlockType.DEFINITION.value,
+            BlockType.DIAGRAM.value,
+            BlockType.TABLE.value,
+        }
+
+        for section in slide.sections:
+            for block in section.blocks:
+                if block.type in content_types:
+                    count += 1
+                elif block.type in [
+                    BlockType.COLUMNS.value,
+                    BlockType.SMART_LAYOUT.value,
+                ]:
+                    count += 1
+
+        return count
 
     def _calculate_visual_density(self, slide: ComposedSlide) -> float:
         """

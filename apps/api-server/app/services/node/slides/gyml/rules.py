@@ -30,7 +30,12 @@ BLOCK_ORDER_GRAMMAR = [
 # Which block types belong to which grammar position
 BLOCK_GRAMMAR_MAPPING: Dict[str, List[str]] = {
     "heading": [BlockType.HEADING.value],
-    "context": [BlockType.PARAGRAPH.value, BlockType.CALLOUT.value],
+    "context": [
+        BlockType.PARAGRAPH.value,
+        BlockType.INTRO_PARAGRAPH.value,
+        BlockType.CONTEXT_PARAGRAPH.value,
+        BlockType.CALLOUT.value,
+    ],
     "main_content": [
         BlockType.BULLET_LIST.value,
         BlockType.STEP_LIST.value,
@@ -41,11 +46,13 @@ BLOCK_GRAMMAR_MAPPING: Dict[str, List[str]] = {
         BlockType.STATS.value,
     ],
     "supplementary": [
+        BlockType.ANNOTATION_PARAGRAPH.value,
+        BlockType.CAPTION.value,
         BlockType.CALLOUT.value,
         BlockType.IMAGE.value,
         BlockType.DIVIDER.value,
     ],
-    "takeaway": [BlockType.TAKEAWAY.value],
+    "takeaway": [BlockType.OUTRO_PARAGRAPH.value, BlockType.TAKEAWAY.value],
 }
 
 
@@ -158,6 +165,11 @@ SUPPORTING_BLOCKS: Set[str] = {
 TEXT_BLOCKS: Set[str] = {
     BlockType.HEADING.value,
     BlockType.PARAGRAPH.value,
+    BlockType.INTRO_PARAGRAPH.value,
+    BlockType.CONTEXT_PARAGRAPH.value,
+    BlockType.ANNOTATION_PARAGRAPH.value,
+    BlockType.OUTRO_PARAGRAPH.value,
+    BlockType.CAPTION.value,
 }
 
 INTENT_PREFERRED_BLOCKS: Dict[str, List[str]] = {

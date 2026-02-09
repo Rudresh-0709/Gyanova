@@ -29,7 +29,7 @@ class LayoutLimits:
 
     # "Hard" limits (Fitness Gate Failure)
     min_density_score: float = 0.4  # Reject if below this
-    max_density_score: float = 0.9  # Reject if above this
+    max_density_score: float = 1.5  # Reject if above this
 
 
 class ConstraintRules:

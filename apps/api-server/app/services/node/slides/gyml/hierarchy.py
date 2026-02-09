@@ -19,6 +19,7 @@ class TypographyScale:
     h4: str = "1.125rem"
     body: str = "1rem"
     small: str = "0.875rem"
+    card_number: str = "1.125rem"  # Size for numbers in lists/grids
     line_height_base: float = 1.6
     line_height_heading: float = 1.2
 
@@ -29,6 +30,9 @@ class SpacingProfile:
 
     section_padding: str = "3rem"
     block_gap: str = "1.5rem"
+    heading_gap: Optional[str] = (
+        None  # Specific gap after headers. If None, uses block_gap.
+    )
     card_gap: str = "1.25rem"
     card_padding: str = "1.5rem"
     column_gap: str = "2rem"
@@ -69,10 +73,11 @@ class VisualHierarchy:
             return VisualHierarchy(
                 name="balanced",
                 typography=TypographyScale(
-                    h1="3.15rem",
-                    h2="2.85rem",
-                    body="1.3rem",
-                    line_height_base=1.8,
+                    h1="2.75rem",
+                    h2="2.25rem",
+                    body="1.25rem",
+                    card_number="1.9rem",
+                    line_height_base=1.6,
                 ),
                 spacing=SpacingProfile(
                     section_padding="2.5rem",
@@ -86,7 +91,12 @@ class VisualHierarchy:
             return VisualHierarchy(
                 name="super_dense",
                 typography=TypographyScale(
-                    h1="1.75rem", h2="1.5rem", body="0.9rem", line_height_base=1.4
+                    h1="2.4rem",
+                    h2="1.75rem",
+                    body="1rem",
+                    small="0.95rem",  # Used for card text
+                    card_number="1.25rem",
+                    line_height_base=1.4,
                 ),
                 spacing=SpacingProfile(
                     section_padding="1.5rem",

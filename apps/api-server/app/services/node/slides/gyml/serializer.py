@@ -172,10 +172,30 @@ class GyMLSerializer:
             text = content.get("text", "")
             return GyMLHeading(level=level, text=text)
 
-        # Paragraph → p
+        # Paragraphs → p (with variants)
         elif block_type == BlockType.PARAGRAPH.value:
             text = content.get("text", "")
             return GyMLParagraph(text=text)
+
+        elif block_type == BlockType.INTRO_PARAGRAPH.value:
+            text = content.get("text", "")
+            return GyMLParagraph(text=text, variant="intro")
+
+        elif block_type == BlockType.CONTEXT_PARAGRAPH.value:
+            text = content.get("text", "")
+            return GyMLParagraph(text=text, variant="context")
+
+        elif block_type == BlockType.ANNOTATION_PARAGRAPH.value:
+            text = content.get("text", "")
+            return GyMLParagraph(text=text, variant="annotation")
+
+        elif block_type == BlockType.OUTRO_PARAGRAPH.value:
+            text = content.get("text", "")
+            return GyMLParagraph(text=text, variant="outro")
+
+        elif block_type == BlockType.CAPTION.value:
+            text = content.get("text", "")
+            return GyMLParagraph(text=text, variant="caption")
 
         # Divider
         elif block_type == BlockType.DIVIDER.value:
