@@ -109,10 +109,19 @@ def intro_narration_node(state: Dict[str, Any]) -> Dict[str, Any]:
     ):
         state["subtopic_intro_narrations"] = {}
 
-    slide_plan = state.get("slide_plan", {})
+    sub_topics = state.get("sub_topics", [])
 
-    for sub_id, sub_data in slide_plan.items():
-        sub_name = sub_data.get("subtopic_name")
+    # If sub_topics is missing (older state), fallback to slide_plan keys
+    if not sub_topics and "slide_plan" in state:
+        for sub_id, sub_data in state["slide_plan"].items():
+            sub_topics.append(
+                {"id": sub_id, "name": sub_data.get("subtopic_name", "Subtopic")}
+            )
+
+    for subtopic in sub_topics:
+        sub_id = subtopic.get("id")
+        sub_name = subtopic.get("name")
+
         if sub_id and sub_id not in state["subtopic_intro_narrations"]:
             print(f"Generating transition for subtopic: {sub_name}...")
             # Pass lesson_intro to explicitly force uniqueness
