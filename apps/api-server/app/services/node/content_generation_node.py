@@ -28,6 +28,12 @@ except ImportError:
     from llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
     from state import TutorState
 
+# Import segment counting for narration↔content alignment
+try:
+    from .audio_generation_node import segment_narration
+except ImportError:
+    from audio_generation_node import segment_narration
+
 # Import icon selector
 try:
     from ..icon_selector import select_icons_batch
@@ -145,6 +151,11 @@ def generate_narration(
     2. Be engaging, clear, and pedagogically sound.
     3. 120-180 words.
     4. NO markdown, NO "In this slide", NO "Moving on".
+    5. Your narration EXPLAINS what the student sees on screen.
+       The slide will show short labels, card headings, and brief summaries.
+       Your job is to ELABORATE with deeper context, examples, real-world
+       connections, and analogies that are NOT written on screen.
+       Do NOT just read out what the slide says — add value beyond the visuals.
     """
 
     resp = llm.invoke([{"role": "user", "content": prompt}])
@@ -197,16 +208,22 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
             # 2. Generate Narration
             narration = generate_narration(title, goal, subtopic_name, search_context)
 
-            # 3. Generate GyML JSON
+            # 3. Count narration segments for content alignment
+            segments = segment_narration(narration, "points")  # default to points
+            point_count = len(segments)
+            print(f"    → Narration: {point_count} segment(s)")
+
+            # 4. Generate GyML JSON (point_count ensures item count matches narration)
             generated_content = gyml_generator.generate(
                 narration=narration,
                 title=title,
-                purpose="explain",  # Default purpose
+                purpose="explain",
                 subtopic=subtopic_name,
                 context=search_context,
+                point_count=point_count,
             )
 
-            # 4. Store
+            # 5. Store
             slide_obj = {
                 **concept,
                 "subtopic_name": subtopic_name,

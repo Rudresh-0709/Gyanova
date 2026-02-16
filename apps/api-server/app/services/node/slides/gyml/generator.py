@@ -44,9 +44,15 @@ class GyMLContentGenerator:
         subtopic: str,
         hint: str = "",
         context: str = "",
+        point_count: int = 0,
     ) -> Dict[str, Any]:
         """
         Generate structured GyML content from narration.
+
+        Args:
+            point_count: Number of narration segments. When > 1, the primary
+                         smart_layout MUST have exactly this many items so
+                         animations stay in sync with audio.
         """
         prompt = f"""
         You are an expert educational content designer who creates visually rich, cognitively balanced slides.
@@ -165,6 +171,19 @@ class GyMLContentGenerator:
           ✗ 3+ callouts on any slide (visual noise)
           ✗ Timeline + bullet points showing the same information (redundant)
 
+        ON-SCREEN TEXT vs NARRATION (critical for engagement):
+          • On-screen text is the SHORT SUMMARY — card headings: 2-5 words, card descriptions: 1 short sentence (the "what")
+          • The narration IS the full explanation — it gives context, examples, analogies
+          • NEVER copy narration text verbatim into card descriptions or paragraphs
+          • Students read the slide while listening — if text = narration, it feels like reading a teleprompter
+          • On-screen = labels and key facts. Narration = the teacher explaining them.
+
+        {f'''ANIMATION ALIGNMENT (non-negotiable):
+          The narration has exactly {point_count} spoken segments/points.
+          Your primary smart_layout MUST have exactly {point_count} items.
+          Each item maps 1:1 to a narration segment for animation sync.
+          If the narration has 1 segment, use a single-content layout (paragraph, definition, or quote).''' if point_count > 0 else ''}
+
         ═══════════════════════════════════════════════
         STEP 4: FORMATTING
         ═══════════════════════════════════════════════
@@ -227,5 +246,3 @@ if __name__ == "__main__":
         subtopic="Company History",
     )
     print(json.dumps(result, indent=2))
-
-

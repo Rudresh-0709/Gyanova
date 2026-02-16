@@ -1,127 +1,4 @@
-"""
-GyML Renderer
-
-PASSIVE renderer: GyML → HTML.
-Maps GyML structure to HTML without any inference or semantic decisions.
-Designed to match Gamma-style professional slides.
-"""
-
-from typing import List, Optional
-import html
-
-from .definitions import (
-    GyMLSection,
-    GyMLBody,
-    GyMLHeading,
-    GyMLParagraph,
-    GyMLColumns,
-    GyMLColumnDiv,
-    GyMLSmartLayout,
-    GyMLSmartLayoutItem,
-    GyMLImage,
-    GyMLDivider,
-    GyMLTable,
-    GyMLCode,
-    GyMLNode,
-)
-from .theme import Theme, THEMES
-from .responsive import ResponsiveConstraints
-from .hierarchy import VisualHierarchy
-
-
-class GyMLRenderer:
-    """
-    PASSIVE renderer: GyML → HTML.
-    Gamma-style professional output.
-
-    When animated=True, injects data-segment attributes on animatable elements
-    (cards, columns, paragraphs) for reveal animations synced to narration audio.
-    Non-animatable elements (accent images, headings, timeline lines, tables,
-    code blocks) remain always visible.
-    """
-
-    def __init__(
-        self,
-        theme: Optional[Theme] = None,
-        responsive_constraints: Optional[ResponsiveConstraints] = None,
-        animated: bool = False,
-    ):
-        self.theme = theme or THEMES.get("gamma_light")
-        self.responsive_constraints = (
-            responsive_constraints or ResponsiveConstraints.default()
-        )
-        self.animated = animated
-        self._segment_counter = 0  # tracks current segment index per section
-
-    def render(self, section: GyMLSection) -> str:
-        """Passively render GyML section to HTML."""
-        # Reset segment counter for each section
-        self._segment_counter = 0
-        lines = []
-
-        # Generate hierarchy CSS variables if present
-        style_attr = ""
-        if section.hierarchy:
-            vars_list = []
-            # Typography
-            vars_list.append(f"--h1-size: {section.hierarchy.typography.h1}")
-            vars_list.append(f"--h2-size: {section.hierarchy.typography.h2}")
-            vars_list.append(f"--p-size: {section.hierarchy.typography.body}")
-            vars_list.append(
-                f"--line-height: {section.hierarchy.typography.line_height_base}"
-            )
-            vars_list.append(
-                f"--card-number-size: {section.hierarchy.typography.card_number}"
-            )
-            vars_list.append(f"--card-text-size: {section.hierarchy.typography.small}")
-
-            # Spacing
-            vars_list.append(
-                f"--section-padding: {section.hierarchy.spacing.section_padding}"
-            )
-            vars_list.append(f"--block-gap: {section.hierarchy.spacing.block_gap}")
-            vars_list.append(
-                f"--card-padding: {section.hierarchy.spacing.card_padding}"
-            )
-            h_gap = (
-                section.hierarchy.spacing.heading_gap
-                or section.hierarchy.spacing.block_gap
-            )
-            vars_list.append(f"--heading-gap: {h_gap}")
-
-            style_attr = f' style="{";\ ".join(vars_list)}"'
-
-        # Add animated data attribute so CSS knows to apply animation styles
-        anim_attr = ' data-animated="true"' if self.animated else ""
-
-        lines.append(
-            f'<section id="{self._escape(section.id)}" '
-            f'class="slide-section" '
-            f'role="region" aria-label="Slide {section.id}" '
-            f'data-image-layout="{section.image_layout}"'
-            f"{style_attr}{anim_attr}>"
-        )
-
-        # Accent images are NEVER animated (always visible)
-        if section.accent_image:
-            lines.append(self._render_accent_image(section.accent_image))
-
-        lines.append(self._render_body(section.body))
-        lines.append("</section>")
-
-        return "\n".join(lines)
-
-    def render_many(self, sections: List[GyMLSection]) -> str:
-        """Render multiple sections."""
-        rendered_sections = [self.render(s) for s in sections]
-        return "\n\n".join(rendered_sections)
-
-    def render_complete(self, sections: List[GyMLSection]) -> str:
-        """Render complete HTML document with Gamma-style styles."""
-        sections_html = self.render_many(sections)
-        animator_js = self._get_animator_js() if self.animated else ""
-
-        return f"""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -130,332 +7,7 @@ class GyMLRenderer:
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-{self._get_gamma_styles()}
-{self.theme.to_css_vars() if self.theme else ""}
-{self._get_responsive_styles()}
-    </style>
-</head>
-<body>
-    <div class="gyml-deck">
-{sections_html}
-    </div>
-{animator_js}
-</body>
-</html>"""
 
-    def _get_responsive_styles(self) -> str:
-        """Generate responsive CSS from constraints."""
-        c = self.responsive_constraints
-        css = ["/* Dynamic Responsive Styles */"]
-
-        # 1. Breakpoints
-        for bp_name, width in c.breakpoints.items():
-            fallback_padding = c.viewport_padding.get(bp_name, "1rem")
-            scale = c.typography_scale.get(bp_name, 1.0)
-
-            css.append(f"@media (max-width: {width}px) {{")
-
-            # Global adjustments
-            css.append("  :root {")
-            css.append(f"    --section-padding: {fallback_padding};")
-            # We can scale the base font size if we used rems correctly
-            css.append(f"    font-size: {scale * 100}%;")
-            css.append("  }")
-
-            # Apply layout fallbacks
-            if c.layout_fallbacks.get("columns") == "stack":
-                css.append("  .columns { flex-direction: column; }")
-                css.append("  .column { flex: 1 1 100% !important; }")
-
-            if c.layout_fallbacks.get("image_layout") == "stack":
-                css.append(
-                    "  section[data-image-layout='right'], section[data-image-layout='left'] {"
-                )
-                css.append(
-                    "    grid-template-columns: 1fr; display: flex; flex-direction: column;"
-                )
-                css.append("  }")
-                css.append("  .accent-image { max-width: 100%; margin-bottom: 1rem; }")
-
-            css.append("}")
-
-        return "\n".join(css)
-
-    # =========================================================================
-    # ELEMENT RENDERERS
-    # =========================================================================
-
-    def _render_accent_image(self, image: GyMLImage) -> str:
-        """Render accent image."""
-        if image.src == "placeholder":
-            return (
-                f'<div class="accent-image-placeholder">'
-                f'<div class="placeholder-content">'
-                f'<span class="placeholder-icon">🖼️</span>'
-                f'<span class="placeholder-text">{self._escape(image.alt)}</span>'
-                f"</div>"
-                f"</div>"
-            )
-
-        return (
-            f'<div class="accent-image-wrapper">'
-            f'<img class="accent-image" '
-            f'src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
-            f"</div>"
-        )
-
-    def _render_body(self, body: GyMLBody) -> str:
-        """Render body container."""
-        children_html = []
-        separator_count = 0  # Max 1 separator per slide
-        for i, child in enumerate(body.children):
-            rendered = self._render_node(child)
-            if rendered:
-                children_html.append(rendered)
-
-                # Add separator logic (between distinct major blocks) — max 1 per slide
-                if i < len(body.children) - 1 and separator_count < 1:
-                    next_child = body.children[i + 1]
-
-                    # Geometry Rule: Separator between Dense (Visual) and Flow (Text)
-                    is_dense_current = isinstance(
-                        child, (GyMLColumns, GyMLSmartLayout, GyMLTable, GyMLCode)
-                    )
-                    is_dense_next = isinstance(
-                        next_child, (GyMLColumns, GyMLSmartLayout, GyMLTable, GyMLCode)
-                    )
-
-                    # Flow elements: Paragraph, Heading
-                    is_flow_current = isinstance(child, (GyMLParagraph, GyMLHeading))
-                    is_flow_next = isinstance(next_child, (GyMLParagraph, GyMLHeading))
-
-                    should_separate = (
-                        (is_dense_current and is_dense_next)  # Between two visuals
-                        or (is_dense_current and is_flow_next)  # Visual -> Text
-                        or (is_flow_current and is_dense_next)  # Text -> Visual
-                    )
-
-                    if should_separate:
-                        children_html.append('<div class="block-separator"></div>')
-                        separator_count += 1
-
-        return f'<div class="body">\n{chr(10).join(children_html)}\n</div>'
-
-    def _render_node(self, node: GyMLNode) -> Optional[str]:
-        """Render any GyML node by type."""
-        if isinstance(node, GyMLHeading):
-            return self._render_heading(node)
-        elif isinstance(node, GyMLParagraph):
-            return self._render_paragraph(node)
-        elif isinstance(node, GyMLColumns):
-            return self._render_columns(node)
-        elif isinstance(node, GyMLSmartLayout):
-            return self._render_smart_layout(node)
-        elif isinstance(node, GyMLImage):
-            return self._render_inline_image(node)
-        elif isinstance(node, GyMLDivider):
-            return self._render_divider()
-        elif isinstance(node, GyMLCode):
-            return self._render_code(node)
-        elif isinstance(node, GyMLTable):
-            return self._render_table(node)
-        return f"<!-- Unknown node type: {type(node).__name__} -->"
-
-    def _render_heading(self, heading: GyMLHeading) -> str:
-        """Render heading."""
-        level = heading.level
-        text = self._escape(heading.text)
-        return f"<h{level}>{text}</h{level}>"
-
-    def _render_paragraph(self, paragraph: GyMLParagraph) -> str:
-        """Render paragraph."""
-        text = self._escape(paragraph.text)
-        variant_class = f"p-{paragraph.variant}" if paragraph.variant else ""
-
-        if self.animated:
-            seg = self._segment_counter
-            self._segment_counter += 1
-            classes = f"{variant_class} anim-fade".strip()
-            return f'<p class="{classes}" ' f'data-segment="{seg}">{text}</p>'
-
-        class_attr = f' class="{variant_class}"' if variant_class else ""
-        return f"<p{class_attr}>{text}</p>"
-
-    def _render_divider(self) -> str:
-        """Render divider."""
-        return '<hr class="divider" />'
-
-    def _render_inline_image(self, image: GyMLImage) -> str:
-        """Render inline image."""
-        return (
-            f'<figure class="inline-image">'
-            f'<img src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
-            f"</figure>"
-        )
-
-    def _render_code(self, code: GyMLCode) -> str:
-        """Render code block."""
-        return (
-            f'<div class="code-block" data-variant="{self._escape(code.variant)}">'
-            f'<pre><code class="language-{self._escape(code.language)}">'
-            f"{self._escape(code.code)}"
-            f"</code></pre>"
-            f"</div>"
-        )
-
-    def _render_table(self, table: GyMLTable) -> str:
-        """Render table."""
-        headers_html = "".join(f"<th>{self._escape(h)}</th>" for h in table.headers)
-
-        rows_html = []
-        for row in table.rows:
-            cells_html = "".join(f"<td>{self._escape(c)}</td>" for c in row)
-            rows_html.append(f"<tr>{cells_html}</tr>")
-
-        return (
-            f'<div class="table-container" data-variant="{self._escape(table.variant)}">'
-            f"<table>"
-            f"<thead><tr>{headers_html}</tr></thead>"
-            f'<tbody>{"".join(rows_html)}</tbody>'
-            f"</table>"
-            f"</div>"
-        )
-
-    def _render_columns(self, columns: GyMLColumns) -> str:
-        """Render columns as flex container."""
-        widths_str = ",".join(str(w) for w in columns.colwidths)
-
-        html_parts = [f'<div class="columns" data-colwidths="{widths_str}">']
-
-        for i, col in enumerate(columns.columns):
-            width = columns.colwidths[i] if i < len(columns.colwidths) else 50
-
-            # Animation: columns slide in from left/right
-            if self.animated:
-                seg = self._segment_counter
-                self._segment_counter += 1
-                direction = "left" if i == 0 else "right"
-                html_parts.append(
-                    f'<div class="column anim-slide-{direction}" '
-                    f'data-segment="{seg}" '
-                    f'style="flex: 0 0 calc({width}% - 1rem);">'
-                )
-            else:
-                html_parts.append(
-                    f'<div class="column" style="flex: 0 0 calc({width}% - 1rem);">'
-                )
-
-            for child in col.children:
-                rendered = self._render_node(child)
-                if rendered:
-                    html_parts.append(rendered)
-
-            html_parts.append("</div>")
-
-        html_parts.append("</div>")
-        return "\n".join(html_parts)
-
-    def _render_smart_layout(self, layout: GyMLSmartLayout) -> str:
-        """Render smart-layout as grid container."""
-        variant = self._escape(layout.variant)
-        item_count = len(layout.items)
-
-        html_parts = [
-            f'<div class="smart-layout" '
-            f'data-variant="{variant}" '
-            f'data-item-count="{item_count}">'
-        ]
-
-        for i, item in enumerate(layout.items):
-            html_parts.append(self._render_smart_layout_item(item, layout.variant, i))
-
-        html_parts.append("</div>")
-        return "\n".join(html_parts)
-
-    def _render_smart_layout_item(
-        self, item: GyMLSmartLayoutItem, variant: str, index: int = 0
-    ) -> str:
-        """Render smart-layout-item Gamma-style."""
-        # Animation: cards get data-segment for sequential reveal
-        # Each card maps to one narration segment
-        if self.animated:
-            seg = self._segment_counter
-            self._segment_counter += 1
-            # Comparison cards slide from sides, others slide up
-            if variant == "comparison":
-                direction = "left" if index == 0 else "right"
-                anim_class = f"anim-slide-{direction}"
-            else:
-                anim_class = "anim-slide-up"
-            html_parts = [
-                f'<div class="card {anim_class}" '
-                f'data-index="{index}" data-segment="{seg}">'
-            ]
-        else:
-            html_parts = [f'<div class="card" data-index="{index}">']
-
-        # Number badge at top (Gamma style)
-        if variant in ["bigBullets", "processSteps", "cardGrid"]:
-            html_parts.append(f'<div class="card-number">{index + 1}</div>')
-
-        # Icon
-        if item.icon:
-            icon_class = item.icon.alt
-            if not icon_class.startswith("ri-"):
-                icon_class = f"ri-{icon_class}-line"
-            html_parts.append(
-                f'<div class="card-icon"><i class="{self._escape(icon_class)}"></i></div>'
-            )
-
-        # Content
-        html_parts.append('<div class="card-content">')
-
-        if variant == "timeline":
-            if item.year:
-                html_parts.append(
-                    f'<div class="card-year">{self._escape(item.year)}</div>'
-                )
-            if item.description:
-                html_parts.append(
-                    f'<p class="card-text">{self._escape(item.description)}</p>'
-                )
-
-        elif variant == "stats":
-            if item.value:
-                html_parts.append(
-                    f'<div class="card-value">{self._escape(item.value)}</div>'
-                )
-            if item.label:
-                html_parts.append(
-                    f'<div class="card-label">{self._escape(item.label)}</div>'
-                )
-
-        else:
-            if item.heading:
-                html_parts.append(
-                    f'<h4 class="card-title">{self._escape(item.heading)}</h4>'
-                )
-            if item.description:
-                # Handle multiline descriptions (e.g. from comparison lists)
-                desc_html = self._escape(item.description).replace("\n", "<br>")
-                html_parts.append(f'<p class="card-text">{desc_html}</p>')
-
-        html_parts.append("</div>")
-        html_parts.append("</div>")
-
-        return "\n".join(html_parts)
-
-    def _escape(self, text: str) -> str:
-        """Escape HTML special characters."""
-        if not text:
-            return ""
-        return html.escape(str(text))
-
-    def _get_gamma_styles(self) -> str:
-        """Get Gamma-style CSS."""
-        return """
 /* ================================================
    GAMMA-STYLE SLIDE DESIGN
    Clean, professional, light theme
@@ -1383,11 +935,219 @@ section[data-animated="true"] .smart-layout[data-variant="timelineHorizontal"]::
     opacity: 1;
     visibility: visible;
 }
-"""
 
-    def _get_animator_js(self) -> str:
-        """Get the SlideAnimator JavaScript controller."""
-        return """
+
+:root {
+    --bg-primary: #0a0f1a;
+    --bg-secondary: #0f172a;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent: #38bdf8;
+    --border-color: #1e293b;
+    --number-bg: #1e293b;
+    --callout-bg: #1e293b;
+    --icon-bg: #38bdf8;
+    --timeline-color: #2d8a6e;
+    --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* Component Styles */
+    --card-shadow: none;
+    --card-radius: 0.5rem;
+    --divider-style: solid;
+}
+
+/* Dynamic Responsive Styles */
+@media (max-width: 480px) {
+  :root {
+    --section-padding: 1rem;
+    font-size: 85.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+@media (max-width: 768px) {
+  :root {
+    --section-padding: 2rem;
+    font-size: 90.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+@media (max-width: 1024px) {
+  :root {
+    --section-padding: 1rem;
+    font-size: 100.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+    </style>
+</head>
+<body>
+    <div class="gyml-deck">
+<section id="slide_77a5137a_part_0" class="slide-section" role="region" aria-label="Slide slide_77a5137a_part_0" data-image-layout="right" style="--h1-size: 2.75rem;\ --h2-size: 2.25rem;\ --p-size: 1.25rem;\ --line-height: 1.6;\ --card-number-size: 1.9rem;\ --card-text-size: 0.875rem;\ --section-padding: 2.5rem;\ --block-gap: 2.0rem;\ --card-padding: 1.25rem;\ --heading-gap: 3.0rem" data-animated="true">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<div class="body">
+<h1>The Five Generations of Computers (1/2)</h1>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="cardGridIcon" data-item-count="4">
+<div class="card anim-slide-up" data-index="0" data-segment="0">
+<div class="card-icon"><i class="ri-flashlight-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Vacuum Tubes</h4>
+<p class="card-text">Large machines using glass tubes to control electrical signals, foundational but slow and heat-intensive.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="1" data-segment="1">
+<div class="card-icon"><i class="ri-battery-charge-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Transistors</h4>
+<p class="card-text">Smaller, faster, and more reliable components that replaced vacuum tubes and reduced power use.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="2" data-segment="2">
+<div class="card-icon"><i class="ri-circuit-board-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Integrated Circuits</h4>
+<p class="card-text">Multiple transistors combined on a chip, enabling compact and efficient computing systems.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="3" data-segment="3">
+<div class="card-icon"><i class="ri-cpu-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Microprocessors</h4>
+<p class="card-text">Entire CPU on one chip, making personal computers accessible to individuals and small businesses.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="slide_77a5137a_part_1" class="slide-section" role="region" aria-label="Slide slide_77a5137a_part_1" data-image-layout="right" style="--h1-size: 2.25rem;\ --h2-size: 2rem;\ --p-size: 1rem;\ --line-height: 1.6;\ --card-number-size: 1.125rem;\ --card-text-size: 0.875rem;\ --section-padding: 3rem;\ --block-gap: 1.5rem;\ --card-padding: 1.5rem;\ --heading-gap: 1.5rem" data-animated="true">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<div class="body">
+<h1>The Five Generations of Computers (2/2)</h1>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="cardGridIcon" data-item-count="1">
+<div class="card anim-slide-up" data-index="0" data-segment="0">
+<div class="card-icon"><i class="ri-robot-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Artificial Intelligence</h4>
+<p class="card-text">Focus on smart systems and quantum computing that learn and assist with complex problem-solving.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="slide_30c76c9b_part_0" class="slide-section" role="region" aria-label="Slide slide_30c76c9b_part_0" data-image-layout="right" style="--h1-size: 2.75rem;\ --h2-size: 2.25rem;\ --p-size: 1.25rem;\ --line-height: 1.6;\ --card-number-size: 1.9rem;\ --card-text-size: 0.875rem;\ --section-padding: 2.5rem;\ --block-gap: 2.0rem;\ --card-padding: 1.25rem;\ --heading-gap: 3.0rem" data-animated="true">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<div class="body">
+<h1>Vacuum Tubes: The First Generation (1/2)</h1>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="cardGridIcon" data-item-count="4">
+<div class="card anim-slide-up" data-index="0" data-segment="0">
+<div class="card-icon"><i class="ri-lightbulb-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">How Vacuum Tubes Worked</h4>
+<p class="card-text">They acted like tiny valves controlling electricity flow, amplifying signals and switching currents.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="1" data-segment="1">
+<div class="card-icon"><i class="ri-alert-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Drawbacks of Vacuum Tubes</h4>
+<p class="card-text">Bulky, fragile, and heat-generating, making machines large and prone to overheating.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="2" data-segment="2">
+<div class="card-icon"><i class="ri-computer-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">ENIAC Computer</h4>
+<p class="card-text">A massive 1940s machine using vacuum tubes, capable of fast complex calculations.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="3" data-segment="3">
+<div class="card-icon"><i class="ri-tools-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">ENIAC Limitations</h4>
+<p class="card-text">Required constant maintenance as vacuum tubes frequently burned out.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="slide_30c76c9b_part_1" class="slide-section" role="region" aria-label="Slide slide_30c76c9b_part_1" data-image-layout="right-wide" style="--h1-size: 2.25rem;\ --h2-size: 2rem;\ --p-size: 1rem;\ --line-height: 1.6;\ --card-number-size: 1.125rem;\ --card-text-size: 0.875rem;\ --section-padding: 3rem;\ --block-gap: 1.5rem;\ --card-padding: 1.5rem;\ --heading-gap: 1.5rem" data-animated="true">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<div class="body">
+<h1>Vacuum Tubes: The First Generation (2/2)</h1>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="cardGridIcon" data-item-count="2">
+<div class="card anim-slide-up" data-index="0" data-segment="0">
+<div class="card-icon"><i class="ri-battery-charge-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Transition to Transistors</h4>
+<p class="card-text">Smaller, reliable, and energy-efficient transistors replaced vacuum tubes.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="1" data-segment="1">
+<div class="card-icon"><i class="ri-rocket-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Legacy of Vacuum Tubes</h4>
+<p class="card-text">Essential pioneers whose limitations drove innovation in computing technology.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="slide_b951f5d2_0" class="slide-section" role="region" aria-label="Slide slide_b951f5d2_0" data-image-layout="blank" style="--h1-size: 2.4rem;\ --h2-size: 1.75rem;\ --p-size: 1rem;\ --line-height: 1.4;\ --card-number-size: 1.25rem;\ --card-text-size: 0.95rem;\ --section-padding: 1.5rem;\ --block-gap: 0.75rem;\ --card-padding: 1rem;\ --heading-gap: 0.75rem" data-animated="true">
+<div class="body">
+<h1>Advantages and Limitations of Early Computers</h1>
+<p class="p-intro anim-fade" data-segment="0">Early computers revolutionized computing by performing calculations faster and more accurately than humans, enabling breakthroughs in science, engineering, and military fields.</p>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="cardGridIcon" data-item-count="3">
+<div class="card anim-slide-up" data-index="0" data-segment="1">
+<div class="card-icon"><i class="ri-rocket-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Fast and Accurate</h4>
+<p class="card-text">Performed complex calculations in minutes, saving hours or days of manual work.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="1" data-segment="2">
+<div class="card-icon"><i class="ri-building-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Large and Power-Hungry</h4>
+<p class="card-text">Occupied entire rooms and consumed significant electricity, making them costly to run.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="2" data-segment="3">
+<div class="card-icon"><i class="ri-lightbulb-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Unreliable Components</h4>
+<p class="card-text">Used vacuum tubes prone to overheating and frequent failures, limiting reliability.</p>
+</div>
+</div>
+</div>
+<p class="p-annotation anim-fade" data-segment="4">These strengths and weaknesses shaped early computer use, restricting access to large organizations while laying groundwork for future advances.</p>
+</div>
+</section>
+    </div>
+
 <script>
 /**
  * SlideAnimator — Controls segment-by-segment reveal of slide elements.
@@ -1459,4 +1219,202 @@ document.querySelectorAll('section[data-animated="true"]').forEach(section => {
     window.slideAnimators[section.id] = new SlideAnimator(section);
 });
 </script>
-"""
+
+
+<script>
+const AUDIO_LISTS = [["file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s1/segment_1.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s1/segment_2.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s1/segment_3.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s1/segment_4.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s1/segment_5.mp3"], ["file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s2/segment_1.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s2/segment_2.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s2/segment_3.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s2/segment_4.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s2/segment_5.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s2/segment_6.mp3"], ["file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s3/segment_1.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s3/segment_2.mp3", "file:///d:/DATA/Desktop/AI_TUTOR/ai-teacher-app/apps/api-server/app/services/node/slides/gyml/test_audio_output/aligned_s3/segment_3.mp3"]];
+
+class AudioAnimationController {
+    constructor(sectionId, audioFiles) {
+        this.sectionId = sectionId;
+        this.animator = window.slideAnimators[sectionId];
+        this.audioFiles = audioFiles;
+        this.currentAudioIdx = 0;
+        this.audio = new Audio();
+        this.playing = false;
+
+        const totalAnims = this.animator.totalSegments;
+        const totalAudio = this.audioFiles.length;
+
+        this.revealMap = [];
+        if (totalAudio === 1) {
+            this.revealMap = [Array.from({length: totalAnims}, (_, i) => i)];
+        } else if (totalAudio === totalAnims) {
+            for (let i = 0; i < totalAudio; i++) this.revealMap.push([i]);
+        } else if (totalAnims > 0 && totalAudio > 0) {
+            for (let a = 0; a < totalAudio; a++) {
+                const start = Math.round(a * totalAnims / totalAudio);
+                const end = Math.round((a + 1) * totalAnims / totalAudio);
+                this.revealMap.push(Array.from({length: end - start}, (_, i) => start + i));
+            }
+        }
+
+        console.log(`  ${sectionId}: ${totalAudio} audio -> ${totalAnims} anims, map:`, this.revealMap);
+        this.audio.addEventListener('ended', () => this._onSegmentEnd());
+    }
+
+    play() {
+        this.currentAudioIdx = 0;
+        this.animator.reset();
+        this.playing = true;
+        const el = document.getElementById(this.sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => this._playAudio(0), 400);
+    }
+
+    _playAudio(audioIdx) {
+        if (audioIdx >= this.audioFiles.length) {
+            this.playing = false;
+            console.log('Done: ' + this.sectionId);
+            return;
+        }
+        const animSegments = this.revealMap[audioIdx] || [];
+        animSegments.forEach(segIdx => this.animator.revealSegment(segIdx));
+
+        console.log('Playing ' + this.sectionId + ': audio ' + (audioIdx + 1) +
+                     '/' + this.audioFiles.length + ' -> anims ' + JSON.stringify(animSegments));
+
+        this.audio.src = this.audioFiles[audioIdx];
+        this.audio.play().catch(e => {
+            console.error('Audio play failed (click page first):', e);
+            this.playing = false;
+        });
+        this.currentAudioIdx = audioIdx;
+    }
+
+    _onSegmentEnd() {
+        this._playAudio(this.currentAudioIdx + 1);
+    }
+
+    stop() {
+        this.audio.pause();
+        this.audio.currentTime = 0;
+        this.playing = false;
+    }
+
+    next() {
+        this.audio.pause();
+        this._playAudio(this.currentAudioIdx + 1);
+    }
+
+    reset() {
+        this.stop();
+        this.animator.reset();
+    }
+}
+
+window.audioControllers = {};
+const sectionIds = Object.keys(window.slideAnimators);
+sectionIds.forEach((sid, idx) => {
+    const audioFiles = AUDIO_LISTS[idx] || [];
+    if (audioFiles.length > 0) {
+        window.audioControllers[sid] = new AudioAnimationController(sid, audioFiles);
+    }
+});
+console.log('Audio Animation Controllers ready:', Object.keys(window.audioControllers));
+</script>
+
+<style>
+    .control-panel {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 12px;
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid #334155;
+        border-radius: 12px;
+        backdrop-filter: blur(12px);
+        min-width: 240px;
+        font-family: 'Inter', sans-serif;
+    }
+    .control-panel .slide-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #1e293b;
+    }
+    .control-panel .slide-group:last-child { border-bottom: none; }
+    .control-panel .slide-title {
+        font-size: 11px;
+        color: #94a3b8;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        padding: 2px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 220px;
+    }
+    .control-panel .btn-row { display: flex; gap: 4px; }
+    .control-panel button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 12px;
+        font-family: 'Inter', sans-serif;
+        transition: transform 0.1s, opacity 0.15s;
+        flex: 1;
+    }
+    .control-panel button:hover { opacity: 0.85; }
+    .control-panel button:active { transform: scale(0.96); }
+    .btn-play { background: linear-gradient(135deg, #38bdf8, #0ea5e9); color: #0f172a; }
+    .btn-next { background: #6366f1; color: white; }
+    .btn-stop { background: #f59e0b; color: #0f172a; }
+    .btn-reset { background: #ef4444; color: white; }
+    .panel-header {
+        font-size: 13px; color: #e2e8f0; font-weight: 700;
+        padding-bottom: 6px; border-bottom: 1px solid #334155; margin-bottom: 4px;
+    }
+    .seg-info { font-size: 10px; color: #64748b; padding-left: 2px; }
+</style>
+<div class="control-panel" id="ctrl-panel">
+    <div class="panel-header">Audio + Animation</div>
+</div>
+
+<script>
+(function() {
+    const panel = document.getElementById('ctrl-panel');
+    const sectionIds = Object.keys(window.audioControllers);
+    sectionIds.forEach((sid, idx) => {
+        const ctrl = window.audioControllers[sid];
+        const section = document.getElementById(sid);
+        const h1 = section ? section.querySelector('h1') : null;
+        const title = h1 ? h1.textContent.substring(0, 30) : ('Slide ' + (idx + 1));
+        const nAudio = ctrl.audioFiles.length;
+        const nAnims = ctrl.animator.totalSegments;
+
+        const group = document.createElement('div');
+        group.className = 'slide-group';
+        group.innerHTML = `
+            <div class="slide-title">${title}</div>
+            <div class="seg-info">${nAudio} audio, ${nAnims} animations</div>
+            <div class="btn-row">
+                <button class="btn-play" onclick="window.audioControllers['${sid}'].play()">Play</button>
+                <button class="btn-next" onclick="window.audioControllers['${sid}'].next()">Next</button>
+            </div>
+            <div class="btn-row">
+                <button class="btn-stop" onclick="window.audioControllers['${sid}'].stop()">Stop</button>
+                <button class="btn-reset" onclick="window.audioControllers['${sid}'].reset()">Reset</button>
+            </div>
+        `;
+        panel.appendChild(group);
+    });
+    const resetAll = document.createElement('div');
+    resetAll.className = 'slide-group';
+    resetAll.style.paddingTop = '4px';
+    resetAll.innerHTML = '<div class="btn-row"><button class="btn-reset" onclick="Object.values(window.audioControllers).forEach(c => c.reset())" style="flex:1">Reset All</button></div>';
+    panel.appendChild(resetAll);
+})();
+</script>
+
+</body>
+</html>
