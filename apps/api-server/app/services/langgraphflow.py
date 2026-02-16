@@ -7,6 +7,7 @@ Complete Pipeline:
 3. Slide JSON Generator (Planning + Rich Content + Narration + GyML)
 4. Intro Narration (Lesson and Subtopic intros)
 5. Rendering (GyML -> HTML)
+6. Audio Generation (OpenAI TTS)
 """
 
 # Import LangSmith configuration (enables automatic tracing)
@@ -17,6 +18,7 @@ from .node.sub_topic_node import extract_sub_topic
 from .node.content_generation_node import content_generation_node
 from .node.intro_narration_node import intro_narration_node
 from .node.rendering_node import rendering_node
+from .node.audio_generation_node import audio_generation_node
 from .state import TutorState
 
 from langgraph.graph import StateGraph, END
@@ -43,6 +45,9 @@ graph.add_node("intro_narration_node", intro_narration_node)
 # 5. Rendering (GyML -> HTML)
 graph.add_node("rendering_node", rendering_node)
 
+# 6. Audio Generation (OpenAI TTS)
+graph.add_node("audio_generation_node", audio_generation_node)
+
 # ═══════════════════════════════════════════════════════════════════════════
 # WORKFLOW EDGES (Sequential Pipeline)
 # ═══════════════════════════════════════════════════════════════════════════
@@ -52,7 +57,8 @@ graph.add_edge("topic_node", "sub_topic_node")
 graph.add_edge("sub_topic_node", "content_generation_node")
 graph.add_edge("content_generation_node", "intro_narration_node")
 graph.add_edge("intro_narration_node", "rendering_node")
-graph.add_edge("rendering_node", END)
+graph.add_edge("rendering_node", "audio_generation_node")
+graph.add_edge("audio_generation_node", END)
 
 # Compile the graph
 compiled_graph = graph.compile()

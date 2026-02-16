@@ -34,7 +34,7 @@ def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     # Initialize pipeline
     composer = SlideComposer()
     serializer = GyMLSerializer()
-    renderer = GyMLRenderer(theme=get_theme("midnight"))  # Default theme
+    renderer = GyMLRenderer(theme=get_theme("midnight"), animated=True)
 
     print("🎨 [Rendering Node] Starting GyML rendering pipeline...")
 
