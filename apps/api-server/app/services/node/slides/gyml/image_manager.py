@@ -6,7 +6,7 @@ Decoupled from Composer to allow stricter validation rules.
 
 from dataclasses import dataclass
 from typing import Optional, Literal
-from gyml.definitions import ComposedSlide, GyMLImage
+from .definitions import ComposedSlide, GyMLImage
 
 # Placement Types
 ImagePlacementValue = Literal["right", "left", "top", "behind", "blank"]

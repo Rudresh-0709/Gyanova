@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GYANOVA - From Topic to Structured Lesson</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#6366f1", // Indigo-500
+              secondary: "#8b5cf6", // Violet-500
+              "background-light": "#ffffff",
+              "background-dark": "#0f1115", // Deep charcoal/black
+              "surface-dark": "#181b21",
+              "electric-blue": "#2563EB",
+              "electric-blue-hover": "#1d4ed8",
+            },
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+              display: ["Space Grotesk", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              "xl": "1rem",
+              "2xl": "1.5rem",
+            },
+            backgroundImage: {
+                'glow-gradient': 'conic-gradient(from 180deg at 50% 50%, #4338ca 0deg, #6366f1 180deg, #a855f7 360deg)',
+            }
+          },
+        },
+      };
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .text-glow {
+            text-shadow: 0 0 40px rgba(99, 102, 241, 0.4);
+        }
+        .hero-glow {
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.15) 0%, rgba(15, 17, 21, 0) 70%);
+        }
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .bento-grid {
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(2, minmax(250px, auto));
+            }
+            .bento-item-1 { grid-column: span 2; grid-row: span 1; }
+            .bento-item-2 { grid-column: span 1; grid-row: span 1; }
+            .bento-item-3 { grid-column: span 1; grid-row: span 1; }
+            .bento-item-4 { grid-column: span 2; grid-row: span 1; }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 font-sans min-h-screen antialiased selection:bg-primary selection:text-white transition-colors duration-300 dark">
+<nav class="fixed w-full z-50 top-0 start-0 border-b border-gray-200 dark:border-white/5 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between px-6 py-4">
+<a class="flex items-center space-x-2 rtl:space-x-reverse" href="#">
+<div class="w-8 h-8 rounded bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold font-display text-lg">G</div>
+<span class="self-center text-xl font-bold whitespace-nowrap font-display tracking-tight dark:text-white">GYANOVA</span>
+</a>
+<div class="flex md:order-2 space-x-3 md:space-x-4 rtl:space-x-reverse items-center">
+<button class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5" onclick="document.documentElement.classList.toggle('dark')" type="button">
+<span class="material-symbols-outlined text-xl">dark_mode</span>
+</button>
+<a class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors hidden md:block" href="#">Log in</a>
+<button class="text-white bg-primary hover:bg-indigo-600 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:focus:ring-indigo-800 transition-all shadow-[0_0_15px_rgba(99,102,241,0.5)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]" type="button">Get Started</button>
+<button aria-controls="navbar-sticky" aria-expanded="false" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" data-collapse-toggle="navbar-sticky" type="button">
+<span class="sr-only">Open main menu</span>
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-sticky">
+<ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-transparent dark:border-gray-700">
+<li>
+<a aria-current="page" class="block py-2 px-3 text-white bg-primary rounded md:bg-transparent md:text-primary md:p-0 dark:text-white md:dark:text-primary" href="#">Product</a>
+</li>
+<li>
+<a class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-primary md:p-0 md:dark:hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700" href="#">Solutions</a>
+</li>
+<li>
+<a class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-primary md:p-0 md:dark:hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700" href="#">Pricing</a>
+</li>
+</ul>
+</div>
+</div>
+</nav>
+<section class="relative pt-32 pb-20 overflow-hidden dark:bg-background-dark">
+<div class="absolute inset-0 grid-bg opacity-30 pointer-events-none"></div>
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] hero-glow pointer-events-none"></div>
+<div class="absolute top-20 right-0 w-96 h-96 bg-secondary/20 rounded-full blur-3xl pointer-events-none mix-blend-screen"></div>
+<div class="absolute bottom-0 left-0 w-80 h-80 bg-primary/20 rounded-full blur-3xl pointer-events-none mix-blend-screen"></div>
+<div class="relative max-w-7xl mx-auto px-6 text-center z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-300 text-xs font-semibold mb-8">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+</span>
+                Engine v2.0 Now Live
+            </div>
+<h1 class="text-5xl md:text-7xl font-bold font-display tracking-tight text-gray-900 dark:text-white mb-6 text-glow leading-tight">
+                From Topic to <br class="hidden md:block"/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-pink-500">Structured Lesson — Instantly</span>
+</h1>
+<p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+                Generate complete interactive curricula in seconds. We automate the creation of pedagogical slides, logical diagrams, quizzes, and synced AI narration so you can focus on teaching.
+            </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+<button class="bg-white text-gray-900 dark:bg-white dark:text-background-dark font-semibold px-8 py-4 rounded-lg hover:scale-105 transition-transform duration-200 flex items-center justify-center gap-2 shadow-xl shadow-white/10">
+                    Try the Engine Free
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+<button class="glass-panel text-gray-800 dark:text-white font-medium px-8 py-4 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400">play_circle</span>
+                    See Output Samples
+                </button>
+</div>
+<div class="relative max-w-6xl mx-auto rounded-xl border border-gray-200 dark:border-white/10 shadow-2xl bg-white dark:bg-surface-dark overflow-hidden group">
+<div class="h-10 border-b border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-black/40 flex items-center px-4 gap-2 justify-between">
+<div class="flex gap-1.5">
+<div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+<div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+<div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+</div>
+<div class="px-3 py-1 rounded bg-gray-200 dark:bg-white/5 text-xs text-gray-500 font-mono flex items-center gap-2">
+<span class="material-symbols-outlined text-[10px]">lock</span>
+                        gyanova.app/engine/generate
+                    </div>
+<div class="w-10"></div>
+</div>
+<div class="flex h-[550px] text-left">
+<div class="w-1/3 border-r border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-black/20 p-6 flex flex-col">
+<div class="flex items-center justify-between mb-6">
+<span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Curriculum Tree</span>
+<span class="text-xs text-green-400 font-mono animate-pulse">Generating...</span>
+</div>
+<div class="space-y-3 relative">
+<div class="absolute left-[11px] top-6 bottom-6 w-0.5 bg-gray-200 dark:bg-white/10"></div>
+<div class="relative flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center z-10 shrink-0">
+<span class="material-symbols-outlined text-white text-[14px]">school</span>
+</div>
+<div class="flex-1 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 p-3 rounded-lg shadow-sm">
+<div class="font-semibold text-sm text-gray-900 dark:text-white">Topic: Neural Networks</div>
+</div>
+</div>
+<div class="relative flex items-center gap-3 pl-8 animate-fade-in-up" style="animation-delay: 0.1s">
+<div class="absolute left-[11px] top-1/2 w-6 h-0.5 bg-gray-200 dark:bg-white/10"></div>
+<div class="w-5 h-5 rounded-full bg-secondary flex items-center justify-center z-10 shrink-0 border-2 border-background-dark">
+<span class="material-symbols-outlined text-white text-[10px]">check</span>
+</div>
+<div class="flex-1 bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 p-2.5 rounded-lg">
+<div class="font-medium text-xs text-gray-900 dark:text-gray-200">1. Perceptron Basics</div>
+</div>
+</div>
+<div class="relative flex items-center gap-3 pl-8 animate-fade-in-up" style="animation-delay: 0.3s">
+<div class="absolute left-[11px] top-1/2 w-6 h-0.5 bg-gray-200 dark:bg-white/10"></div>
+<div class="w-5 h-5 rounded-full bg-secondary flex items-center justify-center z-10 shrink-0 border-2 border-background-dark">
+<span class="material-symbols-outlined text-white text-[10px]">sync</span>
+</div>
+<div class="flex-1 bg-indigo-500/10 border border-indigo-500/30 p-2.5 rounded-lg">
+<div class="font-medium text-xs text-indigo-300">2. Backpropagation</div>
+<div class="text-[10px] text-indigo-400/70 mt-1">Generating Flowchart...</div>
+</div>
+</div>
+<div class="relative flex items-center gap-3 pl-8 opacity-50">
+<div class="absolute left-[11px] top-1/2 w-6 h-0.5 bg-gray-200 dark:bg-white/10"></div>
+<div class="w-5 h-5 rounded-full bg-gray-700 flex items-center justify-center z-10 shrink-0 border-2 border-background-dark">
+<span class="material-symbols-outlined text-gray-400 text-[10px]">schedule</span>
+</div>
+<div class="flex-1 bg-white/5 border border-white/5 p-2.5 rounded-lg">
+<div class="font-medium text-xs text-gray-500">3. Gradient Descent</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex-1 bg-white dark:bg-[#13151a] p-8 relative flex flex-col justify-center items-center">
+<div class="absolute top-4 right-4 flex gap-2">
+<div class="bg-black/30 backdrop-blur px-3 py-1 rounded text-xs text-white font-mono flex items-center gap-2 border border-white/10">
+<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> REC (Narration)
+                             </div>
+</div>
+<div class="w-full max-w-2xl bg-white dark:bg-surface-dark aspect-video rounded-xl shadow-2xl border border-gray-200 dark:border-white/10 p-8 flex flex-col relative overflow-hidden">
+<div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+<h2 class="text-2xl font-bold text-gray-900 dark:text-white font-display mb-2 relative z-10">Backpropagation Logic</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-md relative z-10">Calculating the gradient of the loss function with respect to the weights.</p>
+<div class="flex-1 flex items-center justify-center gap-4 relative z-10">
+<div class="p-3 bg-indigo-500/10 border border-indigo-500/40 rounded text-xs text-indigo-300 font-mono w-24 text-center">Input Layer</div>
+<div class="h-0.5 w-8 bg-gray-600"></div>
+<div class="p-3 bg-purple-500/10 border border-purple-500/40 rounded text-xs text-purple-300 font-mono w-24 text-center ring-2 ring-purple-500/50 ring-offset-2 ring-offset-black animate-pulse">Hidden Layer</div>
+<div class="h-0.5 w-8 bg-gray-600"></div>
+<div class="p-3 bg-gray-800 border border-gray-700 rounded text-xs text-gray-500 font-mono w-24 text-center border-dashed">Output</div>
+</div>
+<div class="absolute top-1/2 left-1/2 transform translate-x-4 translate-y-4">
+<span class="material-symbols-outlined text-primary text-2xl drop-shadow-lg">near_me</span>
+<div class="bg-primary text-white text-[10px] px-2 py-0.5 rounded ml-4 mt-[-10px]">Generating Diagram...</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 bg-gray-50 dark:bg-[#0b0c0f]">
+<div class="max-w-7xl mx-auto px-6">
+<div class="text-center mb-16">
+<h2 class="text-3xl md:text-5xl font-bold font-display text-gray-900 dark:text-white mb-4">How GYANOVA Works</h2>
+<p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">Turn your source material into a complete learning experience in three steps.</p>
+</div>
+<div class="relative grid md:grid-cols-3 gap-8">
+<div class="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent border-t border-dashed border-indigo-500/50 z-0"></div>
+<div class="relative z-10 text-center group">
+<div class="w-24 h-24 mx-auto bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-full flex items-center justify-center shadow-lg mb-6 group-hover:border-primary/50 transition-colors duration-300">
+<span class="material-symbols-outlined text-4xl text-gray-400 group-hover:text-primary transition-colors">upload_file</span>
+</div>
+<div class="bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+<div class="text-primary font-mono text-sm mb-2 font-bold">01. INPUT</div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Source Material</h3>
+<p class="text-sm text-gray-600 dark:text-gray-400">
+                            Upload a PDF, paste a URL, or simply type a topic. Our engine parses the core concepts instantly.
+                        </p>
+</div>
+</div>
+<div class="relative z-10 text-center group">
+<div class="w-24 h-24 mx-auto bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-full flex items-center justify-center shadow-lg mb-6 group-hover:border-secondary/50 transition-colors duration-300">
+<span class="material-symbols-outlined text-4xl text-gray-400 group-hover:text-secondary transition-colors animate-spin-slow" style="animation-duration: 3s;">settings_suggest</span>
+</div>
+<div class="bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+<div class="text-secondary font-mono text-sm mb-2 font-bold">02. PROCESS</div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">AI Structuring</h3>
+<p class="text-sm text-gray-600 dark:text-gray-400">
+                            The engine builds a logical curriculum tree, drafts slide content, and designs diagrams.
+                        </p>
+</div>
+</div>
+<div class="relative z-10 text-center group">
+<div class="w-24 h-24 mx-auto bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/10 rounded-full flex items-center justify-center shadow-lg mb-6 group-hover:border-pink-500/50 transition-colors duration-300">
+<span class="material-symbols-outlined text-4xl text-gray-400 group-hover:text-pink-500 transition-colors">desktop_windows</span>
+</div>
+<div class="bg-white dark:bg-surface-dark border border-gray-200 dark:border-white/5 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+<div class="text-pink-500 font-mono text-sm mb-2 font-bold">03. OUTPUT</div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Interactive Lesson</h3>
+<p class="text-sm text-gray-600 dark:text-gray-400">
+                            Receive a fully interactive deck with quizzes, narration, and flowcharts ready to share.
+                        </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 overflow-hidden dark:bg-background-dark relative">
+<div class="max-w-7xl mx-auto px-6">
+<div class="mb-12">
+<h2 class="text-3xl md:text-5xl font-bold font-display text-gray-900 dark:text-white mb-4">Why GYANOVA is Different</h2>
+<p class="text-gray-600 dark:text-gray-400">Beyond simple text generation. We build structured knowledge.</p>
+</div>
+<div class="bento-grid">
+<div class="bento-item-1 group relative bg-surface-dark rounded-2xl p-8 border border-white/10 overflow-hidden hover:border-primary/50 transition-all duration-500">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
+<div class="relative z-10 h-full flex flex-col justify-between">
+<div>
+<div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-6 text-primary">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<h3 class="text-2xl font-bold text-white mb-2">Curriculum-Level Reasoning</h3>
+<p class="text-gray-400 leading-relaxed max-w-md">
+                                Most AI generates disconnected paragraphs. GYANOVA understands the pedagogical arc—scaffolding simple concepts into complex mastery over a series of slides.
+                            </p>
+</div>
+<div class="mt-8 flex gap-2">
+<span class="px-2 py-1 rounded bg-white/5 text-xs text-gray-300 border border-white/10">Bloom's Taxonomy Aware</span>
+<span class="px-2 py-1 rounded bg-white/5 text-xs text-gray-300 border border-white/10">Logical Flow</span>
+</div>
+</div>
+</div>
+<div class="bento-item-2 group relative bg-surface-dark rounded-2xl p-8 border border-white/10 overflow-hidden hover:border-secondary/50 transition-all duration-500">
+<div class="w-12 h-12 bg-secondary/20 rounded-lg flex items-center justify-center mb-6 text-secondary">
+<span class="material-symbols-outlined">account_tree</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-2">Smart Diagram Engine</h3>
+<p class="text-gray-400 text-sm leading-relaxed mb-6">
+                        Automatically converts text descriptions into visual flowcharts, mind maps, and cycle diagrams using Mermaid.js integration.
+                    </p>
+<div class="bg-black/40 rounded p-3 border border-white/5">
+<div class="flex items-center justify-center gap-2 text-xs text-gray-500">
+<div class="w-8 h-8 rounded border border-gray-700 flex items-center justify-center">A</div>
+<span class="material-symbols-outlined text-[10px]">arrow_forward</span>
+<div class="w-8 h-8 rounded border border-gray-700 flex items-center justify-center">B</div>
+</div>
+</div>
+</div>
+<div class="bento-item-3 group relative bg-surface-dark rounded-2xl p-8 border border-white/10 overflow-hidden hover:border-pink-500/50 transition-all duration-500">
+<div class="w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center mb-6 text-pink-500">
+<span class="material-symbols-outlined">record_voice_over</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-2">Synced AI Narration</h3>
+<p class="text-gray-400 text-sm leading-relaxed mb-4">
+                        Natural-sounding voiceovers generated for every slide, perfectly timed to animations and bullet points.
+                    </p>
+<div class="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+<div class="h-full bg-pink-500 w-2/3 animate-pulse"></div>
+</div>
+</div>
+<div class="bento-item-4 group relative bg-surface-dark rounded-2xl p-8 border border-white/10 overflow-hidden hover:border-blue-500/50 transition-all duration-500">
+<div class="absolute inset-0 grid-bg opacity-10 pointer-events-none"></div>
+<div class="flex flex-col md:flex-row items-center gap-8">
+<div class="flex-1">
+<div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mb-6 text-blue-500">
+<span class="material-symbols-outlined">touch_app</span>
+</div>
+<h3 class="text-2xl font-bold text-white mb-2">Interactive Learning Mode</h3>
+<p class="text-gray-400 leading-relaxed">
+                                Not just static slides. Users can click to reveal deeper insights, answer embedded quizzes, and interact with simulation parameters directly within the lesson.
+                            </p>
+</div>
+<div class="w-full md:w-1/3 bg-black/40 border border-white/10 rounded-lg p-4">
+<div class="text-xs text-gray-500 mb-2 font-mono">QUIZ COMPONENT</div>
+<div class="text-sm text-white font-medium mb-3">Which layer calculates error?</div>
+<div class="space-y-2">
+<div class="p-2 rounded bg-green-500/20 border border-green-500/40 text-xs text-green-300 flex justify-between">
+                                    Output Layer <span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="p-2 rounded bg-white/5 border border-white/10 text-xs text-gray-400">Input Layer</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 bg-[#050608] border-t border-white/5">
+<div class="max-w-7xl mx-auto px-6">
+<div class="text-center mb-16">
+<h2 class="text-3xl font-bold font-display text-white mb-4">Visual Intelligence Gallery</h2>
+<p class="text-gray-400">See what our engine generates automatically.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-8">
+<div class="group relative rounded-xl overflow-hidden bg-surface-dark border border-white/10 hover:border-primary/50 transition-all duration-300">
+<div class="aspect-[4/3] bg-black/50 p-6 flex items-center justify-center">
+<div class="flex flex-col items-center gap-4 w-full px-4">
+<div class="w-full h-0.5 bg-gray-700 relative">
+<div class="absolute left-[20%] top-[-4px] w-2 h-2 rounded-full bg-primary"></div>
+<div class="absolute left-[50%] top-[-4px] w-2 h-2 rounded-full bg-gray-500"></div>
+<div class="absolute left-[80%] top-[-4px] w-2 h-2 rounded-full bg-gray-500"></div>
+</div>
+<div class="grid grid-cols-3 w-full text-center gap-2">
+<div class="text-[10px] text-primary">2010</div>
+<div class="text-[10px] text-gray-500">2015</div>
+<div class="text-[10px] text-gray-500">2020</div>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-white/5">
+<h4 class="text-white font-semibold mb-1">Evolutionary Timeline</h4>
+<p class="text-xs text-gray-500">Auto-generated for historical or process topics.</p>
+</div>
+</div>
+<div class="group relative rounded-xl overflow-hidden bg-surface-dark border border-white/10 hover:border-secondary/50 transition-all duration-300">
+<div class="aspect-[4/3] bg-black/50 p-6 flex items-center justify-center">
+<div class="flex flex-col items-center gap-2">
+<div class="w-20 h-8 border border-secondary text-secondary text-[10px] flex items-center justify-center rounded">Start</div>
+<div class="h-4 w-0.5 bg-gray-700"></div>
+<div class="w-20 h-8 border border-white/20 text-gray-400 text-[10px] flex items-center justify-center rounded rotate-45 transform bg-surface-dark z-10">Decision</div>
+<div class="h-4 w-0.5 bg-gray-700"></div>
+<div class="flex gap-4">
+<div class="w-12 h-6 bg-gray-800 rounded"></div>
+<div class="w-12 h-6 bg-gray-800 rounded"></div>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-white/5">
+<h4 class="text-white font-semibold mb-1">System Architecture Flowchart</h4>
+<p class="text-xs text-gray-500">Visualizes logic flows and technical systems.</p>
+</div>
+</div>
+<div class="group relative rounded-xl overflow-hidden bg-surface-dark border border-white/10 hover:border-pink-500/50 transition-all duration-300">
+<div class="aspect-[4/3] bg-black/50 p-6 flex items-center justify-center">
+<div class="w-full h-full border border-white/10 rounded flex flex-col text-[10px] text-gray-400">
+<div class="flex border-b border-white/10 bg-white/5">
+<div class="flex-1 p-2 border-r border-white/10">Concept</div>
+<div class="flex-1 p-2">Pros</div>
+</div>
+<div class="flex border-b border-white/10">
+<div class="flex-1 p-2 border-r border-white/10 text-white">React</div>
+<div class="flex-1 p-2">Ecosystem</div>
+</div>
+<div class="flex">
+<div class="flex-1 p-2 border-r border-white/10 text-white">Vue</div>
+<div class="flex-1 p-2">Simplicity</div>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-white/5">
+<h4 class="text-white font-semibold mb-1">Concept Comparison</h4>
+<p class="text-xs text-gray-500">Automatically contrasts multiple entities or ideas.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-20 bg-white dark:bg-background-dark border-t border-gray-100 dark:border-white/5">
+<div class="max-w-4xl mx-auto px-6 text-center">
+<h2 class="text-4xl md:text-5xl font-bold font-display text-gray-900 dark:text-white mb-6">Ready to accelerate?</h2>
+<p class="text-lg text-gray-600 dark:text-gray-400 mb-10">
+                Join thousands of forward-thinking educators and designers building the future of learning with GYANOVA.
+            </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+<button class="w-full sm:w-auto bg-electric-blue hover:bg-electric-blue-hover text-white font-bold font-sans px-8 py-5 rounded-lg transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] flex justify-center items-center gap-2 text-lg">
+                    Build Your First AI Lesson Now
+                </button>
+</div>
+<p class="mt-6 text-sm text-gray-500 dark:text-gray-500">
+                No credit card required. 14-day free trial on Pro plans.
+            </p>
+</div>
+</section>
+<footer class="bg-gray-50 dark:bg-[#050608] border-t border-gray-200 dark:border-white/5 pt-16 pb-8">
+<div class="max-w-7xl mx-auto px-6">
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
+<div class="col-span-2 lg:col-span-2">
+<a class="flex items-center space-x-2 mb-6" href="#">
+<div class="w-8 h-8 rounded bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold font-display text-lg">G</div>
+<span class="self-center text-xl font-bold whitespace-nowrap font-display tracking-tight dark:text-white">GYANOVA</span>
+</a>
+<p class="text-gray-500 text-sm mb-6 max-w-xs">
+                        Empowering the next generation of knowledge creators with AI-driven tools that respect your workflow.
+                    </p>
+<div class="flex space-x-4">
+<a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="sr-only">Twitter</span><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path></svg></a>
+<a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="sr-only">GitHub</span><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg></a>
+</div>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Product</h3>
+<ul class="space-y-3">
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Features</a></li>
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Integrations</a></li>
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Pricing</a></li>
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Changelog</a></li>
+</ul>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Resources</h3>
+<ul class="space-y-3">
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Documentation</a></li>
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">API Reference</a></li>
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Community</a></li>
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Help Center</a></li>
+</ul>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Company</h3>
+<ul class="space-y-3">
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">About</a></li>
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Blog</a></li>
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Careers</a></li>
+<li><a class="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Legal</a></li>
+</ul>
+</div>
+</div>
+<div class="border-t border-gray-200 dark:border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
+<p class="text-gray-400 text-sm">© 2024 GYANOVA Inc. All rights reserved.</p>
+<div class="flex space-x-6 mt-4 md:mt-0">
+<a class="text-gray-400 hover:text-white text-sm" href="#">Privacy Policy</a>
+<a class="text-gray-400 hover:text-white text-sm" href="#">Terms of Service</a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+      // Force dark mode on load to match the "Deep charcoal/black background" request initially, but allow toggle.
+      if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+      } else {
+          document.documentElement.classList.add('dark');
+      }
+    </script>
+
+</body></html>

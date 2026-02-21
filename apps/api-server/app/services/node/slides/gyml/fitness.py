@@ -6,8 +6,8 @@ Separated from validator.py (structural) to focus on content heuristics.
 """
 
 from typing import List, Any, Tuple
-from gyml.definitions import ComposedSlide
-from gyml.constraints import ConstraintRules
+from .definitions import ComposedSlide
+from .constraints import ConstraintRules
 
 
 class FitnessException(Exception):

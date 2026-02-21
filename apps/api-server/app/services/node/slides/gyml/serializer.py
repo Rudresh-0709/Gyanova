@@ -121,16 +121,22 @@ class GyMLSerializer:
 
             # CASE: FLOW (Default)
             else:
+                print(f"DEBUG: Processing FLOW section ({section.purpose})")
                 if section.primary_block:
                     n = self._serialize_block(section.primary_block)
+                    print(
+                        f"DEBUG: Primary block {section.primary_block.type} serialized to {type(n)}"
+                    )
                     if n:
                         body_children.append(n)
 
                 for b in section.secondary_blocks:
                     n = self._serialize_block(b)
+                    print(f"DEBUG: Secondary block {b.type} serialized to {type(n)}")
                     if n:
                         body_children.append(n)
 
+        print(f"DEBUG: Finished assembling body_children, length: {len(body_children)}")
         return GyMLSection(
             id=slide.id,
             image_layout=image_layout,

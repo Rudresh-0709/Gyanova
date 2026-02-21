@@ -206,6 +206,7 @@ class GyMLContentGenerator:
             ✓ GOOD: "A split composition with an old weathered path on one side and a sleek highway on the other"
 
         STRICT OUTPUT SCHEMA (JSON ONLY):
+        CRITICAL INSTRUCTION: The `contentBlocks` property MUST be an array of objects `[{...}, {...}]`. It must NEVER be a string, null, or empty space. If you fail to output an array of valid block objects, the app will crash severely.
         {self.llm_schema_placeholder if hasattr(self, 'llm_schema_placeholder') else self.schema}
 
         OUTPUT FORMAT:

@@ -123,7 +123,17 @@ def segment_narration(text: str, narration_format: str) -> List[str]:
     if len(segments) <= 1:
         return [text.strip()]
 
-    return segments
+    # Merge short segments (< 15 words) into the previous one to avoid
+    # tiny audio clips that cause animation timing issues
+    MIN_WORDS = 15
+    merged = [segments[0]]
+    for seg in segments[1:]:
+        if len(seg.split()) < MIN_WORDS and merged:
+            merged[-1] = merged[-1] + " " + seg
+        else:
+            merged.append(seg)
+
+    return merged if len(merged) > 1 else [text.strip()]
 
 
 # ═══════════════════════════════════════════════════════════════════════════

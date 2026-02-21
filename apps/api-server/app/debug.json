@@ -1,0 +1,26 @@
+{
+  "title": "Intro to Chemical Reactions",
+  "intent": "explain",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "Chemical reactions occur when substances change their properties."
+    },
+    {
+      "type": "smart_layout",
+      "variant": "cardGridSimple",
+      "items": [
+        {
+          "heading": "Example: Baking a Cake",
+          "text": "Ingredients combine and change to form a new product with different properties.",
+          "icon": "ri-rocket-line"
+        }
+      ]
+    },
+    {
+      "type": "annotation_paragraph",
+      "text": "Just like baking, chemical reactions transform starting materials into something new."
+    }
+  ],
+  "imagePrompt": "A warm kitchen scene with ingredients and a freshly baked cake, evoking transformation and creation"
+}

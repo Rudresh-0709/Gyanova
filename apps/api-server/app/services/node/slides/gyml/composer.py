@@ -440,8 +440,9 @@ class SlideComposer:
                     elif "items" in block.content:
                         items = block.content["items"]
 
-                # Check Limit (MAX 4 for complex layouts, 5 for simple)
-                limit = 4
+                # Check Limit (MAX 6 — the LLM controls item count,
+                # so we allow up to 6 items per slide before splitting)
+                limit = 6
                 density = SlideFitnessGate._calculate_estimated_height(slide)
                 if len(items) > limit:
                     # RULE: Skip column reflow for Medium (0.4-0.55) and Super Dense (0.95-1.25)
@@ -1204,7 +1205,7 @@ class SlideComposer:
         Grouped: Card grids, lists, timelines (one unit each).
         """
         count = 0
-        from gyml.constants import BlockType
+        from .constants import BlockType
 
         content_types = {
             BlockType.HEADING.value,

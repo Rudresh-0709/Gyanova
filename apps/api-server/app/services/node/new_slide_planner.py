@@ -247,11 +247,11 @@ def plan_slides_for_subtopic(
 
     # Determine slide count based on difficulty
     if difficulty.lower() == "beginner":
-        min_s, max_s = 2, 4
+        min_s, max_s = 4, 4
     elif difficulty.lower() == "intermediate":
-        min_s, max_s = 4, 6
+        min_s, max_s = 4, 4
     else:
-        min_s, max_s = 5, 8
+        min_s, max_s = 4, 4
 
     SYSTEM_PROMPT = f"""
     You are an AI Curriculum Planner. Your goal is to break down a subtopic into a series of educational slides.

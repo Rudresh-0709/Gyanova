@@ -1,15 +1,15 @@
-from ..llm.model_loader import load_groq,load_groq_fast,load_openai
+from ..llm.model_loader import load_groq, load_groq_fast, load_openai
 from ..state import TutorState
 import uuid
 import json
 import ast
 import re
 
-def extract_sub_topic(state:TutorState)->TutorState:
-    system_prompt = (
-    """You are an AI-powered educational assistant that helps design structured learning content. 
-    Given a topic, break it down into 3 to 7 essential sub-topics suitable for tutoring or lesson planning. 
-    Each sub-topic should be distinct, logically ordered, and relevant to building a full understanding of the topic.
+
+def extract_sub_topic(state: TutorState) -> TutorState:
+    system_prompt = """You are an AI-powered educational assistant that helps design structured learning content. 
+    Given a topic, break it down into exactly 1 essential sub-topic suitable for tutoring or lesson planning. 
+    The sub-topic should be relevant to building a full understanding of the topic.
 
     For each sub-topic, also estimate its difficulty level as "Beginner", "Intermediate", or "Advanced" based on 
     how much prior knowledge is typically required.
@@ -25,11 +25,10 @@ def extract_sub_topic(state:TutorState)->TutorState:
 
     If the topic is too vague, non-educational, or not suitable for breakdown, respond with: {"sub_topics": []}
     """
-)
-    user_prompt=state.get("topic","")
-    llm=load_groq()
-    topic=llm.invoke(system_prompt+" "+user_prompt)
-    
+    user_prompt = state.get("topic", "")
+    llm = load_groq()
+    topic = llm.invoke(system_prompt + " " + user_prompt)
+
     json_match = re.search(r"```json\s*([\s\S]*?)\s*```", topic.content)
     if json_match:
         json_string = json_match.group(1).strip()
@@ -37,22 +36,21 @@ def extract_sub_topic(state:TutorState)->TutorState:
         # Assume the whole content is the JSON string
         json_string = topic.content.strip()
     try:
-        data = json.loads(json_string)  
+        data = json.loads(json_string)
     except json.JSONDecodeError:
         print("Error: Model did not return valid JSON")
         print(topic.content)
-        state["sub_topics"]=[]
+        state["sub_topics"] = []
         return state
-    
+
     # Add unique IDs to subtopics
     for i, sub in enumerate(data.get("sub_topics", []), start=1):
         sub["id"] = f"sub_{i}_{uuid.uuid4().hex[:6]}"
 
-    state["sub_topics"]=data.get("sub_topics",[])
+    state["sub_topics"] = data.get("sub_topics", [])
     return state
 
-if __name__=="__main__":
-    State={
-    "topic": "Computer generations"
-    }
+
+if __name__ == "__main__":
+    State = {"topic": "Computer generations"}
     print(extract_sub_topic(State))

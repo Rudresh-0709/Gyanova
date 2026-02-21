@@ -162,14 +162,26 @@ def generate_slide(title, goal, subtopic, slide_id, tts_client, expected_points=
         point_count=n,
     )
 
-    # Count items in generated content
+    # STRICT SYNC: Force items to match segment count exactly
+    # This prevents the "drift" where 4 audio segments map to 6 cards, causing early playback.
     for block in gyml.get("contentBlocks", []):
         if block.get("type") == "smart_layout":
-            items = len(block.get("items", []))
+            items = block.get("items", [])
+            original_count = len(items)
+
+            if original_count > n:
+                print(f"    ⚠️ Trimming {original_count} items to match {n} segments")
+                block["items"] = items[:n]
+            elif original_count < n:
+                print(
+                    f"    ⚠️ Warning: {original_count} items for {n} segments (some audio will share cards)"
+                )
+
+            # Verify final count
+            final_items = len(block["items"])
             variant = block.get("variant", "?")
-            aligned = items == n
             print(
-                f"    -> smart_layout ({variant}): {items} items {'OK' if aligned else 'MISMATCH!'}"
+                f"    -> smart_layout ({variant}): {final_items} items (synced to {n} segments)"
             )
 
     # 4. Generate TTS audio per segment

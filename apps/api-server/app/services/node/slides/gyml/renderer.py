@@ -34,9 +34,9 @@ class GyMLRenderer:
     PASSIVE renderer: GyML → HTML.
     Gamma-style professional output.
 
-    When animated=True, injects data-segment attributes on animatable elements
-    (cards, columns, paragraphs) for reveal animations synced to narration audio.
-    Non-animatable elements (accent images, headings, timeline lines, tables,
+    When animated=True, injects data-segment attributes on primary content
+    (smart_layout cards only) for reveal animations synced to narration audio.
+    All other elements (paragraphs, columns, headings, accent images, tables,
     code blocks) remain always visible.
     """
 
@@ -89,7 +89,7 @@ class GyMLRenderer:
             )
             vars_list.append(f"--heading-gap: {h_gap}")
 
-            style_attr = f' style="{";\ ".join(vars_list)}"'
+            style_attr = f' style="{"; ".join(vars_list)}"'
 
         # Add animated data attribute so CSS knows to apply animation styles
         anim_attr = ' data-animated="true"' if self.animated else ""
@@ -273,11 +273,8 @@ class GyMLRenderer:
         text = self._escape(paragraph.text)
         variant_class = f"p-{paragraph.variant}" if paragraph.variant else ""
 
-        if self.animated:
-            seg = self._segment_counter
-            self._segment_counter += 1
-            classes = f"{variant_class} anim-fade".strip()
-            return f'<p class="{classes}" ' f'data-segment="{seg}">{text}</p>'
+        # Paragraphs are always visible (not animated)
+        # Only primary content (smart_layout cards) gets data-segment
 
         class_attr = f' class="{variant_class}"' if variant_class else ""
         return f"<p{class_attr}>{text}</p>"
@@ -288,6 +285,9 @@ class GyMLRenderer:
 
     def _render_inline_image(self, image: GyMLImage) -> str:
         """Render inline image."""
+        if not image.src or image.src.lower() == "null":
+            return ""
+
         return (
             f'<figure class="inline-image">'
             f'<img src="{self._escape(image.src)}" '
@@ -332,20 +332,10 @@ class GyMLRenderer:
         for i, col in enumerate(columns.columns):
             width = columns.colwidths[i] if i < len(columns.colwidths) else 50
 
-            # Animation: columns slide in from left/right
-            if self.animated:
-                seg = self._segment_counter
-                self._segment_counter += 1
-                direction = "left" if i == 0 else "right"
-                html_parts.append(
-                    f'<div class="column anim-slide-{direction}" '
-                    f'data-segment="{seg}" '
-                    f'style="flex: 0 0 calc({width}% - 1rem);">'
-                )
-            else:
-                html_parts.append(
-                    f'<div class="column" style="flex: 0 0 calc({width}% - 1rem);">'
-                )
+            # Columns are always visible (not animated)
+            html_parts.append(
+                f'<div class="column" style="flex: 0 0 calc({width}% - 1rem);">'
+            )
 
             for child in col.children:
                 rendered = self._render_node(child)
@@ -616,9 +606,10 @@ p {
 
 .p-annotation {
     font-size: 0.875rem;
-    background: #fbfbfb;
+    background: var(--callout-bg, #fbfbfb);
+    color: var(--text-primary, inherit);
     padding: 0.75rem;
-    border-left: 3px solid var(--accent-subtle, #e5e7eb);
+    border-left: 3px solid var(--accent, #e5e7eb);
     margin: 0.5rem 0;
 }
 
@@ -1456,7 +1447,14 @@ class SlideAnimator {
 // Auto-init: create animators for all animated sections
 window.slideAnimators = {};
 document.querySelectorAll('section[data-animated="true"]').forEach(section => {
-    window.slideAnimators[section.id] = new SlideAnimator(section);
+    const animator = new SlideAnimator(section);
+    window.slideAnimators[section.id] = animator;
+    
+    // Auto-reveal for static previews. Parent presentation controller 
+    // can reset() this if it wants to control the animation.
+    setTimeout(() => {
+        animator.revealAll();
+    }, 100);
 });
 </script>
 """

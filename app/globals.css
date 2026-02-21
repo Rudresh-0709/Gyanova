@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-primary: #6366f1;
+  --color-secondary: #8b5cf6;
+  --color-background-light: #ffffff;
+  --color-background-dark: #0f1115;
+  --color-surface-dark: #181b21;
+  --color-electric-blue: #2563EB;
+  --color-electric-blue-hover: #1d4ed8;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-serif: "Playfair Display", serif;
+  --image-glow-gradient: conic-gradient(from 180deg at 50% 50%, #4338ca 0deg, #6366f1 180deg, #a855f7 360deg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.text-glow {
+  text-shadow: 0 0 40px rgba(99, 102, 241, 0.4);
+}
+
+.hero-glow {
+  background: radial-gradient(circle at center, rgba(99, 102, 241, 0.15) 0%, rgba(15, 17, 21, 0) 70%);
+}
+
+.grid-bg {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .bento-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, minmax(250px, auto));
+  }
+
+  .bento-item-1 {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+
+  .bento-item-2 {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+
+  .bento-item-3 {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+
+  .bento-item-4 {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+}

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GYANOVA | Serious AI Education</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4f46e5",
+                        "muted-indigo": "#6366f1",
+                        "background-sky": "#f8fafc",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"],
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+            font-size: 22px;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+        .serif-text {
+            font-family: 'Playfair Display', serif;
+        }
+        .cloud-bg {
+            background: linear-gradient(to bottom, #e0f2fe 0%, #ffffff 15%, #ffffff 85%, #e0f2fe 100%);
+            position: relative;
+        }
+        .cloud-element {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.4;
+            filter: blur(80px);
+            border-radius: 100%;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="cloud-bg text-slate-900 min-h-screen selection:bg-indigo-100">
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+<div class="cloud-element bg-sky-100 w-[800px] h-[500px] -left-40 top-20"></div>
+<div class="cloud-element bg-white w-[900px] h-[600px] -right-40 top-[20%]"></div>
+<div class="cloud-element bg-sky-50 w-[700px] h-[500px] -left-20 top-[60%]"></div>
+<div class="cloud-element bg-white w-[800px] h-[600px] -right-20 bottom-10"></div>
+</div>
+<header class="w-full max-w-6xl mx-auto px-8 h-24 flex items-center justify-between relative z-20">
+<div class="flex items-center gap-3">
+<div class="size-9 bg-slate-900 rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined !text-white !text-xl">school</span>
+</div>
+<h2 class="text-xl font-bold tracking-[0.2em] text-slate-900 uppercase">GYANOVA</h2>
+</div>
+<nav class="flex items-center gap-8">
+<a class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors" href="#philosophies">Philosophy</a>
+<a class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors" href="#curriculum">Curriculum</a>
+<a class="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors" href="#testimonials">Voices</a>
+<button class="text-sm font-semibold text-slate-900 px-5 py-2 border border-slate-200 rounded-full hover:bg-slate-50 transition-colors bg-white/50 backdrop-blur-sm">Sign In</button>
+</nav>
+</header>
+<main class="relative z-10">
+<section class="min-h-[80vh] flex flex-col items-center justify-center px-8 text-center py-20 max-w-4xl mx-auto">
+<div class="mb-12">
+<span class="inline-block px-4 py-1.5 bg-slate-100/80 backdrop-blur-sm text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] rounded-full mb-8">
+                The Future of Deep Learning
+            </span>
+<h1 class="text-6xl md:text-7xl font-bold text-slate-900 tracking-tight leading-[1.1] mb-8">
+<span class="serif-text italic font-normal">Serious</span> AI Education <br/>
+                for <span class="text-slate-800">Deep Thinkers.</span>
+</h1>
+<p class="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed font-light">
+                A premium, distraction-free environment for mastering complex neural architectures. 
+                Experience a 'Notion-meets-classroom' workspace designed for rigorous academic focus.
+            </p>
+</div>
+<div class="flex flex-col sm:flex-row items-center gap-4">
+<button class="bg-muted-indigo/90 text-white px-10 py-4 rounded-full font-semibold text-lg hover:bg-muted-indigo shadow-lg shadow-indigo-100 transition-all">
+                Get Started
+            </button>
+<button class="flex items-center gap-2 px-8 py-4 text-slate-600 font-medium hover:text-slate-900 transition-colors">
+<span class="material-symbols-outlined">play_circle</span>
+                Watch the methodology
+            </button>
+</div>
+<div class="mt-32 w-full max-w-5xl">
+<div class="bg-white/40 backdrop-blur-xl border border-white/60 rounded-2xl p-4 shadow-2xl shadow-slate-200/50">
+<div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col md:flex-row h-[400px]">
+<div class="w-16 border-r border-slate-50 flex flex-col items-center py-6 gap-6 bg-slate-50/30">
+<div class="size-8 rounded-lg bg-slate-200"></div>
+<div class="size-8 rounded-lg bg-slate-100"></div>
+<div class="size-8 rounded-lg bg-slate-100"></div>
+</div>
+<div class="flex-1 p-10 text-left">
+<div class="flex items-center gap-2 mb-6">
+<div class="h-1.5 w-12 bg-indigo-100 rounded-full"></div>
+<div class="h-1.5 w-32 bg-slate-100 rounded-full"></div>
+</div>
+<div class="space-y-4 mb-10">
+<div class="h-8 w-3/4 bg-slate-900/5 rounded-md"></div>
+<div class="h-4 w-full bg-slate-400/10 rounded-md"></div>
+<div class="h-4 w-5/6 bg-slate-400/10 rounded-md"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="h-24 bg-slate-50 rounded-xl border border-slate-100/50"></div>
+<div class="h-24 bg-slate-50 rounded-xl border border-slate-100/50"></div>
+</div>
+</div>
+<div class="w-64 bg-slate-50/50 border-l border-slate-50 p-6 hidden lg:block">
+<div class="h-4 w-20 bg-slate-200 rounded mb-4"></div>
+<div class="h-32 bg-white rounded-lg border border-slate-100 mb-4"></div>
+<div class="h-10 bg-white rounded-full border border-slate-100 mt-auto"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-40 px-8 max-w-6xl mx-auto" id="philosophies">
+<div class="text-center mb-24">
+<h2 class="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400 mb-4">Our Foundation</h2>
+<p class="serif-text text-4xl text-slate-900">Three Pillars of Mastery</p>
+</div>
+<div class="grid md:grid-cols-3 gap-16">
+<div class="group">
+<div class="mb-8 overflow-hidden rounded-2xl bg-white border border-slate-100 p-8 shadow-sm group-hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined !text-4xl text-indigo-300 mb-6">lightbulb</span>
+<h3 class="text-xl font-semibold mb-4 text-slate-800 tracking-tight">Deep Thinking</h3>
+<p class="text-slate-500 leading-relaxed font-light">We prioritize first-principles understanding over superficial pattern matching. Logic before syntax.</p>
+</div>
+</div>
+<div class="group">
+<div class="mb-8 overflow-hidden rounded-2xl bg-white border border-slate-100 p-8 shadow-sm group-hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined !text-4xl text-indigo-300 mb-6">account_tree</span>
+<h3 class="text-xl font-semibold mb-4 text-slate-800 tracking-tight">Structured Learning</h3>
+<p class="text-slate-500 leading-relaxed font-light">A meticulously sequenced curriculum that builds complexity layer by layer, ensuring no gaps in knowledge.</p>
+</div>
+</div>
+<div class="group">
+<div class="mb-8 overflow-hidden rounded-2xl bg-white border border-slate-100 p-8 shadow-sm group-hover:shadow-md transition-shadow">
+<span class="material-symbols-outlined !text-4xl text-indigo-300 mb-6">psychology</span>
+<h3 class="text-xl font-semibold mb-4 text-slate-800 tracking-tight">AI Guided</h3>
+<p class="text-slate-500 leading-relaxed font-light">Leverage personalized AI tutors that adapt to your unique cognitive style and pace of acquisition.</p>
+</div>
+</div>
+</div>
+</section>
+<section class="py-40 px-8 bg-slate-50/30 backdrop-blur-sm border-y border-slate-100" id="curriculum">
+<div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+<div class="max-w-xl">
+<h2 class="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400 mb-4">Curriculum</h2>
+<p class="serif-text text-5xl text-slate-900 leading-tight">The Lesson Library</p>
+</div>
+<a class="text-sm font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-2 border-b border-slate-200 pb-1" href="#">
+                    Explore full curriculum <span class="material-symbols-outlined !text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<div class="group cursor-pointer">
+<div class="aspect-[4/3] rounded-2xl bg-white border border-slate-100 p-2 shadow-sm mb-6 transition-transform group-hover:-translate-y-1">
+<div class="w-full h-full rounded-xl bg-indigo-50/50 flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-transparent to-transparent"></div>
+<span class="material-symbols-outlined !text-5xl text-indigo-200">grid_view</span>
+</div>
+</div>
+<div class="px-2">
+<span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 block">Foundation</span>
+<h4 class="text-lg font-semibold text-slate-800 mb-2">Neural Architectures I</h4>
+<p class="text-sm text-slate-500 font-light">Deep dive into the mathematical scaffolding of modern transformers.</p>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-[4/3] rounded-2xl bg-white border border-slate-100 p-2 shadow-sm mb-6 transition-transform group-hover:-translate-y-1">
+<div class="w-full h-full rounded-xl bg-slate-100 flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-500 via-transparent to-transparent"></div>
+<span class="material-symbols-outlined !text-5xl text-slate-300">layers</span>
+</div>
+</div>
+<div class="px-2">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Advanced</span>
+<h4 class="text-lg font-semibold text-slate-800 mb-2">Latent Space Theory</h4>
+<p class="text-sm text-slate-500 font-light">Understanding the geometry of representation in high-dimensional spaces.</p>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="aspect-[4/3] rounded-2xl bg-white border border-slate-100 p-2 shadow-sm mb-6 transition-transform group-hover:-translate-y-1">
+<div class="w-full h-full rounded-xl bg-indigo-50/50 flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-transparent to-transparent"></div>
+<span class="material-symbols-outlined !text-5xl text-indigo-200">auto_awesome</span>
+</div>
+</div>
+<div class="px-2">
+<span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 block">Applications</span>
+<h4 class="text-lg font-semibold text-slate-800 mb-2">Generative Dynamics</h4>
+<p class="text-sm text-slate-500 font-light">From diffusion models to creative agency in autonomous systems.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-60 px-8 max-w-4xl mx-auto text-center" id="testimonials">
+<h2 class="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400 mb-20">Academic Perspectives</h2>
+<div class="space-y-32">
+<blockquote class="relative">
+<span class="serif-text text-3xl md:text-4xl text-slate-800 leading-relaxed italic">
+                    "Gyanova represents a shift from passive consumption to active intellectual pursuit. It is the digital equivalent of a quiet, sun-drenched library."
+                </span>
+<footer class="mt-8">
+<cite class="not-italic text-sm font-semibold tracking-widest uppercase text-slate-400">— Dr. Alistair Vance, Cognitive Research Lead</cite>
+</footer>
+</blockquote>
+<blockquote class="relative">
+<span class="serif-text text-3xl md:text-4xl text-slate-800 leading-relaxed italic">
+                    "The integration of Notion-like structure with AI-driven guidance creates a friction-less path for mastering even the most dense neural concepts."
+                </span>
+<footer class="mt-8">
+<cite class="not-italic text-sm font-semibold tracking-widest uppercase text-slate-400">— Prof. Elena Kostic, AI Ethics Chair</cite>
+</footer>
+</blockquote>
+</div>
+</section>
+<section class="py-40 px-8 flex flex-col items-center text-center">
+<div class="bg-slate-900 text-white rounded-[3rem] p-16 md:p-24 max-w-5xl w-full relative overflow-hidden shadow-2xl">
+<div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 blur-[100px] rounded-full"></div>
+<div class="relative z-10">
+<h2 class="serif-text text-5xl md:text-6xl mb-10 leading-tight">Begin your journey <br/>into deep learning.</h2>
+<button class="bg-white text-slate-900 px-12 py-5 rounded-full font-bold text-lg hover:bg-slate-50 transition-colors shadow-xl">
+                    Apply for Admission
+                </button>
+<p class="mt-8 text-slate-400 text-sm tracking-wide">Join a community of 50,000+ serious thinkers.</p>
+</div>
+</div>
+</section>
+</main>
+<footer class="w-full max-w-6xl mx-auto px-8 py-12 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10 text-slate-400 text-xs tracking-wider font-medium uppercase">
+<div class="flex items-center gap-8">
+<a class="hover:text-slate-600 transition-colors" href="#">Research</a>
+<a class="hover:text-slate-600 transition-colors" href="#">Privacy</a>
+<a class="hover:text-slate-600 transition-colors" href="#">Terms</a>
+</div>
+<div class="font-bold tracking-[0.2em] text-slate-500">
+        © GYANOVA IMMERSIVE LEARNING
+    </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined !text-sm">verified</span>
+        Validated Methodology
+    </div>
+</footer>
+
+</body></html>
