@@ -8,22 +8,24 @@ import re
 
 def extract_sub_topic(state: TutorState) -> TutorState:
     system_prompt = """You are an AI-powered educational assistant that helps design structured learning content. 
-    Given a topic, break it down into exactly 1 essential sub-topic suitable for tutoring or lesson planning. 
-    The sub-topic should be relevant to building a full understanding of the topic.
+    Your goal is to break down a topic into exactly 1 logical sub-topic for testing.
 
-    For each sub-topic, also estimate its difficulty level as "Beginner", "Intermediate", or "Advanced" based on 
-    how much prior knowledge is typically required.
+    CRITICAL RULES:
+    1. STICK EXACTLY to the user's topic. Do NOT rephrase it or change its scope.
+    2. TOTAL COVERAGE: If the user provides a topic with multiple parts (e.g., "Physical AND Chemical Reactions"), ensure BOTH parts are represented in the sub-topics. Do NOT ignore any part of the user's request.
+    3. The sub-topics should be logical segments of the EXACT topic provided.
+    4. For each sub-topic, estimate its difficulty level as "Beginner", "Intermediate", or "Advanced".
 
     Format the output as a valid JSON object like:
     {
-        "topic": "<original topic>",
+        "topic": "<EXACT original topic provided>",
         "sub_topics": [
-            {"name": "Sub-topic name", "difficulty": "Beginner"},
-            ...
+            {"name": "Sub-topic 1 name", "difficulty": "Beginner"},
+            {"name": "Sub-topic 2 name", "difficulty": "Beginner"}
         ]
     }
 
-    If the topic is too vague, non-educational, or not suitable for breakdown, respond with: {"sub_topics": []}
+    If the topic is too vague, respond with: {"sub_topics": []}
     """
     user_prompt = state.get("topic", "")
     llm = load_groq()

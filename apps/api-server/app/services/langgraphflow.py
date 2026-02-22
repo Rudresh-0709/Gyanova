@@ -15,6 +15,7 @@ from .langsmith_config import configure_langsmith
 
 from .node.topic_node import extract_topic
 from .node.sub_topic_node import extract_sub_topic
+from .node.lesson_planning_node import lesson_planning_node
 from .node.content_generation_node import content_generation_node
 from .node.intro_narration_node import intro_narration_node
 from .node.rendering_node import rendering_node
@@ -23,42 +24,39 @@ from .state import TutorState
 
 from langgraph.graph import StateGraph, END
 
-# Initialize the state graph
-graph = StateGraph(TutorState)
+# Phase 1 Graph: Just for Planning
+planning_builder = StateGraph(TutorState)
+planning_builder.add_node("topic_node", extract_topic)
+planning_builder.add_node("sub_topic_node", extract_sub_topic)
+planning_builder.add_node("planning_node", lesson_planning_node)
 
-# ═══════════════════════════════════════════════════════════════════════════
-# NODE DEFINITIONS
-# ═══════════════════════════════════════════════════════════════════════════
+planning_builder.set_entry_point("topic_node")
+planning_builder.add_edge("topic_node", "sub_topic_node")
+planning_builder.add_edge("sub_topic_node", "planning_node")
+planning_builder.add_edge("planning_node", END)
 
-# 1. Topic Analysis
-graph.add_node("topic_node", extract_topic)
+planning_graph = planning_builder.compile()
 
-# 2. Subtopic Breakdown
-graph.add_node("sub_topic_node", extract_sub_topic)
+# Phase 2 Graph: Full Generation (starting from content generation)
+full_builder = StateGraph(TutorState)
+# We add all nodes because the state might need to be re-run or partially run
+full_builder.add_node("topic_node", extract_topic)
+full_builder.add_node("sub_topic_node", extract_sub_topic)
+full_builder.add_node("planning_node", lesson_planning_node)
+full_builder.add_node("content_generation_node", content_generation_node)
+full_builder.add_node("intro_narration_node", intro_narration_node)
+full_builder.add_node("rendering_node", rendering_node)
+full_builder.add_node("audio_generation_node", audio_generation_node)
 
-# 3. Slide JSON Generator (Planning + Rich Content + Narration + GyML)
-graph.add_node("content_generation_node", content_generation_node)
+# Entry point for full generation can be dynamic, but usually it's topic_node
+# When resuming, we will manually trigger from content_generation_node
+full_builder.set_entry_point("content_generation_node")
+full_builder.add_edge("content_generation_node", "intro_narration_node")
+full_builder.add_edge("intro_narration_node", "rendering_node")
+full_builder.add_edge("rendering_node", "audio_generation_node")
+full_builder.add_edge("audio_generation_node", END)
 
-# 4. Intro Narration
-graph.add_node("intro_narration_node", intro_narration_node)
+full_graph = full_builder.compile()
 
-# 5. Rendering (GyML -> HTML)
-graph.add_node("rendering_node", rendering_node)
-
-# 6. Audio Generation (OpenAI TTS)
-graph.add_node("audio_generation_node", audio_generation_node)
-
-# ═══════════════════════════════════════════════════════════════════════════
-# WORKFLOW EDGES (Sequential Pipeline)
-# ═══════════════════════════════════════════════════════════════════════════
-
-graph.set_entry_point("topic_node")
-graph.add_edge("topic_node", "sub_topic_node")
-graph.add_edge("sub_topic_node", "content_generation_node")
-graph.add_edge("content_generation_node", "intro_narration_node")
-graph.add_edge("intro_narration_node", "rendering_node")
-graph.add_edge("rendering_node", "audio_generation_node")
-graph.add_edge("audio_generation_node", END)
-
-# Compile the graph
-compiled_graph = graph.compile()
+# Legacy alias for backward compatibility
+compiled_graph = full_builder.compile()  # Default to full for now

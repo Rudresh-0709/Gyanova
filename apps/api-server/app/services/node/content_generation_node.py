@@ -93,44 +93,6 @@ def load_llm_schema() -> str:
         return "{}"
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# CORE GENERATION LOGIC
-# ═══════════════════════════════════════════════════════════════════════════
-
-
-def plan_slides_for_subtopic(
-    subtopic_name: str, difficulty: str
-) -> List[Dict[str, str]]:
-    """Plans 3-5 slide concepts (titles/goals) for a subtopic without templates."""
-    llm = load_openai()
-
-    prompt = f"""
-    You are an AI Curriculum Planner. Plan a series of 3-5 slides for the subtopic: '{subtopic_name}'.
-    Difficulty: {difficulty}
-    
-    For each slide, provide a 'title' and a 'goal' (what the student should learn).
-    Ensure logical progression and high educational value.
-    DO NOT mention layouts or templates.
-
-    Output ONLY valid JSON:
-    {{
-        "slides": [
-            {{"title": "...", "goal": "..."}},
-            ...
-        ]
-    }}
-    """
-
-    resp = llm.invoke([{"role": "user", "content": prompt}])
-    try:
-        content = resp.content.replace("```json", "").replace("```", "").strip()
-        return json.loads(content).get("slides", [])
-    except:
-        return [
-            {"title": subtopic_name, "goal": f"Master the basics of {subtopic_name}."}
-        ]
-
-
 def generate_narration(
     slide_title: str, slide_goal: str, subtopic_name: str, context: str = ""
 ) -> str:
@@ -146,12 +108,21 @@ def generate_narration(
     - Slide Goal: {slide_goal}
     {f"📚 RESEARCH CONTEXT:\n{context}" if context else ""}
     
-    RULES:
+    STRUCTURE RULES:
+    1. Provide 3-5 distinct teaching points.
+    2. Use clear transition markers to separate these points so they can be animated:
+       - Start the first point with "First,"
+       - Start the second point with "Second,"
+       - Start the third point with "Third,"
+       - And so on...
+    3. Each point should be 25-40 words long.
+    4. Total length MUST be 120-180 words.
+
+    CONTENT RULES:
     1. Write exactly what the teacher would say.
     2. Be engaging, clear, and pedagogically sound.
-    3. 120-180 words.
-    4. NO markdown, NO "In this slide", NO "Moving on".
-    5. Your narration EXPLAINS what the student sees on screen.
+    3. NO markdown, NO "In this slide", NO "Moving on".
+    4. Your narration EXPLAINS what the student sees on screen.
        The slide will show short labels, card headings, and brief summaries.
        Your job is to ELABORATE with deeper context, examples, real-world
        connections, and analogies that are NOT written on screen.
@@ -162,15 +133,21 @@ def generate_narration(
     return resp.content.strip()
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# CORE GENERATION LOGIC
+# ═══════════════════════════════════════════════════════════════════════════
+
+
 def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     New Structured Content Node.
-    Iterates over subtopics and their slide concepts to generate:
+    Iterates over subtopics and their PRE-PLANNED slide concepts to generate:
     1. Narration
     2. GyML JSON
     """
     sub_topics = state.get("sub_topics", [])
     difficulty = state.get("difficulty", "Beginner")
+    plans = state.get("plans", {})
 
     if "slides" not in state:
         state["slides"] = {}
@@ -180,12 +157,15 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
         subtopic_name = subtopic.get("name")
         sub_difficulty = subtopic.get("difficulty", difficulty)
 
-        print(f"\n🎬 Planning and Generating for Subtopic: {subtopic_name}")
+        # Step 1: Use pre-generated plans
+        slide_concepts = plans.get(sub_id, [])
+        if not slide_concepts:
+            print(f"  ⚠ No plans found for subtopic: {subtopic_name}")
+            continue
 
-        # Step 1: Internal Planning (Subtopics from sub_topic_node don't have slides)
-        slide_concepts = plan_slides_for_subtopic(subtopic_name, sub_difficulty)
-
+        print(f"\n🎬 Generating Content for Subtopic: {subtopic_name}")
         state["slides"][sub_id] = []
+        layout_history = []  # Track layouts used within this subtopic
 
         for i, concept in enumerate(slide_concepts, start=1):
             title = concept.get("title")
@@ -221,7 +201,22 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 subtopic=subtopic_name,
                 context=search_context,
                 point_count=point_count,
+                layout_history=layout_history,
             )
+
+            # Update layout history for variety
+            blocks = generated_content.get("contentBlocks", [])
+            smart_layout = next(
+                (b for b in blocks if b.get("type") == "smart_layout"), None
+            )
+            if smart_layout:
+                layout_history.append(smart_layout.get("variant", "unknown"))
+            else:
+                layout_history.append(generated_content.get("intent", "explain"))
+
+            # Keep history short
+            if len(layout_history) > 3:
+                layout_history.pop(0)
 
             # 5. Store
             slide_obj = {

@@ -32,7 +32,12 @@ class TutorState(TypedDict, total=False):
 
     # Slide Planning & Content
     slide_plan: Dict[str, Any]
-    slides: Dict[str, List[Dict[str, Any]]]  # subtopic_id -> list of slides
+    plans: Dict[
+        str, List[Dict[str, Any]]
+    ]  # subtopic_id -> list of slide concepts (Phase 1)
+    slides: Dict[
+        str, List[Dict[str, Any]]
+    ]  # subtopic_id -> list of full slides (Phase 2)
 
     # Narration
     intro_text: str

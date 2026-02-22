@@ -1,5 +1,7 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.api import generate, slides, qna, tts
 
 app = FastAPI(title="GyML AI Teacher API")
@@ -17,6 +19,12 @@ app.include_router(generate.router, prefix="/api/generate", tags=["generate"])
 app.include_router(slides.router, prefix="/api/slides", tags=["slides"])
 app.include_router(qna.router, prefix="/api/qna", tags=["qna"])
 app.include_router(tts.router, prefix="/api/tts", tags=["tts"])
+
+# Serve audio files so the frontend player can fetch narration segments
+audio_dir = os.path.join(os.getcwd(), "audio_output")
+if os.path.isdir(audio_dir):
+    app.mount("/audio", StaticFiles(directory=audio_dir), name="audio")
+
 
 @app.get("/")
 def read_root():

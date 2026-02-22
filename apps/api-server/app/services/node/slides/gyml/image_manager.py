@@ -20,28 +20,37 @@ class ImageManager:
 
     @staticmethod
     def determine_placement(
-        slide_density: float, has_user_image: bool, intent: str
+        slide_density: float,
+        has_user_image: bool,
+        intent: str,
+        explicit_layout: Optional[ImagePlacementValue] = None,
+        slide_index: int = 0,
     ) -> ImagePlacementValue:
         """
-        Decide image layout based on density and intent.
+        Decide image layout based on density, intent, and explicit orientation.
 
         Rules:
-        - Density < 0.5: REQUIRE image (Right or Top) to fill space.
+        - If explicit_layout is provided, PRIORITIZE it (unless blank).
+        - Density < 0.5: REQUIRE image (Right or Left) to fill space.
         - Density > 0.8: AVOID large images (use 'top' or 'blank').
-        - User provided image: Always respect it, optimize placement.
+        - Fallback: Alternate between 'left' and 'right' based on slide_index.
         """
+        # 1. Respect Explicit Layout from LLM/Teacher
+        if explicit_layout and explicit_layout != "blank":
+            return explicit_layout
 
-        # 1. High Density (Avoid cramping)
+        # 2. High Density (Avoid cramping)
         if slide_density > 0.9:
-            # OVERRIDE: If user explicitly provided an image, respect the 2-column side layout
-            # (only use 'top' for auto-injected or very low value visuals)
+            # Respect user image but keep it right aligned if dense
             if has_user_image:
                 return "right"
             return "blank"
 
-        # 2. Low & Medium Density
-        # Always prefer filling space with an image (placeholder or user)
-        # unless it's dangerously dense.
+        # 3. Low & Medium Density - Alternate for Variety
+        # Logic: Odd slides = left, Even slides = right
+        if slide_index % 2 == 1:
+            return "left"
+
         return "right"
 
     @staticmethod

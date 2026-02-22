@@ -45,6 +45,7 @@ class GyMLContentGenerator:
         hint: str = "",
         context: str = "",
         point_count: int = 0,
+        layout_history: List[str] = None,
     ) -> Dict[str, Any]:
         """
         Generate structured GyML content from narration.
@@ -53,7 +54,11 @@ class GyMLContentGenerator:
             point_count: Number of narration segments. When > 1, the primary
                          smart_layout MUST have exactly this many items so
                          animations stay in sync with audio.
+            layout_history: List of recently used layout variants or intents
+                            to avoid repetition and ensure variety.
         """
+        history_str = ", ".join(layout_history) if layout_history else "None"
+
         prompt = f"""
         You are an expert educational content designer who creates visually rich, cognitively balanced slides.
         Convert the Teacher's Narration into a structured visual slide using GyML (Gyanova Markup Language).
@@ -64,20 +69,36 @@ class GyMLContentGenerator:
         - Subtopic: {subtopic}
         - Narration: {narration}
         {f"- Additional Context: {context}" if context else ""}
+        - RECENTLY USED LAYOUTS: {history_str}
 
         ═══════════════════════════════════════════════
-        STEP 1: DETERMINE THE INTENT
+        VARIETY ENFORCEMENT (CRITICAL)
         ═══════════════════════════════════════════════
-        Choose ONE intent based on the narration's goal:
-          introduce — Hook + context (first impression, minimal text, striking visual)
-          explain   — Clarity + progression (concept → diagram → example)
-          narrate   — Chronological story (timeline, milestones, journey)
-          compare   — Show differences/similarities (side-by-side, pros/cons)
-          list      — Enumerate features, steps, items
-          prove     — Evidence, data, statistics
-          summarize — Reinforce key points (brevity + impact, 3-5 bullets/cards)
-          teach     — Definitions, code, diagrams (build understanding)
-          demo      — Walkthrough, live example
+        Do NOT repeat the same 'smart_layout' variant, 'intent', or 'layout' orientation used in the recent slides if possible.
+        • If the last slide had the image on the 'right', use 'left' or 'top' for this one.
+        • Aim for a dynamic progression: hook (introduce) -> explain -> compare -> list -> summarize.
+        • Every lesson must have at least 3 DIFFERENT smart_layout types across its slides.
+        • Use diverse variants: timelineMilestone instead of just timeline; cardGridIcon instead of cardGrid.
+
+        ═══════════════════════════════════════════════
+        STEP 1: DETERMINE THE INTENT & LAYOUT
+        ═══════════════════════════════════════════════
+        1. Choose ONE intent based on the narration's goal:
+           introduce — Hook + context (first impression, minimal text, striking visual)
+           explain   — Clarity + progression (concept → diagram → example)
+           narrate   — Chronological story (timeline, milestones, journey)
+           compare   — Show differences/similarities (side-by-side, pros/cons)
+           list      — Enumerate features, steps, items
+           prove     — Evidence, data, statistics
+           summarize — Reinforce key points (brevity + impact, 3-5 bullets/cards)
+           teach     — Definitions, code, diagrams (build understanding)
+           demo      — Walkthrough, live example
+
+        2. Choose ONE layout for the accent image:
+           right  — Image on the right (Standard, balanced)
+           left   — Image on the left (Great for alternating variety)
+           top    — Full-width image at the top (High impact, hero feel)
+           blank  — No accent image (Use only if content is extremely dense)
 
         ═══════════════════════════════════════════════
         STEP 2: COMPOSE CONTENT BLOCKS
@@ -95,42 +116,37 @@ class GyMLContentGenerator:
            Every slide SHOULD have exactly ONE 'smart_layout' block as the primary visualization.
            Choose the best variant:
 
-           TIMELINES (for narrate/chronological content):
+           TIMELINES:
              timeline, timelineHorizontal, timelineSequential, timelineMilestone
-             → 3-5 milestones (sweet spot). Max 5. Beyond 5, split across slides.
 
-           CARD GRIDS (for explain/list/features):
+           CARD GRIDS:
              cardGrid, cardGridIcon, cardGridSimple, cardGridImage
-             → 3-4 cards (sweet spot). Max 6. Each card: heading + short text + optional icon.
 
-           STATS (for prove/data):
+           STATS:
              stats, statsComparison, statsPercentage
-             → 2-4 stat items. Each: value + label.
 
-           BULLETS (for list/teach):
+           BULLETS:
              bigBullets, bulletIcon, bulletCheck, bulletCross
-             → 3-4 bullets (sweet spot). Max 5-6. Beyond 6, split or convert to cards.
 
-           PROCESS STEPS (for explain/demo workflows):
+           PROCESS STEPS:
              processSteps, processArrow, processAccordion
 
-           COMPARISONS (for compare intent):
+           COMPARISONS:
              comparison, comparisonProsCons, comparisonBeforeAfter
-             → Two columns. 3-4 points per side max.
 
-           QUOTES (for narrate/introduce):
+           QUOTES:
              quote, quoteTestimonial, quoteCitation
 
-           DEFINITIONS (for teach):
-             definition → Use alone with simple supporting text. Do NOT pair with complex visuals.
+           DEFINITIONS:
+             definition
 
-           CODE (for teach/demo):
+           CODE:
              codeSnippet, codeComparison
 
-           DIAGRAMS (for explain/teach):
+           DIAGRAMS:
              diagramFlowchart, diagramHierarchy, diagramCycle, diagramPyramid
 
-           TABLES (for compare/prove/list):
+           TABLES:
              table, tableStriped, tableHighlight
 
         C. OPTIONAL SUPPORTING BLOCKS (max 1-2):
@@ -145,22 +161,20 @@ class GyMLContentGenerator:
           • Max word count: ~300 words (hard limit: 400)
           • One primary focus per slide. 70% visual weight to the primary element, 30% to supporting.
 
-        CONTENT ORDERING (top to bottom):
-          1. intro_paragraph (optional — sets the stage)
-          2. smart_layout (the MAIN content)
-          3. annotation_paragraph or caption (optional — adds nuance)
-          4. outro_paragraph or takeaway (optional — closes the slide)
+        CONTENT ORDERING (Adaptive):
+          Usually follow: Intro -> Smart Layout -> Annotation -> Outro.
+          However, you can put a 'callout' or 'takeaway' at the top if it creates a better hook.
 
-        INTENT-SPECIFIC RECIPES:
-          introduce → Headline + 1 striking visual/card layout + minimal text. Callouts: 0.
-          explain   → intro_paragraph + diagram/cards + annotation. Callouts: 1-2 (label key parts).
-          narrate   → intro_paragraph + timeline + outro_paragraph. Callouts: 0-1.
-          compare   → intro_paragraph + comparison layout + callout highlighting key difference. Callouts: 1-2.
-          list      → intro_paragraph + bullet/card grid + optional takeaway. Callouts: 0.
-          prove     → intro_paragraph + stats/table + callout with key insight. Callouts: 1.
-          summarize → 3-5 cards or bullets + takeaway. Minimal text. Callouts: 0-1.
-          teach     → context_paragraph + definition/code/diagram + annotation_paragraph. Callouts: 1-2.
-          demo      → intro_paragraph + code/processSteps + caption. Callouts: 0-1.
+        INTENT-SPECIFIC GUIDELINES:
+          introduce → Headline + 1 striking visual/card layout. Focus on emotion and the "why".
+          explain   → intro_paragraph + layout variant + annotation for nuance.
+          narrate   → Use timelines (rotate variants!) + short framing text.
+          compare   → Use comparison layouts. Alternate layout to 'left' for balance.
+          list      → Use grid or icon layouts. Avoid simple bullet lists if possible.
+          prove     → Stats/Table + Callout with key insight.
+          summarize → 3-5 cards or bullets + takeaway. Keep it punchy.
+          teach     → Definition/Code/Diagram + annotation. Prioritize clarity over flash.
+          demo      → Code or processSteps + caption describing the output.
 
         PROHIBITED COMBINATIONS (never do these):
           ✗ Dense paragraph + complex diagram on same slide (cognitive overload)

@@ -9,6 +9,17 @@
             "type": "string",
             "description": "Optional subtitle"
         },
+        "layout": {
+            "type": "string",
+            "enum": [
+                "right",
+                "left",
+                "top",
+                "behind",
+                "blank"
+            ],
+            "description": "The visual layout orientation for the accent image"
+        },
         "intent": {
             "type": "string",
             "enum": [

@@ -23,6 +23,141 @@ interface CustomSelectProps {
     onChange: (value: string) => void;
 }
 
+interface SlidePlan {
+    title: string;
+    goal: string;
+}
+
+interface PlanData {
+    topic: string;
+    sub_topics: Array<{ id: string; name: string }>;
+    plans: Record<string, SlidePlan[]>;
+}
+
+const LessonPlanPreview = ({
+    planData,
+    onConfirm,
+    onCancel,
+    isFinalizing
+}: {
+    planData: PlanData;
+    onConfirm: (data: { topic: string, sub_topics: any[], plans: Record<string, SlidePlan[]> }) => void;
+    onCancel: () => void;
+    isFinalizing: boolean;
+}) => {
+    const [editablePlans, setEditablePlans] = useState(planData?.plans || {});
+    const [editableTopic, setEditableTopic] = useState(planData?.topic || "");
+    const [editableSubTopics, setEditableSubTopics] = useState(planData?.sub_topics || []);
+
+    // Ensure state updates if planData changes
+    useEffect(() => {
+        if (planData) {
+            setEditablePlans(planData.plans || {});
+            setEditableTopic(planData.topic || "");
+            setEditableSubTopics(planData.sub_topics || []);
+        }
+    }, [planData]);
+
+    const updateSlide = (subId: string, slideIdx: number, field: 'title' | 'goal', value: string) => {
+        setEditablePlans(prev => {
+            const next = { ...prev };
+            const subPlans = [...(next[subId] || [])];
+            if (subPlans[slideIdx]) {
+                subPlans[slideIdx] = { ...subPlans[slideIdx], [field]: value };
+            }
+            next[subId] = subPlans;
+            return next;
+        });
+    };
+
+    const updateSubTopic = (id: string, name: string) => {
+        setEditableSubTopics(prev => prev.map(s => s.id === id ? { ...s, name } : s));
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full bg-gray-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative"
+        >
+            <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5 gap-4">
+                <div className="flex-1">
+                    <input
+                        value={editableTopic}
+                        onChange={(e) => setEditableTopic(e.target.value)}
+                        className="text-2xl font-bold text-white mb-1 bg-transparent focus:outline-none focus:ring-1 focus:ring-indigo-500/50 rounded px-1 w-full"
+                        placeholder="Lesson Topic"
+                    />
+                    <p className="text-gray-400 text-sm">Fine-tune your curriculum before generating content</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                    <button
+                        onClick={onCancel}
+                        className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <ShimmerButton
+                        onClick={() => onConfirm({
+                            topic: editableTopic,
+                            sub_topics: editableSubTopics,
+                            plans: editablePlans
+                        })}
+                        disabled={isFinalizing}
+                        className="h-10 px-6 text-sm"
+                    >
+                        {isFinalizing ? "Confirming..." : "Confirm & Generate"}
+                    </ShimmerButton>
+                </div>
+            </div>
+
+            <div className="space-y-10 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
+                {editableSubTopics.map((sub: any) => (
+                    <div key={sub.id} className="space-y-4">
+                        <div className="flex items-center gap-3 text-indigo-400 font-semibold uppercase text-xs tracking-widest pl-1">
+                            <Layers className="w-3.5 h-3.5" />
+                            <input
+                                value={sub.name}
+                                onChange={(e) => updateSubTopic(sub.id, e.target.value)}
+                                className="bg-transparent focus:outline-none focus:ring-1 focus:ring-indigo-500/30 rounded px-1 flex-1 py-1"
+                                placeholder="Subtopic Name"
+                            />
+                        </div>
+                        <div className="grid gap-3 pl-2 border-l border-white/5">
+                            {(editablePlans?.[sub.id] || []).map((slide, idx) => (
+                                <div
+                                    key={idx}
+                                    className="p-4 rounded-xl bg-black/40 border border-white/5 hover:border-white/10 transition-colors group"
+                                >
+                                    <div className="flex gap-4">
+                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] text-gray-500 font-mono mt-1">
+                                            {idx + 1}
+                                        </div>
+                                        <div className="flex-1 space-y-3">
+                                            <input
+                                                value={slide.title}
+                                                onChange={(e) => updateSlide(sub.id, idx, 'title', e.target.value)}
+                                                className="w-full bg-transparent text-white font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500/50 rounded px-1"
+                                                placeholder="Slide Title"
+                                            />
+                                            <textarea
+                                                value={slide.goal}
+                                                onChange={(e) => updateSlide(sub.id, idx, 'goal', e.target.value)}
+                                                className="w-full bg-transparent text-gray-400 text-sm h-12 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 rounded px-1 resize-none"
+                                                placeholder="Learning Goal"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </motion.div>
+    );
+};
+
 const CustomSelect = ({ label, icon: Icon, value, options, onChange }: CustomSelectProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -131,30 +266,25 @@ export default function LessonInputPage() {
         learning_goal: "Understand Core Concepts",
         granularity: "Detailed",
         preferred_method: "Socratic",
-        teacher_gender: "Female", // Default, hidden for now
+        teacher_gender: "Female",
     });
 
     const { data: session, status } = useSession();
     const router = useRouter();
+
+    // UI Phase State
+    const [step, setStep] = useState<'form' | 'review' | 'generating'>('form');
+    const [taskId, setTaskId] = useState<string | null>(null);
+    const [planData, setPlanData] = useState<PlanData | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [generationStatus, setGenerationStatus] = useState<string>("");
-
 
     useEffect(() => {
         if (status === "unauthenticated") {
             router.push("/");
         }
     }, [status, router]);
-
-    if (status === "loading") {
-        return (
-            <div className="min-h-screen w-full bg-background-light dark:bg-background-dark flex items-center justify-center">
-                <BackgroundBeams className="opacity-40" />
-                <div className="text-white animate-pulse">Loading session...</div>
-            </div>
-        );
-    }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -167,7 +297,6 @@ export default function LessonInputPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!formData.topic.trim()) {
             setError("Please enter a topic.");
             return;
@@ -175,226 +304,212 @@ export default function LessonInputPage() {
 
         setIsGenerating(true);
         setError(null);
+        setGenerationStatus("Starting engine...");
 
         try {
-            console.log("Generating lesson for:", formData);
             const response = await fetch("/api/lesson/generate", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Failed to start lesson generation");
-            }
-
+            if (!response.ok) throw new Error("Failed to start planning");
             const data = await response.json();
-            console.log("Generation started, Task ID:", data.task_id);
-            setGenerationStatus("Starting engine...");
+            setTaskId(data.task_id);
 
-            // Poll for completion
-            let isComplete = false;
-            let pollCount = 0;
-            while (!isComplete) {
-                await new Promise(resolve => setTimeout(resolve, 5000)); // wait 5 seconds before each poll
-                pollCount++;
-                if (pollCount > 1) setGenerationStatus("Drafting curriculum...");
-                if (pollCount > 4) setGenerationStatus("Writing slide content...");
-                if (pollCount > 10) setGenerationStatus("Synthesizing audio narrations...");
-                if (pollCount > 20) setGenerationStatus("Rendering final output...");
-                if (pollCount > 40) setGenerationStatus("Almost done...");
+            // Start Polling for Planning
+            let planningComplete = false;
+            while (!planningComplete) {
+                await new Promise(r => setTimeout(r, 2000));
+                const res = await fetch(`/api/lesson/generate?taskId=${data.task_id}`);
 
-                const statusResponse = await fetch(`/api/lesson/generate?taskId=${data.task_id}`);
-
-                if (!statusResponse.ok) {
-                    throw new Error("Failed to check generation status");
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Server error (${res.status})`);
                 }
 
-                const statusData = await statusResponse.json();
-                console.log("Generation status:", statusData.status);
+                const statusData = await res.json();
 
-                if (statusData.status === "completed") {
-                    isComplete = true;
-                    console.log("Generation successful:", statusData.result);
-                    // Navigate to lesson viewing page with generated taskId
-                    router.push(`/lesson/${data.task_id}`);
+                if (statusData.status === "planning_completed") {
+                    setPlanData(statusData.result);
+                    setStep('review');
+                    planningComplete = true;
+                    setIsGenerating(false);
                 } else if (statusData.status === "failed") {
-                    throw new Error(statusData.error || "Generation failed on the backend");
+                    throw new Error(statusData.error || "Planning failed");
                 }
-                // If status is "pending" or "processing", the loop continues
+                setGenerationStatus("Analyzing topic and breaking down sub-topics...");
             }
-
         } catch (err: any) {
-            console.error("Generation error:", err);
-            setError(err.message || "An unexpected error occurred.");
-        } finally {
+            setError(err.message);
             setIsGenerating(false);
-            setGenerationStatus("");
         }
     };
 
+    const handleConfirmPlan = async (fullData: {
+        topic: string,
+        sub_topics: any[],
+        plans: Record<string, SlidePlan[]>
+    }) => {
+        if (!taskId) return;
+        setIsGenerating(true);
+        setStep('generating');
+        setError(null);
+
+        try {
+            const response = await fetch(`/api/lesson/generate/${taskId}/confirm`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(fullData),
+            });
+
+            if (!response.ok) throw new Error("Failed to confirm plan");
+
+            // Poll for Final Completion
+            let isComplete = false;
+            let pollCount = 0;
+            while (!isComplete) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                pollCount++;
+
+                if (pollCount > 1) setGenerationStatus("Drafting slide content...");
+                if (pollCount > 10) setGenerationStatus("Synthesizing audio narrations...");
+                if (pollCount > 20) setGenerationStatus("Rendering final output...");
+
+                const res = await fetch(`/api/lesson/generate?taskId=${taskId}`);
+                const statusData = await res.json();
+
+                if (statusData.status === "completed") {
+                    isComplete = true;
+                    router.push(`/lesson/${taskId}`);
+                } else if (statusData.status === "failed") {
+                    throw new Error(statusData.error || "Generation failed");
+                }
+            }
+        } catch (err: any) {
+            setError(err.message);
+            setIsGenerating(false);
+            setStep('review');
+        }
+    };
+
+    // Options (keep as is)
     const levelOptions = [
         { value: "Beginner", label: "Beginner", subLabel: "New to the subject" },
         { value: "Intermediate", label: "Intermediate", subLabel: "Some prior knowledge" },
         { value: "Advanced", label: "Advanced", subLabel: "Expert looking for depth" },
-        { value: "Expert", label: "Expert", subLabel: "Deep technical dive" },
     ];
-
     const goalOptions = [
         { value: "Understand Core Concepts", label: "Understand Core Concepts", subLabel: "Foundational knowledge" },
         { value: "Practical Application", label: "Practical Application", subLabel: "Apply to real problems" },
         { value: "Exam Preparation", label: "Exam Preparation", subLabel: "Focus on key facts" },
-        { value: "Problem Solving", label: "Problem Solving", subLabel: "Learn by doing" },
     ];
-
     const granularityOptions = [
         { value: "Overview", label: "Overview", subLabel: "High-level summary" },
         { value: "Detailed", label: "Detailed", subLabel: "Standard curriculum" },
         { value: "Deep Dive", label: "Deep Dive", subLabel: "Comprehensive study" },
     ];
-
     const methodOptions = [
         { value: "Socratic", label: "Socratic", subLabel: "Learn through questions" },
         { value: "Direct Instruction", label: "Direct Instruction", subLabel: "Clear explanations" },
         { value: "Storytelling", label: "Storytelling", subLabel: "Learn through analogies" },
     ];
 
+    if (status === "loading") {
+        return (
+            <div className="min-h-screen w-full bg-[#0a0f1a] flex items-center justify-center">
+                <BackgroundBeams className="opacity-40" />
+                <div className="text-indigo-400 animate-pulse font-mono tracking-widest uppercase text-sm">Initializing...</div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen w-full bg-background-light dark:bg-background-dark relative flex flex-col items-center justify-center antialiased overflow-hidden">
-            <BackgroundBeams className="opacity-40" />
+        <div className="min-h-screen w-full bg-[#0a0f1a] relative flex flex-col items-center justify-center antialiased overflow-hidden py-12">
+            <BackgroundBeams className="opacity-20" />
 
             <div className="z-10 w-full max-w-4xl px-4 sm:px-6">
-                <div className="mb-8">
-                    <Link href="/" className="inline-flex items-center text-sm text-gray-500 hover:text-white transition-colors mb-6 group">
-                        <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Home
-                    </Link>
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="text-center"
-                    >
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-4">
-                            <Sparkles className="w-3 h-3" />
-                            <span>New Session</span>
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-bold font-display text-white mb-4 bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400">
-                            What do you want to learn today?
-                        </h1>
-                        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                            Your personal tutor will structure a lesson specifically for you.
-                        </p>
-                    </motion.div>
-                </div>
-
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    className="w-full bg-gray-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl relative overflow-visible group"
-                >
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-                    <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
-
-                    <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
-                        {/* Section 1: What You Want to Learn */}
-                        <div className="space-y-4">
-                            <h3 className="text-sm uppercase tracking-wider text-gray-500 font-semibold border-b border-white/5 pb-2">
-                                1. What You Want to Learn
-                            </h3>
-                            <div className="space-y-2">
-                                <label htmlFor="topic" className="block text-sm font-medium text-gray-300 ml-1">
-                                    Topic / Subject
-                                </label>
-                                <div className="relative group/input">
-                                    <input
-                                        type="text"
-                                        id="topic"
-                                        name="topic"
-                                        value={formData.topic}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g. Quantum Mechanics, The French Revolution, How do LLMs work?"
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-6 py-4 text-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all shadow-inner"
-                                        autoFocus
-                                    />
-                                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 group-hover/input:opacity-100 -z-10 blur-md transition-opacity duration-300" />
+                {step === 'form' && (
+                    <>
+                        <div className="mb-12">
+                            <Link href="/" className="inline-flex items-center text-sm text-gray-500 hover:text-white transition-colors mb-8 group">
+                                <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Home
+                            </Link>
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-6">
+                                    <Sparkles className="w-3 h-3" />
+                                    <span>AI Curriculum Engine</span>
                                 </div>
-                            </div>
+                                <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                                    Unlock Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Potential</span>
+                                </h1>
+                                <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                                    Your AI tutor will craft a personalized learning experience tailored to your specific needs and goals.
+                                </p>
+                            </motion.div>
                         </div>
 
-                        {/* Section 2: Your Learning Context */}
-                        <div className="space-y-4">
-                            <h3 className="text-sm uppercase tracking-wider text-gray-500 font-semibold border-b border-white/5 pb-2">
-                                2. Your Learning Context
-                            </h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <CustomSelect
-                                    label="Current Level"
-                                    icon={Layers}
-                                    value={formData.current_level}
-                                    options={levelOptions}
-                                    onChange={(value) => handleSelectChange("current_level", value)}
-                                />
-                                <CustomSelect
-                                    label="Learning Goal"
-                                    icon={Target}
-                                    value={formData.learning_goal}
-                                    options={goalOptions}
-                                    onChange={(value) => handleSelectChange("learning_goal", value)}
-                                />
+                        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-gray-900/40 backdrop-blur-3xl border border-white/5 rounded-3xl p-8 shadow-2xl relative">
+                            <form onSubmit={handleSubmit} className="space-y-8">
+                                <div className="space-y-6">
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-semibold text-indigo-400/80 uppercase tracking-widest ml-1">Learning Subject</label>
+                                        <input
+                                            type="text"
+                                            name="topic"
+                                            value={formData.topic}
+                                            onChange={handleInputChange}
+                                            placeholder="What would you like to master today?"
+                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 text-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium"
+                                        />
+                                    </div>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <CustomSelect label="Current Knowledge" icon={Layers} value={formData.current_level} options={levelOptions} onChange={(v) => handleSelectChange("current_level", v)} />
+                                        <CustomSelect label="Your Goal" icon={Target} value={formData.learning_goal} options={goalOptions} onChange={(v) => handleSelectChange("learning_goal", v)} />
+                                    </div>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <CustomSelect label="Mental Model" icon={Mic2} value={formData.preferred_method} options={methodOptions} onChange={(v) => handleSelectChange("preferred_method", v)} />
+                                        <CustomSelect label="Curriculum Depth" icon={BookOpen} value={formData.granularity} options={granularityOptions} onChange={(v) => handleSelectChange("granularity", v)} />
+                                    </div>
+                                </div>
+
+                                {error && <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-100 text-sm text-center">{error}</div>}
+
+                                <div className="pt-4 flex flex-col items-center gap-4">
+                                    <ShimmerButton type="submit" className={cn("w-full md:w-auto min-w-[240px]", isGenerating && "opacity-50 pointer-events-none")}>
+                                        {isGenerating ? "Preparing Deck..." : "Generate Lesson Design"}
+                                    </ShimmerButton>
+                                    {isGenerating && <p className="text-indigo-400/60 text-xs font-mono animate-pulse">{generationStatus}</p>}
+                                </div>
+                            </form>
+                        </motion.div>
+                    </>
+                )}
+
+                {step === 'review' && planData && (
+                    <LessonPlanPreview
+                        planData={planData}
+                        onConfirm={handleConfirmPlan}
+                        onCancel={() => setStep('form')}
+                        isFinalizing={isGenerating}
+                    />
+                )}
+
+                {step === 'generating' && (
+                    <div className="flex flex-col items-center justify-center space-y-8 py-20">
+                        <div className="relative">
+                            <div className="w-24 h-24 border-4 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Sparkles className="w-8 h-8 text-indigo-400 animate-pulse" />
                             </div>
                         </div>
-
-                        {/* Section 3: How You Want It Taught */}
-                        <div className="space-y-4">
-                            <h3 className="text-sm uppercase tracking-wider text-gray-500 font-semibold border-b border-white/5 pb-2">
-                                3. How You Want It Taught
-                            </h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <CustomSelect
-                                    label="Teaching Style"
-                                    icon={Mic2}
-                                    value={formData.preferred_method}
-                                    options={methodOptions}
-                                    onChange={(value) => handleSelectChange("preferred_method", value)}
-                                />
-                                <CustomSelect
-                                    label="Lesson Depth"
-                                    icon={BookOpen}
-                                    value={formData.granularity}
-                                    options={granularityOptions}
-                                    onChange={(value) => handleSelectChange("granularity", value)}
-                                />
-                            </div>
+                        <div className="text-center space-y-3">
+                            <h2 className="text-2xl font-bold text-white">Full Generation in Progress</h2>
+                            <p className="text-indigo-400 font-mono text-sm animate-pulse tracking-wide">{generationStatus}</p>
+                            <p className="text-gray-500 text-xs max-w-xs mx-auto">This may take a minute as we synthesize narrations and build custom visuals.</p>
                         </div>
-
-                        {error && (
-                            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
-                                {error}
-                            </div>
-                        )}
-
-                        <div className="pt-8 flex justify-center">
-                            <ShimmerButton
-                                type="submit"
-                                className={cn("w-full md:w-auto px-8 text-lg", isGenerating && "opacity-50 cursor-not-allowed")}
-                                disabled={isGenerating}
-                            >
-                                {isGenerating ? (
-                                    <span className="flex items-center gap-2">
-                                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                        {generationStatus || "Generating..."}
-                                    </span>
-                                ) : (
-                                    "Generate Lesson Plan"
-                                )}
-                            </ShimmerButton>
-                        </div>
-                    </form>
-                </motion.div>
+                    </div>
+                )}
             </div>
         </div>
     );

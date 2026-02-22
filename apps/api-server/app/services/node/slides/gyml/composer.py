@@ -186,6 +186,9 @@ class SlideComposer:
         if "image" in content:
             main_concept["image"] = content["image"]
 
+        if "layout" in content:
+            main_concept["layout"] = content["layout"]
+
         # Extract blocks from various content structures
         if "points" in content:
             points = content["points"]
@@ -360,20 +363,31 @@ class SlideComposer:
                 )
                 sections.append(content_section)
 
-        # Determine image layout
+        # Determine image layout & accent image
         image_layout = "blank"
         accent_image = None
-        if "image" in concept_group[0] if concept_group else {}:
-            image = concept_group[0].get("image", {})
-            accent_image = image.get("url")
-            image_layout = image.get("layout", "right")
+        explicit_layout = None
+
+        for concept in concept_group:
+            if "image" in concept:
+                image = concept.get("image", {})
+                if isinstance(image, dict):
+                    accent_image = image.get("url")
+                else:
+                    accent_image = image
+            if "layout" in concept:
+                explicit_layout = concept["layout"]
 
         return ComposedSlide(
             id=slide_id,
             intent=intent.value,
             sections=sections,
+            # Optional metadata
             accent_image_url=accent_image,
-            image_layout=image_layout,
+            accent_image_alt=None,
+            image_layout=explicit_layout
+            or "right",  # Use explicit or default to right (ImageManager will override)
+            index=index,  # Slide index for alternating layout logic
         )
 
     def _create_fallback_slide(self, content: Dict[str, Any]) -> ComposedSlide:
@@ -1275,7 +1289,13 @@ class SlideComposer:
         has_image = bool(slide.accent_image_url)
 
         # 2. Determine Image Strategy
-        placement = ImageManager.determine_placement(density, has_image, slide.intent)
+        placement = ImageManager.determine_placement(
+            density,
+            has_image,
+            slide.intent,
+            explicit_layout=slide.image_layout,
+            slide_index=slide.index,
+        )
         print(f"DEBUG: Image Placement Decision = {placement}")  # DEBUG
 
         # 3. Apply Strategy
