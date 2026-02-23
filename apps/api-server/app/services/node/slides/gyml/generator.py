@@ -98,7 +98,12 @@ class GyMLContentGenerator:
            right  — Image on the right (Standard, balanced)
            left   — Image on the left (Great for alternating variety)
            top    — Full-width image at the top (High impact, hero feel)
-           blank  — No accent image (Use only if content is extremely dense)
+           blank  — No accent image (Use only if content is extremely dense or for variety)
+
+        3. Choose a VISUAL DENSITY level:
+           Sparse (High Impact) — Minimal text, 1-2 items, large typography. Use for intros, hooks, or big quotes.
+           Balanced — Standard educational density. 3-4 items, moderate text. Great for most explanations.
+           Dense (Deep Dive) — 5+ items, detailed text, complex components. Use for technical deep dives or summaries.
 
         ═══════════════════════════════════════════════
         STEP 2: COMPOSE CONTENT BLOCKS
@@ -182,15 +187,15 @@ class GyMLContentGenerator:
           ✗ Multiple competing smart_layouts on one slide (only ONE primary)
           ✗ More than 6 bullets alongside a large card grid (cramped)
           ✗ Quote + data table on same slide (emotional vs. analytical clash)
-          ✗ 3+ callouts on any slide (visual noise)
-          ✗ Timeline + bullet points showing the same information (redundant)
+          • Aim for visual pacing: Alternate between Dense and Sparse slides to keep the student engaged. Never do more than 2 Dense slides in a row.
+          • Every lesson must have a mix of all 3 density levels.
 
         ON-SCREEN TEXT vs NARRATION (critical for engagement):
-          • On-screen text is the SHORT SUMMARY — card headings: 2-5 words, card descriptions: 1 short sentence (the "what")
+          • On-screen text is the KEY SUMMARY — card headings: 3-6 words, card descriptions: 2-3 sentences (the "what" and the "result")
           • The narration IS the full explanation — it gives context, examples, analogies
           • NEVER copy narration text verbatim into card descriptions or paragraphs
           • Students read the slide while listening — if text = narration, it feels like reading a teleprompter
-          • On-screen = labels and key facts. Narration = the teacher explaining them.
+          • On-screen = labels and key facts with brief elaboration. Narration = the teacher explaining them.
 
         {f'''ANIMATION ALIGNMENT (non-negotiable):
           The narration has exactly {point_count} spoken segments/points.
@@ -202,9 +207,9 @@ class GyMLContentGenerator:
         STEP 4: FORMATTING
         ═══════════════════════════════════════════════
         • Use 'ri-*' icon names (RemixIcon library). Examples: ri-lightbulb-line, ri-rocket-line, ri-code-line.
-        • Keep paragraph text concise: 1-3 sentences max.
-        • Smart layout item text: 1-2 sentences each.
-        • Callout text: 1-2 lines maximum.
+        • Keep paragraph text informative: 2-4 sentences max.
+        • Smart layout item text: 2-3 sentences each.
+        • Callout text: 2-3 lines maximum.
 
         IMAGE PROMPT RULES (for the 'imagePrompt' field):
         • The imagePrompt must capture the CORE THEME or MOOD of the slide — NOT describe the content structure.

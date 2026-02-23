@@ -192,8 +192,11 @@ class SlideComposer:
         # Extract blocks from various content structures
         if "points" in content:
             points = content["points"]
-            # Smart Layout Decision
-            layout_variant = self._select_smart_layout(intent.value, points)
+            # Smart Layout Decision - Pass LLM's preferred layout block if provided
+            preferred = content.get("layout")
+            layout_variant = self._select_smart_layout(
+                intent.value, points, preferred=preferred
+            )
 
             if layout_variant == SmartLayoutVariant.BULLET_ICON.value:
                 # Default behavior
@@ -1191,23 +1194,30 @@ class SlideComposer:
         # 1. Super Dense (> 95%)
         if density_pct > 0.95:
             profile_name = "super_dense"
-        # 2. Balanced / Ideal (55% - 95%)
-        elif density_pct > 0.55:
+        # 2. Dense / Standard (70% - 95%)
+        elif density_pct > 0.70:
+            profile_name = "dense"
+        # 3. Balanced / Relaxed (45% - 70%)
+        elif density_pct > 0.45:
             profile_name = "balanced"
-        # 3. Impact (Explicit High Value)
-        elif slide.intent in [Intent.PROVE.value, Intent.INTRODUCE.value]:
+        # 4. Impact / Sparse (< 45% or explicit)
+        else:
             profile_name = "impact"
 
         profile = VisualHierarchy.get_profile(profile_name)
 
-        # ADAPTIVE SPACING: If Ideal Density (0.55 - 0.95) and <= 3 blocks, increase gap
-        if 0.55 <= density_pct <= 0.95:
+        # ADAPTIVE SPACING: If Low Density (< 0.45) OR Ideal Density (0.45 - 0.85) and <= 3 blocks
+        if density_pct <= 0.85:
             content_block_count = self._count_top_level_content_blocks(slide)
             if content_block_count <= 3:
                 # Override gaps for sparse content
-                # User requested: increase header margin by 0.5 and decrease others by 0.5
-                profile.spacing.heading_gap = "3.0rem"  # Base was 2.5
-                profile.spacing.block_gap = "2.0rem"  # Base was 2.5
+                # Low density gets even larger gaps
+                if density_pct < 0.45:
+                    profile.spacing.heading_gap = "3.5rem"
+                    profile.spacing.block_gap = "2.5rem"
+                else:
+                    profile.spacing.heading_gap = "3.0rem"
+                    profile.spacing.block_gap = "2.0rem"
 
         slide.hierarchy = profile
         return slide
@@ -1283,9 +1293,7 @@ class SlideComposer:
         if has_columns:
             return slide
 
-        print(f"DEBUG: Block Count = {slide.block_count()}")  # DEBUG
         density = SlideFitnessGate._calculate_estimated_height(slide)
-        print(f"DEBUG: Slide Density = {density}")  # DEBUG
         has_image = bool(slide.accent_image_url)
 
         # 2. Determine Image Strategy
@@ -1296,7 +1304,6 @@ class SlideComposer:
             explicit_layout=slide.image_layout,
             slide_index=slide.index,
         )
-        print(f"DEBUG: Image Placement Decision = {placement}")  # DEBUG
 
         # 3. Apply Strategy
         if placement != "blank":
@@ -1309,7 +1316,6 @@ class SlideComposer:
 
             # Inject placeholder if required but missing
             should_inject = ImageManager.should_inject_placeholder(density, has_image)
-            print(f"DEBUG: Should Inject Placeholder? = {should_inject}")  # DEBUG
             if not has_image and should_inject:
                 placeholder = ImageManager.get_placeholder_image()
                 slide.accent_image_url = placeholder.src
@@ -1328,10 +1334,12 @@ class SlideComposer:
 
         return slide
 
-    def _select_smart_layout(self, intent: str, items: List[Any]) -> str:
+    def _select_smart_layout(
+        self, intent: str, items: List[Any], preferred: Optional[str] = None
+    ) -> str:
         """
         Decision tree for selecting the best Smart Layout variant.
-        Respects ThemeConstraints.
+        Respects ThemeConstraints and avoids repeating previous variants.
         """
         count = len(items)
         has_dates = any("year" in str(i) or "date" in str(i) for i in items[:3])
@@ -1352,10 +1360,24 @@ class SlideComposer:
             if not is_allowed(v):
                 return False
             try:
+                # We pass None for slide because we just want to check item limits
                 SlideFitnessGate.validate_constraints(None, v, items)
                 return True
             except FitnessException:
                 return False
+
+        # 0. PREFERENCE Logic (LLM choice or variety bias)
+        # Check if we have a previous pattern to avoid repetition
+        previous_variant = None
+        if self.previous_patterns:
+            last_pattern = self.previous_patterns[-1]
+            if last_pattern.has_smart_layout:
+                # This is a bit simplified as we don't store the exact variant name in SlidePattern,
+                # but we can try to infer or just let the LLM variety handle it.
+                pass
+
+        if preferred and try_variant(preferred, items):
+            return preferred
 
         # 1. TIMELINE Logic
         if (intent == Intent.NARRATE.value or has_dates) and try_variant(

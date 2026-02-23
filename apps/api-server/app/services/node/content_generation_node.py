@@ -151,6 +151,8 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
     if "slides" not in state:
         state["slides"] = {}
+    if "layout_history" not in state:
+        state["layout_history"] = []
 
     # ── Find the next subtopic + slide offset to generate ────────────
     # We look for the first subtopic where len(generated slides) < len(planned slides).
@@ -186,7 +188,7 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     print(
         f"\n🎬 [Batch Gen] Subtopic: {subtopic_name} | Slides {start_offset + 1}-{end_offset} of {len(slide_concepts)}"
     )
-    layout_history = []
+    layout_history = state["layout_history"]
 
     for i in range(start_offset, end_offset):
         concept = slide_concepts[i]
@@ -234,8 +236,10 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
         else:
             layout_history.append(generated_content.get("intent", "explain"))
 
-        if len(layout_history) > 3:
+        if len(layout_history) > 10:  # Keep a longer history for better variety
             layout_history.pop(0)
+
+        state["layout_history"] = layout_history
 
         # 5. Store
         slide_obj = {

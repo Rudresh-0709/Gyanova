@@ -59,13 +59,13 @@ class VisualHierarchy:
             return VisualHierarchy(
                 name="dense",
                 typography=TypographyScale(
-                    h1="2rem", h2="1.75rem", body="0.95rem", line_height_base=1.5
+                    h1="2.4rem", h2="2.15rem", body="1.25rem", line_height_base=1.5
                 ),
                 spacing=SpacingProfile(
-                    section_padding="2rem",
-                    block_gap="1rem",
-                    card_gap="1rem",
-                    card_padding="1.25rem",
+                    section_padding="2.5rem 3.5rem",
+                    block_gap="1.5rem",
+                    card_gap="1.25rem",
+                    card_padding="1.5rem",
                 ),
             )
 
@@ -73,17 +73,31 @@ class VisualHierarchy:
             return VisualHierarchy(
                 name="balanced",
                 typography=TypographyScale(
-                    h1="2.75rem",
-                    h2="2.25rem",
-                    body="1.25rem",
-                    card_number="1.9rem",
+                    h1="3.0rem",
+                    h2="2.6rem",
+                    body="1.5rem",
+                    card_number="2rem",
                     line_height_base=1.6,
                 ),
                 spacing=SpacingProfile(
-                    section_padding="2.5rem",
-                    block_gap="1.25rem",
-                    card_gap="1rem",
-                    card_padding="1.25rem",
+                    section_padding="3.5rem 4.5rem",
+                    block_gap="2.0rem",
+                    card_gap="1.5rem",
+                    card_padding="1.75rem",
+                ),
+            )
+
+        if name == "impact":
+            return VisualHierarchy(
+                name="impact",
+                typography=TypographyScale(
+                    h1="3.5rem", h2="3rem", body="1.7rem", card_number="2.2rem"
+                ),
+                spacing=SpacingProfile(
+                    section_padding="4.5rem 5.5rem 7.5rem 5.5rem",  # Extra bottom margin
+                    block_gap="3.0rem",
+                    card_padding="2.5rem",
+                    card_gap="2.0rem",
                 ),
             )
 
@@ -99,19 +113,12 @@ class VisualHierarchy:
                     line_height_base=1.35,
                 ),
                 spacing=SpacingProfile(
-                    section_padding="1.25rem",
+                    section_padding="1.25rem 2rem",
                     block_gap="0.5rem",
                     heading_gap="0.25rem",
                     card_gap="0.5rem",
                     card_padding="0.75rem",
                 ),
-            )
-
-        if name == "impact":
-            return VisualHierarchy(
-                name="impact",
-                typography=TypographyScale(h1="3rem", h2="2.5rem", body="1.25rem"),
-                spacing=SpacingProfile(block_gap="2rem", card_padding="2rem"),
             )
 
         # Default Gamma Style

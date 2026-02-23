@@ -40,7 +40,8 @@ class ImageManager:
             return explicit_layout
 
         # 2. High Density (Avoid cramping)
-        if slide_density > 0.9:
+        # Relaxed threshold to 1.1 to account for larger font sizes in profiles
+        if slide_density > 1.1:
             # Respect user image but keep it right aligned if dense
             if has_user_image:
                 return "right"
@@ -58,9 +59,9 @@ class ImageManager:
         """
         Return True if we MUST inject a placeholder to save the slide layout.
         """
-        # Strict Rule: If < 90% filled and no image, slide looks broken.
-        # Updated to match relaxed density rule.
-        return slide_density < 0.9 and not has_image
+        # Strict Rule: If < 110% filled and no image, slide looks broken.
+        # Updated to 1.1 to match determine_placement change.
+        return slide_density < 1.1 and not has_image
 
     @staticmethod
     def get_placeholder_image() -> GyMLImage:

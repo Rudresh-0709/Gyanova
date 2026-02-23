@@ -53,6 +53,58 @@ function toAudioHttpUrl(fsPath: string | null): string | null {
 }
 
 /**
+ * Generate a simple "Intro" slide HTML for the lesson opening.
+ */
+function generateIntroHtml(topic: string, title?: string): string {
+    return `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Introduction</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <style>
+            body { 
+                margin: 0; 
+                background: #0a0f1a; 
+                color: white; 
+                font-family: 'Inter', sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                text-align: center;
+                overflow: hidden;
+            }
+            .content { padding: 2rem; max-width: 800px; animation: fadeIn 1s ease-out; }
+            h1 { font-size: 4rem; font-weight: 800; margin: 0.5rem 0 1.5rem 0; color: white; line-height: 1.1; }
+            p { font-size: 1.25rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.2em; font-weight: 500; }
+            .glow { 
+                position: absolute; width: 600px; height: 600px; 
+                background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(99,102,241,0) 70%); 
+                z-index: -1; 
+            }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        </style>
+    </head>
+    <body>
+        <div class="glow"></div>
+        <div class="content">
+            <p>Lesson Introduction</p>
+            <h1>${topic}</h1>
+        </div>
+        <script>
+            // Signal readiness immediately
+            window.parent.postMessage({ type: 'iframeReady' }, '*');
+            
+            // Intersection relay
+            window.addEventListener('mousemove', function() { window.parent.postMessage({ type: 'userInteraction' }, '*'); });
+        </script>
+    </body>
+    </html>`;
+}
+
+/**
  * Take a full HTML deck (potentially many <section>s) and return an
  * array of single-section HTML documents.  Each keeps the original
  * <head> styles/links + a small override so 100 vh sizing doesn't
@@ -258,6 +310,25 @@ export default function LessonViewPage() {
     useEffect(() => {
         if (!lessonData) return;
         const list: SlideEntry[] = [];
+
+        // 1. Prepend Lesson Intro if available
+        if (lessonData.lesson_intro_narration) {
+            const intro = lessonData.lesson_intro_narration;
+            list.push({
+                slide_id: "lesson_intro",
+                title: "Introduction",
+                html_doc: generateIntroHtml(lessonData.topic || lessonData.user_input || "Lesson"),
+                narration_segments: [
+                    {
+                        text: intro.narration_text || "Welcome to the lesson.",
+                        audio_url: toAudioHttpUrl(intro.audio_url),
+                        segment_index: 0,
+                    },
+                ],
+                subtopic_name: "Getting Started",
+            });
+        }
+
         lessonData.sub_topics?.forEach((sub: any) => {
             const slides = lessonData.slides?.[sub.id] || [];
             slides.forEach((slide: any) => {
@@ -404,20 +475,23 @@ export default function LessonViewPage() {
     // Reset iframeReady when the slide changes (iframe remounts)
     useEffect(() => {
         setIframeReady(false);
-    }, [currentSlideIdx]);
+    }, [currentSlideIdx, slideList.length]); // reset if list changes too
 
     // When iframe signals ready AND we're playing, start from segment 0
     useEffect(() => {
         if (!iframeReady || !isPlaying || slideList.length === 0) return;
 
+        // If we are already mid-way through a slide (segIdx >= 0), don't restart from 0
+        if (segIdxRef.current >= 0) return;
+
         // Iframe just signaled ready — start from segment 0
         postToSlide({ type: "reset" });
         const t = setTimeout(() => {
             playSegment(currentSlideIdx, 0);
-        }, 50);
+        }, 150);
         return () => clearTimeout(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [iframeReady]);
+    }, [iframeReady, isPlaying, currentSlideIdx, slideList.length]);
 
     // When isPlaying changes (pause/resume) WITHOUT a slide change:
     // Resume from current segment instead of restarting
@@ -437,7 +511,7 @@ export default function LessonViewPage() {
     useEffect(() => {
         if (iframeReady && slideList.length > 0 && !isPlaying) {
             // Iframe is ready, start playing
-            const t = setTimeout(() => setIsPlaying(true), 200);
+            const t = setTimeout(() => setIsPlaying(true), 150);
             return () => clearTimeout(t);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

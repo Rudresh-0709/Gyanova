@@ -1304,6 +1304,27 @@ th {
 }
 
 
+.accent-image-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-self: center;
+    width: 100%; /* Ensure it takes full grid column width */
+}
+
+.accent-image-group .accent-image-wrapper,
+.accent-image-group .accent-image-placeholder {
+    flex: 1;
+    width: 100%;
+}
+
+.image-annotation {
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    padding: 0.625rem 0.75rem;
+    margin: 0;
+}
+
 .inline-image img {
     width: 100%;
     height: auto;
@@ -1319,6 +1340,13 @@ th {
     align-self: center;
 }
 
+.body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Prevent overflow */
+}
+
 /* ================================================
    PLACEHOLDER IMAGE
    ================================================ */
@@ -1326,26 +1354,27 @@ th {
 .accent-image-placeholder {
     width: 100%;
     aspect-ratio: 1 / 1;
-    max-height: 100%;
-    background: var(--bg-tertiary, #f0f0f0);
-    border-radius: 1rem;
+    min-height: 400px; /* Baseline visibility */
+    max-height: 80vh;
+    background: var(--bg-tertiary, #f1f5f9);
+    border-radius: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px dashed var(--border-color, #e0e0e0);
+    border: 2px dashed var(--border-color, #cbd5e1);
 }
 
 .placeholder-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
-    color: var(--text-secondary, #888);
+    gap: 1.25rem;
+    color: var(--text-secondary, #64748b);
 }
 
 .placeholder-icon {
-    font-size: 3rem;
-    opacity: 0.5;
+    font-size: 4rem;
+    opacity: 0.8;
 }
 
 .placeholder-text {
@@ -1373,7 +1402,9 @@ th {
         grid-template-columns: 1fr;
     }
     
-    section[data-image-layout="left"] .accent-image-wrapper {
+    section[data-image-layout="left"] .accent-image-wrapper,
+    section[data-image-layout="left"] .accent-image-placeholder,
+    section[data-image-layout="left"] .accent-image-group {
         order: -1;
     }
     
@@ -1383,6 +1414,12 @@ th {
     
     .column {
         flex: 1 1 100% !important;
+    }
+    
+    .accent-image-group {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto 1.5rem auto;
     }
     
     .smart-layout {

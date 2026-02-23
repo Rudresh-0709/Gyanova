@@ -29,20 +29,19 @@ class SlideFitnessGate:
         Based on word count, structural items, and image presence.
 
         Refined Rules:
-        - Base Block: 0.1 (10%)
-        - Internal Item (Points/Cards): 0.05 (5%)
-        - Word Capacity: Total / 180
-        - Accent Image: 0.4 (40%)
+        - Base Block: 0.08 (8%)
+        - Internal Item (Points/Cards): 0.03 (3%) - Reduced for better variety
+        - Word Capacity: Total / 250 - Conservative estimate
+        - Accent Image: 0.35 (35%)
         """
-        # 1. Word Utilization
-        word_utilization = slide.total_word_count() / ConstraintRules.MAX_SLIDE_WORDS
+        # 1. Word Utilization (Now based on 250 words for 100% fill)
+        word_utilization = slide.total_word_count() / 250
 
         # 2. Structural Utilization
-        # Each top-level block costs 0.1 base
+        # Each top-level block costs 0.08 base
         base_blocks = slide.block_count()
 
-        # Each internal item (if count > 1) costs an additional 0.05
-        # (Standard blocks like Paragraph return 1 from item_count(), so extra=0)
+        # Each internal item (if count > 1) costs an additional 0.03
         extra_items = 0
         for section in slide.sections:
             for block in section.blocks:
@@ -50,10 +49,10 @@ class SlideFitnessGate:
                 if count > 1:
                     extra_items += count
 
-        structural_utilization = (base_blocks * 0.1) + (extra_items * 0.05)
+        structural_utilization = (base_blocks * 0.08) + (extra_items * 0.03)
 
-        # 3. Image Impact
-        image_utilization = 0.4 if slide.accent_image_url else 0.0
+        # 3. Image Impact (Reduced impact to allow more content alongside images)
+        image_utilization = 0.35 if slide.accent_image_url else 0.0
 
         return word_utilization + structural_utilization + image_utilization
 
