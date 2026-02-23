@@ -76,14 +76,20 @@ def run_generation_task(task_id: str, request: ConfirmPlanRequest):
 
         current_state["plans"] = request.plans
 
-        # Run Phase 2
-        final_state = full_graph.invoke(current_state)
+        # Run Phase 2 (Streaming for incremental updates)
+        for chunk in full_graph.stream(current_state):
+            # chunk is {node_name: state_update}
+            for node_name, state_update in chunk.items():
+                if "messages" in state_update:
+                    del state_update["messages"]
 
-        if "messages" in final_state:
-            del final_state["messages"]
+                # Update the result incrementally
+                tasks_db[task_id]["result"].update(state_update)
+                logger.info(
+                    f"  ⚡ Incremental update from {node_name} for mission {task_id}"
+                )
 
         tasks_db[task_id]["status"] = "completed"
-        tasks_db[task_id]["result"] = final_state
         logger.info(f"Generation for {task_id} completed successfully.")
 
     except Exception as e:

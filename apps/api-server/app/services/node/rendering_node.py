@@ -21,63 +21,49 @@ except ImportError:
 
 def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Final Rendering Node.
-    Takes the structured content from content_generation_node and converts it to HTML.
-
-    Pipeline:
-    1. SlideComposer: JSON -> ComposedSlide
-    2. GyMLSerializer: ComposedSlide -> GyML
-    3. GyMLRenderer: GyML -> HTML
+    Incremental Rendering Node (Slide-level).
+    Renders any slides that have gyml_content but no html_content yet.
     """
     slides = state.get("slides", {})
 
-    # Initialize pipeline
+    # Initialize pipeline once
     composer = SlideComposer()
     serializer = GyMLSerializer()
     renderer = GyMLRenderer(theme=get_theme("midnight"), animated=True)
 
-    print("🎨 [Rendering Node] Starting GyML rendering pipeline...")
-
-    for sub_id, slide_list in slides.items():
+    rendered_count = 0
+    for sid, slide_list in slides.items():
         for slide in slide_list:
             slide_id = slide.get("slide_id", "unknown")
             gyml_content = slide.get("gyml_content")
 
-            if not gyml_content:
-                print(f"   ⚠ No GyML content for slide {slide_id}, skipping.")
+            # Skip if no content or already rendered
+            if not gyml_content or slide.get("html_content"):
                 continue
 
-            print(f"   Processing slide: {slide_id}")
-
             try:
-                # 1. Compose (Validation & Logic)
+                # 1. Compose
                 composed_slides = composer.compose(gyml_content)
                 if not composed_slides:
-                    print(f"   ❌ Composer returned empty list for {slide_id}")
                     continue
-
-                # We expect 1-to-1 mapping usually, but Composer can split slides
-                # For this node, we'll just render them all and join them,
-                # or strictly handle the first one if we want to enforce 1-slide-per-request.
-                # The current architecture expects 1 slide object -> 1 HTML string.
 
                 # 2. Serialize
                 gyml_sections = serializer.serialize_many(composed_slides)
 
                 # 3. Render
-                # Note: render_complete generates full HTML page (<html>...</html>)
-                # If we need fragments, we should add a render_fragment method or strip tags.
-                # For now, we assume the frontend wants a full compliant HTML string.
                 html_output = renderer.render_complete(gyml_sections)
 
-                # Store output
                 slide["html_content"] = html_output
-                print(f"   ✅ Rendered {len(html_output)} chars")
+                rendered_count += 1
+                print(f"   ✅ Rendered {slide_id}")
 
             except Exception as e:
                 print(f"   ❌ Rendering failed for {slide_id}: {e}")
                 slide["html_error"] = str(e)
-                # Maintain fallback behavior if needed or leave empty
 
-    state["slides"] = slides
+    if rendered_count == 0:
+        print("🎨 [Rendering Node] No new slides to render.")
+    else:
+        print(f"🎨 [Rendering Node] Rendered {rendered_count} slide(s).")
+
     return state

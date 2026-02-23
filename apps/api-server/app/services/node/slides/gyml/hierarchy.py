@@ -91,18 +91,19 @@ class VisualHierarchy:
             return VisualHierarchy(
                 name="super_dense",
                 typography=TypographyScale(
-                    h1="2.4rem",
-                    h2="1.75rem",
-                    body="1rem",
-                    small="0.95rem",  # Used for card text
-                    card_number="1.25rem",
-                    line_height_base=1.4,
+                    h1="1.85rem",
+                    h2="1.5rem",
+                    body="0.875rem",
+                    small="0.8125rem",  # Used for card text
+                    card_number="1rem",
+                    line_height_base=1.35,
                 ),
                 spacing=SpacingProfile(
-                    section_padding="1.5rem",
-                    block_gap="0.75rem",
-                    card_gap="0.75rem",
-                    card_padding="1rem",
+                    section_padding="1.25rem",
+                    block_gap="0.5rem",
+                    heading_gap="0.25rem",
+                    card_gap="0.5rem",
+                    card_padding="0.75rem",
                 ),
             )
 

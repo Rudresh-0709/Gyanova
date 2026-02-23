@@ -102,6 +102,7 @@ class ComposedSlide:
     accent_image_url: Optional[str] = None
     accent_image_alt: Optional[str] = None
     image_layout: str = "blank"  # ImageLayout value
+    index: int = 0  # Slide index
 
     # Visual Hierarchy Rules (Assigned by Composer)
     hierarchy: Optional[VisualHierarchy] = None
@@ -304,6 +305,9 @@ class GyMLSection:
 
     # Hierarchy Profile - passed from Composer
     hierarchy: Optional[VisualHierarchy] = None
+
+    # Optional annotation relocated below the accent image on dense slides
+    image_caption: Optional[GyMLParagraph] = None
 
     def __post_init__(self):
         # Ensure body exists

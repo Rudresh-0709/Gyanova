@@ -140,11 +140,11 @@ def generate_narration(
 
 def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    New Structured Content Node.
-    Iterates over subtopics and their PRE-PLANNED slide concepts to generate:
-    1. Narration
-    2. GyML JSON
+    Incremental Content Generation Node (Batch of 2).
+    Generates at most BATCH_SIZE slides per invocation, across subtopics.
     """
+    BATCH_SIZE = 2
+
     sub_topics = state.get("sub_topics", [])
     difficulty = state.get("difficulty", "Beginner")
     plans = state.get("plans", {})
@@ -152,84 +152,99 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     if "slides" not in state:
         state["slides"] = {}
 
-    for subtopic in sub_topics:
-        sub_id = subtopic.get("id")
-        subtopic_name = subtopic.get("name")
-        sub_difficulty = subtopic.get("difficulty", difficulty)
+    # ── Find the next subtopic + slide offset to generate ────────────
+    # We look for the first subtopic where len(generated slides) < len(planned slides).
+    next_subtopic = None
+    start_offset = 0
 
-        # Step 1: Use pre-generated plans
-        slide_concepts = plans.get(sub_id, [])
-        if not slide_concepts:
-            print(f"  ⚠ No plans found for subtopic: {subtopic_name}")
-            continue
+    for sub in sub_topics:
+        sub_id = sub["id"]
+        planned_count = len(plans.get(sub_id, []))
+        generated_count = len(state["slides"].get(sub_id, []))
+        if generated_count < planned_count:
+            next_subtopic = sub
+            start_offset = generated_count
+            break
 
-        print(f"\n🎬 Generating Content for Subtopic: {subtopic_name}")
+    if not next_subtopic:
+        print("✅ [Content Gen] All slides already have content.")
+        return state
+
+    sub_id = next_subtopic.get("id")
+    subtopic_name = next_subtopic.get("name")
+    sub_difficulty = next_subtopic.get("difficulty", difficulty)
+
+    slide_concepts = plans.get(sub_id, [])
+
+    # Initialize slides list for this subtopic if needed
+    if sub_id not in state["slides"]:
         state["slides"][sub_id] = []
-        layout_history = []  # Track layouts used within this subtopic
 
-        for i, concept in enumerate(slide_concepts, start=1):
-            title = concept.get("title")
-            goal = concept.get("goal")
+    # Determine batch range
+    end_offset = min(start_offset + BATCH_SIZE, len(slide_concepts))
 
-            print(f"  📝 Generating Slide {i}: {title}")
+    print(
+        f"\n🎬 [Batch Gen] Subtopic: {subtopic_name} | Slides {start_offset + 1}-{end_offset} of {len(slide_concepts)}"
+    )
+    layout_history = []
 
-            # 1. Fact Check if needed
-            search_context = ""
-            if should_fact_check(title, "explanation", subtopic_name):
-                try:
-                    search_query = f"{subtopic_name} {title} verified facts and details"
-                    search_results = tavily.search(query=search_query, max_results=3)
-                    search_context = json.dumps(
-                        search_results.get("results", []), indent=2
-                    )
-                except Exception as e:
-                    print(f"    ⚠ Search failed: {e}")
+    for i in range(start_offset, end_offset):
+        concept = slide_concepts[i]
+        title = concept.get("title")
+        goal = concept.get("goal")
 
-            # 2. Generate Narration
-            narration = generate_narration(title, goal, subtopic_name, search_context)
+        print(f"  📝 Generating Slide {i + 1}: {title}")
 
-            # 3. Count narration segments for content alignment
-            segments = segment_narration(narration, "points")  # default to points
-            point_count = len(segments)
-            print(f"    → Narration: {point_count} segment(s)")
+        # 1. Fact Check if needed
+        search_context = ""
+        if should_fact_check(title, "explanation", subtopic_name):
+            try:
+                search_query = f"{subtopic_name} {title} verified facts and details"
+                search_results = tavily.search(query=search_query, max_results=3)
+                search_context = json.dumps(search_results.get("results", []), indent=2)
+            except Exception as e:
+                print(f"    ⚠ Search failed: {e}")
 
-            # 4. Generate GyML JSON (point_count ensures item count matches narration)
-            generated_content = gyml_generator.generate(
-                narration=narration,
-                title=title,
-                purpose="explain",
-                subtopic=subtopic_name,
-                context=search_context,
-                point_count=point_count,
-                layout_history=layout_history,
-            )
+        # 2. Generate Narration
+        narration = generate_narration(title, goal, subtopic_name, search_context)
 
-            # Update layout history for variety
-            blocks = generated_content.get("contentBlocks", [])
-            smart_layout = next(
-                (b for b in blocks if b.get("type") == "smart_layout"), None
-            )
-            if smart_layout:
-                layout_history.append(smart_layout.get("variant", "unknown"))
-            else:
-                layout_history.append(generated_content.get("intent", "explain"))
+        # 3. Count narration segments for content alignment
+        segments = segment_narration(narration, "points")
+        point_count = len(segments)
+        print(f"    → Narration: {point_count} segment(s)")
 
-            # Keep history short
-            if len(layout_history) > 3:
-                layout_history.pop(0)
+        # 4. Generate GyML JSON
+        generated_content = gyml_generator.generate(
+            narration=narration,
+            title=title,
+            purpose="explain",
+            subtopic=subtopic_name,
+            context=search_context,
+            point_count=point_count,
+            layout_history=layout_history,
+        )
 
-            # 5. Store
-            slide_obj = {
-                **concept,
-                "subtopic_name": subtopic_name,
-                "narration_text": narration,
-                "gyml_content": generated_content,
-                "visual_content": generated_content,  # Compatibility
-            }
-            state["slides"][sub_id].append(slide_obj)
+        # Update layout history
+        blocks = generated_content.get("contentBlocks", [])
+        smart_layout = next(
+            (b for b in blocks if b.get("type") == "smart_layout"), None
+        )
+        if smart_layout:
+            layout_history.append(smart_layout.get("variant", "unknown"))
+        else:
+            layout_history.append(generated_content.get("intent", "explain"))
 
-            print(
-                f"    → Generated {len(generated_content.get('contentBlocks', []))} blocks"
-            )
+        if len(layout_history) > 3:
+            layout_history.pop(0)
+
+        # 5. Store
+        slide_obj = {
+            **concept,
+            "subtopic_name": subtopic_name,
+            "narration_text": narration,
+            "gyml_content": generated_content,
+            "visual_content": generated_content,
+        }
+        state["slides"][sub_id].append(slide_obj)
 
     return state

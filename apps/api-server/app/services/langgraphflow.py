@@ -37,9 +37,10 @@ planning_builder.add_edge("planning_node", END)
 
 planning_graph = planning_builder.compile()
 
-# Phase 2 Graph: Full Generation (starting from content generation)
+# Phase 2 Graph: Full Generation (Incremental Subtopic Loop)
 full_builder = StateGraph(TutorState)
-# We add all nodes because the state might need to be re-run or partially run
+
+# Add all nodes
 full_builder.add_node("topic_node", extract_topic)
 full_builder.add_node("sub_topic_node", extract_sub_topic)
 full_builder.add_node("planning_node", lesson_planning_node)
@@ -48,15 +49,40 @@ full_builder.add_node("intro_narration_node", intro_narration_node)
 full_builder.add_node("rendering_node", rendering_node)
 full_builder.add_node("audio_generation_node", audio_generation_node)
 
-# Entry point for full generation can be dynamic, but usually it's topic_node
-# When resuming, we will manually trigger from content_generation_node
+
+def should_continue(state: TutorState):
+    """Router: check if there are still slides left to generate."""
+    sub_topics = state.get("sub_topics", [])
+    plans = state.get("plans", {})
+    slides = state.get("slides", {})
+
+    for sub in sub_topics:
+        sub_id = sub["id"]
+        planned_count = len(plans.get(sub_id, []))
+        generated_count = len(slides.get(sub_id, []))
+        if generated_count < planned_count:
+            return "continue"
+        # Also check if any slide still lacks audio
+        for slide in slides.get(sub_id, []):
+            if not slide.get("narration_segments"):
+                return "continue"
+    return "end"
+
+
+# Workflow definition
 full_builder.set_entry_point("content_generation_node")
 full_builder.add_edge("content_generation_node", "intro_narration_node")
 full_builder.add_edge("intro_narration_node", "rendering_node")
 full_builder.add_edge("rendering_node", "audio_generation_node")
-full_builder.add_edge("audio_generation_node", END)
+
+# Routing logic after audio generation
+full_builder.add_conditional_edges(
+    "audio_generation_node",
+    should_continue,
+    {"continue": "content_generation_node", "end": END},
+)
 
 full_graph = full_builder.compile()
 
 # Legacy alias for backward compatibility
-compiled_graph = full_builder.compile()  # Default to full for now
+compiled_graph = full_graph

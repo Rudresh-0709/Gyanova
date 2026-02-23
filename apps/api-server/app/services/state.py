@@ -59,6 +59,7 @@ class TutorState(TypedDict, total=False):
     # State Management
     current_slide: int
     last_completed_node: str
+    processed_subtopic_ids: List[str]  # IDs of subtopics fully processed
 
     # Interaction
     user_interruption: str

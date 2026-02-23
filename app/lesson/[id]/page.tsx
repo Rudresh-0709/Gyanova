@@ -210,8 +210,10 @@ export default function LessonViewPage() {
     const isPlayingRef = useRef(false);
     const playSegmentRef = useRef<(slideIdx: number, segIdx: number) => void>(() => { });
 
-    // ─── Fetch lesson data ──────────────────────────────────────────────
+    // ─── Fetch lesson data (Polling) ──────────────────────────────────
     useEffect(() => {
+        let pollTimer: ReturnType<typeof setTimeout>;
+
         const fetchLesson = async () => {
             try {
                 const response = await fetch(
@@ -220,20 +222,36 @@ export default function LessonViewPage() {
                 if (!response.ok) throw new Error("Failed to load lesson");
                 const data = await response.json();
 
-                if (data.status === "completed" && data.result) {
+                // Always update result if present (could have more slides)
+                if (data.result) {
                     setLessonData(data.result);
+                }
+
+                if (data.status === "completed") {
+                    setLoading(false);
+                    // stop polling
                 } else if (data.status === "failed") {
                     setError("This lesson failed to generate.");
+                    setLoading(false);
+                } else if (data.status === "processing" || data.status === "pending" || data.status === "planning_completed") {
+                    // Still cooking? If we have SOME slides, we can stop "initial loading" 
+                    // but WE MUST KEEP POLLING.
+                    if (data.result && Object.keys(data.result.slides || {}).length > 0) {
+                        setLoading(false);
+                    }
+                    pollTimer = setTimeout(fetchLesson, 3000);
                 } else {
-                    setError("Lesson is still generating or not found.");
+                    setError("Lesson not found.");
+                    setLoading(false);
                 }
             } catch (err: any) {
                 setError(err.message || "An error occurred");
-            } finally {
                 setLoading(false);
             }
         };
+
         if (taskId) fetchLesson();
+        return () => clearTimeout(pollTimer);
     }, [taskId]);
 
     // ─── Build flattened slide list ─────────────────────────────────────
@@ -244,9 +262,9 @@ export default function LessonViewPage() {
             const slides = lessonData.slides?.[sub.id] || [];
             slides.forEach((slide: any) => {
                 const docs = splitDeckIntoSlides(slide.html_content || "");
-                docs.forEach((doc) => {
+                docs.forEach((doc, docIdx) => {
                     list.push({
-                        slide_id: slide.slide_id || "unknown",
+                        slide_id: `${slide.slide_id || "unknown"}_${docIdx}`,
                         title: slide.title || sub.name || "Slide",
                         html_doc: doc,
                         narration_segments: (
@@ -260,8 +278,14 @@ export default function LessonViewPage() {
                 });
             });
         });
-        setSlideList(list);
-        setCurrentSlideIdx(0);
+
+        setSlideList(prev => {
+            // Only update if the length changed to avoid unnecessary re-renders
+            if (prev.length !== list.length) {
+                return list;
+            }
+            return prev;
+        });
     }, [lessonData]);
 
     // ─── Controls auto-hide ─────────────────────────────────────────────

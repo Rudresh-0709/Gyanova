@@ -365,23 +365,32 @@ export default function LessonInputPage() {
 
             if (!response.ok) throw new Error("Failed to confirm plan");
 
-            // Poll for Final Completion
-            let isComplete = false;
+            // Poll for Final Completion (Incremental)
             let pollCount = 0;
-            while (!isComplete) {
+            while (true) {
                 await new Promise(resolve => setTimeout(resolve, 3000));
                 pollCount++;
 
-                if (pollCount > 1) setGenerationStatus("Drafting slide content...");
-                if (pollCount > 10) setGenerationStatus("Synthesizing audio narrations...");
-                if (pollCount > 20) setGenerationStatus("Rendering final output...");
+                if (pollCount > 1) setGenerationStatus("Drafting first segment...");
+                if (pollCount > 5) setGenerationStatus("Baking visuals and audio...");
 
                 const res = await fetch(`/api/lesson/generate?taskId=${taskId}`);
                 const statusData = await res.json();
 
-                if (statusData.status === "completed") {
-                    isComplete = true;
+                // Redirect as soon as ANY slide has audio ready
+                const slides = statusData.result?.slides || {};
+                let readySlideCount = 0;
+                for (const subId of Object.keys(slides)) {
+                    for (const slide of slides[subId]) {
+                        if (slide.narration_segments && slide.narration_segments.length > 0) {
+                            readySlideCount++;
+                        }
+                    }
+                }
+
+                if (statusData.status === "completed" || readySlideCount >= 2) {
                     router.push(`/lesson/${taskId}`);
+                    break;
                 } else if (statusData.status === "failed") {
                     throw new Error(statusData.error || "Generation failed");
                 }

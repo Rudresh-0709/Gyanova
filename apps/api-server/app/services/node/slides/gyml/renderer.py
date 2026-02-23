@@ -94,17 +94,35 @@ class GyMLRenderer:
         # Add animated data attribute so CSS knows to apply animation styles
         anim_attr = ' data-animated="true"' if self.animated else ""
 
+        # Add density hint so CSS can compact card internals for dense slides
+        density_attr = ""
+        if section.hierarchy and section.hierarchy.name in ("super_dense", "compact"):
+            density_attr = f' data-density="{section.hierarchy.name}"'
+
         lines.append(
             f'<section id="{self._escape(section.id)}" '
             f'class="slide-section" '
             f'role="region" aria-label="Slide {section.id}" '
             f'data-image-layout="{section.image_layout}"'
-            f"{style_attr}{anim_attr}>"
+            f"{style_attr}{anim_attr}{density_attr}>"
         )
 
         # Accent images are NEVER animated (always visible)
         if section.accent_image:
+            # Wrap accent image + optional caption in a container so they stay
+            # together in the same grid column for left/right layouts.
+            has_caption = section.image_caption is not None
+            if has_caption:
+                lines.append('<div class="accent-image-group">')
+
             lines.append(self._render_accent_image(section.accent_image))
+
+            if has_caption:
+                caption_text = self._escape(section.image_caption.text)
+                lines.append(
+                    f'<p class="p-annotation image-annotation">{caption_text}</p>'
+                )
+                lines.append("</div>")
 
         lines.append(self._render_body(section.body))
         lines.append("</section>")
@@ -517,7 +535,8 @@ section[data-image-layout="right"] {
 }
 section[data-image-layout="right"] .body { order: 1; grid-column: 1; }
 section[data-image-layout="right"] .accent-image-wrapper,
-section[data-image-layout="right"] .accent-image-placeholder { order: 2; grid-column: 2; }
+section[data-image-layout="right"] .accent-image-placeholder,
+section[data-image-layout="right"] .accent-image-group { order: 2; grid-column: 2; }
 
 section[data-image-layout="left"] {
     display: grid;
@@ -527,7 +546,8 @@ section[data-image-layout="left"] {
 }
 section[data-image-layout="left"] .body { order: 2; grid-column: 2; }
 section[data-image-layout="left"] .accent-image-wrapper,
-section[data-image-layout="left"] .accent-image-placeholder { order: 1; grid-column: 1; }
+section[data-image-layout="left"] .accent-image-placeholder,
+section[data-image-layout="left"] .accent-image-group { order: 1; grid-column: 1; }
 
 section[data-image-layout="right-wide"] {
     display: grid;
@@ -537,7 +557,27 @@ section[data-image-layout="right-wide"] {
 }
 section[data-image-layout="right-wide"] .body { order: 1; grid-column: 1; }
 section[data-image-layout="right-wide"] .accent-image-wrapper,
-section[data-image-layout="right-wide"] .accent-image-placeholder { order: 2; grid-column: 2; }
+section[data-image-layout="right-wide"] .accent-image-placeholder,
+section[data-image-layout="right-wide"] .accent-image-group { order: 2; grid-column: 2; }
+
+/* Accent Image + Annotation Group */
+.accent-image-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-self: center;
+}
+
+.accent-image-group .accent-image-wrapper {
+    flex: 1;
+}
+
+.image-annotation {
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    padding: 0.625rem 0.75rem;
+    margin: 0;
+}
 
 /* ... */
 
@@ -752,6 +792,46 @@ p {
     font-size: var(--card-text-size, var(--p-size, 0.9375rem));
     line-height: var(--line-height, 1.65);
     color: var(--text-secondary, #555);
+    margin: 0;
+}
+
+/* ================================================
+   COMPACT OVERRIDES - Dense Slides
+   Shrinks card internals that are otherwise hardcoded.
+   ================================================ */
+
+section[data-density="super_dense"] .card-icon {
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+section[data-density="super_dense"] .card-icon i {
+    font-size: 0.9rem;
+}
+
+section[data-density="super_dense"] .card-number {
+    padding: 0.375rem;
+    margin: -1rem -1rem 0.625rem -1rem;
+    width: calc(100% + 2rem);
+    font-size: 0.875rem;
+}
+
+section[data-density="super_dense"] .card-content {
+    gap: 0.25rem;
+}
+
+section[data-density="super_dense"] .card-title {
+    font-size: 0.9375rem;
+}
+
+section[data-density="super_dense"] .block-separator {
+    margin: 0.5rem 0;
+}
+
+section[data-density="super_dense"] .p-annotation {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.625rem;
     margin: 0;
 }
 
@@ -1245,8 +1325,8 @@ th {
 
 .accent-image-placeholder {
     width: 100%;
-    height: 100%;
-    min-height: 400px;
+    aspect-ratio: 1 / 1;
+    max-height: 100%;
     background: var(--bg-tertiary, #f0f0f0);
     border-radius: 1rem;
     display: flex;

@@ -179,16 +179,11 @@ def generate_audio(client: OpenAI, text: str, filepath: Path, voice: str) -> str
 
 def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    LangGraph node that generates audio for all narrations in the state.
-
+    Incremental Audio Generation Node (Slide-level).
     Processes:
-    1. Lesson intro narration → single audio file
-    2. Subtopic intro narrations → single audio file each
-    3. Per-slide narrations → segmented based on narration_format
-
-    Stores results as:
-    - 'audio_url': path to full/single audio file
-    - 'narration_segments': list of {text, audio_url, segment_index} dicts
+    1. Lesson intro (once)
+    2. Audio for any slides that have html_content but no narration_segments yet.
+    3. Marks a subtopic as processed when ALL its slides have audio.
     """
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     voice = get_voice(state)
@@ -199,85 +194,52 @@ def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     ensure_dir(output_dir)
     state["audio_output_dir"] = str(output_dir)
 
-    print(f"🔊 [Audio Generation Node] Using voice: {voice}")
-    print(f"📁 Output directory: {output_dir}")
-
-    audio_count = 0
-
-    # ─── 1. Lesson Intro Narration ──────────────────────────────────────────
+    # 1. Lesson Intro (Once)
     lesson_intro = state.get("lesson_intro_narration")
-    if lesson_intro and lesson_intro.get("narration_text"):
+    if (
+        lesson_intro
+        and lesson_intro.get("narration_text")
+        and not lesson_intro.get("audio_url")
+    ):
         text = lesson_intro["narration_text"]
         filepath = output_dir / "lesson_intro.mp3"
-        print(f"  🎙 Generating lesson intro audio...")
-
         try:
             path = generate_audio(client, text, filepath, voice)
             state["lesson_intro_narration"]["audio_url"] = path
             state["lesson_intro_narration"]["narration_segments"] = [
                 {"text": text, "audio_url": path, "segment_index": 0}
             ]
-            audio_count += 1
-            print(f"    ✅ Saved: {filepath.name}")
+            print(f"🔊 [Audio] Generated lesson intro")
         except Exception as e:
-            print(f"    ❌ Failed: {e}")
+            print(f"❌ [Audio] Lesson intro failed: {e}")
 
-    # ─── 2. Subtopic Intro Narrations ───────────────────────────────────────
-    subtopic_intros = state.get("subtopic_intro_narrations", {})
-    subtopic_dir = ensure_dir(output_dir / "subtopic_intros")
-
-    for sub_id, intro_data in subtopic_intros.items():
-        if intro_data and intro_data.get("narration_text"):
-            text = intro_data["narration_text"]
-            filepath = subtopic_dir / f"{sub_id}.mp3"
-            print(f"  🎙 Generating subtopic intro: {sub_id}...")
-
-            try:
-                path = generate_audio(client, text, filepath, voice)
-                state["subtopic_intro_narrations"][sub_id]["audio_url"] = path
-                state["subtopic_intro_narrations"][sub_id]["narration_segments"] = [
-                    {"text": text, "audio_url": path, "segment_index": 0}
-                ]
-                audio_count += 1
-                print(f"    ✅ Saved: {filepath.name}")
-            except Exception as e:
-                print(f"    ❌ Failed: {e}")
-
-    # ─── 3. Per-Slide Narrations (Segmented) ────────────────────────────────
+    # 2. Generate audio for slides that have HTML but no narration_segments
     slides = state.get("slides", {})
+    plans = state.get("plans", {})
     slides_dir = ensure_dir(output_dir / "slides")
+    audio_generated_count = 0
 
-    for sub_id, slide_list in slides.items():
+    for sid, slide_list in slides.items():
         for i, slide in enumerate(slide_list):
+            # Skip slides that already have audio or don't have HTML yet
+            if slide.get("narration_segments") or not slide.get("html_content"):
+                continue
+
             narration_text = slide.get("narration_text")
             if not narration_text:
                 continue
 
-            slide_id = slide.get("slide_id", f"{sub_id}_s{i + 1}")
-            narration_format = slide.get("narration_format", "paragraph")
+            slide_id = slide.get("slide_id", f"{sid}_s{i + 1}")
+            narration_format = slide.get("narration_format", "points")
 
-            # Create per-slide directory
             slide_dir = ensure_dir(slides_dir / slide_id)
-
-            # Segment the narration
             segments = segment_narration(narration_text, narration_format)
             is_segmented = len(segments) > 1
-
-            print(
-                f"  🎙 Slide {slide_id} ({narration_format}) → "
-                f"{len(segments)} segment{'s' if is_segmented else ''}"
-            )
-
             narration_segments = []
 
             for seg_idx, segment_text in enumerate(segments):
-                if is_segmented:
-                    filename = f"segment_{seg_idx + 1}.mp3"
-                else:
-                    filename = "full.mp3"
-
+                filename = f"segment_{seg_idx + 1}.mp3" if is_segmented else "full.mp3"
                 filepath = slide_dir / filename
-
                 try:
                     path = generate_audio(client, segment_text, filepath, voice)
                     narration_segments.append(
@@ -287,10 +249,8 @@ def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                             "segment_index": seg_idx,
                         }
                     )
-                    audio_count += 1
-                    print(f"    ✅ Segment {seg_idx + 1}: {filepath.name}")
                 except Exception as e:
-                    print(f"    ❌ Segment {seg_idx + 1} failed: {e}")
+                    print(f"❌ [Audio] Segment failed for {slide_id}: {e}")
                     narration_segments.append(
                         {
                             "text": segment_text,
@@ -299,15 +259,36 @@ def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                         }
                     )
 
-            # Store results on the slide dict
             slide["narration_segments"] = narration_segments
-            # For backward compat, audio_url points to first segment or the full file
             if narration_segments and narration_segments[0].get("audio_url"):
                 slide["audio_url"] = narration_segments[0]["audio_url"]
 
-    print(
-        f"\n🔊 [Audio Generation Node] Complete — {audio_count} audio files generated."
-    )
+            audio_generated_count += 1
+            print(
+                f"🔊 [Audio] Generated {len(narration_segments)} segment(s) for {slide_id}"
+            )
+
+    if audio_generated_count == 0:
+        print("🔊 [Audio Node] No new slides ready for audio.")
+    else:
+        print(f"🔊 [Audio Node] Generated audio for {audio_generated_count} slide(s).")
+
+    # 3. Check subtopic completion — mark as processed if ALL planned slides have audio
+    if "processed_subtopic_ids" not in state:
+        state["processed_subtopic_ids"] = []
+
+    for sid, slide_list in slides.items():
+        if sid in state["processed_subtopic_ids"]:
+            continue
+
+        planned_count = len(plans.get(sid, []))
+        slides_with_audio = sum(1 for s in slide_list if s.get("narration_segments"))
+
+        if planned_count > 0 and slides_with_audio >= planned_count:
+            state["processed_subtopic_ids"].append(sid)
+            print(
+                f"✅ [Audio Node] Subtopic {sid} fully processed ({slides_with_audio}/{planned_count} slides)."
+            )
 
     return state
 
