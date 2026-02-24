@@ -26,6 +26,14 @@ from .definitions import (
     GyMLDivider,
     GyMLTable,
     GyMLCode,
+    GyMLComparisonTable,
+    GyMLKeyValueList,
+    GyMLRichText,
+    GyMLNumberedList,
+    GyMLLabeledDiagram,
+    GyMLHierarchyTree,
+    GyMLSplitPanel,
+    GyMLFormulaBlock,
     GyMLNode,
 )
 from .constants import (
@@ -427,6 +435,112 @@ class GyMLSerializer:
                     items.append(GyMLSmartLayoutItem(description=str(node)))
 
             return GyMLSmartLayout(variant=variant, items=items)
+
+        # Comparison Table
+        elif block_type == BlockType.COMPARISON_TABLE.value:
+            headers = content.get("headers", [])
+            rows = content.get("rows", [])
+            caption = content.get("caption", "")
+            return GyMLComparisonTable(headers=headers, rows=rows, caption=caption)
+
+        # Key-Value List
+        elif block_type == BlockType.KEY_VALUE_LIST.value:
+            from .definitions import GyMLKeyValueItem
+
+            items_data = content.get("items", [])
+            items = [
+                GyMLKeyValueItem(key=i.get("key", ""), value=i.get("value", ""))
+                for i in items_data
+                if isinstance(i, dict)
+            ]
+            return GyMLKeyValueList(items=items)
+
+        # Rich Text
+        elif block_type == BlockType.RICH_TEXT.value:
+            paragraphs = content.get("paragraphs", [])
+            return GyMLRichText(paragraphs=paragraphs)
+
+        # Numbered List
+        elif block_type == BlockType.NUMBERED_LIST.value:
+            from .definitions import GyMLNumberedListItem
+
+            items_data = content.get("items", [])
+            items = [
+                GyMLNumberedListItem(
+                    title=i.get("title", ""), description=i.get("description", "")
+                )
+                for i in items_data
+                if isinstance(i, dict)
+            ]
+            return GyMLNumberedList(items=items)
+
+        # Labeled Diagram
+        elif block_type == BlockType.LABELED_DIAGRAM.value:
+            from .definitions import GyMLDiagramLabel
+
+            image_url = content.get("image_url", content.get("imageUrl", ""))
+            labels_data = content.get("labels", [])
+            labels = [
+                GyMLDiagramLabel(
+                    text=l.get("text", ""),
+                    x=float(l.get("x", 0)),
+                    y=float(l.get("y", 0)),
+                )
+                for l in labels_data
+                if isinstance(l, dict)
+            ]
+            return GyMLLabeledDiagram(image_url=image_url, labels=labels)
+
+        # Hierarchy Tree
+        elif block_type == BlockType.HIERARCHY_TREE.value:
+            root_data = content.get("root", {})
+
+            def parse_node(node_data: dict) -> "GyMLTreeNode":
+                from .definitions import GyMLTreeNode
+
+                return GyMLTreeNode(
+                    label=node_data.get("label", ""),
+                    children=[parse_node(c) for c in node_data.get("children", [])],
+                )
+
+            return GyMLHierarchyTree(root=parse_node(root_data))
+
+        # Split Panel
+        elif block_type == BlockType.SPLIT_PANEL.value:
+            from .definitions import GyMLPanel
+
+            left_data = content.get("leftPanel", content.get("left", {}))
+            right_data = content.get("rightPanel", content.get("right", {}))
+
+            left_panel = GyMLPanel(
+                title=left_data.get("title", ""), content=left_data.get("content", "")
+            )
+            right_panel = GyMLPanel(
+                title=right_data.get("title", ""), content=right_data.get("content", "")
+            )
+            return GyMLSplitPanel(left_panel=left_panel, right_panel=right_panel)
+
+        # Formula Block
+        elif block_type == BlockType.FORMULA_BLOCK.value:
+            from .definitions import GyMLFormulaVariable
+
+            expression = content.get("expression", content.get("formula", ""))
+            example = content.get("example", content.get("description", ""))
+            variables_data = content.get("variables", [])
+
+            variables = []
+            if isinstance(variables_data, list):
+                for var in variables_data:
+                    variables.append(
+                        GyMLFormulaVariable(
+                            name=var.get("name", ""),
+                            definition=var.get("definition", ""),
+                        )
+                    )
+
+            return GyMLFormulaBlock(
+                expression=expression, variables=variables, example=example
+            )
 
         # Unknown block type - try to extract text
         else:

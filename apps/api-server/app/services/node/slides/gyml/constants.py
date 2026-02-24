@@ -147,6 +147,14 @@ class BlockType(Enum):
     CODE = "code"
     DIAGRAM = "diagram"
     TABLE = "table"
+    COMPARISON_TABLE = "comparison_table"
+    KEY_VALUE_LIST = "key_value_list"
+    RICH_TEXT = "rich_text"
+    NUMBERED_LIST = "numbered_list"
+    LABELED_DIAGRAM = "labeled_diagram"
+    HIERARCHY_TREE = "hierarchy_tree"
+    SPLIT_PANEL = "split_panel"
+    FORMULA_BLOCK = "formula_block"
 
     # Supporting blocks
     CALLOUT = "callout"

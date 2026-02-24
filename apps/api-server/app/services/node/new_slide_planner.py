@@ -213,6 +213,84 @@ SLIDE_TEMPLATES = {
             "analysis_text": "Summary paragraph (40 words) explaining the largest segment",
         },
     },
+    # ─────────────────────────────────────────────────────────────
+    # NEW PRIMARY CONTENT TYPES
+    # ─────────────────────────────────────────────────────────────
+    "Comparison table": {
+        "template_name": "Comparison table",
+        "when_to_use": ["Detailed cross-feature comparisons", "Side-by-side specs"],
+        "how_to_make": {
+            "headers": ["Feature", "Option A", "Option B"],
+            "rows": "4-5 rows of detailed criteria",
+            "capacity": "High density data",
+        },
+    },
+    "Key-Value list": {
+        "template_name": "Key-Value list",
+        "when_to_use": ["Technical specs", "Properties", "Metadata"],
+        "how_to_make": {
+            "items": "6-8 pairs of Label: Content",
+            "format": "Bold Label followed by descriptive value",
+        },
+    },
+    "Rich text": {
+        "template_name": "Rich text",
+        "when_to_use": [
+            "Deep dive explanations",
+            "Philosophical context",
+            "Complex narratives",
+        ],
+        "how_to_make": {
+            "paragraphs": "3 substantial paragraphs (60-80 words each)",
+            "tone": "Academic and thorough",
+        },
+    },
+    "Numbered list": {
+        "template_name": "Numbered list",
+        "when_to_use": ["Ranked items", "Strict sequences", "Prioritized steps"],
+        "how_to_make": {
+            "items": "5-7 numbered items",
+            "item_format": "Number + Bold Title + 1-2 sentence description",
+        },
+    },
+    "Labeled diagram": {
+        "template_name": "Labeled diagram",
+        "when_to_use": ["Anatomy", "Hardware components", "Geographic maps"],
+        "how_to_make": {
+            "image": "Central technical visual",
+            "labels": "4-6 annotations pointing to specific parts of the image",
+        },
+    },
+    "Hierarchy tree": {
+        "template_name": "Hierarchy tree",
+        "when_to_use": ["Organizational charts", "Family trees", "Decision logic"],
+        "how_to_make": {
+            "structure": "Root node branching into at least 3 sub-levels",
+            "node_content": "Brief, clear labels for each node",
+        },
+    },
+    "Split panel": {
+        "template_name": "Split panel",
+        "when_to_use": ["Case studies", "Theory vs Practice", "Before vs After"],
+        "how_to_make": {
+            "left_panel": "Independent content (Title + 2 Paragraphs)",
+            "right_panel": "Independent content (Title + 2 Paragraphs)",
+            "visual_balance": "Both panels must feel equal in weight",
+        },
+    },
+    "Formula block": {
+        "template_name": "Formula block",
+        "when_to_use": [
+            "Mathematical proofs",
+            "Scientific equations",
+            "Algorithm definitions",
+        ],
+        "how_to_make": {
+            "expression": "Core equation (LaTeX style or clear plain text)",
+            "variables": "Definitions for every symbol used",
+            "example": "One practical application showing numerical values",
+        },
+    },
 }
 
 SLIDE_PURPOSES = [
@@ -240,96 +318,54 @@ def plan_slides_for_subtopic(
     subtopic: Dict[str, Any], teacher_profile: str = "Expert Teacher"
 ) -> Dict[str, Any]:
     """Calls LLM to plan slides for a single subtopic."""
-    llm = load_openai()  # Use OpenAI for complex planning
-
-    subtopic_name = subtopic.get("name")
-    difficulty = subtopic.get("difficulty", "Beginner")
-
-    # Determine slide count based on difficulty
-    if difficulty.lower() == "beginner":
-        min_s, max_s = 4, 4
-    elif difficulty.lower() == "intermediate":
-        min_s, max_s = 4, 4
-    else:
-        min_s, max_s = 4, 4
-
+    # SINGLE-PASS ARCHITECTURE-AWARE PLANNING
+    # This prompt forces the model to first architect the technical content, then map to visuals.
     SYSTEM_PROMPT = f"""
-    You are an AI Curriculum Planner. Your goal is to break down a subtopic into a series of educational slides.
+    You are an AI Curriculum Architect & Visual Pedagogy Expert.
+    Your goal is to design a high-depth, technically accurate slide plan for a lesson.
     
-    CONTEXT:
-    - Teacher Profile: {teacher_profile}
-    - Subtopic: {subtopic_name}
-    - Difficulty: {difficulty}
+    SUBTOPIC: {subtopic.get('name')}
+    DIFFICULTY: {subtopic.get('difficulty', 'Beginner')}
+    TEACHER PROFILE: {teacher_profile}
     
-    AVAILABLE TEMPLATES (Choose ONLY from these):
+    AVAILABLE TEMPLATES (Visual Delivery Mechanisms):
     {json.dumps(SLIDE_TEMPLATES, indent=2)}
     
-    SLIDE PURPOSES:
-    {json.dumps(SLIDE_PURPOSES)}
+    SLIDE PURPOSES: {json.dumps(SLIDE_PURPOSES)}
+    NARRATION ROLES: {json.dumps(NARRATION_ROLES)}
     
-    NARRATION ROLES:
-    {json.dumps(NARRATION_ROLES)}
+    ⭐ PLANNING STRATEGY (CRITICAL):
+    1. ARCHITECT FIRST: Identify the 4-7 specific technical "building blocks" (laws, formulas, mechanisms, examples) needed to cover this subtopic with high depth.
+    2. MAP TO VISUALS: Assign the BEST visual template for each block. Use diversity (don't repeat templates unless essential).
     
-    YOUR RESPONSIBILITIES:
-    1. Break the subtopic into {min_s} to {max_s} slides.
-    2. For each slide:
-        - Choose ONE slide_purpose strictly from the provided SLIDE_PURPOSES list.
-        - Choose ONE selected_template strictly from the TEMPLATE KEYS (dictionary keys).
-        - Ensure the template logically matches the slide_purpose.
-    3. Define a clear Narration Goal (what the learner should understand).
-    4. Provide a short reasoning for your choices.
-
-    ⭐ TEMPLATE DIVERSITY RULES (CRITICAL):
-    - AVOID REPEATING TEMPLATES unless pedagogically essential
-    - If you must repeat a template, there should be a STRONG justification
-    - Aim for variety: use different templates for different purposes
-    - Example: Don't use "Title with bullets" for all explanations - mix with "Two columns", "Timeline", etc.
+    ⭐ PRIMARY CONTENT TYPES (Best Uses):
+    - Comparison table: Side-by-side features.
+    - Formula block: Equations + Variable keys.
+    - Labeled diagram: Hardware/Anatomy/Spatial systems.
+    - Timeline/Arrows: Processes and flows.
+    - Key-Value list: Technical specs.
     
-    ⭐ IMAGE USAGE DECISION CRITERIA:
-    When deciding between "Title with bullets" vs "Title with bullets and image":
-    - USE IMAGE when:
-      * Topic is visual/spatial (e.g., architecture, anatomy, geography)
-      * Concept is abstract and benefits from metaphor (e.g., algorithms, data flow)
-      * Historical/timeline content with relevant imagery
-      * Technical diagrams enhance understanding
-    - SKIP IMAGE when:
-      * Pure logical/textual concepts (e.g., definitions, procedures)
-      * Lists of features, advantages, rules
-      * Topic is self-explanatory from text alone
+    RULES:
+    - Plan 4-7 slides.
+    - Output ONLY valid JSON.
     
-    CRITICAL:
-        - selected_template MUST be EXACTLY one of the template dictionary keys.
-        - slide_purpose MUST be EXACTLY one of the provided slide purposes.
-        - Prioritize template DIVERSITY over repetition
-    
-    OUTPUT RULES:
-    - Output ONLY valid JSON in the following format:
+    OUTPUT FORMAT:
     {{
         "slides": [
             {{
-                "slide_title": "...",
-                "slide_purpose": "...",
+                "title": "Technical Concept Name",
+                "purpose": "...",
                 "selected_template": "...",
-                "narration_role": "...",
-                "narration_goal": "...",
-                "reasoning": "..."
+                "role": "...",
+                "goal": "Detailed learning objective",
+                "reasoning": "Quick pedagogical justification"
             }}
         ]
     }}
-    - No narration text or slide content.
-    - Logical flow: Start with basics/definitions, move to intuition/examples, and end with reinforcement.
     """
 
-    USER_PROMPT = (
-        f"Plan the slides for the subtopic: '{subtopic_name}' at {difficulty} level."
-    )
-
-    response = llm.invoke(
-        [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": USER_PROMPT},
-        ]
-    )
+    llm = load_openai()
+    response = llm.invoke([{"role": "system", "content": SYSTEM_PROMPT}])
 
     try:
         content = response.content.replace("```json", "").replace("```", "").strip()
@@ -345,12 +381,32 @@ def plan_slides_for_subtopic(
         for slide in data.get("slides", []):
             if slide.get("selected_template") not in VALID_TEMPLATES:
                 continue
-            if slide.get("slide_purpose") not in VALID_PURPOSES:
-                continue
-            if slide.get("narration_role") not in VALID_NARRATION:
-                continue
-            if not slide.get("slide_title"):
-                continue  # title is mandatory
+            if slide.get("purpose") not in VALID_PURPOSES:
+                # Support old legacy key for transition if needed, but here we enforce
+                if (
+                    "slide_purpose" in slide
+                    and slide["slide_purpose"] in VALID_PURPOSES
+                ):
+                    slide["purpose"] = slide.pop("slide_purpose")
+                else:
+                    continue
+            if slide.get("role") not in VALID_NARRATION:
+                if (
+                    "narration_role" in slide
+                    and slide["narration_role"] in VALID_NARRATION
+                ):
+                    slide["role"] = slide.pop("narration_role")
+                else:
+                    continue
+            if not slide.get("title"):
+                if "slide_title" in slide:
+                    slide["title"] = slide.pop("slide_title")
+                else:
+                    continue  # title is mandatory
+
+            # Ensure goal is also handled
+            if "narration_goal" in slide:
+                slide["goal"] = slide.pop("narration_goal")
 
             validated_slides.append(slide)
 
@@ -364,365 +420,14 @@ def plan_slides_for_subtopic(
         return {"slides": []}
 
 
-def slide_planning_node(state: Dict[str, Any]) -> Dict[str, Any]:
-    """LangGraph node to process all subtopics and build a slide plan."""
-    if "slide_plan" not in state or state["slide_plan"] is None:
-        state["slide_plan"] = {}
-
-    sub_topics = state.get("sub_topics", [])
-
-    for subtopic in sub_topics:
-        sub_id = subtopic.get("id")
-        if sub_id not in state["slide_plan"]:
-            print(f"Planning slides for: {subtopic.get('name')}...")
-            plan_data = plan_slides_for_subtopic(subtopic)
-
-            # Ensure slide_ids are unique
-            slides = plan_data.get("slides", [])
-            for i, slide in enumerate(slides):
-                slide["slide_id"] = f"{sub_id}_s{i+1}"
-
-            state["slide_plan"][sub_id] = {
-                "subtopic_name": subtopic.get("name"),
-                "slides": slides,
-            }
-
-    return state
-
-
 if __name__ == "__main__":
-    State = {
-        "topic": "Computer generations",
-        "sub_topics": [
-            {
-                "name": "Introduction to Computer Generations",
-                "difficulty": "Beginner",
-                "id": "sub_1_2b67b6",
-            },
-            {
-                "name": "First Generation Computers (1940s-1950s): Vacuum Tubes",
-                "difficulty": "Intermediate",
-                "id": "sub_2_30755b",
-            },
-            {
-                "name": "Second to Fifth Generation Computers (1950s-1980s): Transistors, Integrated Circuits, and Microprocessors",
-                "difficulty": "Intermediate",
-                "id": "sub_3_d87eaf",
-            },
-            {
-                "name": "Modern Computer Generations (1980s-present): Artificial Intelligence, Internet, and Beyond",
-                "difficulty": "Advanced",
-                "id": "sub_4_c8e0dd",
-            },
-            {
-                "name": "Comparison and Evolution of Computer Generations",
-                "difficulty": "Intermediate",
-                "id": "sub_5_dca7e2",
-            },
-        ],
+    # Test planning a single subtopic
+    test_subtopic = {
+        "name": "Introduction to Computer Generations",
+        "difficulty": "Beginner",
+        "id": "sub_1_2b67b6",
     }
+    result = plan_slides_for_subtopic(test_subtopic)
+    import json
 
-    result = slide_planning_node(State)
     print(json.dumps(result, indent=2))
-
-
-{
-    "topic": "Computer generations",
-    "sub_topics": [
-        {
-            "name": "Introduction to Computer Generations",
-            "difficulty": "Beginner",
-            "id": "sub_1_2b67b6",
-        },
-        {
-            "name": "First Generation Computers (1940s-1950s): Vacuum Tubes",
-            "difficulty": "Intermediate",
-            "id": "sub_2_30755b",
-        },
-        {
-            "name": "Second to Fifth Generation Computers (1950s-1980s): Transistors, Integrated Circuits, and Microprocessors",
-            "difficulty": "Intermediate",
-            "id": "sub_3_d87eaf",
-        },
-        {
-            "name": "Modern Computer Generations (1980s-present): Artificial Intelligence, Internet, and Beyond",
-            "difficulty": "Advanced",
-            "id": "sub_4_c8e0dd",
-        },
-        {
-            "name": "Comparison and Evolution of Computer Generations",
-            "difficulty": "Intermediate",
-            "id": "sub_5_dca7e2",
-        },
-    ],
-    "slide_plan": {
-        "sub_1_2b67b6": {
-            "subtopic_name": "Introduction to Computer Generations",
-            "slides": [
-                {
-                    "slide_title": "Introduction to Computer Generations",
-                    "slide_purpose": "definition",
-                    "selected_template": "Title card",
-                    "narration_role": "Introduce",
-                    "narration_goal": "Learners should understand what computer generations are and why studying them is important for grasping computing evolution.",
-                    "reasoning": "A Title card is ideal for starting the lesson with a clear, impactful title and a brief hook to engage beginners.",
-                    "slide_id": "sub_1_2b67b6_s1",
-                },
-                {
-                    "slide_title": "Overview of Computer Generations",
-                    "slide_purpose": "intuition",
-                    "selected_template": "Timeline",
-                    "narration_role": "Guide",
-                    "narration_goal": "Learners should gain an intuitive understanding of the chronological progression and key milestones of each computer generation.",
-                    "reasoning": "A Timeline template effectively presents historical progression, helping beginners visualize the evolution over time.",
-                    "slide_id": "sub_1_2b67b6_s2",
-                },
-                {
-                    "slide_title": "Key Features of Each Generation",
-                    "slide_purpose": "reinforcement",
-                    "selected_template": "Four columns",
-                    "narration_role": "Reinforce",
-                    "narration_goal": "Learners should be able to recall the main characteristics and technological advances of the first four computer generations.",
-                    "reasoning": "Four columns allow concise, side-by-side comparison of features for each generation, reinforcing learning with clear structure.",
-                    "slide_id": "sub_1_2b67b6_s3",
-                },
-            ],
-        },
-        "sub_2_30755b": {
-            "subtopic_name": "First Generation Computers (1940s-1950s): Vacuum Tubes",
-            "slides": [
-                {
-                    "slide_title": "First Generation Computers: Vacuum Tubes Era",
-                    "slide_purpose": "definition",
-                    "selected_template": "Title card",
-                    "narration_role": "Introduce",
-                    "narration_goal": "Learners will understand the basic context and significance of first generation computers and their use of vacuum tubes.",
-                    "reasoning": "Starting with a Title card sets a clear, high-impact introduction to the subtopic, providing a concise overview and engaging learners immediately.",
-                    "slide_id": "sub_2_30755b_s1",
-                },
-                {
-                    "slide_title": "Vacuum Tubes: Core Technology",
-                    "slide_purpose": "intuition",
-                    "selected_template": "Image and text",
-                    "narration_role": "Interpret",
-                    "narration_goal": "Learners will grasp how vacuum tubes functioned as electronic switches and amplifiers in early computers.",
-                    "reasoning": "An Image and text template allows detailed narrative explanation paired with a visual of vacuum tubes, building intuitive understanding of their role.",
-                    "slide_id": "sub_2_30755b_s2",
-                },
-                {
-                    "slide_title": "Characteristics of Vacuum Tube Computers",
-                    "slide_purpose": "definition",
-                    "selected_template": "Title with bullets",
-                    "narration_role": "Guide",
-                    "narration_goal": "Learners will identify key features such as size, speed, heat generation, and reliability of vacuum tube computers.",
-                    "reasoning": "Title with bullets efficiently breaks down important characteristics into digestible points, ideal for intermediate learners.",
-                    "slide_id": "sub_2_30755b_s3",
-                },
-                {
-                    "slide_title": "Advantages and Limitations of Vacuum Tubes",
-                    "slide_purpose": "comparison",
-                    "selected_template": "Two columns",
-                    "narration_role": "Contrast",
-                    "narration_goal": "Learners will compare the pros and cons of vacuum tube technology in early computing.",
-                    "reasoning": "Two columns template is perfect for side-by-side comparison, helping learners critically evaluate strengths and weaknesses.",
-                    "slide_id": "sub_2_30755b_s4",
-                },
-                {
-                    "slide_title": "Evolution from Vacuum Tubes to Transistors",
-                    "slide_purpose": "process",
-                    "selected_template": "Timeline",
-                    "narration_role": "Connect",
-                    "narration_goal": "Learners will understand the historical progression from vacuum tubes to transistors and why this transition was pivotal.",
-                    "reasoning": "A timeline visually organizes the historical development, clarifying the process and contextualizing vacuum tubes within computing evolution.",
-                    "slide_id": "sub_2_30755b_s5",
-                },
-                {
-                    "slide_title": "Key Takeaways: Vacuum Tube Computers",
-                    "slide_purpose": "reinforcement",
-                    "selected_template": "Icons with text",
-                    "narration_role": "Reinforce",
-                    "narration_goal": "Learners will recall essential facts about vacuum tube computers and their impact on early computing history.",
-                    "reasoning": "Icons with text provides a visually engaging summary format to reinforce learning with clear, memorable points.",
-                    "slide_id": "sub_2_30755b_s6",
-                },
-            ],
-        },
-        "sub_3_d87eaf": {
-            "subtopic_name": "Second to Fifth Generation Computers (1950s-1980s): Transistors, Integrated Circuits, and Microprocessors",
-            "slides": [
-                {
-                    "slide_title": "Second to Fifth Generation Computers Overview",
-                    "slide_purpose": "definition",
-                    "selected_template": "Title card",
-                    "narration_role": "Introduce",
-                    "narration_goal": "Learners will understand the timeline and key technological shifts from the 1950s to 1980s in computer generations.",
-                    "reasoning": "Starting with a Title card sets a clear stage for the subtopic, providing a high-impact overview and engaging learners with the importance of these generations.",
-                    "slide_id": "sub_3_d87eaf_s1",
-                },
-                {
-                    "slide_title": "Second Generation: Transistor-Based Computers",
-                    "slide_purpose": "intuition",
-                    "selected_template": "Image and text",
-                    "narration_role": "Guide",
-                    "narration_goal": "Learners will grasp how transistors replaced vacuum tubes and improved computer performance and reliability.",
-                    "reasoning": "Using an Image and text template allows a narrative style with visuals to build intuition about transistor technology and its impact.",
-                    "slide_id": "sub_3_d87eaf_s2",
-                },
-                {
-                    "slide_title": "Third Generation: Integrated Circuits Revolution",
-                    "slide_purpose": "intuition",
-                    "selected_template": "Title with bullets and image",
-                    "narration_role": "Interpret",
-                    "narration_goal": "Learners will understand the role of integrated circuits in miniaturizing components and enhancing computing power.",
-                    "reasoning": "The combination of bullets and image helps explain complex IC concepts with visual support, aiding comprehension of technological advancement.",
-                    "slide_id": "sub_3_d87eaf_s3",
-                },
-                {
-                    "slide_title": "Fourth & Fifth Generations: Microprocessors and AI Foundations",
-                    "slide_purpose": "definition",
-                    "selected_template": "Title with bullets",
-                    "narration_role": "Emphasize",
-                    "narration_goal": "Learners will identify microprocessor innovation and the emergence of AI concepts in later generations.",
-                    "reasoning": "A bullet format clearly breaks down key points about microprocessors and AI foundations, emphasizing their significance in computing evolution.",
-                    "slide_id": "sub_3_d87eaf_s4",
-                },
-                {
-                    "slide_title": "Comparing Computer Generations: Key Innovations and Impact",
-                    "slide_purpose": "comparison",
-                    "selected_template": "Two columns",
-                    "narration_role": "Contrast",
-                    "narration_goal": "Learners will be able to compare technological features and impacts across the second to fifth generations.",
-                    "reasoning": "Two columns facilitate side-by-side comparison of features and impacts, helping learners contrast and consolidate knowledge effectively.",
-                    "slide_id": "sub_3_d87eaf_s5",
-                },
-                {
-                    "slide_title": "Summary of Second to Fifth Generation Advances",
-                    "slide_purpose": "reinforcement",
-                    "selected_template": "Large bullet list",
-                    "narration_role": "Reinforce",
-                    "narration_goal": "Learners will consolidate their understanding of major technological milestones and their significance in computer history.",
-                    "reasoning": "A large bullet list is ideal for summarizing and reinforcing key takeaways, ensuring retention of the main points covered.",
-                    "slide_id": "sub_3_d87eaf_s6",
-                },
-            ],
-        },
-        "sub_4_c8e0dd": {
-            "subtopic_name": "Modern Computer Generations (1980s-present): Artificial Intelligence, Internet, and Beyond",
-            "slides": [
-                {
-                    "slide_title": "Modern Computer Generations Overview",
-                    "slide_purpose": "definition",
-                    "selected_template": "Title card",
-                    "narration_role": "Introduce",
-                    "narration_goal": "Learners should understand the scope and significance of modern computer generations from the 1980s to present.",
-                    "reasoning": "A Title card slide is ideal for opening the subtopic with a clear and impactful title and a concise hook to set context.",
-                    "slide_id": "sub_4_c8e0dd_s1",
-                },
-                {
-                    "slide_title": "Key Technological Advances Since the 1980s",
-                    "slide_purpose": "intuition",
-                    "selected_template": "Title with bullets and image",
-                    "narration_role": "Interpret",
-                    "narration_goal": "Learners should grasp the major technological breakthroughs including AI, the Internet, and hardware evolution.",
-                    "reasoning": "Combining bullets with an image helps visualize abstract concepts like AI and the Internet, aiding intuition on their impact.",
-                    "slide_id": "sub_4_c8e0dd_s2",
-                },
-                {
-                    "slide_title": "Artificial Intelligence Evolution",
-                    "slide_purpose": "process",
-                    "selected_template": "Timeline",
-                    "narration_role": "Guide",
-                    "narration_goal": "Learners should understand the chronological development and milestones of AI within modern computing.",
-                    "reasoning": "A timeline best illustrates AI\u2019s progressive milestones from early expert systems to deep learning breakthroughs.",
-                    "slide_id": "sub_4_c8e0dd_s3",
-                },
-                {
-                    "slide_title": "The Rise of the Internet and Connectivity",
-                    "slide_purpose": "process",
-                    "selected_template": "Arrows",
-                    "narration_role": "Connect",
-                    "narration_goal": "Learners should comprehend the cause-effect relationship between networking technologies and global connectivity.",
-                    "reasoning": "An arrows template clearly maps the stages from networking protocols to widespread internet adoption and its effects.",
-                    "slide_id": "sub_4_c8e0dd_s4",
-                },
-                {
-                    "slide_title": "Comparing AI, Internet, and Emerging Technologies",
-                    "slide_purpose": "comparison",
-                    "selected_template": "Two columns",
-                    "narration_role": "Contrast",
-                    "narration_goal": "Learners should differentiate between AI, Internet, and other emerging technologies in terms of function and impact.",
-                    "reasoning": "Two columns allow side-by-side comparison of technology categories to clarify distinctions and overlapping capabilities.",
-                    "slide_id": "sub_4_c8e0dd_s5",
-                },
-                {
-                    "slide_title": "Future Directions: Beyond Traditional Computing",
-                    "slide_purpose": "intuition",
-                    "selected_template": "Image and text",
-                    "narration_role": "Emphasize",
-                    "narration_goal": "Learners should appreciate the emerging frontiers such as quantum computing, edge AI, and pervasive IoT.",
-                    "reasoning": "Narrative style with strong visuals helps build intuition about complex future technologies and their potential.",
-                    "slide_id": "sub_4_c8e0dd_s6",
-                },
-                {
-                    "slide_title": "Summary of Modern Computer Generations",
-                    "slide_purpose": "reinforcement",
-                    "selected_template": "Large bullet list",
-                    "narration_role": "Reinforce",
-                    "narration_goal": "Learners should consolidate their understanding of key concepts, developments, and future trends in modern computing.",
-                    "reasoning": "A large bullet list is effective for summarizing and reinforcing the main points covered in the subtopic.",
-                    "slide_id": "sub_4_c8e0dd_s7",
-                },
-            ],
-        },
-        "sub_5_dca7e2": {
-            "subtopic_name": "Comparison and Evolution of Computer Generations",
-            "slides": [
-                {
-                    "slide_title": "Evolution of Computer Generations",
-                    "slide_purpose": "definition",
-                    "selected_template": "Title card",
-                    "narration_role": "Introduce",
-                    "narration_goal": "Learners will understand the concept of computer generations and why their evolution is significant in computing history.",
-                    "reasoning": "Starting with a Title card sets the stage by clearly defining the subtopic and engaging learners with a concise overview of its importance.",
-                    "slide_id": "sub_5_dca7e2_s1",
-                },
-                {
-                    "slide_title": "Key Features of Each Computer Generation",
-                    "slide_purpose": "intuition",
-                    "selected_template": "Title with bullets and image",
-                    "narration_role": "Guide",
-                    "narration_goal": "Learners will grasp the distinctive technological advancements and characteristics that define each generation.",
-                    "reasoning": "Using bullets with an image helps visualize and intuitively explain the core features of each generation, supporting deeper understanding.",
-                    "slide_id": "sub_5_dca7e2_s2",
-                },
-                {
-                    "slide_title": "Timeline of Computer Generations",
-                    "slide_purpose": "process",
-                    "selected_template": "Timeline",
-                    "narration_role": "Connect",
-                    "narration_goal": "Learners will be able to place each generation chronologically and recognize the historical progression of computing technology.",
-                    "reasoning": "A timeline is ideal for illustrating the sequential development and key milestones across generations, reinforcing temporal context.",
-                    "slide_id": "sub_5_dca7e2_s3",
-                },
-                {
-                    "slide_title": "Comparing Computer Generations",
-                    "slide_purpose": "comparison",
-                    "selected_template": "Two columns",
-                    "narration_role": "Contrast",
-                    "narration_goal": "Learners will compare and contrast the main differences and improvements between early and later computer generations.",
-                    "reasoning": "A two-column layout facilitates direct comparison, making it easier to highlight pros and cons or evolution between generations.",
-                    "slide_id": "sub_5_dca7e2_s4",
-                },
-                {
-                    "slide_title": "Summary of Computer Generations Evolution",
-                    "slide_purpose": "reinforcement",
-                    "selected_template": "Large bullet list",
-                    "narration_role": "Reinforce",
-                    "narration_goal": "Learners will consolidate their understanding of the key points regarding the evolution and comparison of computer generations.",
-                    "reasoning": "A large bullet list is effective for summarizing and reinforcing the main takeaways, aiding retention before concluding the subtopic.",
-                    "slide_id": "sub_5_dca7e2_s5",
-                },
-            ],
-        },
-    },
-}

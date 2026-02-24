@@ -324,6 +324,111 @@ BLUEPRINT_CATALOG = {
             "style": "comparative_proportions",
         },
     },
+    # ─────────────────────────────────────────────────────────────
+    # NEW PRIMARY CONTENT TYPE BLUEPRINTS
+    # ─────────────────────────────────────────────────────────────
+    "tables/comparison.html": {
+        "template_matches": ["Comparison table"],
+        "content_type": "COMPARISON_TABLE",
+        "visual_elements": {
+            "headers": "Required, list of strings",
+            "rows": "Matrix of strings",
+            "caption": "Optional bottom label",
+        },
+        "narration_spec": {
+            "format": "comparative",
+            "sentence_count": [4, 6],
+            "style": "analytical_comparison",
+        },
+    },
+    "lists/key_value.html": {
+        "template_matches": ["Key-Value list"],
+        "content_type": "KEY_VALUE_PAIRS",
+        "visual_elements": {
+            "items": "List of key-value objects",
+        },
+        "narration_spec": {
+            "format": "informative",
+            "sentence_count": [3, 5],
+            "style": "factual_spec",
+        },
+    },
+    "text/rich_dense.html": {
+        "template_matches": ["Rich text"],
+        "content_type": "MULTI_PARAGRAPH_TEXT",
+        "visual_elements": {
+            "paragraphs": "3 substantial paragraphs",
+        },
+        "narration_spec": {
+            "format": "paragraph",
+            "sentence_count": [4, 6],
+            "style": "deep_explanation",
+        },
+    },
+    "lists/numbered.html": {
+        "template_matches": ["Numbered list"],
+        "content_type": "ORDERED_LIST",
+        "visual_elements": {
+            "items": "Ordered list with title/description",
+        },
+        "narration_spec": {
+            "format": "points",
+            "point_count": [4, 7],
+            "style": "prioritized_sequence",
+        },
+    },
+    "diagrams/labeled_image.html": {
+        "template_matches": ["Labeled diagram"],
+        "content_type": "LABELED_VISUAL",
+        "visual_elements": {
+            "image": "Required",
+            "labels": "Array of (text, x, y)",
+        },
+        "narration_spec": {
+            "format": "visual_walkthrough",
+            "sentence_count": [4, 6],
+            "style": "descriptive_reference",
+        },
+    },
+    "diagrams/hierarchy_tree.html": {
+        "template_matches": ["Hierarchy tree"],
+        "content_type": "HIERARCHY_TREE",
+        "visual_elements": {
+            "root_node": "Recursive tree structure",
+        },
+        "narration_spec": {
+            "format": "structural_overview",
+            "sentence_count": [3, 5],
+            "style": "organizational",
+        },
+    },
+    "layouts/split_panel.html": {
+        "template_matches": ["Split panel"],
+        "content_type": "DUAL_PANEL_CONTENT",
+        "visual_elements": {
+            "left_panel": "Independent content unit",
+            "right_panel": "Independent content unit",
+        },
+        "narration_spec": {
+            "format": "balanced_explanation",
+            "sentence_count": [4, 6],
+            "style": "dual_perspective",
+        },
+    },
+    "math/formula.html": {
+        "template_matches": ["Formula block"],
+        "content_type": "MATHEMATICAL_BLOCK",
+        "visual_elements": {
+            "expression": "LaTeX or plain text",
+            "variables": "Definition key",
+            "example": "Practical application",
+        },
+        "narration_spec": {
+            "format": "technical_walkthrough",
+            "sentence_count": [4, 6],
+            "style": "educational_derivation",
+        },
+    },
 }
 
 
@@ -374,7 +479,7 @@ IMAGE_GENERATOR_CRITERIA = {
 
 
 def determine_image_generator(
-    slide_title: str, slide_purpose: str, subtopic_name: str
+    title: str, purpose: str, subtopic_name: str
 ) -> Dict[str, Any]:
     """
     Uses LLM to intelligently determine which image generator to use based on accuracy needs.
@@ -393,8 +498,8 @@ def determine_image_generator(
     Analyze this slide and determine the BEST image generator to use.
     
     SLIDE CONTEXT:
-    - Slide Title: {slide_title}
-    - Slide Purpose: {slide_purpose}
+    - Title: {title}
+    - Purpose: {purpose}
     - Subtopic: {subtopic_name}
     
     IMAGE GENERATOR OPTIONS:
@@ -480,17 +585,17 @@ def select_blueprint_with_groq(
         return matching_blueprints[0]["path"]
 
     # Use LLM to choose between multiple options
-    slide_title = slide_context.get("slide_title", "")
-    slide_purpose = slide_context.get("slide_purpose", "")
-    narration_role = slide_context.get("narration_role", "")
+    title = slide_context.get("title", "")
+    purpose = slide_context.get("purpose", "")
+    role = slide_context.get("role", "")
 
     PROMPT = f"""
     Choose the BEST blueprint for this slide from the options below.
     
     SLIDE CONTEXT:
-    - Title: {slide_title}
-    - Purpose: {slide_purpose}
-    - Narration Role: {narration_role}
+    - Title: {title}
+    - Purpose: {purpose}
+    - Role: {role}
     - Template: {template_name}
     
     AVAILABLE BLUEPRINTS:
@@ -574,8 +679,8 @@ def blueprint_mapper_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
                 if requires_image:
                     image_decision = determine_image_generator(
-                        slide_title=slide.get("slide_title", ""),
-                        slide_purpose=slide.get("slide_purpose", ""),
+                        slide_title=slide.get("title", ""),
+                        slide_purpose=slide.get("purpose", ""),
                         subtopic_name=subtopic_name,
                     )
                     slide["image_generator"] = image_decision["image_generator"]
@@ -587,10 +692,10 @@ def blueprint_mapper_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     ]
 
                     print(
-                        f"✓ Mapped '{slide.get('slide_title')}' → {blueprint_path} [IMG: {image_decision['image_generator'].upper()}]"
+                        f"✓ Mapped '{slide.get('title')}' → {blueprint_path} [IMG: {image_decision['image_generator'].upper()}]"
                     )
                 else:
-                    print(f"✓ Mapped '{slide.get('slide_title')}' → {blueprint_path}")
+                    print(f"✓ Mapped '{slide.get('title')}' → {blueprint_path}")
             else:
                 print(f"⚠ No blueprint found for template '{template}', using fallback")
                 slide["blueprint_file"] = "title_with_bullets/default.html"

@@ -72,9 +72,11 @@ class GyMLContentGenerator:
         - RECENTLY USED LAYOUTS: {history_str}
 
         ═══════════════════════════════════════════════
-        VARIETY ENFORCEMENT (CRITICAL)
+        NODE SELECTION RULES (CRITICAL)
         ═══════════════════════════════════════════════
-        Do NOT repeat the same 'smart_layout' variant, 'intent', or 'layout' orientation used in the recent slides if possible.
+        1. SCIENCE & MATH: If the narration contains a mathematical formula or scientific law (like Snell's Law), YOU MUST USE 'formula_block'. Do NOT use 'card_grid' for formulas.
+        2. DENSITY: For complex topics, use 'split_panel' to show a diagram on one side and an explanation on the other.
+        3. VARIETY: Do NOT repeat the same 'smart_layout' or 'block_type' used in recent slides.
         • If the last slide had the image on the 'right', use 'left' or 'top' for this one.
         • Aim for a dynamic progression: hook (introduce) -> explain -> compare -> list -> summarize.
         • Every lesson must have at least 3 DIFFERENT smart_layout types across its slides.
@@ -148,15 +150,24 @@ class GyMLContentGenerator:
            CODE:
              codeSnippet, codeComparison
 
-           DIAGRAMS:
-             diagramFlowchart, diagramHierarchy, diagramCycle, diagramPyramid
+            DIAGRAMS & TREES:
+              diagramFlowchart, diagramHierarchy, diagramCycle, diagramPyramid, labeled_diagram, hierarchy_tree
 
-           TABLES:
-             table, tableStriped, tableHighlight
+            TABLES & MATRICES:
+              table, tableStriped, tableHighlight, comparison_table
 
-        C. OPTIONAL SUPPORTING BLOCKS (max 1-2):
-           • 'callout'  — Highlight a key insight. Max 1-2 per slide. Keep to 1-2 lines.
-           • 'takeaway' — The single most important point to remember.
+            LISTS & KEY-VALUE:
+              key_value_list, numbered_list, bullet_list (general)
+
+            TEXT POWERHOUSES:
+              rich_text (deep narrative), split_panel (side-by-side independence)
+
+            MATH & SYMBOLS:
+              formula_block
+
+         C. OPTIONAL SUPPORTING BLOCKS (max 1-2):
+            • 'callout'  — Highlight a key insight. Max 1-2 per slide. Keep to 1-2 lines.
+            • 'takeaway' — The single most important point to remember.
 
         ═══════════════════════════════════════════════
         STEP 3: APPLY COMPOSITION RULES
@@ -239,7 +250,7 @@ class GyMLContentGenerator:
             return json.loads(content)
         except json.JSONDecodeError as e:
             print(f"Failed to parse LLM response as JSON: {e}")
-            print(f"Raw content: {content}")
+            # Ensure we return valid GyML structure even on failure
             return {
                 "title": title,
                 "intent": "explain",

@@ -20,6 +20,14 @@ from .definitions import (
     GyMLImage,
     GyMLDivider,
     GyMLNode,
+    GyMLComparisonTable,
+    GyMLKeyValueList,
+    GyMLRichText,
+    GyMLNumberedList,
+    GyMLLabeledDiagram,
+    GyMLHierarchyTree,
+    GyMLSplitPanel,
+    GyMLFormulaBlock,
 )
 from .rules import (
     NESTING_RULES,
@@ -173,6 +181,14 @@ class GyMLValidator:
             "smart-layout",
             "img",
             "divider",
+            "comparison_table",
+            "key_value_list",
+            "rich_text",
+            "numbered_list",
+            "labeled_diagram",
+            "hierarchy_tree",
+            "split_panel",
+            "formula_block",
         ]
 
         for child in body.children:
@@ -300,6 +316,22 @@ class GyMLValidator:
             return "img"
         elif isinstance(node, GyMLDivider):
             return "divider"
+        elif isinstance(node, GyMLComparisonTable):
+            return "comparison_table"
+        elif isinstance(node, GyMLKeyValueList):
+            return "key_value_list"
+        elif isinstance(node, GyMLRichText):
+            return "rich_text"
+        elif isinstance(node, GyMLNumberedList):
+            return "numbered_list"
+        elif isinstance(node, GyMLLabeledDiagram):
+            return "labeled_diagram"
+        elif isinstance(node, GyMLHierarchyTree):
+            return "hierarchy_tree"
+        elif isinstance(node, GyMLSplitPanel):
+            return "split_panel"
+        elif isinstance(node, GyMLFormulaBlock):
+            return "formula_block"
         else:
             return type(node).__name__.lower()
 

@@ -94,7 +94,7 @@ def load_llm_schema() -> str:
 
 
 def generate_narration(
-    slide_title: str, slide_goal: str, subtopic_name: str, context: str = ""
+    title: str, goal: str, role: str, subtopic_name: str, context: str = ""
 ) -> str:
     """Generates the spoken narration for a slide."""
     llm = load_openai()
@@ -104,8 +104,9 @@ def generate_narration(
     
     CONTEXT:
     - Subtopic: {subtopic_name}
-    - Slide Title: {slide_title}
-    - Slide Goal: {slide_goal}
+    - Slide Title: {title}
+    - Slide Goal: {goal}
+    - Teacher Role: {role}
     {f"📚 RESEARCH CONTEXT:\n{context}" if context else ""}
     
     STRUCTURE RULES:
@@ -208,7 +209,8 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 print(f"    ⚠ Search failed: {e}")
 
         # 2. Generate Narration
-        narration = generate_narration(title, goal, subtopic_name, search_context)
+        role = concept.get("role", "Teacher")
+        narration = generate_narration(title, goal, role, subtopic_name, search_context)
 
         # 3. Count narration segments for content alignment
         segments = segment_narration(narration, "points")
@@ -219,7 +221,7 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
         generated_content = gyml_generator.generate(
             narration=narration,
             title=title,
-            purpose="explain",
+            purpose=concept.get("purpose", "explain"),
             subtopic=subtopic_name,
             context=search_context,
             point_count=point_count,

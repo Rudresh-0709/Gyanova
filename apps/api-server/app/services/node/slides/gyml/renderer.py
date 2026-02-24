@@ -6,7 +6,7 @@ Maps GyML structure to HTML without any inference or semantic decisions.
 Designed to match Gamma-style professional slides.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import html
 
 from .definitions import (
@@ -22,6 +22,14 @@ from .definitions import (
     GyMLDivider,
     GyMLTable,
     GyMLCode,
+    GyMLComparisonTable,
+    GyMLKeyValueList,
+    GyMLRichText,
+    GyMLNumberedList,
+    GyMLLabeledDiagram,
+    GyMLHierarchyTree,
+    GyMLSplitPanel,
+    GyMLFormulaBlock,
     GyMLNode,
 )
 from .theme import Theme, THEMES
@@ -278,6 +286,22 @@ class GyMLRenderer:
             return self._render_code(node)
         elif isinstance(node, GyMLTable):
             return self._render_table(node)
+        elif isinstance(node, GyMLComparisonTable):
+            return self._render_comparison_table(node)
+        elif isinstance(node, GyMLKeyValueList):
+            return self._render_key_value_list(node)
+        elif isinstance(node, GyMLRichText):
+            return self._render_rich_text(node)
+        elif isinstance(node, GyMLNumberedList):
+            return self._render_numbered_list(node)
+        elif isinstance(node, GyMLLabeledDiagram):
+            return self._render_labeled_diagram(node)
+        elif isinstance(node, GyMLHierarchyTree):
+            return self._render_hierarchy_tree(node)
+        elif isinstance(node, GyMLSplitPanel):
+            return self._render_split_panel(node)
+        elif isinstance(node, GyMLFormulaBlock):
+            return self._render_formula_block(node)
         return f"<!-- Unknown node type: {type(node).__name__} -->"
 
     def _render_heading(self, heading: GyMLHeading) -> str:
@@ -385,6 +409,222 @@ class GyMLRenderer:
     def _render_smart_layout_item(
         self, item: GyMLSmartLayoutItem, variant: str, index: int = 0
     ) -> str:
+        """Render smart-layout-item Gamma-style."""
+        # Animation: cards get data-segment for sequential reveal
+        # Each card maps to one narration segment
+        if self.animated:
+            seg = self._segment_counter
+            self._segment_counter += 1
+            # Comparison cards slide from sides, others slide up
+            if variant == "comparison":
+                direction = "left" if index == 0 else "right"
+                anim_class = f"anim-slide-{direction}"
+            else:
+                anim_class = "anim-slide-up"
+            html_parts = [
+                f'<div class="card {anim_class}" '
+                f'data-index="{index}" data-segment="{seg}">'
+            ]
+        else:
+            html_parts = [f'<div class="card" data-index="{index}">']
+
+        # Number badge at top (Gamma style)
+        if variant in ["bigBullets", "processSteps", "cardGrid"]:
+            html_parts.append(f'<div class="card-number">{index + 1}</div>')
+
+        # Icon
+        if item.icon:
+            icon_class = item.icon.alt
+            if not icon_class.startswith("ri-"):
+                icon_class = f"ri-{icon_class}-line"
+            html_parts.append(
+                f'<div class="card-icon"><i class="{self._escape(icon_class)}"></i></div>'
+            )
+
+        # Content
+        html_parts.append('<div class="card-content">')
+
+        if variant == "timeline":
+            if item.year:
+                html_parts.append(
+                    f'<div class="card-year">{self._escape(item.year)}</div>'
+                )
+            if item.description:
+                html_parts.append(
+                    f'<p class="card-text">{self._escape(item.description)}</p>'
+                )
+
+        elif variant == "stats":
+            if item.value:
+                html_parts.append(
+                    f'<div class="card-value">{self._escape(item.value)}</div>'
+                )
+            if item.label:
+                html_parts.append(
+                    f'<div class="card-label">{self._escape(item.label)}</div>'
+                )
+
+        else:
+            if item.heading:
+                html_parts.append(
+                    f'<h4 class="card-title">{self._escape(item.heading)}</h4>'
+                )
+            if item.description:
+                # Handle multiline descriptions (e.g. from comparison lists)
+                desc_html = self._escape(item.description).replace("\n", "<br>")
+                html_parts.append(f'<p class="card-text">{desc_html}</p>')
+
+        html_parts.append("</div>")
+        html_parts.append("</div>")
+
+        return "\n".join(html_parts)
+
+    def _render_comparison_table(self, table: GyMLComparisonTable) -> str:
+        """Render comparison table."""
+        headers_html = "".join(f"<th>{self._escape(h)}</th>" for h in table.headers)
+        rows_html = []
+        for row in table.rows:
+            cells_html = "".join(f"<td>{self._escape(c)}</td>" for c in row)
+            rows_html.append(f"<tr>{cells_html}</tr>")
+
+        caption_html = (
+            f'<div class="table-caption">{self._escape(table.caption)}</div>'
+            if table.caption
+            else ""
+        )
+
+        return (
+            f'<div class="comparison-table-container">'
+            f"<table>"
+            f"<thead><tr>{headers_html}</tr></thead>"
+            f'<tbody>{"".join(rows_html)}</tbody>'
+            f"</table>"
+            f"{caption_html}"
+            f"</div>"
+        )
+
+    def _render_key_value_list(self, kv_list: GyMLKeyValueList) -> str:
+        """Render key-value list."""
+        items_html = []
+        for item in kv_list.items:
+            key = self._escape(item.key)
+            val = self._escape(item.value)
+            items_html.append(
+                f'<div class="kv-item">'
+                f'<span class="kv-key">{key}</span>'
+                f'<span class="kv-value">{val}</span>'
+                f"</div>"
+            )
+        return f'<div class="key-value-list">{"".join(items_html)}</div>'
+
+    def _render_rich_text(self, rich_text: GyMLRichText) -> str:
+        """Render rich text block."""
+        paragraphs_html = "".join(
+            f"<p>{self._escape(p)}</p>" for p in rich_text.paragraphs
+        )
+        return f'<div class="rich-text-block">{paragraphs_html}</div>'
+
+    def _render_numbered_list(self, num_list: GyMLNumberedList) -> str:
+        """Render numbered list."""
+        items_html = []
+        for item in num_list.items:
+            title = self._escape(item.title)
+            desc = self._escape(item.description)
+            items_html.append(
+                f"<li>"
+                f'<div class="item-title">{title}</div>'
+                f'<div class="item-desc">{desc}</div>'
+                f"</li>"
+            )
+        return f'<ol class="numbered-list">{"".join(items_html)}</ol>'
+
+    def _render_labeled_diagram(self, diagram: GyMLLabeledDiagram) -> str:
+        """Render labeled diagram."""
+        labels_html = []
+        for label in diagram.labels:
+            x = label.x
+            y = label.y
+            text = self._escape(label.text)
+            labels_html.append(
+                f'<div class="diagram-label" style="left: {x}%; top: {y}%;">'
+                f'<span class="label-dot"></span>'
+                f'<span class="label-text">{text}</span>'
+                f"</div>"
+            )
+        img_url = self._escape(diagram.image_url) if diagram.image_url else ""
+        return (
+            f'<div class="labeled-diagram-container">'
+            f'<img src="{img_url}" class="diagram-base" />'
+            f'<div class="diagram-labels">{"".join(labels_html)}</div>'
+            f"</div>"
+        )
+
+    def _render_hierarchy_tree(self, tree: GyMLHierarchyTree) -> str:
+        """Render hierarchy tree."""
+
+        def render_nested(node):
+            label = self._escape(node.label)
+            children = node.children
+            child_html = ""
+            if children:
+                child_items = "".join(f"<li>{render_nested(c)}</li>" for c in children)
+                child_html = f"<ul>{child_items}</ul>"
+            return f'<div class="tree-node">{label}</div>{child_html}'
+
+        return f'<div class="hierarchy-tree-container">{render_nested(tree.root)}</div>'
+
+    def _render_split_panel(self, panel: GyMLSplitPanel) -> str:
+        """Render split panel."""
+        left_html = self._render_embedded_panel(panel.left_panel)
+        right_html = self._render_embedded_panel(panel.right_panel)
+
+        return (
+            f'<div class="split-panel">'
+            f'<div class="panel-half left">{left_html}</div>'
+            f'<div class="panel-half right">{right_html}</div>'
+            f"</div>"
+        )
+
+    def _render_embedded_panel(self, panel_data: Any) -> str:
+        """Helper to render a panel in a split panel."""
+        title = self._escape(panel_data.title)
+        content = self._escape(panel_data.content).replace("\n", "<br>")
+        return f'<div class="embedded-panel"><h3>{title}</h3><p>{content}</p></div>'
+
+    def _render_embedded_block(self, block_data: Dict[str, Any]) -> str:
+        """Helper to render a block inside another block (like split panel)."""
+        from .serializer import GyMLSerializer
+        from .definitions import ComposedBlock
+
+        s = GyMLSerializer()
+        composed = ComposedBlock(
+            type=block_data.get("type", "paragraph"),
+            content=block_data.get("content", block_data),
+        )
+        node = s._serialize_block(composed)
+        return self._render_node(node) if node else ""
+
+    def _render_formula_block(self, block: GyMLFormulaBlock) -> str:
+        """Render formula block."""
+        expression = self._escape(block.expression)
+        example = self._escape(block.example) if block.example else ""
+
+        vars_html = []
+        for var in block.variables:
+            vars_html.append(
+                f'<div class="formula-var">'
+                f'<span class="var-name">{self._escape(var.name)}</span>'
+                f'<span class="var-def">{self._escape(var.definition)}</span>'
+                f"</div>"
+            )
+
+        return (
+            f'<div class="formula-block-container">'
+            f'<div class="formula-display">{expression}</div>'
+            f'<div class="formula-example">{example}</div>'
+            f'<div class="formula-variables">{"".join(vars_html)}</div>'
+            f"</div>"
+        )
         """Render smart-layout-item Gamma-style."""
         # Animation: cards get data-segment for sequential reveal
         # Each card maps to one narration segment
@@ -793,6 +1033,168 @@ p {
     line-height: var(--line-height, 1.65);
     color: var(--text-secondary, #555);
     margin: 0;
+}
+
+/* ================================================
+   NEW CONTENT TYPES STYLES
+   ================================================ */
+
+/* Comparison Table */
+.comparison-table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin: 1rem 0;
+    border: 1px solid var(--border-color, #e5e5e5);
+    border-radius: 8px;
+    background: #fff;
+}
+.comparison-table-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.comparison-table-container th, .comparison-table-container td {
+    padding: 1rem;
+    border: 1px solid var(--border-color, #e5e5e5);
+    text-align: left;
+}
+.comparison-table-container th {
+    background: #f8f9fa;
+    font-weight: 700;
+}
+.table-caption {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Key-Value List */
+.key-value-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.kv-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid var(--accent, #1a1a1a);
+}
+.kv-key {
+    font-weight: 700;
+}
+
+/* Formula Block */
+.formula-block-container {
+    padding: 2rem;
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 12px;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+.formula-display {
+    font-family: 'Cambria Math', 'Times New Roman', serif;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+.formula-example {
+    font-size: 1.125rem;
+    font-style: italic;
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+}
+.formula-variables {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    border-top: 1px solid #444;
+    padding-top: 1rem;
+}
+.formula-var {
+    text-align: left;
+}
+.var-name {
+    font-weight: 700;
+    margin-right: 0.5rem;
+    color: #ffd700;
+}
+.var-def {
+    opacity: 0.9;
+}
+
+/* Split Panel */
+.split-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    height: 100%;
+}
+.panel-half {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Labeled Diagram */
+.labeled-diagram-container {
+    position: relative;
+    width: 100%;
+    max-height: 60vh;
+    overflow: hidden;
+    border-radius: 12px;
+}
+.diagram-base {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+.diagram-label {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.label-dot {
+    width: 12px;
+    height: 12px;
+    background: #ff4757;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+.label-text {
+    background: rgba(255,255,255,0.9);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 4px;
+    white-space: nowrap;
+}
+
+/* Rich Text */
+.rich-text-block {
+    line-height: 1.8;
+}
+
+/* Hierarchy Tree */
+.hierarchy-tree-container ul {
+    list-style: none;
+    padding-left: 1.5rem;
+    border-left: 1px dashed #ccc;
+}
+.tree-node {
+    padding: 0.5rem;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    display: inline-block;
 }
 
 /* ================================================

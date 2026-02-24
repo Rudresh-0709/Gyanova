@@ -1,41 +1,8 @@
 import json
 from typing import Dict, Any, List
-from ..llm.model_loader import load_openai
 from ..state import TutorState
-
-
-def plan_slides_for_subtopic(
-    subtopic_name: str, difficulty: str
-) -> List[Dict[str, str]]:
-    """Plans 3-5 slide concepts (titles/goals) for a subtopic."""
-    llm = load_openai()
-
-    prompt = f"""
-    You are an AI Curriculum Planner. Plan a series of 3-5 slides for the subtopic: '{subtopic_name}'.
-    Difficulty: {difficulty}
-    
-    For each slide, provide a 'title' and a 'goal' (what the student should learn).
-    Ensure logical progression and high educational value.
-    DO NOT mention layouts or templates.
-
-    Output ONLY valid JSON:
-    {{
-        "slides": [
-            {{"title": "...", "goal": "..."}},
-            ...
-        ]
-    }}
-    """
-
-    resp = llm.invoke([{"role": "user", "content": prompt}])
-    try:
-        content = resp.content.replace("```json", "").replace("```", "").strip()
-        return json.loads(content).get("slides", [])
-    except Exception as e:
-        print(f"Error parsing slide plans: {e}")
-        return [
-            {"title": subtopic_name, "goal": f"Master the basics of {subtopic_name}."}
-        ]
+from .new_slide_planner import plan_slides_for_subtopic
+import uuid
 
 
 def lesson_planning_node(state: TutorState) -> TutorState:
@@ -56,7 +23,14 @@ def lesson_planning_node(state: TutorState) -> TutorState:
         sub_difficulty = subtopic.get("difficulty", difficulty)
 
         print(f"  📍 Planning subtopic: {subtopic_name}")
-        slide_plans = plan_slides_for_subtopic(subtopic_name, sub_difficulty)
+        plan_data = plan_slides_for_subtopic(subtopic)
+        slide_plans = plan_data.get("slides", [])
+
+        # Assign unique slide_id and sequence
+        for i, slide in enumerate(slide_plans):
+            slide["slide_id"] = f"{sub_id}_s{i + 1}"
+            slide["sequence_index"] = i
+
         state["plans"][sub_id] = slide_plans
 
     return state

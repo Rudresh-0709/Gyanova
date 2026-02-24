@@ -151,6 +151,14 @@ GyMLNode = Union[
     "GyMLDivider",
     "GyMLTable",
     "GyMLCode",
+    "GyMLComparisonTable",
+    "GyMLKeyValueList",
+    "GyMLRichText",
+    "GyMLNumberedList",
+    "GyMLLabeledDiagram",
+    "GyMLHierarchyTree",
+    "GyMLSplitPanel",
+    "GyMLFormulaBlock",
 ]
 
 
@@ -331,3 +339,114 @@ class GyMLTable:
     headers: List[str]
     rows: List[List[str]]
     variant: str = "simple"  # simple, striped, highlight
+
+
+@dataclass
+class GyMLComparisonTable:
+    """Comparison table element."""
+
+    headers: List[str]
+    rows: List[List[str]]
+    caption: Optional[str] = None
+
+
+@dataclass
+class GyMLKeyValueItem:
+    """Item for Key-Value List."""
+
+    key: str
+    value: str
+
+
+@dataclass
+class GyMLKeyValueList:
+    """Key-Value list element."""
+
+    items: List[GyMLKeyValueItem]
+
+
+@dataclass
+class GyMLRichText:
+    """Rich text element with multiple paragraphs."""
+
+    paragraphs: List[str]
+
+
+@dataclass
+class GyMLNumberedListItem:
+    """Item for Numbered List."""
+
+    title: str
+    description: str
+
+
+@dataclass
+class GyMLNumberedList:
+    """Numbered sequence element."""
+
+    items: List[GyMLNumberedListItem]
+
+
+@dataclass
+class GyMLDiagramLabel:
+    """Label for Labeled Diagram."""
+
+    text: str
+    x: float
+    y: float
+
+
+@dataclass
+class GyMLLabeledDiagram:
+    """Diagram with positioned labels."""
+
+    image_url: Optional[str]
+    labels: List[GyMLDiagramLabel]
+
+
+@dataclass
+class GyMLTreeNode:
+    """Node for Hierarchy Tree."""
+
+    label: str
+    children: List[GyMLTreeNode] = field(default_factory=list)
+
+
+@dataclass
+class GyMLHierarchyTree:
+    """Tree structure element."""
+
+    root: GyMLTreeNode
+
+
+@dataclass
+class GyMLPanel:
+    """Panel for Split Panel."""
+
+    title: str
+    content: str
+
+
+@dataclass
+class GyMLSplitPanel:
+    """Two-panel independent content element."""
+
+    left_panel: GyMLPanel
+    right_panel: GyMLPanel
+
+
+@dataclass
+class GyMLFormulaVariable:
+    """Variable definition for Formula Block."""
+
+    name: str
+    definition: str
+
+
+@dataclass
+class GyMLFormulaBlock:
+    """Mathematical expression element."""
+
+    expression: str
+    variables: List[GyMLFormulaVariable] = field(default_factory=list)
+    example: Optional[str] = None
