@@ -31,6 +31,11 @@ def extract_sub_topic(state: TutorState) -> TutorState:
     llm = load_groq()
     topic = llm.invoke(system_prompt + " " + user_prompt)
 
+    # DEBUG: Show raw sub-topic output
+    print("\n--- [DEBUG] SUB-TOPIC EXTRACTION LLM OUTPUT ---")
+    print(topic.content)
+    print("------------------------------------------------\n")
+
     json_match = re.search(r"```json\s*([\s\S]*?)\s*```", topic.content)
     if json_match:
         json_string = json_match.group(1).strip()
@@ -45,8 +50,8 @@ def extract_sub_topic(state: TutorState) -> TutorState:
         state["sub_topics"] = []
         return state
 
-    # Add unique IDs to subtopics
-    sub_topics = data.get("sub_topics", [])
+    # Limit to 1 subtopic for faster testing (as requested)
+    sub_topics = data.get("sub_topics", [])[:1]
 
     for i, sub in enumerate(sub_topics, start=1):
         sub["id"] = f"sub_{i}_{uuid.uuid4().hex[:6]}"

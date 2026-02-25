@@ -113,8 +113,12 @@ def segment_narration(text: str, narration_format: str) -> List[str]:
     if narration_format not in SEGMENTED_FORMATS:
         return [text.strip()]
 
-    # Split using transition markers
-    parts = POINT_SPLIT_PATTERN.split(text)
+    # 1. Try splitting by double newlines first (Natural Segmentation)
+    if "\n\n" in text:
+        parts = text.split("\n\n")
+    else:
+        # 2. Fallback to transition markers if no double newlines found
+        parts = POINT_SPLIT_PATTERN.split(text)
 
     # Clean up: remove empty/whitespace-only segments
     segments = [p.strip() for p in parts if p.strip()]

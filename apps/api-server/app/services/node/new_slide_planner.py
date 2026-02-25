@@ -367,6 +367,11 @@ def plan_slides_for_subtopic(
     llm = load_openai()
     response = llm.invoke([{"role": "system", "content": SYSTEM_PROMPT}])
 
+    # DEBUG: Show raw planning output
+    print("\n--- [DEBUG] SLIDE PLANNING LLM OUTPUT ---")
+    print(response.content)
+    print("------------------------------------------\n")
+
     try:
         content = response.content.replace("```json", "").replace("```", "").strip()
         data = json.loads(content)

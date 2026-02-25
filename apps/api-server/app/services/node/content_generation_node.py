@@ -94,10 +94,27 @@ def load_llm_schema() -> str:
 
 
 def generate_narration(
-    title: str, goal: str, role: str, subtopic_name: str, context: str = ""
+    title: str,
+    goal: str,
+    role: str,
+    subtopic_name: str,
+    context: str = "",
+    template_name: str = "",
 ) -> str:
     """Generates the spoken narration for a slide."""
     llm = load_openai()
+
+    # Define sparse templates consistent with generator.py
+    SPARSE_TEMPLATES = [
+        "Title card",
+        "Image and text",
+        "Text and image",
+        "Rich text",
+        "Formula block",
+        "Definition",
+        "Quote",
+    ]
+    is_sparse = template_name in SPARSE_TEMPLATES
 
     prompt = f"""
     You are an expert teacher. Write the spoken narration for a slide.
@@ -107,30 +124,35 @@ def generate_narration(
     - Slide Title: {title}
     - Slide Goal: {goal}
     - Teacher Role: {role}
+    - Slide Template: {template_name}
     {f"📚 RESEARCH CONTEXT:\n{context}" if context else ""}
     
-    STRUCTURE RULES:
+    {f'''STRUCTURE RULES (SPARSE TEMPLATE):
+    1. Write a SINGLE, high-impact, engaging paragraph.
+    2. Length: 40-70 words.
+    3. Focus on a broad overview or a strong takeaway related to the goal.''' if is_sparse else '''STRUCTURE RULES (DENSE TEMPLATE):
     1. Provide 3-5 distinct teaching points.
-    2. Use clear transition markers to separate these points so they can be animated:
-       - Start the first point with "First,"
-       - Start the second point with "Second,"
-       - Start the third point with "Third,"
-       - And so on...
+    2. SEPARATE each point with exactly TWO newlines (\\n\\n).
     3. Each point should be 25-40 words long.
-    4. Total length MUST be 120-180 words.
+    4. Total length MUST be 120-180 words.'''}
 
     CONTENT RULES:
     1. Write exactly what the teacher would say.
     2. Be engaging, clear, and pedagogically sound.
     3. NO markdown, NO "In this slide", NO "Moving on".
-    4. Your narration EXPLAINS what the student sees on screen.
-       The slide will show short labels, card headings, and brief summaries.
-       Your job is to ELABORATE with deeper context, examples, real-world
-       connections, and analogies that are NOT written on screen.
+    4. CRITICAL: Do NOT use transition markers like "First,", "Second,", "Third,", "Next,", or "Finally,".
+       Let the points flow naturally into each other.
+    5. Your narration EXPLAINS what the student sees on screen.
        Do NOT just read out what the slide says — add value beyond the visuals.
     """
 
     resp = llm.invoke([{"role": "user", "content": prompt}])
+
+    # DEBUG: Show raw narration output
+    print("\n--- [DEBUG] NARRATION LLM OUTPUT ---")
+    print(resp.content)
+    print("--------------------------------------\n")
+
     return resp.content.strip()
 
 
@@ -210,7 +232,15 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
         # 2. Generate Narration
         role = concept.get("role", "Teacher")
-        narration = generate_narration(title, goal, role, subtopic_name, search_context)
+        selected_template = concept.get("selected_template", "")
+        narration = generate_narration(
+            title,
+            goal,
+            role,
+            subtopic_name,
+            search_context,
+            template_name=selected_template,
+        )
 
         # 3. Count narration segments for content alignment
         segments = segment_narration(narration, "points")
@@ -226,6 +256,7 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
             context=search_context,
             point_count=point_count,
             layout_history=layout_history,
+            template_name=concept.get("selected_template"),
         )
 
         # Update layout history

@@ -67,8 +67,24 @@ def extract_topic(state: TutorState) -> TutorState:
     user_prompt = state.get("user_input", "")
     llm = load_groq()
     topic = llm.invoke(system_prompt + " " + user_prompt)
+
+    # DEBUG: Show raw topic extraction output
+    print("\n--- [DEBUG] TOPIC EXTRACTION LLM OUTPUT ---")
+    print(topic.content)
+    print("--------------------------------------------\n")
+
+    import re
+
+    json_match = re.search(r"```json\s*([\s\S]*?)\s*```", topic.content)
+    if json_match:
+        json_string = json_match.group(1).strip()
+    else:
+        json_string = topic.content.strip()
+
     try:
-        parsed = json.loads(topic.content)
+        parsed = json.loads(json_string)
+    except json.JSONDecodeError:
+        parsed = {"topic": "No clear topic detected", "granularity": "N/A"}
     except json.JSONDecodeError:
         parsed = {"topic": "No clear topic detected", "granularity": "N/A"}
 

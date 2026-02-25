@@ -46,27 +46,39 @@ class GyMLContentGenerator:
         context: str = "",
         point_count: int = 0,
         layout_history: List[str] = None,
+        template_name: str = None,
     ) -> Dict[str, Any]:
         """
         Generate structured GyML content from narration.
-
-        Args:
-            point_count: Number of narration segments. When > 1, the primary
-                         smart_layout MUST have exactly this many items so
-                         animations stay in sync with audio.
-            layout_history: List of recently used layout variants or intents
-                            to avoid repetition and ensure variety.
         """
         history_str = ", ".join(layout_history) if layout_history else "None"
+
+        # Sanitize template name
+        normalized_template = template_name.strip() if template_name else ""
+
+        # These templates prioritize premium visual style over animation sync
+        SPARSE_TEMPLATES = [
+            "Title card",
+            "Image and text",
+            "Text and image",
+            "Rich text",
+            "Formula block",
+            "Definition",
+            "Quote",
+        ]
+        is_sparse = normalized_template in SPARSE_TEMPLATES
 
         prompt = f"""
         You are an expert educational content designer who creates visually rich, cognitively balanced slides.
         Convert the Teacher's Narration into a structured visual slide using GyML (Gyanova Markup Language).
 
-        SLIDE CONTEXT:
+        ═══════════════════════════════════════════════
+        CONTEXT & PEDAGOGY
+        ═══════════════════════════════════════════════
+        Topic: {subtopic}
+        Purpose: {purpose}
+        Recommended Template: {template_name}
         - Title: {title}
-        - Purpose/Intent: {purpose}
-        - Subtopic: {subtopic}
         - Narration: {narration}
         {f"- Additional Context: {context}" if context else ""}
         - RECENTLY USED LAYOUTS: {history_str}
@@ -119,10 +131,21 @@ class GyMLContentGenerator:
            • 'caption'              — Describes a figure or visual element (directly after that element)
            Use 1-2 paragraphs per slide. Do NOT use more than 2 paragraphs—the 'smart_layout' should do the heavy lifting.
 
-        B. PRIMARY CONTENT: USE 'smart_layout'
-           Every slide SHOULD have exactly ONE 'smart_layout' block as the primary visualization.
-           Choose the best variant:
+         B. PRIMARY CONTENT: {"USE 'smart_layout'" if not is_sparse else "AVOID 'smart_layout'"}
+            {"Every slide SHOULD have exactly ONE primary visualization (usually 'smart_layout', but can be 'key_value_list', 'labeled_diagram', etc. for specific templates)." if not is_sparse else f"This is a '{template_name}' slide. DO NOT use 'smart_layout'. Instead, focus on a high-impact title and a single intro_paragraph. Leave the primary visualization to the image_prompt."}
 
+            TEMPLATE MAPPING (CRITICAL: Respect the 'Recommended Template'):
+            • If Recommended Template contains 'bullets' -> you MUST use bulletIcon or bigBullets. AVOID cardGridIcon.
+            • If Recommended Template contains 'Comparison' -> use comparison or comparisonProsCons.
+            • If Recommended Template contains 'Process' or 'Step' -> use processArrow or processAccordion.
+            • If Recommended Template contains 'Timeline' -> use timelineMilestone or timelineSequential.
+            • If Recommended Template contains 'Stat' or 'Metric' -> use stats or statsComparison.
+            • If Recommended Template is 'Key-Value list' -> you MUST use a top-level block with type: 'key_value_list'.
+            • If Recommended Template is 'Labeled diagram' -> you MUST use a top-level block with type: 'labeled_diagram'.
+            • If Recommended Template is 'Hierarchy tree' -> you MUST use a top-level block with type: 'hierarchy_tree'.
+            • For standard multi-item slides -> use cardGridIcon or cardGridSimple if no specific style fits.
+
+            Variant Dictionary:
            TIMELINES:
              timeline, timelineHorizontal, timelineSequential, timelineMilestone
 
@@ -156,14 +179,21 @@ class GyMLContentGenerator:
             TABLES & MATRICES:
               table, tableStriped, tableHighlight, comparison_table
 
-            LISTS & KEY-VALUE:
-              key_value_list, numbered_list, bullet_list (general)
+             LISTS & KEY-VALUE:
+               • key_value_list (Top-level. Uses items: [[{{"key": "...", "value": "..."}}]])
+               • numbered_list (Top-level. Uses items: [[{{"title": "...", "description": "..."}}]])
+               • bigBullets, bulletIcon (Inside smart_layout)
 
-            TEXT POWERHOUSES:
-              rich_text (deep narrative), split_panel (side-by-side independence)
+             DIAGRAMS & TREES:
+               • labeled_diagram (Top-level. Uses imageUrl: "...", labels: [[{{"text": "...", "x": 50, "y": 50}}]])
+               • hierarchy_tree (Top-level. Uses root: {{"label": "...", "children": [...]}})
 
-            MATH & SYMBOLS:
-              formula_block
+             TEXT POWERHOUSES:
+               • rich_text (Top-level. Uses paragraphs: ["...", "..."])
+               • split_panel (Top-level. Uses leftPanel: {{"title": "...", "content": "..."}}, rightPanel: {{...}})
+
+             MATH & SYMBOLS:
+               • formula_block (Top-level. Uses expression: "...", variables: [[{{"name": "...", "definition": "..."}}]])
 
          C. OPTIONAL SUPPORTING BLOCKS (max 1-2):
             • 'callout'  — Highlight a key insight. Max 1-2 per slide. Keep to 1-2 lines.
@@ -208,11 +238,12 @@ class GyMLContentGenerator:
           • Students read the slide while listening — if text = narration, it feels like reading a teleprompter
           • On-screen = labels and key facts with brief elaboration. Narration = the teacher explaining them.
 
-        {f'''ANIMATION ALIGNMENT (non-negotiable):
+        {f'''ANIMATION ALIGNMENT:
           The narration has exactly {point_count} spoken segments/points.
-          Your primary smart_layout MUST have exactly {point_count} items.
-          Each item maps 1:1 to a narration segment for animation sync.
-          If the narration has 1 segment, use a single-content layout (paragraph, definition, or quote).''' if point_count > 0 else ''}
+          {"CRITICAL (Sync Needed): Your primary smart_layout MUST have exactly " + str(point_count) + " items. Each item maps 1:1 to a narration segment for animation sync." if not is_sparse else "SPARSE STYLE (Visual Style Overrides Everything): Since you are using a '" + template_name + "' template, you MUST NOT use a smart_layout grid or timeline. Use the 'introduce' intent. Use only a 'title' and maybe a single 'intro_paragraph'. DO NOT include a card grid. AVOID matching the point count visually."}
+          If the narration has 1 segment, use a single-content layout (paragraph, definition, or quote).''' if point_count > 0 and not is_sparse else ""}
+        {f'''SPARSE VISUAL STYLE: 
+          For this '{template_name}' slide, keep it minimal. Use only 'title' and a single 'intro_paragraph'. DO NOT use 'smart_layout'.''' if is_sparse else ""}
 
         ═══════════════════════════════════════════════
         STEP 4: FORMATTING
@@ -244,6 +275,12 @@ class GyMLContentGenerator:
         """
 
         response = self.llm.invoke([{"role": "user", "content": prompt}])
+
+        # DEBUG: Show raw GyML output
+        print("\n--- [DEBUG] GyML GENERATION LLM OUTPUT ---")
+        print(response.content)
+        print("------------------------------------------\n")
+
         content = response.content.replace("```json", "").replace("```", "").strip()
 
         try:

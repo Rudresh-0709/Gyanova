@@ -1,0 +1,495 @@
+==================================================
+   AI TEACHER WORKFLOW TEST & DEBUG SCRIPT
+==================================================
+
+Topic: Computer generations
+
+[STEP 1] Extracting Topic...
+
+--- [DEBUG] TOPIC EXTRACTION LLM OUTPUT ---
+{
+    "topic": "Computer generations",
+    "granularity": "Focused"
+}
+--------------------------------------------
+
+  Extracted Topic: Computer generations
+  Granularity: Focused
+
+[STEP 2] Extracting Sub-topics...
+
+--- [DEBUG] SUB-TOPIC EXTRACTION LLM OUTPUT ---
+{
+    "topic": "Computer generations",
+    "sub_topics": [
+        {"name": "First Generation (1940-1959): Vacuum Tubes & Electromechanical Computers", "difficulty": "Beginner"},
+        {"name": "Second Generation (1959-1965): Transistors & Magnetic Cores", "difficulty": "Beginner"},
+        {"name": "Third Generation (1965-1971): Integrated Circuits & Microprocessors", "difficulty": "Intermediate"},
+        {"name": "Fourth Generation (1971-1980): Microprocessors & Personal Computers", "difficulty": "Intermediate"},
+        {"name": "Fifth Generation (1980-1990): Artificial Intelligence & Parallel Processing", "difficulty": "Advanced"},
+        {"name": "Sixth Generation (1990-present): Nanotechnology, Quantum Computing, and Artificial Intelligence", "difficulty": "Advanced"},
+        {"name": "Seventh Generation (Emerging): Neuromorphic Computing, Cognitive Architectures, and Quantum AI", "difficulty": "Expert"}
+    ]
+}
+------------------------------------------------
+
+  Found 7 sub-topics:
+    1. First Generation (1940-1959): Vacuum Tubes & Electromechanical Computers (Beginner)
+    2. Second Generation (1959-1965): Transistors & Magnetic Cores (Beginner)
+    3. Third Generation (1965-1971): Integrated Circuits & Microprocessors (Intermediate)
+    4. Fourth Generation (1971-1980): Microprocessors & Personal Computers (Intermediate)
+    5. Fifth Generation (1980-1990): Artificial Intelligence & Parallel Processing (Advanced)
+    6. Sixth Generation (1990-present): Nanotechnology, Quantum Computing, and Artificial Intelligence (Advanced)
+    7. Seventh Generation (Emerging): Neuromorphic Computing, Cognitive Architectures, and Quantum AI (Expert)
+
+[STEP 3] Planning Slides for Subtopic: 'First Generation (1940-1959): Vacuum Tubes & Electromechanical Computers'
+
+--- [DEBUG] SLIDE PLANNING LLM OUTPUT ---
+{
+  "slides": [
+    {
+      "title": "First Generation Computers Overview",
+      "purpose": "definition",
+      "selected_template": "Title card",
+      "role": "Introduce",
+      "goal": "Introduce learners to the era of first generation computers, highlighting vacuum tubes and electromechanical components as foundational technologies.",
+      "reasoning": "A title card with a thematic image sets the historical and technological context, capturing attention and framing the lesson."
+    },
+    {
+      "title": "Vacuum Tubes: The Core Technology",
+      "purpose": "definition",
+      "selected_template": "Title with bullets and image",
+      "role": "Interpret",
+      "goal": "Explain the function and importance of vacuum tubes in early computers, including their operational principles and limitations.",
+      "reasoning": "Combining concise bullet points with a vertical image of a vacuum tube helps learners visualize the component while understanding its key characteristics."
+    },
+    {
+      "title": "Electromechanical Components in Computing",
+      "purpose": "definition",
+      "selected_template": "Title with bullets",
+      "role": "Interpret",
+      "goal": "Describe the role of electromechanical parts like relays and switches in first generation computers and their impact on performance.",
+      "reasoning": "A bullet list efficiently breaks down multiple electromechanical components and their functions, aiding clarity without visual overload."
+    },
+    {
+      "title": "Architecture of a First Generation Computer",
+      "purpose": "visualization",
+      "selected_template": "Labeled diagram",
+      "role": "Guide",
+      "goal": "Present the hardware layout of a typical first generation computer, labeling vacuum tubes, memory units, input/output devices, and control units.",
+      "reasoning": "A labeled diagram visually anchors learners’ understanding of physical hardware and system organization."
+    },
+    {
+      "title": "Evolution Timeline: 1940-1959 First Generation Milestones",
+      "purpose": "process",
+      "selected_template": "Timeline",
+      "role": "Connect",
+      "goal": "Trace key historical developments and landmark machines during the first generation era to contextualize technological progress.",
+      "reasoning": "A timeline effectively sequences major events and inventions, helping learners grasp historical progression."
+    },
+    {
+      "title": "Vacuum Tubes vs Electromechanical Components",
+      "purpose": "comparison",
+      "selected_template": "Comparison table",
+      "role": "Contrast",
+      "goal": "Compare vacuum tubes and electromechanical components on parameters like speed, reliability, size, and power consumption.",
+      "reasoning": "A comparison table clearly delineates pros and cons side-by-side, reinforcing conceptual distinctions."
+    },
+    {
+      "title": "Key Characteristics of First Generation Computers",
+      "purpose": "reinforcement",
+      "selected_template": "Icons with text",
+      "role": "Reinforce",
+      "goal": "Summarize essential features such as programming methods, speed, size, and typical applications of first generation computers.",
+      "reasoning": "Icons paired with short descriptions create memorable visual cues for key takeaways, aiding retention."
+    }
+  ]
+}
+------------------------------------------
+
+  Planned 7 slides.
+
+[STEP 4] Generating Content for First 5 Slides...
+  (This will trigger debug prints for Narration and GyML generation)
+
+🎬 [Batch Gen] Subtopic: First Generation (1940-1959): Vacuum Tubes & Electromechanical Computers | Slides 1-2 of 7
+  📝 Generating Slide 1: First Generation Computers Overview
+
+--- [DEBUG] NARRATION LLM OUTPUT ---
+The first generation of computers marked a groundbreaking era where vacuum tubes and electromechanical components formed the core technology, enabling machines to perform calculations electronically for the first time. These massive, room-sized systems laid the foundation for modern computing, despite their limitations in speed, size, and reliability, sparking the digital revolution that shaped the future of technology.
+--------------------------------------
+
+    → Narration: 1 segment(s)
+
+--- [DEBUG] GyML GENERATION LLM OUTPUT ---
+{
+  "title": "First Generation Computers Overview",
+  "intent": "introduce",
+  "layout": "blank",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "The first generation of computers marked a groundbreaking era where vacuum tubes and electromechanical components formed the core technology, enabling machines to perform calculations electronically for the first time. These massive, room-sized systems laid the foundation for modern computing, despite their limitations in speed, size, and reliability, sparking the digital revolution that shaped the future of technology."
+    }
+  ],
+  "imagePrompt": "A dimly lit vintage computer room filled with large vacuum tube machines glowing softly, evoking the dawn of electronic computing and technological breakthrough"
+}
+------------------------------------------
+
+  📝 Generating Slide 2: Vacuum Tubes: The Core Technology
+
+--- [DEBUG] NARRATION LLM OUTPUT ---
+Vacuum tubes served as the fundamental building blocks of the earliest computers, acting like tiny electronic switches that controlled the flow of electricity. They amplified signals and processed data, enabling computers to perform calculations that were previously impossible.
+
+These tubes operated by heating a filament inside a glass envelope, creating a flow of electrons between electrodes. This process allowed computers to represent binary information—ones and zeros—through the presence or absence of electrical current, forming the basis of digital logic.
+
+Despite their groundbreaking role, vacuum tubes had significant limitations. They were large, consumed a lot of power, and generated excessive heat, which often led to frequent failures. This made early computers bulky, expensive, and less reliable compared to later technologies.
+
+Understanding vacuum tubes helps us appreciate the challenges engineers faced while pioneering computing technology. Their work laid the foundation for the transition to smaller, faster, and more efficient components in subsequent computer generations.
+--------------------------------------
+
+    → Narration: 4 segment(s)
+
+--- [DEBUG] GyML GENERATION LLM OUTPUT ---
+{
+  "title": "Vacuum Tubes: The Core Technology",
+  "intent": "explain",
+  "layout": "left",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "Vacuum tubes were the fundamental components of the earliest computers. They functioned as tiny electronic switches that controlled electricity flow, amplifying signals and processing data to enable complex calculations."
+    },
+    {
+      "type": "smart_layout",
+      "variant": "bulletIcon",
+      "items": [
+        {
+          "icon": "ri-flashlight-line",
+          "title": "How Vacuum Tubes Worked",
+          "text": "Heating a filament inside a glass envelope created electron flow between electrodes, allowing binary data representation through electrical current presence or absence."
+        },
+        {
+          "icon": "ri-cpu-line",
+          "title": "Role in Computing",
+          "text": "They amplified signals and processed data, acting as switches that formed the basis of digital logic in early computers."
+        },
+        {
+          "icon": "ri-fire-line",
+          "title": "Limitations",
+          "text": "Vacuum tubes were large, power-hungry, and generated excessive heat, causing frequent failures and bulky, expensive machines."
+        },
+        {
+          "icon": "ri-rocket-line",
+          "title": "Legacy",
+          "text": "Understanding vacuum tubes reveals the engineering challenges that paved the way for smaller, faster, and more reliable computer components."
+        }
+      ]
+    },
+    {
+      "type": "annotation_paragraph",
+      "text": "These early components laid the foundation for the evolution from electromechanical to electronic computing, marking a pivotal step in technology history."
+    }
+  ],
+  "imagePrompt": "A glowing vintage vacuum tube emitting warm light inside a darkened laboratory, evoking the dawn of electronic computing"
+}
+------------------------------------------
+
+  [Batch 1] Processed 2 total slides.
+
+🎬 [Batch Gen] Subtopic: First Generation (1940-1959): Vacuum Tubes & Electromechanical Computers | Slides 3-4 of 7
+  📝 Generating Slide 3: Electromechanical Components in Computing
+
+--- [DEBUG] NARRATION LLM OUTPUT ---
+Electromechanical components like relays and switches were fundamental in early computers, acting as physical on-off mechanisms to control electrical signals. These parts enabled the machines to perform logical operations but were relatively slow compared to later electronic components.
+
+The use of relays and switches meant that first-generation computers had significant mechanical movement, which limited their speed and reliability. These moving parts could wear out or fail, causing frequent maintenance issues and downtime.
+
+Despite these limitations, electromechanical components allowed the first computers to automate calculations and data processing, laying the groundwork for modern computing. Their operation was a crucial step away from purely manual calculations toward automated electronic control.
+
+The reliance on these components also influenced the size and power consumption of early machines. Computers were large, bulky, and consumed a lot of electricity, which made them expensive to build and operate.
+
+Overall, electromechanical parts shaped the performance boundaries of first-generation computers, highlighting the need for faster and more reliable electronic solutions that emerged in later generations.
+--------------------------------------
+
+    → Narration: 5 segment(s)
+
+--- [DEBUG] GyML GENERATION LLM OUTPUT ---
+{
+  "title": "Electromechanical Components in Computing",
+  "intent": "explain",
+  "layout": "left",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "Electromechanical components such as relays and switches were essential in early computers, serving as physical on-off mechanisms to control electrical signals and perform logical operations."
+    },
+    {
+      "type": "smart_layout",
+      "variant": "bulletIcon",
+      "items": [
+        {
+          "icon": "ri-settings-2-line",
+          "title": "Mechanical Movement",
+          "text": "Relays and switches involved significant mechanical parts, which limited the speed and reliability of first-generation computers."
+        },
+        {
+          "icon": "ri-tools-line",
+          "title": "Maintenance Challenges",
+          "text": "Moving components were prone to wear and failure, causing frequent maintenance and downtime."
+        },
+        {
+          "icon": "ri-robot-line",
+          "title": "Automation Foundation",
+          "text": "These components enabled automation of calculations, moving computing away from manual methods."
+        },
+        {
+          "icon": "ri-flashlight-line",
+          "title": "Size & Power",
+          "text": "Electromechanical parts contributed to bulky machines with high power consumption, making them costly to operate."
+        },
+        {
+          "icon": "ri-arrow-right-line",
+          "title": "Performance Limits",
+          "text": "The limitations highlighted the need for faster, more reliable electronic components in subsequent computer generations."
+        }
+      ]
+    },
+    {
+      "type": "annotation_paragraph",
+      "text": "Understanding these components helps appreciate the evolution from mechanical to electronic computing technologies."
+    }
+  ],
+  "imagePrompt": "A vintage electromechanical computer with visible relays and switches, bathed in warm, nostalgic light, evoking early technological innovation"
+}
+------------------------------------------
+
+  📝 Generating Slide 4: Architecture of a First Generation Computer
+
+--- [DEBUG] NARRATION LLM OUTPUT ---
+Notice how the vacuum tubes, the heart of these early machines, are densely packed to form the central processing unit. These tubes act as switches, controlling electrical signals to perform calculations, but they generate a lot of heat and consume significant power.  
+
+The memory units, often magnetic drums or delay lines, are shown here as separate blocks. They store data and instructions temporarily, but their capacity and speed were very limited compared to modern standards, which affected overall performance.  
+
+Input and output devices like punched cards and paper tape readers are positioned on the periphery. These devices allowed users to feed data into the computer and receive printed results, reflecting the mechanical nature of data handling at the time.  
+
+The control unit, highlighted here, orchestrates the operation of the entire system by directing the flow of data between memory, processing units, and input/output devices. Its design was complex due to the reliance on vacuum tubes and mechanical components.
+--------------------------------------
+
+    → Narration: 4 segment(s)
+
+--- [DEBUG] GyML GENERATION LLM OUTPUT ---
+{
+  "title": "Architecture of a First Generation Computer",
+  "intent": "teach",
+  "layout": "left",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "First generation computers used vacuum tubes as the core components for processing and memory. These machines were large, power-hungry, and mechanically driven, reflecting the early era of electronic computing."
+    },
+    {
+      "type": "smart_layout",
+      "variant": "labeled_diagram",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7a/ENIAC-Computer-1946.jpg",
+      "labels": [
+        {
+          "text": "Vacuum Tubes (CPU)",
+          "x": 45,
+          "y": 25
+        },
+        {
+          "text": "Memory Units (Magnetic Drums/Delay Lines)",
+          "x": 70,
+          "y": 55
+        },
+        {
+          "text": "Input/Output Devices (Punched Cards, Paper Tape)",
+          "x": 20,
+          "y": 75
+        },
+        {
+          "text": "Control Unit",
+          "x": 55,
+          "y": 45
+        }
+      ]
+    },
+    {
+      "type": "annotation_paragraph",
+      "text": "Vacuum tubes acted as electronic switches but generated significant heat and consumed much power. Memory was limited and slow, while input/output relied on mechanical devices like punched cards. The control unit coordinated all operations using complex vacuum tube and mechanical designs."
+    }
+  ],
+  "imagePrompt": "A vintage computer room filled with glowing vacuum tubes and mechanical components, evoking the pioneering spirit of early electronic computing"
+}
+------------------------------------------
+
+  [Batch 2] Processed 4 total slides.
+
+🎬 [Batch Gen] Subtopic: First Generation (1940-1959): Vacuum Tubes & Electromechanical Computers | Slides 5-6 of 7
+  📝 Generating Slide 5: Evolution Timeline: 1940-1959 First Generation Milestones
+
+--- [DEBUG] NARRATION LLM OUTPUT ---
+During the first generation of computers, from 1940 to 1959, vacuum tubes replaced mechanical switches, allowing machines to process data electronically for the first time. These tubes acted as both amplifiers and switches, significantly increasing computing speed compared to earlier electromechanical devices.
+
+The ENIAC, one of the earliest and most famous computers of this era, used over 17,000 vacuum tubes, making it massive but groundbreaking. It demonstrated how electronic components could perform complex calculations much faster than previous technologies, setting a foundation for future computers.
+
+Following ENIAC, the EDVAC introduced the stored-program concept, which was a major leap forward in flexibility and efficiency. Around the same time, the UNIVAC I became the first commercially available computer, showing how this technology could move beyond research labs into business and government applications.
+
+Although these machines were large, power-hungry, and prone to overheating, they marked the beginning of the digital age. Their limitations inspired innovations that led directly to the development of smaller, faster, and more reliable second-generation computers.
+--------------------------------------
+
+    → Narration: 4 segment(s)
+
+--- [DEBUG] GyML GENERATION LLM OUTPUT ---
+{
+  "title": "Evolution Timeline: 1940-1959 First Generation Milestones",
+  "intent": "narrate",
+  "layout": "left",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "The first generation of computers (1940-1959) marked a revolutionary shift from mechanical to electronic processing by using vacuum tubes as amplifiers and switches."
+    },
+    {
+      "type": "smart_layout",
+      "variant": "timelineMilestone",
+      "items": [
+        {
+          "title": "Vacuum Tubes Replace Mechanical Switches",
+          "description": "Vacuum tubes enabled electronic data processing, greatly increasing speed compared to electromechanical devices."
+        },
+        {
+          "title": "ENIAC: Massive & Groundbreaking",
+          "description": "Using over 17,000 vacuum tubes, ENIAC performed complex calculations faster than any previous computer."
+        },
+        {
+          "title": "EDVAC Introduces Stored-Program Concept",
+          "description": "This innovation improved computing flexibility and efficiency, laying groundwork for modern architectures."
+        },
+        {
+          "title": "UNIVAC I: First Commercial Computer",
+          "description": "UNIVAC I brought electronic computing from research labs to business and government applications."
+        }
+      ]
+    },
+    {
+      "type": "outro_paragraph",
+      "text": "Despite their size and limitations, these first-generation machines ushered in the digital age and inspired the development of smaller, faster second-generation computers."
+    }
+  ],
+  "imagePrompt": "A dimly lit vintage computer room filled with large, glowing vacuum tubes casting warm light, evoking the dawn of electronic computing"
+}
+------------------------------------------
+
+  📝 Generating Slide 6: Vacuum Tubes vs Electromechanical Components
+
+--- [DEBUG] NARRATION LLM OUTPUT ---
+Vacuum tubes were the primary electronic components in early computers, enabling much faster processing speeds than electromechanical parts, which relied on physical movement and were inherently slower. This speed advantage was crucial in handling complex calculations more efficiently.
+
+However, vacuum tubes were less reliable because they generated a lot of heat and were prone to frequent failures. Electromechanical components, while slower, tended to be more durable and could operate longer without breaking down, making them somewhat more dependable in certain contexts.
+
+In terms of size, vacuum tube computers were massive, often filling entire rooms, due to the large number of tubes and cooling systems required. Electromechanical machines were also bulky but often even larger because of the mechanical parts and moving components they used.
+
+Power consumption was significantly higher in vacuum tube systems, which needed substantial electricity to operate and cool the tubes. Electromechanical computers consumed less power but sacrificed speed and efficiency, highlighting the trade-offs engineers faced during this era.
+--------------------------------------
+
+    → Narration: 4 segment(s)
+
+--- [DEBUG] GyML GENERATION LLM OUTPUT ---
+{
+  "title": "Vacuum Tubes vs Electromechanical Components",
+  "intent": "compare",
+  "layout": "left",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "Early computers used either vacuum tubes or electromechanical components as their core technology. Each had distinct advantages and trade-offs that shaped computing's first generation."
+    },
+    {
+      "type": "comparison_table",
+      "headers": [
+        "Aspect",
+        "Vacuum Tubes",
+        "Electromechanical Components"
+      ],
+      "rows": [
+        [
+          "Processing Speed",
+          "Enabled much faster processing by using electronic signals without moving parts.",
+          "Slower due to reliance on physical movement of mechanical parts."
+        ],
+        [
+          "Reliability",
+          "Less reliable; prone to frequent failures and heat generation.",
+          "More durable and dependable, operating longer without breakdowns."
+        ],
+        [
+          "Size",
+          "Massive computers filling entire rooms due to many tubes and cooling needs.",
+          "Also bulky, often larger because of mechanical parts and moving components."
+        ],
+        [
+          "Power Consumption",
+          "High power usage due to electricity needed for operation and cooling.",
+          "Lower power consumption but sacrificed speed and efficiency."
+        ]
+      ],
+      "caption": "Comparison of key features between vacuum tube and electromechanical computers."
+    }
+  ],
+  "takeaway": "Vacuum tubes offered speed at the cost of reliability and power, while electromechanical components traded speed for durability and lower energy use, highlighting early computing trade-offs.",
+  "imagePrompt": "A split composition showing a glowing vintage vacuum tube on one side and intricate mechanical gears and levers on the other, symbolizing the contrast between electronic and mechanical computing technologies."
+}
+------------------------------------------
+
+  [Batch 3] Processed 6 total slides.
+
+==================================================
+           FINAL WORKFLOW SUMMARY
+==================================================
+Total Slides Generated: 6
+
+--- SLIDE 1 ---
+TITLE: First Generation Computers Overview
+TEMPLATE: Title card
+NARRATION (First 150 chars): The first generation of computers marked a groundbreaking era where vacuum tubes and electromechanical components formed the core technology, enabling...
+INTENT: introduce
+BLOCKS: 1 blocks generated.
+
+--- SLIDE 2 ---
+TITLE: Vacuum Tubes: The Core Technology
+TEMPLATE: Title with bullets and image
+NARRATION (First 150 chars): Vacuum tubes served as the fundamental building blocks of the earliest computers, acting like tiny electronic switches that controlled the flow of ele...
+INTENT: explain
+BLOCKS: 3 blocks generated.
+
+--- SLIDE 3 ---
+TITLE: Electromechanical Components in Computing
+TEMPLATE: Title with bullets
+NARRATION (First 150 chars): Electromechanical components like relays and switches were fundamental in early computers, acting as physical on-off mechanisms to control electrical ...
+INTENT: explain
+BLOCKS: 3 blocks generated.
+
+--- SLIDE 4 ---
+TITLE: Architecture of a First Generation Computer
+TEMPLATE: Labeled diagram
+NARRATION (First 150 chars): Notice how the vacuum tubes, the heart of these early machines, are densely packed to form the central processing unit. These tubes act as switches, c...
+INTENT: teach
+BLOCKS: 3 blocks generated.
+
+--- SLIDE 5 ---
+TITLE: Evolution Timeline: 1940-1959 First Generation Milestones
+TEMPLATE: Timeline
+NARRATION (First 150 chars): During the first generation of computers, from 1940 to 1959, vacuum tubes replaced mechanical switches, allowing machines to process data electronical...
+INTENT: narrate
+BLOCKS: 3 blocks generated.
+
+--- SLIDE 6 ---
+TITLE: Vacuum Tubes vs Electromechanical Components
+TEMPLATE: Comparison table
+NARRATION (First 150 chars): Vacuum tubes were the primary electronic components in early computers, enabling much faster processing speeds than electromechanical parts, which rel...
+INTENT: compare
+BLOCKS: 2 blocks generated.
+
+[TEST COMPLETED SUCCESSFULLY]
