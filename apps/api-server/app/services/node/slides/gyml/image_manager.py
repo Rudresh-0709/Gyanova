@@ -41,7 +41,7 @@ class ImageManager:
 
         # 2. High Density (Avoid cramping)
         # Relaxed threshold to 1.1 to account for larger font sizes in profiles
-        if slide_density > 1.1:
+        if slide_density > 1.40:
             # Respect user image but keep it right aligned if dense
             if has_user_image:
                 return "right"
@@ -59,9 +59,9 @@ class ImageManager:
         """
         Return True if we MUST inject a placeholder to save the slide layout.
         """
-        # Strict Rule: If < 110% filled and no image, slide looks broken.
-        # Updated to 1.1 to match determine_placement change.
-        return slide_density < 1.1 and not has_image
+        # Strict Rule: If < 140% filled and no image, slide looks broken.
+        # Updated to 1.4 to match determine_placement change.
+        return slide_density < 1.40 and not has_image
 
     @staticmethod
     def get_placeholder_image() -> GyMLImage:
@@ -103,8 +103,8 @@ class ImageManager:
 #   Found 7 sub-topics:
 #     1. First Generation (1940-1959): Vacuum Tubes & Electromechanical Computers (Beginner)
 #     2. Second Generation (1959-1965): Transistors & Magnetic Cores (Beginner)
-#     3. Third Generation (1965-1971): Integrated Circuits & Microprocessors (Intermediate) 
-#     4. Fourth Generation (1971-1980): Microprocessors & Personal Computers (Intermediate) 
+#     3. Third Generation (1965-1971): Integrated Circuits & Microprocessors (Intermediate)
+#     4. Fourth Generation (1971-1980): Microprocessors & Personal Computers (Intermediate)
 #     5. Fifth Generation (1980-1990): Artificial Intelligence & Parallel Processing (Advanced)
 #     6. Sixth Generation (1990-present): Nanotechnology, Quantum Computing, and AI Advancements (Advanced)
 #     7. Comparison of Computer Generations: Performance, Power Consumption, and Applications (Intermediate)
@@ -115,7 +115,7 @@ class ImageManager:
 # {
 #   "slides": [
 #     {
-#       "title": "First Generation Computers: Vacuum Tubes & Electromechanical Era",        
+#       "title": "First Generation Computers: Vacuum Tubes & Electromechanical Era",
 #       "purpose": "definition",
 #       "selected_template": "Title card",
 #       "role": "Introduce",
@@ -235,7 +235,7 @@ class ImageManager:
 #       "text": "First-generation computers, despite their drawbacks, marked the dawn of the digital era and set the stage for modern computing innovations."
 #     }
 #   ],
-#   "imagePrompt": "A vintage computer room glowing with warm light from large vacuum tubes, surrounded by punch cards and paper tapes, evoking the dawn of electronic computing"     
+#   "imagePrompt": "A vintage computer room glowing with warm light from large vacuum tubes, surrounded by punch cards and paper tapes, evoking the dawn of electronic computing"
 # }
 # ------------------------------------------
 
@@ -256,7 +256,7 @@ class ImageManager:
 # --- [DEBUG] GyML GENERATION LLM OUTPUT ---
 # {
 #   "title": "Core Components of First Generation Computers",
-#   "subtitle": "First Generation (1940-1959): Vacuum Tubes & Electromechanical Computers", 
+#   "subtitle": "First Generation (1940-1959): Vacuum Tubes & Electromechanical Computers",
 #   "layout": "left",
 #   "intent": "list",
 #   "contentBlocks": [
@@ -292,7 +292,7 @@ class ImageManager:
 #     },
 #     {
 #       "type": "annotation_paragraph",
-#       "text": "These components collectively shaped the characteristics of first-generation computers, highlighting both their pioneering innovations and inherent challenges."     
+#       "text": "These components collectively shaped the characteristics of first-generation computers, highlighting both their pioneering innovations and inherent challenges."
 #     }
 #   ],
 #   "imagePrompt": "An atmospheric scene of vintage electronic components glowing softly in a dimly lit room, evoking the dawn of early computing technology"

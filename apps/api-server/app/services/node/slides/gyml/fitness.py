@@ -66,7 +66,7 @@ class SlideFitnessGate:
 
         # 1. CRITICAL FAILURE: Way too empty
         # Even with an image, < 40% is just a title and empty space.
-        if height < 0.4:
+        if height < 0.5:
             return (
                 False,
                 f"Slide too sparse (Density: {height:.2f}). Needs more content.",
@@ -74,7 +74,7 @@ class SlideFitnessGate:
 
         # 2. SOFT FAILURE: Needs visual aid
         # If < 50% and no image, it's valid ONLY if we can inject an image later.
-        if height < 0.5 and not slide.accent_image_url:
+        if height < 0.6 and not slide.accent_image_url:
             return True, "Sparse but salvageable with image injection."
 
         return True, "Density OK"

@@ -464,7 +464,7 @@ class SlideComposer:
                 if len(items) > limit:
                     # RULE: Skip column reflow for Medium (0.4-0.55) and Super Dense (0.95-1.25)
                     # These ranges preference a vertical "2 row" approach.
-                    if (0.40 <= density <= 0.55) or (0.95 <= density <= 1.25):
+                    if (0.55 <= density <= 0.70) or (1.20 <= density <= 1.50):
                         # Fall through to splitting instead of reflow
                         pass
                     else:
@@ -822,13 +822,13 @@ class SlideComposer:
             # OVERRIDE: If INLINE image is present, allow side-by-side (Parallel/Anchored)
             # NOTE: If we have an accent image, we stay stacked to maintain a 2-column Body vs Image slide.
             if (
-                (0.40 <= density <= 0.55) or (0.95 <= density <= 1.25)
+                (0.55 <= density <= 0.70) or (1.20 <= density <= 1.50)
             ) and not has_inline_image:
                 force_stacked = True
 
-            # RULE: Ideal Density (0.55 - 0.95)
+            # RULE: Ideal Density (0.70 - 1.20)
             # Adaptive: Force Stacked unless explicitly a Comparison OR has an Image
-            elif 0.55 <= density <= 0.95:
+            elif 0.70 <= density <= 1.20:
                 is_comparison_intent = slide.intent == Intent.COMPARE.value
                 is_comparison_block = (
                     visual_block and visual_block.type == BlockType.COMPARISON.value
@@ -1165,9 +1165,9 @@ class SlideComposer:
         # Calculate density early
         density = SlideFitnessGate._calculate_estimated_height(slide)
 
-        # RULE: Medium Density (0.4 - 0.55) OR Super Dense (0.95 - 1.25) -> Force Vertical Stack
+        # RULE: Medium Density (0.55 - 0.70) OR Super Dense (1.20 - 1.50) -> Force Vertical Stack
         # Do NOT attempt sidebar optimization (which splits content into columns).
-        if (0.40 <= density <= 0.55) or (0.95 <= density <= 1.25):
+        if (0.55 <= density <= 0.70) or (1.20 <= density <= 1.50):
             # Skip optimization, fall through to hierarchy assignment
             pass
         # 0. Try Sidebar Optimization first (Code/Callout combo)
@@ -1191,28 +1191,31 @@ class SlideComposer:
         # Use consistent FitnessGate density for hierarchy
         density_pct = SlideFitnessGate._calculate_estimated_height(slide)
 
-        # 1. Super Dense (> 95%)
-        if density_pct > 0.95:
+        # 1. Super Dense (> 120%)
+        if density_pct > 1.20:
             profile_name = "super_dense"
-        # 2. Dense / Standard (70% - 95%)
-        elif density_pct > 0.70:
+        # 2. Dense / Standard (95% - 120%)
+        elif density_pct > 0.95:
             profile_name = "dense"
-        # 3. Balanced / Relaxed (45% - 70%)
-        elif density_pct > 0.45:
+        # 3. Balanced / Relaxed (65% - 95%)
+        elif density_pct > 0.65:
             profile_name = "balanced"
-        # 4. Impact / Sparse (< 45% or explicit)
+        # 4. Impact / Sparse (< 65% or explicit)
         else:
             profile_name = "impact"
 
+        print(
+            f"DEBUG: Calculated density_pct: {density_pct:.2f} -> profile: {profile_name}"
+        )
         profile = VisualHierarchy.get_profile(profile_name)
 
-        # ADAPTIVE SPACING: If Low Density (< 0.45) OR Ideal Density (0.45 - 0.85) and <= 3 blocks
-        if density_pct <= 0.85:
+        # ADAPTIVE SPACING: If Low Density (< 0.65) OR Ideal Density (0.65 - 1.00) and <= 3 blocks
+        if density_pct <= 1.00:
             content_block_count = self._count_top_level_content_blocks(slide)
             if content_block_count <= 3:
                 # Override gaps for sparse content
                 # Low density gets even larger gaps
-                if density_pct < 0.45:
+                if density_pct < 0.65:
                     profile.spacing.heading_gap = "3.5rem"
                     profile.spacing.block_gap = "2.5rem"
                 else:
@@ -1311,7 +1314,7 @@ class SlideComposer:
 
             # RULE: Medium Density -> Force 60% Image Width
             # Upgrade "right" to "right-wide"
-            if placement == "right" and 0.40 <= density <= 0.60:
+            if placement == "right" and 0.55 <= density <= 0.75:
                 slide.image_layout = "right-wide"
 
             # Inject placeholder if required but missing
