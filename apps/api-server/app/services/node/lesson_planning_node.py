@@ -8,6 +8,7 @@ import uuid
 def lesson_planning_node(state: TutorState) -> TutorState:
     """
     Planning Node: Brainstorms the structure of the lesson before content is generated.
+    Now refactored to handle ONE subtopic at a time for incremental updates.
     """
     sub_topics = state.get("sub_topics", [])
     difficulty = state.get("difficulty", "Beginner")
@@ -15,15 +16,20 @@ def lesson_planning_node(state: TutorState) -> TutorState:
     if "plans" not in state:
         state["plans"] = {}
 
-    print(f"\n🧠 Planning Lesson Structure...")
+    # Find the next sub-topic that hasn't been planned yet
+    next_subtopic = None
+    for sub in sub_topics:
+        sub_id = sub.get("id")
+        if sub_id not in state["plans"]:
+            next_subtopic = sub
+            break
 
-    for subtopic in sub_topics:
-        sub_id = subtopic.get("id")
-        subtopic_name = subtopic.get("name")
-        sub_difficulty = subtopic.get("difficulty", difficulty)
+    if next_subtopic:
+        sub_id = next_subtopic.get("id")
+        subtopic_name = next_subtopic.get("name")
+        print(f"\n🧠 Planning subtopic: {subtopic_name}")
 
-        print(f"  📍 Planning subtopic: {subtopic_name}")
-        plan_data = plan_slides_for_subtopic(subtopic)
+        plan_data = plan_slides_for_subtopic(next_subtopic)
         slide_plans = plan_data.get("slides", [])
 
         # Assign unique slide_id and sequence

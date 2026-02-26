@@ -124,32 +124,43 @@ const LessonPlanPreview = ({
                             />
                         </div>
                         <div className="grid gap-3 pl-2 border-l border-white/5">
-                            {(editablePlans?.[sub.id] || []).map((slide, idx) => (
-                                <div
-                                    key={idx}
-                                    className="p-4 rounded-xl bg-black/40 border border-white/5 hover:border-white/10 transition-colors group"
-                                >
-                                    <div className="flex gap-4">
-                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] text-gray-500 font-mono mt-1">
-                                            {idx + 1}
-                                        </div>
-                                        <div className="flex-1 space-y-3">
-                                            <input
-                                                value={slide.title}
-                                                onChange={(e) => updateSlide(sub.id, idx, 'title', e.target.value)}
-                                                className="w-full bg-transparent text-white font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500/50 rounded px-1"
-                                                placeholder="Slide Title"
-                                            />
-                                            <textarea
-                                                value={slide.goal}
-                                                onChange={(e) => updateSlide(sub.id, idx, 'goal', e.target.value)}
-                                                className="w-full bg-transparent text-gray-400 text-sm h-12 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 rounded px-1 resize-none"
-                                                placeholder="Learning Goal"
-                                            />
+                            {(editablePlans?.[sub.id] || []).length > 0 ? (
+                                (editablePlans?.[sub.id] || []).map((slide, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="p-4 rounded-xl bg-black/40 border border-white/5 hover:border-white/10 transition-colors group"
+                                    >
+                                        <div className="flex gap-4">
+                                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] text-gray-500 font-mono mt-1">
+                                                {idx + 1}
+                                            </div>
+                                            <div className="flex-1 space-y-3">
+                                                <input
+                                                    value={slide.title}
+                                                    onChange={(e) => updateSlide(sub.id, idx, 'title', e.target.value)}
+                                                    className="w-full bg-transparent text-white font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500/50 rounded px-1"
+                                                    placeholder="Slide Title"
+                                                />
+                                                <textarea
+                                                    value={slide.goal}
+                                                    onChange={(e) => updateSlide(sub.id, idx, 'goal', e.target.value)}
+                                                    className="w-full bg-transparent text-gray-400 text-sm h-12 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 rounded px-1 resize-none"
+                                                    placeholder="Learning Goal"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="space-y-4 animate-pulse p-4">
+                                    <div className="h-4 bg-white/5 rounded w-3/4 mb-2"></div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="h-24 bg-white/5 rounded-xl"></div>
+                                        <div className="h-24 bg-white/5 rounded-xl opacity-50"></div>
+                                    </div>
+                                    <p className="text-[10px] font-mono text-indigo-400/50 uppercase tracking-widest">Designing slides for this section...</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 ))}
@@ -320,7 +331,7 @@ export default function LessonInputPage() {
             // Start Polling for Planning
             let planningComplete = false;
             while (!planningComplete) {
-                await new Promise(r => setTimeout(r, 2000));
+                await new Promise(r => setTimeout(r, 1500)); // Slightly faster polling
                 const res = await fetch(`/api/lesson/generate?taskId=${data.task_id}`);
 
                 if (!res.ok) {
@@ -330,15 +341,24 @@ export default function LessonInputPage() {
 
                 const statusData = await res.json();
 
-                if (statusData.status === "planning_completed") {
+                // Proactively update planData if we have results, even if not fully complete
+                if (statusData.result && (statusData.result.sub_topics?.length > 0 || Object.keys(statusData.result.plans || {}).length > 0)) {
                     setPlanData(statusData.result);
-                    setStep('review');
+                    // If we have subtopics, we can show the review step early
+                    if (statusData.result.sub_topics?.length > 0) {
+                        setStep('review');
+                        setIsGenerating(false);
+                    }
+                }
+
+                if (statusData.status === "planning_completed") {
                     planningComplete = true;
-                    setIsGenerating(false);
+                    setGenerationStatus("Curriculum ready!");
                 } else if (statusData.status === "failed") {
                     throw new Error(statusData.error || "Planning failed");
+                } else {
+                    setGenerationStatus("Expanding your personal curriculum...");
                 }
-                setGenerationStatus("Analyzing topic and breaking down sub-topics...");
             }
         } catch (err: any) {
             setError(err.message);

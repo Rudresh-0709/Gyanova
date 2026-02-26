@@ -46,13 +46,20 @@ def run_planning_task(task_id: str, request: GenerateLessonRequest):
             "messages": [],
         }
 
-        final_state = planning_graph.invoke(initial_state)
+        # Initialize result in tasks_db
+        tasks_db[task_id]["result"] = initial_state
 
-        if "messages" in final_state:
-            del final_state["messages"]
+        # Use streaming to get incremental updates from nodes
+        for chunk in planning_graph.stream(initial_state):
+            for node_name, state_update in chunk.items():
+                if "messages" in state_update:
+                    del state_update["messages"]
+
+                # Update the result incrementally
+                tasks_db[task_id]["result"].update(state_update)
+                logger.info(f"  ⚡ Phase 1: Update from {node_name} for task {task_id}")
 
         tasks_db[task_id]["status"] = "planning_completed"
-        tasks_db[task_id]["result"] = final_state
         logger.info(f"Planning for {task_id} completed successfully.")
 
     except Exception as e:

@@ -30,10 +30,30 @@ planning_builder.add_node("topic_node", extract_topic)
 planning_builder.add_node("sub_topic_node", extract_sub_topic)
 planning_builder.add_node("planning_node", lesson_planning_node)
 
+
+def should_continue_planning(state: TutorState):
+    """Router: check if all subtopics have slide plans."""
+    sub_topics = state.get("sub_topics", [])
+    plans = state.get("plans", {})
+
+    if not sub_topics:
+        return "end"
+
+    for sub in sub_topics:
+        if sub["id"] not in plans:
+            return "continue"
+    return "end"
+
+
 planning_builder.set_entry_point("topic_node")
 planning_builder.add_edge("topic_node", "sub_topic_node")
 planning_builder.add_edge("sub_topic_node", "planning_node")
-planning_builder.add_edge("planning_node", END)
+
+planning_builder.add_conditional_edges(
+    "planning_node",
+    should_continue_planning,
+    {"continue": "planning_node", "end": END},
+)
 
 planning_graph = planning_builder.compile()
 
