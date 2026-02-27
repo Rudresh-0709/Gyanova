@@ -4,6 +4,7 @@ Handles decision logic for image placement and necessity.
 Decoupled from Composer to allow stricter validation rules.
 """
 
+import random
 from dataclasses import dataclass
 from typing import Optional, Literal
 from .definitions import ComposedSlide, GyMLImage
@@ -40,28 +41,23 @@ class ImageManager:
             return explicit_layout
 
         # 2. High Density (Avoid cramping)
-        # Relaxed threshold to 1.1 to account for larger font sizes in profiles
-        if slide_density > 1.40:
+        # Aligned with SUPER_DENSE profile threshold (1.20)
+        if slide_density > 1.20:
             # Respect user image but keep it right aligned if dense
             if has_user_image:
                 return "right"
             return "blank"
 
-        # 3. Low & Medium Density - Alternate for Variety
-        # Logic: Odd slides = left, Even slides = right
-        if slide_index % 2 == 1:
-            return "left"
-
-        return "right"
+        # 3. Low & Medium Density - Random for Variety
+        return random.choice(["left", "right"])
 
     @staticmethod
     def should_inject_placeholder(slide_density: float, has_image: bool) -> bool:
         """
         Return True if we MUST inject a placeholder to save the slide layout.
         """
-        # Strict Rule: If < 140% filled and no image, slide looks broken.
-        # Updated to 1.4 to match determine_placement change.
-        return slide_density < 1.40 and not has_image
+        # Strict Rule: If < 120% filled and no image, slide looks broken.
+        return slide_density < 1.20 and not has_image
 
     @staticmethod
     def get_placeholder_image() -> GyMLImage:

@@ -45,6 +45,17 @@ class ComposedBlock:
         if "text" in self.content:
             text_parts.append(str(self.content["text"]))
 
+        # Handle Hierarchy Tree recursive content
+        if self.type == "hierarchy_tree" and "root" in self.content:
+
+            def collect_labels(node):
+                text = [node.get("label", "")]
+                for child in node.get("children", []):
+                    text.extend(collect_labels(child))
+                return text
+
+            text_parts.extend(collect_labels(self.content["root"]))
+
         items = self.content.get("items") or self.content.get("cards")
         if items:
             for item in items:
@@ -62,6 +73,18 @@ class ComposedBlock:
             return len(self.content["items"])
         if "cards" in self.content:
             return len(self.content["cards"])
+
+        # New: Recursive node counting for Hierarchy Trees
+        if self.type == "hierarchy_tree" and "root" in self.content:
+
+            def count_nodes(node):
+                count = 1
+                for child in node.get("children", []):
+                    count += count_nodes(child)
+                return count
+
+            return count_nodes(self.content["root"])
+
         return 1  # Standard blocks count as 1 item
 
 

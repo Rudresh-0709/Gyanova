@@ -146,26 +146,13 @@ class GyMLSerializer:
 
         print(f"DEBUG: Finished assembling body_children, length: {len(body_children)}")
 
-        # Relocate annotation paragraphs below the accent image on super_dense slides
-        image_caption_node = None
-        is_super_dense = slide.hierarchy and slide.hierarchy.name == "super_dense"
-
-        if accent_image and is_super_dense:
-            for i, node in enumerate(body_children):
-                if isinstance(node, GyMLParagraph) and node.variant == "annotation":
-                    image_caption_node = body_children.pop(i)
-                    print(
-                        f"DEBUG: Relocated annotation paragraph below accent image (Super Dense)"
-                    )
-                    break
-
         return GyMLSection(
             id=slide.id,
             image_layout=image_layout,
             accent_image=accent_image,
             body=GyMLBody(children=body_children),
             hierarchy=slide.hierarchy,
-            image_caption=image_caption_node,
+            image_caption=None,
         )
 
     def serialize_many(self, slides: List[ComposedSlide]) -> List[GyMLSection]:

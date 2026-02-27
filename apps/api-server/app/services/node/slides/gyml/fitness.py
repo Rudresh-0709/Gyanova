@@ -27,34 +27,46 @@ class SlideFitnessGate:
         """
         Estimate content height percentage (0.0 - 1.0+).
         Based on word count, structural items, and image presence.
-
-        Refined Rules:
-        - Base Block: 0.08 (8%)
-        - Internal Item (Points/Cards): 0.03 (3%) - Reduced for better variety
-        - Word Capacity: Total / 250 - Conservative estimate
-        - Accent Image: 0.35 (35%)
         """
-        # 1. Word Utilization (Now based on 250 words for 100% fill)
+        # 1. Word Utilization (250 words for 100% fill)
         word_utilization = slide.total_word_count() / 250
 
         # 2. Structural Utilization
-        # Each top-level block costs 0.08 base
-        base_blocks = slide.block_count()
+        # Different blocks have different "base footprints"
+        BLOCK_WEIGHTS = {
+            "hierarchy_tree": 0.20,
+            "numbered_list": 0.15,
+            "labeled_diagram": 0.20,
+            "table": 0.15,
+            "split_panel": 0.30,
+            "formula_block": 0.10,
+            "code": 0.25,
+            "card_grid": 0.15,
+        }
 
-        # Each internal item (if count > 1) costs an additional 0.03
-        extra_items = 0
+        # Individual item costs (when items > 1)
+        ITEM_WEIGHTS = {
+            "hierarchy_tree": 0.05,
+            "numbered_list": 0.04,
+            "card_grid": 0.03,
+            "table": 0.02,
+        }
+
+        structural_score = 0
         for section in slide.sections:
-            for block in section.blocks:
+            for block in section.blocks + section.secondary_blocks:
+                # Add base weight for the block type
+                structural_score += BLOCK_WEIGHTS.get(block.type, 0.08)
+
+                # Add extra weight for internal items
                 count = block.item_count()
                 if count > 1:
-                    extra_items += count
+                    structural_score += count * ITEM_WEIGHTS.get(block.type, 0.03)
 
-        structural_utilization = (base_blocks * 0.08) + (extra_items * 0.03)
-
-        # 3. Image Impact (Reduced impact to allow more content alongside images)
+        # 3. Image Impact
         image_utilization = 0.35 if slide.accent_image_url else 0.0
 
-        return word_utilization + structural_utilization + image_utilization
+        return word_utilization + structural_score + image_utilization
 
     @classmethod
     def validate_density(cls, slide: ComposedSlide) -> Tuple[bool, str]:

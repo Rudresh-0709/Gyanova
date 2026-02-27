@@ -1,0 +1,12 @@
+================================================================================
+Test Case                            Density  Profile         Layout
+================================================================================
+DEBUG: Calculated density_pct: 0.22 -> profile: impact
+Impact Range (Target < 0.65)            0.57  impact          right
+DEBUG: Calculated density_pct: 0.50 -> profile: impact
+Balanced Range (Target 0.65-0.95)       0.85  impact          right
+DEBUG: Calculated density_pct: 0.74 -> profile: balanced
+Dense Range (Target 0.95-1.20)          1.09  balanced        right-wide
+DEBUG: Calculated density_pct: 1.09 -> profile: dense
+Super Dense (Target > 1.20)             1.44  dense           right
+================================================================================

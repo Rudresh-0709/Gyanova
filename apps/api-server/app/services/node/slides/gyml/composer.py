@@ -94,13 +94,15 @@ class SlideComposer:
                 s = self._assign_emphasis(s)
 
                 # 6b. Distribute Content (Layout Optimization)
+                # This may include column reflow or vertical stacking
                 s = self._distribute_content(s)
 
-                # 7. Assign Visual Hierarchy
-                s = self._assign_hierarchy(s)
-
-                # 8. Visual Balance Check (New)
+                # 7. Visual Balance Check (Final Layout adjustments)
+                # This injects images/placeholders which affects final density
                 s = self._ensure_visual_balance(s)
+
+                # 8. Assign Visual Hierarchy (Final step based on ALL content)
+                s = self._assign_hierarchy(s)
 
                 slides.append(s)
 
@@ -388,8 +390,7 @@ class SlideComposer:
             # Optional metadata
             accent_image_url=accent_image,
             accent_image_alt=None,
-            image_layout=explicit_layout
-            or "right",  # Use explicit or default to right (ImageManager will override)
+            image_layout=explicit_layout,  # Default to None so ImageManager can decide
             index=index,  # Slide index for alternating layout logic
         )
 
@@ -1133,28 +1134,35 @@ class SlideComposer:
 
     def _assign_hierarchy(self, slide: ComposedSlide) -> ComposedSlide:
         """
-        Assign visual hierarchy constraints based on density and intent.
+        Assign visual hierarchy constraints based on final density and intent.
+        Uses calibrated density thresholds (0.65, 0.95, 1.20).
         """
-        # Respect manually assigned hierarchy (e.g. from dense reflow)
-        if slide.hierarchy:
-            return slide
+        # Calculate consistent FitnessGate density
+        density_pct = SlideFitnessGate._calculate_estimated_height(slide)
 
-        word_count = slide.total_word_count()
-        block_count = slide.block_count()
-
-        # Calculate approximate density score
-        # Arbitrary units: words + (blocks * 20)
-        density_score = word_count + (block_count * 20)
-
-        # Decision Logic
-        profile_name = "default"
-
-        if density_score > 150:
+        # 1. Super Dense (> 120%)
+        if density_pct > 1.20:
+            profile_name = "super_dense"
+        # 2. Dense / Standard (95% - 120%)
+        elif density_pct > 0.95:
             profile_name = "dense"
-        elif slide.intent in [Intent.PROVE.value, Intent.INTRODUCE.value]:
-            # High impact slides
+        # 3. Balanced / Relaxed (65% - 95%)
+        elif density_pct > 0.65:
+            profile_name = "balanced"
+        # 4. Impact / Sparse (< 65%)
+        else:
             profile_name = "impact"
 
+        # Intent Overrides (Only for sparse slides)
+        if profile_name == "impact":
+            if slide.intent == Intent.PROVE.value:
+                profile_name = "impact"  # Already impact, but keep for explicit logic
+            elif slide.intent == Intent.INTRODUCE.value:
+                profile_name = "impact"
+
+        print(
+            f"DEBUG: Final hierarchy assessment: {density_pct:.2f} -> profile: {profile_name}"
+        )
         slide.hierarchy = VisualHierarchy.get_profile(profile_name)
         return slide
 
@@ -1174,55 +1182,6 @@ class SlideComposer:
         elif self._optimize_sidebar_layout(slide):
             return slide
 
-        # 1. Try Smart Layouts (if not already optimized)
-        if slide.hierarchy:
-            return slide
-
-        word_count = slide.total_word_count()
-        block_count = slide.block_count()
-
-        # Calculate approximate density score
-        # Arbitrary units: words + (blocks * 20)
-        density_score = word_count + (block_count * 20)
-
-        # Decision Logic
-        profile_name = "default"
-
-        # Use consistent FitnessGate density for hierarchy
-        density_pct = SlideFitnessGate._calculate_estimated_height(slide)
-
-        # 1. Super Dense (> 120%)
-        if density_pct > 1.20:
-            profile_name = "super_dense"
-        # 2. Dense / Standard (95% - 120%)
-        elif density_pct > 0.95:
-            profile_name = "dense"
-        # 3. Balanced / Relaxed (65% - 95%)
-        elif density_pct > 0.65:
-            profile_name = "balanced"
-        # 4. Impact / Sparse (< 65% or explicit)
-        else:
-            profile_name = "impact"
-
-        print(
-            f"DEBUG: Calculated density_pct: {density_pct:.2f} -> profile: {profile_name}"
-        )
-        profile = VisualHierarchy.get_profile(profile_name)
-
-        # ADAPTIVE SPACING: If Low Density (< 0.65) OR Ideal Density (0.65 - 1.00) and <= 3 blocks
-        if density_pct <= 1.00:
-            content_block_count = self._count_top_level_content_blocks(slide)
-            if content_block_count <= 3:
-                # Override gaps for sparse content
-                # Low density gets even larger gaps
-                if density_pct < 0.65:
-                    profile.spacing.heading_gap = "3.5rem"
-                    profile.spacing.block_gap = "2.5rem"
-                else:
-                    profile.spacing.heading_gap = "3.0rem"
-                    profile.spacing.block_gap = "2.0rem"
-
-        slide.hierarchy = profile
         return slide
 
     def _count_top_level_content_blocks(self, slide: ComposedSlide) -> int:
