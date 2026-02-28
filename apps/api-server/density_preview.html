@@ -118,6 +118,44 @@ section[data-image-layout="right-wide"] .accent-image-wrapper,
 section[data-image-layout="right-wide"] .accent-image-placeholder,
 section[data-image-layout="right-wide"] .accent-image-group { order: 2; grid-column: 2; }
 
+/* Top / Bottom Layouts (Vertical Stacking) */
+section[data-image-layout="top"],
+section[data-image-layout="bottom"] {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+section[data-image-layout="top"] .accent-image-group,
+section[data-image-layout="top"] .accent-image-wrapper,
+section[data-image-layout="top"] .accent-image-placeholder {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+section[data-image-layout="bottom"] .accent-image-group,
+section[data-image-layout="bottom"] .accent-image-wrapper,
+section[data-image-layout="bottom"] .accent-image-placeholder {
+    width: 100%;
+    margin-top: auto;
+}
+
+/* Adjust aspect ratios and heights for vertical layouts */
+section[data-image-layout="top"] .accent-image-placeholder,
+section[data-image-layout="bottom"] .accent-image-placeholder {
+    aspect-ratio: 16 / 5;
+    min-height: 150px;
+    max-height: 20vh;
+}
+
+section[data-image-layout="top"] .accent-image-wrapper img,
+section[data-image-layout="bottom"] .accent-image-wrapper img {
+    width: 100%;
+    max-height: 20vh;
+    object-fit: cover;
+    object-position: center;
+}
+
 /* Accent Image + Annotation Group */
 .accent-image-group {
     display: flex;
@@ -1711,7 +1749,7 @@ section[data-animated="true"] .smart-layout[data-variant="timelineHorizontal"]::
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_a5ae98f9" class="slide-section" role="region" aria-label="Slide slide_a5ae98f9" data-image-layout="left" style="--h1-size: 3.5rem; --h2-size: 3rem; --p-size: 1.7rem; --line-height: 1.6; --card-number-size: 2.2rem; --card-text-size: 0.875rem; --section-padding: 3.25rem 4rem 4rem 4rem; --block-gap: 2.5rem; --card-padding: 2rem; --heading-gap: 2.5rem">
+<section id="slide_5108d3bc" class="slide-section" role="region" aria-label="Slide slide_5108d3bc" data-image-layout="left" style="--h1-size: 3.5rem; --h2-size: 3rem; --p-size: 1.7rem; --line-height: 1.6; --card-number-size: 2.2rem; --card-text-size: 0.875rem; --section-padding: 3.25rem 4rem 4rem 4rem; --block-gap: 2.5rem; --card-padding: 2rem; --heading-gap: 2.5rem">
 <div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
 <div class="body">
 <h1>Topic Introduction</h1>
@@ -1719,8 +1757,7 @@ section[data-animated="true"] .smart-layout[data-variant="timelineHorizontal"]::
 </div>
 </section>
 
-<section id="slide_723e9d83_0" class="slide-section" role="region" aria-label="Slide slide_723e9d83_0" data-image-layout="left" style="--h1-size: 1.85rem; --h2-size: 1.5rem; --p-size: 0.875rem; --line-height: 1.35; --card-number-size: 1rem; --card-text-size: 0.8125rem; --section-padding: 1.25rem 2rem; --block-gap: 0.5rem; --card-padding: 0.75rem; --heading-gap: 0.25rem" data-density="super_dense">
-<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<section id="slide_034e015e_0" class="slide-section" role="region" aria-label="Slide slide_034e015e_0" data-image-layout="blank" style="--h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.5rem; --line-height: 1.6; --card-number-size: 2rem; --card-text-size: 0.875rem; --section-padding: 2.25rem 3.25rem; --block-gap: 1.5rem; --card-padding: 1.25rem; --heading-gap: 1.5rem">
 <div class="body">
 <h1>Quantum Mechanics Foundations</h1>
 <p class="p-intro">Quantum mechanics is a fundamental theory in physics that provides a description of the physical properties of nature at the scale of atoms and subatomic particles. It is the foundation of all quantum physics including quantum chemistry, quantum field theory, quantum technology, and quantum information science.</p>
@@ -1752,7 +1789,7 @@ section[data-animated="true"] .smart-layout[data-variant="timelineHorizontal"]::
 </div>
 </section>
 
-<section id="slide_662e7fe8_0" class="slide-section" role="region" aria-label="Slide slide_662e7fe8_0" data-image-layout="blank" style="--h1-size: 2.4rem; --h2-size: 2.15rem; --p-size: 1.25rem; --line-height: 1.5; --card-number-size: 1.125rem; --card-text-size: 0.875rem; --section-padding: 1.5rem 2.25rem; --block-gap: 1rem; --card-padding: 1.125rem; --heading-gap: 1rem">
+<section id="slide_1e9eab76_0" class="slide-section" role="region" aria-label="Slide slide_1e9eab76_0" data-image-layout="blank" style="--h1-size: 2.4rem; --h2-size: 2.15rem; --p-size: 1.25rem; --line-height: 1.5; --card-number-size: 1.125rem; --card-text-size: 0.875rem; --section-padding: 1.5rem 2.25rem; --block-gap: 1rem; --card-padding: 1.125rem; --heading-gap: 1rem">
 <div class="body">
 <h1>Detailed Biological Classification</h1>
 <p>Biological classification is the scientific method in which biologists group and categorize organisms by biological type, such as genus or species. Modern biological classification has its root in the work of Carl Linnaeus, who grouped species according to shared physical characteristics. These groupings have since been revised to improve consistency with the Darwinian principle of common descent and genetic similarity.</p>
@@ -1805,12 +1842,60 @@ section[data-animated="true"] .smart-layout[data-variant="timelineHorizontal"]::
 </div>
 </section>
 
-<section id="slide_da592d15" class="slide-section" role="region" aria-label="Slide slide_da592d15" data-image-layout="blank" style="--h1-size: 3.5rem; --h2-size: 3rem; --p-size: 1.7rem; --line-height: 1.6; --card-number-size: 2.2rem; --card-text-size: 0.875rem; --section-padding: 3.25rem 4rem 4rem 4rem; --block-gap: 2.5rem; --card-padding: 2rem; --heading-gap: 2.5rem">
+<section id="slide_f7ce4a54" class="slide-section" role="region" aria-label="Slide slide_f7ce4a54" data-image-layout="blank" style="--h1-size: 3.5rem; --h2-size: 3rem; --p-size: 1.7rem; --line-height: 1.6; --card-number-size: 2.2rem; --card-text-size: 0.875rem; --section-padding: 3.25rem 4rem 4rem 4rem; --block-gap: 2.5rem; --card-padding: 2rem; --heading-gap: 2.5rem">
 <div class="body">
 <h1>SQL vs NoSQL Comparison</h1>
 <div class="comparison-table-container"><table><thead><tr><th>Feature</th><th>SQL (Relational)</th><th>NoSQL (Non-Relational)</th></tr></thead><tbody><tr><td>Schema</td><td>Predefined, rigid</td><td>Dynamic, flexible</td></tr><tr><td>Scaling</td><td>Vertically scaled (HW)</td><td>Horizontally scaled (CW)</td></tr><tr><td>Data Model</td><td>Tables, Rows, Columns</td><td>Key-Value, Document, Graph</td></tr><tr><td>Queries</td><td>SQL (Complex JOINs)</td><td>NoSQL (Object-based)</td></tr></tbody></table></div>
 <p>The choice depends on the specific use case and data requirements.</p>
 </div>
+</section>
+
+<section id="slide_aa6b96a9" class="slide-section" role="region" aria-label="Slide slide_aa6b96a9" data-image-layout="top" style="--h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.5rem; --line-height: 1.6; --card-number-size: 2rem; --card-text-size: 0.875rem; --section-padding: 2.25rem 3.25rem; --block-gap: 1.5rem; --card-padding: 1.25rem; --heading-gap: 1.5rem">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<div class="body">
+<h1>Top Banner Layout</h1>
+<p class="p-intro">This slide demonstrates the &#x27;top&#x27; accent image layout, which places a rectangular banner above the content. Great for intro slides or visual headers.</p>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="bigBullets" data-item-count="2">
+<div class="card" data-index="0">
+<div class="card-number">1</div>
+<div class="card-content">
+<p class="card-text">Vertical Stacking: Content flows naturally below the header image.</p>
+</div>
+</div>
+<div class="card" data-index="1">
+<div class="card-number">2</div>
+<div class="card-content">
+<p class="card-text">Rectangular Ratio: The placeholder adapts to a horizontal format (16:5 ratio).</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="slide_d87dc027" class="slide-section" role="region" aria-label="Slide slide_d87dc027" data-image-layout="bottom" style="--h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.5rem; --line-height: 1.6; --card-number-size: 2rem; --card-text-size: 0.875rem; --section-padding: 2.25rem 3.25rem; --block-gap: 1.5rem; --card-padding: 1.25rem; --heading-gap: 1.5rem">
+<div class="body">
+<h1>Bottom Accent Layout</h1>
+<p class="p-intro">This slide demonstrates the &#x27;bottom&#x27; accent image layout, which places an accent zone at the bottom of the slide. Ideal for footer-like accents.</p>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="cardGrid" data-item-count="2">
+<div class="card" data-index="0">
+<div class="card-number">1</div>
+<div class="card-content">
+<h4 class="card-title">Footer Style</h4>
+<p class="card-text">Subtle branding or concluding visuals work well here.</p>
+</div>
+</div>
+<div class="card" data-index="1">
+<div class="card-number">2</div>
+<div class="card-content">
+<h4 class="card-title">Flex Flow</h4>
+<p class="card-text">The content pushes the image to the bottom automatically.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
 </section>
     </div>
 

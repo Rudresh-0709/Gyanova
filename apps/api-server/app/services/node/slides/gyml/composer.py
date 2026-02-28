@@ -1124,8 +1124,9 @@ class SlideComposer:
         main_section.primary_block = None
         main_section.secondary_blocks = [columns_block]
 
-        # Disable default image layout since we moved the image manually
-        slide.image_layout = "blank"
+        # Disable default image layout if it was a side layout (since we moved the image manually)
+        if slide.image_layout not in ["top", "bottom"]:
+            slide.image_layout = "blank"
 
         # Force hierarchy to 'super_dense' for tighter spacing
         slide.hierarchy = VisualHierarchy.get_profile("super_dense")
@@ -1246,8 +1247,9 @@ class SlideComposer:
         target_section.primary_block = None
         target_section.secondary_blocks = new_blocks
 
-        # Disable accent image since we filled the horizontal space
-        slide.image_layout = "blank"
+        # Disable accent image if it was a side layout (since we filled the horizontal space)
+        if slide.image_layout not in ["top", "bottom"]:
+            slide.image_layout = "blank"
 
         return True
 

@@ -158,6 +158,55 @@ def get_test_slides():
                 ],
             },
         },
+        {
+            "name": "TOP: Banner",
+            "content": {
+                "title": "Top Banner Layout",
+                "layout": "top",
+                "intent": "intro",
+                "contentBlocks": [
+                    {
+                        "type": "intro_paragraph",
+                        "text": "This slide demonstrates the 'top' accent image layout, which places a rectangular banner above the content. Great for intro slides or visual headers.",
+                    },
+                    {
+                        "type": "bullet_list",
+                        "items": [
+                            "Vertical Stacking: Content flows naturally below the header image.",
+                            "Rectangular Ratio: The placeholder adapts to a horizontal format (16:5 ratio).",
+                        ],
+                    },
+                ],
+            },
+        },
+        {
+            "name": "BOTTOM: Accent",
+            "content": {
+                "title": "Bottom Accent Layout",
+                "layout": "bottom",
+                "intent": "summary",
+                "contentBlocks": [
+                    {
+                        "type": "intro_paragraph",
+                        "text": "This slide demonstrates the 'bottom' accent image layout, which places an accent zone at the bottom of the slide. Ideal for footer-like accents.",
+                    },
+                    {
+                        "type": "smart_layout",
+                        "variant": "cardGrid",
+                        "items": [
+                            {
+                                "heading": "Footer Style",
+                                "text": "Subtle branding or concluding visuals work well here.",
+                            },
+                            {
+                                "heading": "Flex Flow",
+                                "text": "The content pushes the image to the bottom automatically.",
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
     ]
 
 

@@ -10,7 +10,7 @@ from typing import Optional, Literal
 from .definitions import ComposedSlide, GyMLImage
 
 # Placement Types
-ImagePlacementValue = Literal["right", "left", "top", "behind", "blank"]
+ImagePlacementValue = Literal["right", "left", "top", "bottom", "behind", "blank"]
 
 
 class ImageManager:
@@ -55,7 +55,8 @@ class ImageManager:
             return "left" if slide_index % 2 == 0 else "right"
 
         # 4. Balanced Density (0.60 - 1.0) -> Multi-option for variety
-        return random.choice(["left", "right", "blank"])
+        # Include top/bottom as valid variety options
+        return random.choice(["left", "right", "top", "blank"])
 
     @staticmethod
     def should_inject_placeholder(slide_density: float, has_image: bool) -> bool:

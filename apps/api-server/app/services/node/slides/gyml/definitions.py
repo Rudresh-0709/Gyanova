@@ -359,7 +359,7 @@ class GyMLSection:
     """
 
     id: str
-    image_layout: Literal["right", "left", "top", "behind", "blank"] = "blank"
+    image_layout: Literal["right", "left", "top", "bottom", "behind", "blank"] = "blank"
     accent_image: Optional[GyMLImage] = None
     body: GyMLBody = field(default_factory=GyMLBody)
 

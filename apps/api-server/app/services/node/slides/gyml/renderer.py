@@ -115,10 +115,11 @@ class GyMLRenderer:
             f"{style_attr}{anim_attr}{density_attr}>"
         )
 
-        # Accent images are NEVER animated (always visible)
-        if section.accent_image:
-            # Wrap accent image + optional caption in a container so they stay
-            # together in the same grid column for left/right layouts.
+        # Render Image (unless it's bottom layout, then we render it after body)
+        render_image_early = section.image_layout != "bottom"
+
+        if section.accent_image and render_image_early:
+            # Wrap accent image + optional caption in a container
             has_caption = section.image_caption is not None
             if has_caption:
                 lines.append('<div class="accent-image-group">')
@@ -133,6 +134,21 @@ class GyMLRenderer:
                 lines.append("</div>")
 
         lines.append(self._render_body(section.body))
+
+        # Render Image late if it's bottom layout
+        if section.accent_image and not render_image_early:
+            has_caption = section.image_caption is not None
+            if has_caption:
+                lines.append('<div class="accent-image-group">')
+
+            lines.append(self._render_accent_image(section.accent_image))
+
+            if has_caption:
+                caption_text = self._escape(section.image_caption.text)
+                lines.append(
+                    f'<p class="p-annotation image-annotation">{caption_text}</p>'
+                )
+                lines.append("</div>")
         lines.append("</section>")
 
         return "\n".join(lines)
@@ -761,6 +777,44 @@ section[data-image-layout="right-wide"] .body { order: 1; grid-column: 1; }
 section[data-image-layout="right-wide"] .accent-image-wrapper,
 section[data-image-layout="right-wide"] .accent-image-placeholder,
 section[data-image-layout="right-wide"] .accent-image-group { order: 2; grid-column: 2; }
+
+/* Top / Bottom Layouts (Vertical Stacking) */
+section[data-image-layout="top"],
+section[data-image-layout="bottom"] {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+section[data-image-layout="top"] .accent-image-group,
+section[data-image-layout="top"] .accent-image-wrapper,
+section[data-image-layout="top"] .accent-image-placeholder {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+section[data-image-layout="bottom"] .accent-image-group,
+section[data-image-layout="bottom"] .accent-image-wrapper,
+section[data-image-layout="bottom"] .accent-image-placeholder {
+    width: 100%;
+    margin-top: auto;
+}
+
+/* Adjust aspect ratios and heights for vertical layouts */
+section[data-image-layout="top"] .accent-image-placeholder,
+section[data-image-layout="bottom"] .accent-image-placeholder {
+    aspect-ratio: 16 / 5;
+    min-height: 150px;
+    max-height: 20vh;
+}
+
+section[data-image-layout="top"] .accent-image-wrapper img,
+section[data-image-layout="bottom"] .accent-image-wrapper img {
+    width: 100%;
+    max-height: 20vh;
+    object-fit: cover;
+    object-position: center;
+}
 
 /* Accent Image + Annotation Group */
 .accent-image-group {
