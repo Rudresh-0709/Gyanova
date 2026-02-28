@@ -41,11 +41,27 @@ class ComposedBlock:
 
     def word_count(self) -> int:
         """Count words in this block's text content."""
+        # 1. Recursive check for Columns
+        if self.type == "columns" and "columns" in self.content:
+            total = 0
+            for col in self.content["columns"]:
+                for block in col.get("blocks", []):
+                    if hasattr(block, "word_count"):
+                        total += block.word_count()
+                    elif isinstance(block, dict):
+                        # Basic estimation for dict-based blocks if needed
+                        text = " ".join(
+                            str(v) for v in block.values() if isinstance(v, str)
+                        )
+                        total += len(text.split())
+            return total
+
+        # 2. Standard block counting
         text_parts = []
         if "text" in self.content:
             text_parts.append(str(self.content["text"]))
 
-        # Handle Hierarchy Tree recursive content
+        # Handle Hierarchy Tree recursive labels
         if self.type == "hierarchy_tree" and "root" in self.content:
 
             def collect_labels(node):
@@ -56,6 +72,7 @@ class ComposedBlock:
 
             text_parts.extend(collect_labels(self.content["root"]))
 
+        # Handle List/Grid items
         items = self.content.get("items") or self.content.get("cards")
         if items:
             for item in items:
@@ -69,12 +86,24 @@ class ComposedBlock:
 
     def item_count(self) -> int:
         """Return number of structural items (points, cards, etc.)."""
+        # 1. Recursive check for Columns
+        if self.type == "columns" and "columns" in self.content:
+            count = 0
+            for col in self.content["columns"]:
+                for block in col.get("blocks", []):
+                    if hasattr(block, "item_count"):
+                        count += block.item_count()
+                    elif isinstance(block, dict):
+                        count += 1
+            return max(count, 1)
+
+        # 2. Standard block item counting
         if "items" in self.content:
             return len(self.content["items"])
         if "cards" in self.content:
             return len(self.content["cards"])
 
-        # New: Recursive node counting for Hierarchy Trees
+        # Recursive node counting for Hierarchy Trees
         if self.type == "hierarchy_tree" and "root" in self.content:
 
             def count_nodes(node):

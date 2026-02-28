@@ -26,30 +26,36 @@ class ImageManager:
         intent: str,
         explicit_layout: Optional[ImagePlacementValue] = None,
         slide_index: int = 0,
+        has_wide_block: bool = False,
     ) -> ImagePlacementValue:
         """
         Decide image layout based on density, intent, and explicit orientation.
 
         Rules:
         - If explicit_layout is provided, PRIORITIZE it (unless blank).
-        - Density < 0.5: REQUIRE image (Right or Left) to fill space.
-        - Density > 0.8: AVOID large images (use 'top' or 'blank').
+        - Density < 0.35: REQUIRE image (Right or Left) to fill space.
+        - Density > 0.8: AVOID large images (use 'top' or 'blank') to prevent squeezing.
+        - Wide Blocks: If Table/Tree/Grid present, AVOID 'left'/'right'.
         - Fallback: Alternate between 'left' and 'right' based on slide_index.
         """
         # 1. Respect Explicit Layout from LLM/Teacher
         if explicit_layout and explicit_layout != "blank":
             return explicit_layout
 
-        # 2. High Density (Avoid cramping)
-        # Aligned with SUPER_DENSE profile threshold (1.20)
-        if slide_density > 1.20:
-            # Respect user image but keep it right aligned if dense
+        # 2. Density / Complexity Overrides
+        # If density is very high (> 1.0) or has wide content, side layouts look cramped.
+        if (slide_density > 1.0) or has_wide_block:
             if has_user_image:
                 return "right"
             return "blank"
 
-        # 3. Low & Medium Density - Random for Variety
-        return random.choice(["left", "right"])
+        # 3. Variety Logic
+        # For lower densities, we want to ensure an image is present for visual balance.
+        if slide_density < 0.60:
+            return "left" if slide_index % 2 == 0 else "right"
+
+        # 4. Balanced Density (0.60 - 1.0) -> Multi-option for variety
+        return random.choice(["left", "right", "blank"])
 
     @staticmethod
     def should_inject_placeholder(slide_density: float, has_image: bool) -> bool:

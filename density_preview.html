@@ -1,153 +1,4 @@
-"""
-GyML Renderer
-
-PASSIVE renderer: GyML → HTML.
-Maps GyML structure to HTML without any inference or semantic decisions.
-Designed to match Gamma-style professional slides.
-"""
-
-from typing import List, Optional, Dict, Any
-import html
-
-from .definitions import (
-    GyMLSection,
-    GyMLBody,
-    GyMLHeading,
-    GyMLParagraph,
-    GyMLColumns,
-    GyMLColumnDiv,
-    GyMLSmartLayout,
-    GyMLSmartLayoutItem,
-    GyMLImage,
-    GyMLDivider,
-    GyMLTable,
-    GyMLCode,
-    GyMLComparisonTable,
-    GyMLKeyValueList,
-    GyMLRichText,
-    GyMLNumberedList,
-    GyMLLabeledDiagram,
-    GyMLHierarchyTree,
-    GyMLSplitPanel,
-    GyMLFormulaBlock,
-    GyMLNode,
-)
-from .theme import Theme, THEMES
-from .responsive import ResponsiveConstraints
-from .hierarchy import VisualHierarchy
-
-
-class GyMLRenderer:
-    """
-    PASSIVE renderer: GyML → HTML.
-    Gamma-style professional output.
-
-    When animated=True, injects data-segment attributes on primary content
-    (smart_layout cards only) for reveal animations synced to narration audio.
-    All other elements (paragraphs, columns, headings, accent images, tables,
-    code blocks) remain always visible.
-    """
-
-    def __init__(
-        self,
-        theme: Optional[Theme] = None,
-        responsive_constraints: Optional[ResponsiveConstraints] = None,
-        animated: bool = False,
-    ):
-        self.theme = theme or THEMES.get("gamma_light")
-        self.responsive_constraints = (
-            responsive_constraints or ResponsiveConstraints.default()
-        )
-        self.animated = animated
-        self._segment_counter = 0  # tracks current segment index per section
-
-    def render(self, section: GyMLSection) -> str:
-        """Passively render GyML section to HTML."""
-        # Reset segment counter for each section
-        self._segment_counter = 0
-        lines = []
-
-        # Generate hierarchy CSS variables if present
-        style_attr = ""
-        if section.hierarchy:
-            vars_list = []
-            # Typography
-            vars_list.append(f"--h1-size: {section.hierarchy.typography.h1}")
-            vars_list.append(f"--h2-size: {section.hierarchy.typography.h2}")
-            vars_list.append(f"--p-size: {section.hierarchy.typography.body}")
-            vars_list.append(
-                f"--line-height: {section.hierarchy.typography.line_height_base}"
-            )
-            vars_list.append(
-                f"--card-number-size: {section.hierarchy.typography.card_number}"
-            )
-            vars_list.append(f"--card-text-size: {section.hierarchy.typography.small}")
-
-            # Spacing
-            vars_list.append(
-                f"--section-padding: {section.hierarchy.spacing.section_padding}"
-            )
-            vars_list.append(f"--block-gap: {section.hierarchy.spacing.block_gap}")
-            vars_list.append(
-                f"--card-padding: {section.hierarchy.spacing.card_padding}"
-            )
-            h_gap = (
-                section.hierarchy.spacing.heading_gap
-                or section.hierarchy.spacing.block_gap
-            )
-            vars_list.append(f"--heading-gap: {h_gap}")
-
-            style_attr = f' style="{"; ".join(vars_list)}"'
-
-        # Add animated data attribute so CSS knows to apply animation styles
-        anim_attr = ' data-animated="true"' if self.animated else ""
-
-        # Add density hint so CSS can compact card internals for dense slides
-        density_attr = ""
-        if section.hierarchy and section.hierarchy.name in ("super_dense", "compact"):
-            density_attr = f' data-density="{section.hierarchy.name}"'
-
-        lines.append(
-            f'<section id="{self._escape(section.id)}" '
-            f'class="slide-section" '
-            f'role="region" aria-label="Slide {section.id}" '
-            f'data-image-layout="{section.image_layout}"'
-            f"{style_attr}{anim_attr}{density_attr}>"
-        )
-
-        # Accent images are NEVER animated (always visible)
-        if section.accent_image:
-            # Wrap accent image + optional caption in a container so they stay
-            # together in the same grid column for left/right layouts.
-            has_caption = section.image_caption is not None
-            if has_caption:
-                lines.append('<div class="accent-image-group">')
-
-            lines.append(self._render_accent_image(section.accent_image))
-
-            if has_caption:
-                caption_text = self._escape(section.image_caption.text)
-                lines.append(
-                    f'<p class="p-annotation image-annotation">{caption_text}</p>'
-                )
-                lines.append("</div>")
-
-        lines.append(self._render_body(section.body))
-        lines.append("</section>")
-
-        return "\n".join(lines)
-
-    def render_many(self, sections: List[GyMLSection]) -> str:
-        """Render multiple sections."""
-        rendered_sections = [self.render(s) for s in sections]
-        return "\n\n".join(rendered_sections)
-
-    def render_complete(self, sections: List[GyMLSection]) -> str:
-        """Render complete HTML document with Gamma-style styles."""
-        sections_html = self.render_many(sections)
-        animator_js = self._get_animator_js() if self.animated else ""
-
-        return f"""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -159,513 +10,18 @@ class GyMLRenderer:
     <!-- KaTeX for professional math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {{ 
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, { 
         delimiters: [
-            {{left: '$$', right: '$$', display: true}},
-            {{left: '$', right: '$', display: false}},
-            {{left: '\\\\(', right: '\\\\)', display: false}},
-            {{left: '\\\\[', right: '\\\\]', display: true}}
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
         ],
         throwOnError : false 
-    }});"></script>
+    });"></script>
 
     <style>
-{self._get_gamma_styles()}
-{self.theme.to_css_vars() if self.theme else ""}
-{self._get_responsive_styles()}
-    </style>
-</head>
-<body>
-    <div class="gyml-deck">
-{sections_html}
-    </div>
-{animator_js}
-</body>
-</html>"""
 
-    def _get_responsive_styles(self) -> str:
-        """Generate responsive CSS from constraints."""
-        c = self.responsive_constraints
-        css = ["/* Dynamic Responsive Styles */"]
-
-        # 1. Breakpoints
-        for bp_name, width in c.breakpoints.items():
-            fallback_padding = c.viewport_padding.get(bp_name, "1rem")
-            scale = c.typography_scale.get(bp_name, 1.0)
-
-            css.append(f"@media (max-width: {width}px) {{")
-
-            # Global adjustments
-            css.append("  :root {")
-            css.append(f"    --section-padding: {fallback_padding};")
-            # We can scale the base font size if we used rems correctly
-            css.append(f"    font-size: {scale * 100}%;")
-            css.append("  }")
-
-            # Apply layout fallbacks
-            if c.layout_fallbacks.get("columns") == "stack":
-                css.append("  .columns { flex-direction: column; }")
-                css.append("  .column { flex: 1 1 100% !important; }")
-
-            if c.layout_fallbacks.get("image_layout") == "stack":
-                css.append(
-                    "  section[data-image-layout='right'], section[data-image-layout='left'] {"
-                )
-                css.append(
-                    "    grid-template-columns: 1fr; display: flex; flex-direction: column;"
-                )
-                css.append("  }")
-                css.append("  .accent-image { max-width: 100%; margin-bottom: 1rem; }")
-
-            css.append("}")
-
-        return "\n".join(css)
-
-    # =========================================================================
-    # ELEMENT RENDERERS
-    # =========================================================================
-
-    def _render_accent_image(self, image: GyMLImage) -> str:
-        """Render accent image."""
-        if image.src == "placeholder":
-            return (
-                f'<div class="accent-image-placeholder">'
-                f'<div class="placeholder-content">'
-                f'<span class="placeholder-icon">🖼️</span>'
-                f'<span class="placeholder-text">{self._escape(image.alt)}</span>'
-                f"</div>"
-                f"</div>"
-            )
-
-        return (
-            f'<div class="accent-image-wrapper">'
-            f'<img class="accent-image" '
-            f'src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
-            f"</div>"
-        )
-
-    def _render_body(self, body: GyMLBody) -> str:
-        """Render body container."""
-        children_html = []
-        separator_count = 0  # Max 1 separator per slide
-        for i, child in enumerate(body.children):
-            rendered = self._render_node(child)
-            if rendered:
-                children_html.append(rendered)
-
-                # Add separator logic (between distinct major blocks) — max 1 per slide
-                if i < len(body.children) - 1 and separator_count < 1:
-                    next_child = body.children[i + 1]
-
-                    # Geometry Rule: Separator between Dense (Visual) and Flow (Text)
-                    is_dense_current = isinstance(
-                        child, (GyMLColumns, GyMLSmartLayout, GyMLTable, GyMLCode)
-                    )
-                    is_dense_next = isinstance(
-                        next_child, (GyMLColumns, GyMLSmartLayout, GyMLTable, GyMLCode)
-                    )
-
-                    # Flow elements: Paragraph, Heading
-                    is_flow_current = isinstance(child, (GyMLParagraph, GyMLHeading))
-                    is_flow_next = isinstance(next_child, (GyMLParagraph, GyMLHeading))
-
-                    should_separate = (
-                        (is_dense_current and is_dense_next)  # Between two visuals
-                        or (is_dense_current and is_flow_next)  # Visual -> Text
-                        or (is_flow_current and is_dense_next)  # Text -> Visual
-                    )
-
-                    if should_separate:
-                        children_html.append('<div class="block-separator"></div>')
-                        separator_count += 1
-
-        return f'<div class="body">\n{chr(10).join(children_html)}\n</div>'
-
-    def _render_node(self, node: GyMLNode) -> Optional[str]:
-        """Render any GyML node by type."""
-        if isinstance(node, GyMLHeading):
-            return self._render_heading(node)
-        elif isinstance(node, GyMLParagraph):
-            return self._render_paragraph(node)
-        elif isinstance(node, GyMLColumns):
-            return self._render_columns(node)
-        elif isinstance(node, GyMLSmartLayout):
-            return self._render_smart_layout(node)
-        elif isinstance(node, GyMLImage):
-            return self._render_inline_image(node)
-        elif isinstance(node, GyMLDivider):
-            return self._render_divider()
-        elif isinstance(node, GyMLCode):
-            return self._render_code(node)
-        elif isinstance(node, GyMLTable):
-            return self._render_table(node)
-        elif isinstance(node, GyMLComparisonTable):
-            return self._render_comparison_table(node)
-        elif isinstance(node, GyMLKeyValueList):
-            return self._render_key_value_list(node)
-        elif isinstance(node, GyMLRichText):
-            return self._render_rich_text(node)
-        elif isinstance(node, GyMLNumberedList):
-            return self._render_numbered_list(node)
-        elif isinstance(node, GyMLLabeledDiagram):
-            return self._render_labeled_diagram(node)
-        elif isinstance(node, GyMLHierarchyTree):
-            return self._render_hierarchy_tree(node)
-        elif isinstance(node, GyMLSplitPanel):
-            return self._render_split_panel(node)
-        elif isinstance(node, GyMLFormulaBlock):
-            return self._render_formula_block(node)
-        return f"<!-- Unknown node type: {type(node).__name__} -->"
-
-    def _render_heading(self, heading: GyMLHeading) -> str:
-        """Render heading."""
-        level = heading.level
-        text = self._escape(heading.text)
-        return f"<h{level}>{text}</h{level}>"
-
-    def _render_paragraph(self, paragraph: GyMLParagraph) -> str:
-        """Render paragraph."""
-        text = self._escape(paragraph.text)
-        variant_class = f"p-{paragraph.variant}" if paragraph.variant else ""
-
-        # Paragraphs are always visible (not animated)
-        # Only primary content (smart_layout cards) gets data-segment
-
-        class_attr = f' class="{variant_class}"' if variant_class else ""
-        return f"<p{class_attr}>{text}</p>"
-
-    def _render_divider(self) -> str:
-        """Render divider."""
-        return '<hr class="divider" />'
-
-    def _render_inline_image(self, image: GyMLImage) -> str:
-        """Render inline image."""
-        if not image.src or image.src.lower() == "null":
-            return ""
-
-        return (
-            f'<figure class="inline-image">'
-            f'<img src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
-            f"</figure>"
-        )
-
-    def _render_code(self, code: GyMLCode) -> str:
-        """Render code block."""
-        return (
-            f'<div class="code-block" data-variant="{self._escape(code.variant)}">'
-            f'<pre><code class="language-{self._escape(code.language)}">'
-            f"{self._escape(code.code)}"
-            f"</code></pre>"
-            f"</div>"
-        )
-
-    def _render_table(self, table: GyMLTable) -> str:
-        """Render table."""
-        headers_html = "".join(f"<th>{self._escape(h)}</th>" for h in table.headers)
-
-        rows_html = []
-        for row in table.rows:
-            cells_html = "".join(f"<td>{self._escape(c)}</td>" for c in row)
-            rows_html.append(f"<tr>{cells_html}</tr>")
-
-        return (
-            f'<div class="table-container" data-variant="{self._escape(table.variant)}">'
-            f"<table>"
-            f"<thead><tr>{headers_html}</tr></thead>"
-            f'<tbody>{"".join(rows_html)}</tbody>'
-            f"</table>"
-            f"</div>"
-        )
-
-    def _render_columns(self, columns: GyMLColumns) -> str:
-        """Render columns as flex container."""
-        widths_str = ",".join(str(w) for w in columns.colwidths)
-
-        html_parts = [f'<div class="columns" data-colwidths="{widths_str}">']
-
-        for i, col in enumerate(columns.columns):
-            width = columns.colwidths[i] if i < len(columns.colwidths) else 50
-
-            # Columns are always visible (not animated)
-            html_parts.append(
-                f'<div class="column" style="flex: 0 0 calc({width}% - 1rem);">'
-            )
-
-            for child in col.children:
-                rendered = self._render_node(child)
-                if rendered:
-                    html_parts.append(rendered)
-
-            html_parts.append("</div>")
-
-        html_parts.append("</div>")
-        return "\n".join(html_parts)
-
-    def _render_smart_layout(self, layout: GyMLSmartLayout) -> str:
-        """Render smart-layout as grid container."""
-        variant = self._escape(layout.variant)
-        item_count = len(layout.items)
-
-        html_parts = [
-            f'<div class="smart-layout" '
-            f'data-variant="{variant}" '
-            f'data-item-count="{item_count}">'
-        ]
-
-        for i, item in enumerate(layout.items):
-            html_parts.append(self._render_smart_layout_item(item, layout.variant, i))
-
-        html_parts.append("</div>")
-        return "\n".join(html_parts)
-
-    def _render_smart_layout_item(
-        self, item: GyMLSmartLayoutItem, variant: str, index: int = 0
-    ) -> str:
-        """Render smart-layout-item Gamma-style."""
-        # Animation: cards get data-segment for sequential reveal
-        # Each card maps to one narration segment
-        if self.animated:
-            seg = self._segment_counter
-            self._segment_counter += 1
-            # Comparison cards slide from sides, others slide up
-            if variant == "comparison":
-                direction = "left" if index == 0 else "right"
-                anim_class = f"anim-slide-{direction}"
-            else:
-                anim_class = "anim-slide-up"
-            html_parts = [
-                f'<div class="card {anim_class}" '
-                f'data-index="{index}" data-segment="{seg}">'
-            ]
-        else:
-            html_parts = [f'<div class="card" data-index="{index}">']
-
-        # Number badge at top (Gamma style)
-        if variant in [
-            "bigBullets",
-            "processSteps",
-            "processArrow",
-            "cardGrid",
-            "timelineSequential",
-        ]:
-            html_parts.append(f'<div class="card-number">{index + 1}</div>')
-
-        # Auto-Icon Selection for specific variants (if icon absent or needs override)
-        icon_class = None
-        if item.icon:
-            icon_class = item.icon.alt
-            if not icon_class.startswith("ri-"):
-                icon_class = f"ri-{icon_class}-line"
-        elif variant == "bulletCheck":
-            icon_class = "ri-check-line"
-        elif variant == "bulletCross":
-            icon_class = "ri-close-line"
-        elif variant == "comparisonProsCons":
-            icon_class = "ri-check-line" if index == 0 else "ri-close-line"
-
-        if icon_class:
-            html_parts.append(
-                f'<div class="card-icon"><i class="{self._escape(icon_class)}"></i></div>'
-            )
-
-        # Content
-        html_parts.append('<div class="card-content">')
-
-        if variant == "timeline":
-            if item.year:
-                html_parts.append(
-                    f'<div class="card-year">{self._escape(item.year)}</div>'
-                )
-            if item.description:
-                html_parts.append(
-                    f'<p class="card-text">{self._escape(item.description)}</p>'
-                )
-
-        elif variant == "stats":
-            if item.value:
-                html_parts.append(
-                    f'<div class="card-value">{self._escape(item.value)}</div>'
-                )
-            if item.label:
-                html_parts.append(
-                    f'<div class="card-label">{self._escape(item.label)}</div>'
-                )
-
-        else:
-            if item.heading:
-                html_parts.append(
-                    f'<h4 class="card-title">{self._escape(item.heading)}</h4>'
-                )
-            if item.description:
-                # Handle multiline descriptions (e.g. from comparison lists)
-                desc_html = self._escape(item.description).replace("\n", "<br>")
-                html_parts.append(f'<p class="card-text">{desc_html}</p>')
-
-        html_parts.append("</div>")
-        html_parts.append("</div>")
-
-        return "\n".join(html_parts)
-
-    def _render_comparison_table(self, table: GyMLComparisonTable) -> str:
-        """Render comparison table."""
-        headers_html = "".join(f"<th>{self._escape(h)}</th>" for h in table.headers)
-        rows_html = []
-        for row in table.rows:
-            cells_html = "".join(f"<td>{self._escape(c)}</td>" for c in row)
-            rows_html.append(f"<tr>{cells_html}</tr>")
-
-        caption_html = (
-            f'<div class="table-caption">{self._escape(table.caption)}</div>'
-            if table.caption
-            else ""
-        )
-
-        return (
-            f'<div class="comparison-table-container">'
-            f"<table>"
-            f"<thead><tr>{headers_html}</tr></thead>"
-            f'<tbody>{"".join(rows_html)}</tbody>'
-            f"</table>"
-            f"{caption_html}"
-            f"</div>"
-        )
-
-    def _render_key_value_list(self, kv_list: GyMLKeyValueList) -> str:
-        """Render key-value list."""
-        items_html = []
-        for item in kv_list.items:
-            key = self._escape(item.key)
-            val = self._escape(item.value)
-            items_html.append(
-                f'<div class="kv-item">'
-                f'<span class="kv-key">{key}</span>'
-                f'<span class="kv-value">{val}</span>'
-                f"</div>"
-            )
-        return f'<div class="key-value-list">{"".join(items_html)}</div>'
-
-    def _render_rich_text(self, rich_text: GyMLRichText) -> str:
-        """Render rich text block."""
-        paragraphs_html = "".join(
-            f"<p>{self._escape(p)}</p>" for p in rich_text.paragraphs
-        )
-        return f'<div class="rich-text-block">{paragraphs_html}</div>'
-
-    def _render_numbered_list(self, num_list: GyMLNumberedList) -> str:
-        """Render numbered list."""
-        items_html = []
-        for item in num_list.items:
-            title = self._escape(item.title)
-            desc = self._escape(item.description)
-            items_html.append(
-                f"<li>"
-                f'<div class="item-content">'
-                f'<div class="item-title">{title}</div>'
-                f'<div class="item-desc">{desc}</div>'
-                f"</div>"
-                f"</li>"
-            )
-        return f'<ol class="numbered-list">{"".join(items_html)}</ol>'
-
-    def _render_labeled_diagram(self, diagram: GyMLLabeledDiagram) -> str:
-        """Render labeled diagram."""
-        labels_html = []
-        for label in diagram.labels:
-            x = label.x
-            y = label.y
-            text = self._escape(label.text)
-            labels_html.append(
-                f'<div class="diagram-label" style="left: {x}%; top: {y}%;">'
-                f'<span class="label-dot"></span>'
-                f'<span class="label-text">{text}</span>'
-                f"</div>"
-            )
-        img_url = self._escape(diagram.image_url) if diagram.image_url else ""
-        return (
-            f'<div class="labeled-diagram-container">'
-            f'<img src="{img_url}" class="diagram-base" />'
-            f'<div class="diagram-labels">{"".join(labels_html)}</div>'
-            f"</div>"
-        )
-
-    def _render_hierarchy_tree(self, tree: GyMLHierarchyTree) -> str:
-        """Render hierarchy tree."""
-
-        def render_nested(node):
-            label = self._escape(node.label)
-            children = node.children
-            child_html = ""
-            if children:
-                child_items = "".join(f"<li>{render_nested(c)}</li>" for c in children)
-                child_html = f"<ul>{child_items}</ul>"
-            return f'<div class="tree-node">{label}</div>{child_html}'
-
-        return f'<div class="hierarchy-tree-container">{render_nested(tree.root)}</div>'
-
-    def _render_split_panel(self, panel: GyMLSplitPanel) -> str:
-        """Render split panel."""
-        left_html = self._render_embedded_panel(panel.left_panel)
-        right_html = self._render_embedded_panel(panel.right_panel)
-
-        return (
-            f'<div class="split-panel">'
-            f'<div class="panel-half left">{left_html}</div>'
-            f'<div class="panel-half right">{right_html}</div>'
-            f"</div>"
-        )
-
-    def _render_embedded_panel(self, panel_data: Any) -> str:
-        """Helper to render a panel in a split panel."""
-        title = self._escape(panel_data.title)
-        content = self._escape(panel_data.content).replace("\n", "<br>")
-        return f'<div class="embedded-panel"><h3>{title}</h3><p>{content}</p></div>'
-
-    def _render_embedded_block(self, block_data: Dict[str, Any]) -> str:
-        """Helper to render a block inside another block (like split panel)."""
-        from .serializer import GyMLSerializer
-        from .definitions import ComposedBlock
-
-        s = GyMLSerializer()
-        composed = ComposedBlock(
-            type=block_data.get("type", "paragraph"),
-            content=block_data.get("content", block_data),
-        )
-        node = s._serialize_block(composed)
-        return self._render_node(node) if node else ""
-
-    def _render_formula_block(self, block: GyMLFormulaBlock) -> str:
-        """Render formula block."""
-        expression = self._escape(block.expression)
-        example = self._escape(block.example) if block.example else ""
-
-        vars_html = []
-        for var in block.variables:
-            vars_html.append(
-                f'<div class="formula-var">'
-                f'<span class="var-name">{self._escape(var.name)}</span>'
-                f'<span class="var-def">{self._escape(var.definition)}</span>'
-                f"</div>"
-            )
-
-        return (
-            f'<div class="formula-block-container">'
-            f'<div class="formula-display">$${expression}$$</div>'
-            f'<div class="formula-example">{example}</div>'
-            f'<div class="formula-variables">{"".join(vars_html)}</div>'
-            f"</div>"
-        )
-
-    def _escape(self, text: str) -> str:
-        """Escape HTML special characters."""
-        if not text:
-            return ""
-        return html.escape(str(text))
-
-    def _get_gamma_styles(self) -> str:
-        """Get Gamma-style CSS."""
-        return """
 /* ================================================
    GAMMA-STYLE SLIDE DESIGN
    Clean, professional, light theme
@@ -1771,7 +1127,7 @@ section[data-density="super_dense"] .hierarchy-tree-container ul {
 }
 
 .smart-layout[data-variant="processArrow"] .card:not(:last-child)::after {
-    content: '\\ea6e';  /* remixicon arrow-right-line */
+    content: '\ea6e';  /* remixicon arrow-right-line */
     font-family: 'remixicon';
     position: absolute;
     right: -1.5rem;
@@ -2054,7 +1410,7 @@ th {
     gap: 2.5rem;
 }
 .smart-layout[data-variant="comparisonBeforeAfter"]::after {
-    content: '\\ea6e';
+    content: '\ea6e';
     font-family: 'remixicon';
     position: absolute;
     left: 50%;
@@ -2292,87 +1648,104 @@ section[data-animated="true"] .smart-layout[data-variant="timelineHorizontal"]::
     opacity: 1;
     visibility: visible;
 }
-"""
 
-    def _get_animator_js(self) -> str:
-        """Get the SlideAnimator JavaScript controller."""
-        return """
-<script>
-/**
- * SlideAnimator — Controls segment-by-segment reveal of slide elements.
- *
- * Usage:
- *   const section = document.querySelector('section[data-animated]');
- *   const animator = new SlideAnimator(section);
- *   animator.revealSegment(0);  // reveal first segment
- *   animator.revealSegment(1);  // reveal second segment
- *   animator.revealAll();       // show everything
- *   animator.reset();           // hide all animated elements
- */
-class SlideAnimator {
-    constructor(sectionEl) {
-        this.section = sectionEl;
-        this.segments = Array.from(
-            sectionEl.querySelectorAll('[data-segment]')
-        ).sort((a, b) => {
-            return parseInt(a.dataset.segment) - parseInt(b.dataset.segment);
-        });
-        this.revealedCount = 0;
-        this.totalSegments = this.segments.length;
-    }
 
-    /** Reveal a specific segment by index. */
-    revealSegment(index) {
-        const els = this.segments.filter(
-            el => parseInt(el.dataset.segment) === index
-        );
-        els.forEach(el => el.classList.add('active'));
-        this.revealedCount = Math.max(this.revealedCount, index + 1);
-    }
-
-    /** Reveal the next unrevealed segment. Returns the index or -1 if done. */
-    revealNext() {
-        if (this.revealedCount >= this.totalSegments) return -1;
-        // Find the next segment index
-        const nextIdx = parseInt(this.segments[this.revealedCount].dataset.segment);
-        this.revealSegment(nextIdx);
-        return nextIdx;
-    }
-
-    /** Reveal all segments at once (skip animation). */
-    revealAll() {
-        this.segments.forEach(el => {
-            el.style.transition = 'none';
-            el.classList.add('active');
-        });
-        this.revealedCount = this.totalSegments;
-    }
-
-    /** Hide all animated elements (reset to initial state). */
-    reset() {
-        this.segments.forEach(el => {
-            el.classList.remove('active');
-        });
-        this.revealedCount = 0;
-    }
-
-    /** Check if all segments have been revealed. */
-    get isComplete() {
-        return this.revealedCount >= this.totalSegments;
-    }
+:root {
+    --bg-primary: #f8f7f4;
+    --bg-secondary: #ffffff;
+    --text-primary: #1a1a1a;
+    --text-secondary: #555555;
+    --accent: #666666;
+    --border-color: #e5e5e5;
+    --number-bg: #f0f0f0;
+    --callout-bg: #f5f5f5;
+    --icon-bg: #1a1a1a;
+    --timeline-color: #2d8a6e;
+    --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* Component Styles */
+    --card-shadow: none;
+    --card-radius: 0.5rem;
+    --divider-style: solid;
 }
 
-// Auto-init: create animators for all animated sections
-window.slideAnimators = {};
-document.querySelectorAll('section[data-animated="true"]').forEach(section => {
-    const animator = new SlideAnimator(section);
-    window.slideAnimators[section.id] = animator;
-    
-    // Auto-reveal for static previews. Parent presentation controller 
-    // can reset() this if it wants to control the animation.
-    setTimeout(() => {
-        animator.revealAll();
-    }, 100);
-});
-</script>
-"""
+/* Dynamic Responsive Styles */
+@media (max-width: 480px) {
+  :root {
+    --section-padding: 1rem;
+    font-size: 85.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+@media (max-width: 768px) {
+  :root {
+    --section-padding: 2rem;
+    font-size: 90.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+@media (max-width: 1024px) {
+  :root {
+    --section-padding: 1rem;
+    font-size: 100.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+    </style>
+</head>
+<body>
+    <div class="gyml-deck">
+<section id="slide_b4b759f7" class="slide-section" role="region" aria-label="Slide slide_b4b759f7" data-image-layout="left" style="--h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.5rem; --line-height: 1.6; --card-number-size: 2rem; --card-text-size: 0.875rem; --section-padding: 3.5rem 4.5rem; --block-gap: 2.0rem; --card-padding: 1.75rem; --heading-gap: 2.0rem">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<div class="body">
+<h1>Quantum Mechanics Base</h1>
+<div class="formula-block-container"><div class="formula-display">$$E = mc^2$$</div><div class="formula-example"></div><div class="formula-variables"><div class="formula-var"><span class="var-name">E</span><span class="var-def">Energy</span></div><div class="formula-var"><span class="var-name">m</span><span class="var-def">Mass</span></div><div class="formula-var"><span class="var-name">c</span><span class="var-def">Speed of Light</span></div></div></div>
+<div class="code-block" data-variant="snippet"><pre><code class="language-python">import numpy as np
+def wave_packet(x, t):
+    return np.exp(-x**2) * np.exp(1j * t)</code></pre></div>
+</div>
+</section>
+
+<section id="slide_bf7f4ad0" class="slide-section" role="region" aria-label="Slide slide_bf7f4ad0" data-image-layout="left" style="--h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.5rem; --line-height: 1.6; --card-number-size: 2rem; --card-text-size: 0.875rem; --section-padding: 3.5rem 4.5rem; --block-gap: 2.0rem; --card-padding: 1.75rem; --heading-gap: 2.0rem">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<div class="body">
+<h1>Cloud Infrastructure</h1>
+<div class="comparison-table-container"><table><thead><tr><th>Service</th><th>Type</th><th>Cost</th></tr></thead><tbody><tr><td>S3</td><td>Storage</td><td>Low</td></tr><tr><td>EC2</td><td>Compute</td><td>Dynamic</td></tr></tbody></table></div>
+<div class="labeled-diagram-container"><img src="placeholder" class="diagram-base" /><div class="diagram-labels"><div class="diagram-label" style="left: 50.0%; top: 20.0%;"><span class="label-dot"></span><span class="label-text">Load Balancer</span></div><div class="diagram-label" style="left: 50.0%; top: 60.0%;"><span class="label-dot"></span><span class="label-text">Web Cluster</span></div></div></div>
+</div>
+</section>
+
+<section id="slide_e6ddf29a" class="slide-section" role="region" aria-label="Slide slide_e6ddf29a" data-image-layout="blank" style="--h1-size: 2.4rem; --h2-size: 2.15rem; --p-size: 1.25rem; --line-height: 1.5; --card-number-size: 1.125rem; --card-text-size: 0.875rem; --section-padding: 2.5rem 3.5rem; --block-gap: 1.5rem; --card-padding: 1.5rem; --heading-gap: 1.5rem">
+<div class="body">
+<h1>Biological Classification</h1>
+<div class="block-separator"></div>
+<div class="columns" data-colwidths="50,50">
+<div class="column" style="flex: 0 0 calc(50% - 1rem);">
+<div class="hierarchy-tree-container"><div class="tree-node">Animalia</div><ul><li><div class="tree-node">Chordata</div><ul><li><div class="tree-node">Mammalia</div></li></ul></li><li><div class="tree-node">Arthropoda</div><ul><li><div class="tree-node">Insecta</div></li></ul></li></ul></div>
+</div>
+<div class="column" style="flex: 0 0 calc(50% - 1rem);">
+<ol class="numbered-list"><li><div class="item-content"><div class="item-title">Kingdom</div><div class="item-desc">The highest level of biological classification.</div></div></li><li><div class="item-content"><div class="item-title">Phylum</div><div class="item-desc">A group of related classes.</div></div></li><li><div class="item-content"><div class="item-title">Class</div><div class="item-desc">A group of related orders.</div></div></li></ol>
+</div>
+</div>
+</div>
+</section>
+    </div>
+
+</body>
+</html>

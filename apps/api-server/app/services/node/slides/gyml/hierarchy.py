@@ -62,10 +62,10 @@ class VisualHierarchy:
                     h1="2.4rem", h2="2.15rem", body="1.25rem", line_height_base=1.5
                 ),
                 spacing=SpacingProfile(
-                    section_padding="2.5rem 3.5rem",
-                    block_gap="1.5rem",
-                    card_gap="1.25rem",
-                    card_padding="1.5rem",
+                    section_padding="1.5rem 2.25rem",  # Further reduced
+                    block_gap="1rem",
+                    card_gap="0.75rem",
+                    card_padding="1.125rem",
                 ),
             )
 
@@ -80,10 +80,10 @@ class VisualHierarchy:
                     line_height_base=1.6,
                 ),
                 spacing=SpacingProfile(
-                    section_padding="3.5rem 4.5rem",
-                    block_gap="2.0rem",
-                    card_gap="1.5rem",
-                    card_padding="1.75rem",
+                    section_padding="2.25rem 3.25rem",  # Further reduced
+                    block_gap="1.5rem",
+                    card_gap="1rem",
+                    card_padding="1.25rem",
                 ),
             )
 
@@ -94,10 +94,10 @@ class VisualHierarchy:
                     h1="3.5rem", h2="3rem", body="1.7rem", card_number="2.2rem"
                 ),
                 spacing=SpacingProfile(
-                    section_padding="4.5rem 5.5rem 7.5rem 5.5rem",  # Extra bottom margin
-                    block_gap="3.0rem",
-                    card_padding="2.5rem",
-                    card_gap="2.0rem",
+                    section_padding="3.25rem 4rem 4rem 4rem",  # Further reduced
+                    block_gap="2.5rem",
+                    card_padding="2rem",
+                    card_gap="1.5rem",
                 ),
             )
 

@@ -14,96 +14,146 @@ from app.services.node.slides.gyml.renderer import GyMLRenderer
 
 def get_test_slides():
     """
-    Test cases designed to hit each density range with diverse content types.
+    Test cases targeting specific density profiles (Impact, Balanced, Dense).
     """
     return [
         {
-            "name": "IMPACT - Formula & Code",
+            "name": "PROFILE: IMPACT (Sparse)",
             "content": {
-                "title": "Quantum Mechanics Base",
-                "intent": "teach",
+                "title": "Topic Introduction",
+                "intent": "introduce",
                 "contentBlocks": [
                     {
-                        "type": "formula_block",
-                        "expression": "E = mc^2",
-                        "variables": [
-                            {"name": "E", "definition": "Energy"},
-                            {"name": "m", "definition": "Mass"},
-                            {"name": "c", "definition": "Speed of Light"},
-                        ],
+                        "type": "intro_paragraph",
+                        "text": "The first generation of computers (1946-1959) relied on vacuum tubes and electromechanical components. These early machines laid the foundation for the digital age despite their size and limitations.",
+                    }
+                ],
+            },
+        },
+        {
+            "name": "PROFILE: BALANCED (Standard)",
+            "content": {
+                "title": "Quantum Mechanics Foundations",
+                "intent": "explain",
+                "contentBlocks": [
+                    {
+                        "type": "intro_paragraph",
+                        "text": "Quantum mechanics is a fundamental theory in physics that provides a description of the physical properties of nature at the scale of atoms and subatomic particles. It is the foundation of all quantum physics including quantum chemistry, quantum field theory, quantum technology, and quantum information science.",
                     },
                     {
-                        "type": "code",
-                        "language": "python",
-                        "code": "import numpy as np\ndef wave_packet(x, t):\n    return np.exp(-x**2) * np.exp(1j * t)",
-                        "variant": "snippet",
+                        "type": "paragraph",
+                        "text": "At its core, it describes a world where probability takes precedence over certainty, and energy is quantized into discrete packets.",
+                    },
+                    {
+                        "type": "smart_layout",
+                        "variant": "cardGridIcon",
+                        "items": [
+                            {
+                                "icon": "ri-lightbulb-line",
+                                "heading": "Wave-Particle Duality",
+                                "text": "Every particle or quantum entity may be described as either a particle or a wave. This is a central concept of quantum mechanics.",
+                            },
+                            {
+                                "icon": "ri-focus-line",
+                                "heading": "Uncertainty Principle",
+                                "text": "It is impossible to know both the position and momentum of a particle with absolute precision.",
+                            },
+                            {
+                                "icon": "ri-links-line",
+                                "heading": "Entanglement",
+                                "text": "Particles can become correlated such that the state of one instantly influences the other.",
+                            },
+                        ],
                     },
                 ],
             },
         },
         {
-            "name": "BALANCED - Table & Diagram",
+            "name": "PROFILE: DENSE (Heavy)",
             "content": {
-                "title": "Cloud Infrastructure",
+                "title": "Detailed Biological Classification",
+                "intent": "explain",
+                "contentBlocks": [
+                    {
+                        "type": "paragraph",
+                        "text": "Biological classification is the scientific method in which biologists group and categorize organisms by biological type, such as genus or species. Modern biological classification has its root in the work of Carl Linnaeus, who grouped species according to shared physical characteristics. These groupings have since been revised to improve consistency with the Darwinian principle of common descent and genetic similarity.",
+                    },
+                    {
+                        "type": "intro_paragraph",
+                        "text": "The hierarchy of biological classification involves eight major taxonomic ranks, each narrower than the one before it. This system allows for global collaboration and precise identification of every living thing discovered on Earth.",
+                    },
+                    {
+                        "type": "smart_layout",
+                        "variant": "cardGrid",
+                        "items": [
+                            {
+                                "heading": "Domain",
+                                "text": "The highest taxonomic rank. There are three domains: Archaea, Bacteria, and Eukarya.",
+                            },
+                            {
+                                "heading": "Kingdom",
+                                "text": "Animalia, Plantae, Fungi, Protista, Archaea, and Bacteria are the primary kingdoms.",
+                            },
+                            {
+                                "heading": "Phylum",
+                                "text": "Groups organisms with a similar body plan, like Chordata or Arthropoda.",
+                            },
+                            {
+                                "heading": "Class",
+                                "text": "A taxonomic rank below phylum. For example, Mammalia or Insecta.",
+                            },
+                            {
+                                "heading": "Order",
+                                "text": "For example, Primates or Lepidoptera. It narrows down the organism type further.",
+                            },
+                            {
+                                "heading": "Family",
+                                "text": "For example, Hominidae or Felidae. Represents closely related genuses.",
+                            },
+                        ],
+                    },
+                    {
+                        "type": "takeaway",
+                        "text": "Taxonomy is a dynamic field that evolves as new genetic data becomes available, reflecting more accurately the evolutionary relationships between living things.",
+                    },
+                    {
+                        "type": "annotation_paragraph",
+                        "text": "Note: Modern phylogenetics often places more weight on DNA sequences than on morpholgical characteristics.",
+                    },
+                ],
+            },
+        },
+        {
+            "name": "PROFILE: WIDE (Table)",
+            "content": {
+                "title": "SQL vs NoSQL Comparison",
                 "intent": "compare",
                 "contentBlocks": [
                     {
                         "type": "comparison_table",
-                        "headers": ["Service", "Type", "Cost"],
+                        "headers": [
+                            "Feature",
+                            "SQL (Relational)",
+                            "NoSQL (Non-Relational)",
+                        ],
                         "rows": [
-                            ["S3", "Storage", "Low"],
-                            ["EC2", "Compute", "Dynamic"],
-                        ],
-                    },
-                    {
-                        "type": "labeled_diagram",
-                        "imageUrl": "placeholder",
-                        "labels": [
-                            {"text": "Load Balancer", "x": 50, "y": 20},
-                            {"text": "Web Cluster", "x": 50, "y": 60},
-                        ],
-                    },
-                ],
-            },
-        },
-        {
-            "name": "DENSE - Hierarchy Tree & List",
-            "content": {
-                "title": "Biological Classification",
-                "intent": "explain",
-                "contentBlocks": [
-                    {
-                        "type": "hierarchy_tree",
-                        "root": {
-                            "label": "Animalia",
-                            "children": [
-                                {
-                                    "label": "Chordata",
-                                    "children": [{"label": "Mammalia"}],
-                                },
-                                {
-                                    "label": "Arthropoda",
-                                    "children": [{"label": "Insecta"}],
-                                },
+                            ["Schema", "Predefined, rigid", "Dynamic, flexible"],
+                            [
+                                "Scaling",
+                                "Vertically scaled (HW)",
+                                "Horizontally scaled (CW)",
                             ],
-                        },
+                            [
+                                "Data Model",
+                                "Tables, Rows, Columns",
+                                "Key-Value, Document, Graph",
+                            ],
+                            ["Queries", "SQL (Complex JOINs)", "NoSQL (Object-based)"],
+                        ],
                     },
                     {
-                        "type": "numbered_list",
-                        "items": [
-                            {
-                                "title": "Kingdom",
-                                "description": "The highest level of biological classification.",
-                            },
-                            {
-                                "title": "Phylum",
-                                "description": "A group of related classes.",
-                            },
-                            {
-                                "title": "Class",
-                                "description": "A group of related orders.",
-                            },
-                        ],
+                        "type": "takeaway",
+                        "text": "The choice depends on the specific use case and data requirements.",
                     },
                 ],
             },
@@ -141,14 +191,18 @@ def run_test():
                 gyml_sections.append(section)
 
             except Exception as e:
+                import traceback
+
                 print(f"FAILED {case['name']}: {str(e)}")
+                traceback.print_exc()
 
     html_output = renderer.render_complete(gyml_sections)
-    with open("density_preview.html", "w", encoding="utf-8") as f:
+    output_path = os.path.join(os.path.dirname(__file__), "density_preview.html")
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_output)
 
     print("=" * 80)
-    print(f"Preview generated: density_preview.html")
+    print(f"Preview generated: {output_path}")
     print("=" * 80)
 
 

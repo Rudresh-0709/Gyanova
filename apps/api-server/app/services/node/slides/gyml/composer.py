@@ -1170,19 +1170,86 @@ class SlideComposer:
         """
         Distribute content into appropriate sections/layouts.
         """
-        # Calculate density early
-        density = SlideFitnessGate._calculate_estimated_height(slide)
+        # 1. Try Sidebar Optimization first (Code/Callout combo)
+        if self._optimize_sidebar_layout(slide):
+            return slide
 
-        # RULE: Medium Density (0.55 - 0.70) OR Super Dense (1.20 - 1.50) -> Force Vertical Stack
-        # Do NOT attempt sidebar optimization (which splits content into columns).
-        if (0.55 <= density <= 0.70) or (1.20 <= density <= 1.50):
-            # Skip optimization, fall through to hierarchy assignment
-            pass
-        # 0. Try Sidebar Optimization first (Code/Callout combo)
-        elif self._optimize_sidebar_layout(slide):
+        # 2. Try Smart Column Reflow for dense slides with narrow blocks
+        if self._reflow_to_columns(slide):
             return slide
 
         return slide
+
+    def _reflow_to_columns(self, slide: ComposedSlide) -> bool:
+        """
+        Reflow sections with exactly 2 narrow content blocks into a 2-column layout.
+        Prevents the "unbalanced" look where narrow content is stacked vertically.
+        """
+        # 1. Density Check (Must be Balanced or higher)
+        density = SlideFitnessGate._calculate_estimated_height(slide)
+        if density < 0.65:
+            return False
+
+        # Find the content section (or the first section with multiple blocks)
+        target_section = None
+        for section in slide.sections:
+            content_blocks = [
+                b
+                for b in section.blocks
+                if b.type
+                not in [
+                    BlockType.HEADING.value,
+                    BlockType.DIVIDER.value,
+                    BlockType.IMAGE.value,
+                ]
+            ]
+            if len(content_blocks) == 2:
+                target_section = section
+                break
+
+        if not target_section:
+            return False
+
+        # 2. Block Type Check (Must be "Narrowable")
+        # Wide blocks like Tables should stay full-width
+        WIDE_BLOCKS = {
+            BlockType.TABLE.value,
+            BlockType.COMPARISON_TABLE.value,
+            BlockType.SPLIT_PANEL.value,
+            BlockType.FORMULA_BLOCK.value,  # Formula can be narrow but usually has text under
+        }
+
+        for b in content_blocks:
+            if b.type in WIDE_BLOCKS:
+                return False
+
+        # 4. Perform Reflow
+        # Remove these blocks from the vertical flow
+        blocks = target_section.blocks
+        other_blocks = [b for b in blocks if b not in content_blocks]
+
+        # Create 2-Column Block
+        columns_block = ComposedBlock(
+            type=BlockType.COLUMNS.value,
+            content={
+                "colwidths": [50, 50],
+                "columns": [
+                    {"blocks": [content_blocks[0]]},
+                    {"blocks": [content_blocks[1]]},
+                ],
+            },
+        )
+
+        # Re-assemble section
+        # Headings stay at top, Columns follow
+        new_blocks = other_blocks + [columns_block]
+        target_section.primary_block = None
+        target_section.secondary_blocks = new_blocks
+
+        # Disable accent image since we filled the horizontal space
+        slide.image_layout = "blank"
+
+        return True
 
     def _count_top_level_content_blocks(self, slide: ComposedSlide) -> int:
         """
@@ -1258,6 +1325,21 @@ class SlideComposer:
         density = SlideFitnessGate._calculate_estimated_height(slide)
         has_image = bool(slide.accent_image_url)
 
+        # Detect wide blocks that shouldn't be squeezed by side images
+        WIDE_BLOCKS = {
+            BlockType.TABLE.value,
+            BlockType.COMPARISON_TABLE.value,
+            BlockType.SPLIT_PANEL.value,
+            BlockType.FORMULA_BLOCK.value,
+            BlockType.HIERARCHY_TREE.value,
+            # Removed CARD_GRID and SMART_LAYOUT as they can be responsive
+        }
+        has_wide_block = any(
+            block.type in WIDE_BLOCKS
+            for section in slide.sections
+            for block in section.blocks
+        )
+
         # 2. Determine Image Strategy
         placement = ImageManager.determine_placement(
             density,
@@ -1265,6 +1347,7 @@ class SlideComposer:
             slide.intent,
             explicit_layout=slide.image_layout,
             slide_index=slide.index,
+            has_wide_block=has_wide_block,
         )
 
         # 3. Apply Strategy

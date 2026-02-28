@@ -31,37 +31,47 @@ class SlideFitnessGate:
         # 1. Word Utilization (250 words for 100% fill)
         word_utilization = slide.total_word_count() / 250
 
-        # 2. Structural Utilization
-        # Different blocks have different "base footprints"
+        # Structural Utilization Heuristics
         BLOCK_WEIGHTS = {
-            "hierarchy_tree": 0.20,
-            "numbered_list": 0.15,
-            "labeled_diagram": 0.20,
+            "hierarchy_tree": 0.10,  # +0.02
+            "numbered_list": 0.08,  # +0.02
+            "labeled_diagram": 0.18,
             "table": 0.15,
-            "split_panel": 0.30,
-            "formula_block": 0.10,
-            "code": 0.25,
-            "card_grid": 0.15,
+            "split_panel": 0.25,
+            "formula_block": 0.10,  # +0.04
+            "code": 0.20,  # +0.05
+            "card_grid": 0.12,
+        }
+        ITEM_WEIGHTS = {
+            "hierarchy_tree": 0.02,
+            "numbered_list": 0.015,
+            "card_grid": 0.015,
+            "table": 0.01,
         }
 
-        # Individual item costs (when items > 1)
-        ITEM_WEIGHTS = {
-            "hierarchy_tree": 0.05,
-            "numbered_list": 0.04,
-            "card_grid": 0.03,
-            "table": 0.02,
-        }
+        def get_block_weight(block: Any) -> float:
+            """Recursive weight calculation for nested blocks."""
+            weight = 0.0
+            if block.type == "columns":
+                # Sum weights of all nested blocks
+                for col in block.content.get("columns", []):
+                    for nested in col.get("blocks", []):
+                        weight += get_block_weight(nested)
+                return weight + 0.05  # Small container overhead
+
+            # Base weight
+            weight += BLOCK_WEIGHTS.get(block.type, 0.08)
+
+            # Extra weight for internal items
+            count = block.item_count()
+            if count > 1:
+                weight += count * ITEM_WEIGHTS.get(block.type, 0.03)
+            return weight
 
         structural_score = 0
         for section in slide.sections:
-            for block in section.blocks + section.secondary_blocks:
-                # Add base weight for the block type
-                structural_score += BLOCK_WEIGHTS.get(block.type, 0.08)
-
-                # Add extra weight for internal items
-                count = block.item_count()
-                if count > 1:
-                    structural_score += count * ITEM_WEIGHTS.get(block.type, 0.03)
+            for block in section.blocks:
+                structural_score += get_block_weight(block)
 
         # 3. Image Impact
         image_utilization = 0.35 if slide.accent_image_url else 0.0
