@@ -155,6 +155,8 @@ class ComposedSlide:
     accent_image_alt: Optional[str] = None
     image_layout: str = "blank"  # ImageLayout value
     index: int = 0  # Slide index
+    topic: Optional[str] = None
+    image_prompt: Optional[str] = None
 
     # Visual Hierarchy Rules (Assigned by Composer)
     hierarchy: Optional[VisualHierarchy] = None
@@ -193,7 +195,6 @@ class ComposedSlide:
 # GYML NODE TYPES (Spec-Compliant)
 # =============================================================================
 
-# Type alias for any GyML node
 GyMLNode = Union[
     "GyMLHeading",
     "GyMLParagraph",
@@ -211,6 +212,7 @@ GyMLNode = Union[
     "GyMLHierarchyTree",
     "GyMLSplitPanel",
     "GyMLFormulaBlock",
+    "GyMLHubAndSpoke",
 ]
 
 
@@ -502,3 +504,25 @@ class GyMLFormulaBlock:
     expression: str
     variables: List[GyMLFormulaVariable] = field(default_factory=list)
     example: Optional[str] = None
+
+
+@dataclass
+class GyMLHubAndSpokeItem:
+    """Item for Hub and Spoke layout."""
+
+    label: str
+    description: Optional[str] = None
+    color: Optional[str] = None  # CSS color override
+    icon: Optional[str] = None  # RemixIcon class
+
+
+@dataclass
+class GyMLHubAndSpoke:
+    """
+    Hub and Spoke visualization element.
+    High density, circular arrangement of hexagon-style nodes.
+    """
+
+    hub_label: str
+    items: List[GyMLHubAndSpokeItem]
+    variant: str = "hexagon"

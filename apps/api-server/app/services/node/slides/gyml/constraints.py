@@ -61,6 +61,7 @@ class ConstraintRules:
         "solidBoxesWithIconsInside": LayoutLimits(
             min_items=2, max_items=4, max_words_per_item=20
         ),
+        "hub_and_spoke": LayoutLimits(min_items=4, max_items=6, max_words_per_item=80),
     }
 
     @classmethod

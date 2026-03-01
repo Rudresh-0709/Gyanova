@@ -41,6 +41,7 @@ class SlideFitnessGate:
             "formula_block": 0.10,  # +0.04
             "code": 0.20,  # +0.05
             "card_grid": 0.12,
+            "hub_and_spoke": 0.55,
         }
         ITEM_WEIGHTS = {
             "hierarchy_tree": 0.02,

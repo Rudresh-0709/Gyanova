@@ -70,6 +70,14 @@ full_builder.add_node("rendering_node", rendering_node)
 full_builder.add_node("audio_generation_node", audio_generation_node)
 
 
+def join_node(state: TutorState):
+    """Synchronization point for parallel nodes."""
+    return state
+
+
+full_builder.add_node("join_node", join_node)
+
+
 def should_continue(state: TutorState):
     """Router: check if there are still slides left to generate."""
     sub_topics = state.get("sub_topics", [])
@@ -92,12 +100,18 @@ def should_continue(state: TutorState):
 # Workflow definition
 full_builder.set_entry_point("content_generation_node")
 full_builder.add_edge("content_generation_node", "intro_narration_node")
-full_builder.add_edge("intro_narration_node", "rendering_node")
-full_builder.add_edge("rendering_node", "audio_generation_node")
 
-# Routing logic after audio generation
+# Fork: Run Rendering and Audio in parallel
+full_builder.add_edge("intro_narration_node", "rendering_node")
+full_builder.add_edge("intro_narration_node", "audio_generation_node")
+
+# Join: Both must complete before continuing
+full_builder.add_edge("rendering_node", "join_node")
+full_builder.add_edge("audio_generation_node", "join_node")
+
+# Routing logic after joining
 full_builder.add_conditional_edges(
-    "audio_generation_node",
+    "join_node",
     should_continue,
     {"continue": "content_generation_node", "end": END},
 )

@@ -541,6 +541,32 @@ class GyMLSerializer:
                 expression=expression, variables=variables, example=example
             )
 
+        # Hub and Spoke block
+        elif block_type == BlockType.HUB_AND_SPOKE.value:
+            from .definitions import GyMLHubAndSpokeItem
+
+            hub_label = content.get("hub_label", content.get("title", "Core"))
+            items_data = content.get("items", [])
+            items = []
+            for item in items_data:
+                if isinstance(item, dict):
+                    items.append(
+                        GyMLHubAndSpokeItem(
+                            label=item.get("label", ""),
+                            description=item.get("description", item.get("text", "")),
+                            color=item.get("color"),
+                            icon=item.get("icon"),
+                        )
+                    )
+                else:
+                    items.append(GyMLHubAndSpokeItem(label=str(item)))
+
+            return GyMLHubAndSpoke(
+                hub_label=hub_label,
+                items=items,
+                variant=content.get("variant", "hexagon"),
+            )
+
         # Unknown block type - try to extract text
         else:
             text = content.get("text", str(content))

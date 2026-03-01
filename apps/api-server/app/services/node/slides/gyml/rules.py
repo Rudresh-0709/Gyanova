@@ -44,6 +44,7 @@ BLOCK_GRAMMAR_MAPPING: Dict[str, List[str]] = {
         BlockType.SMART_LAYOUT.value,
         BlockType.COLUMNS.value,
         BlockType.STATS.value,
+        BlockType.HUB_AND_SPOKE.value,
     ],
     "supplementary": [
         BlockType.ANNOTATION_PARAGRAPH.value,
@@ -151,6 +152,7 @@ PRIMARY_BLOCKS: Set[str] = {
     BlockType.CODE.value,
     BlockType.DIAGRAM.value,
     BlockType.TABLE.value,
+    BlockType.HUB_AND_SPOKE.value,
 }
 
 # Supporting blocks - can be added alongside primary

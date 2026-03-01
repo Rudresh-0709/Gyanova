@@ -25,12 +25,13 @@ Directory structure:
           └── full.mp3            (paragraph — single file)
 """
 
+import asyncio
 import os
 import re
 import sys
 from typing import Dict, Any, List
 from pathlib import Path
-from openai import OpenAI
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
 try:
@@ -159,14 +160,16 @@ def ensure_dir(path: Path) -> Path:
     return path
 
 
-def generate_audio(client: OpenAI, text: str, filepath: Path, voice: str) -> str:
+async def generate_audio(
+    client: AsyncOpenAI, text: str, filepath: Path, voice: str
+) -> str:
     """
     Generate an audio file from text using OpenAI TTS.
 
     Returns:
         The string path of the saved audio file.
     """
-    response = client.audio.speech.create(
+    response = await client.audio.speech.create(
         model=TTS_MODEL,
         voice=voice,
         input=text,
@@ -181,15 +184,15 @@ def generate_audio(client: OpenAI, text: str, filepath: Path, voice: str) -> str
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
+async def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     Incremental Audio Generation Node (Slide-level).
     Processes:
     1. Lesson intro (once)
-    2. Audio for any slides that have html_content but no narration_segments yet.
+    2. Audio for any slides that have narration_text but no narration_segments yet.
     3. Marks a subtopic as processed when ALL its slides have audio.
     """
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     voice = get_voice(state)
 
     # Resolve output directory
@@ -208,7 +211,7 @@ def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
         text = lesson_intro["narration_text"]
         filepath = output_dir / "lesson_intro.mp3"
         try:
-            path = generate_audio(client, text, filepath, voice)
+            path = await generate_audio(client, text, filepath, voice)
             state["lesson_intro_narration"]["audio_url"] = path
             state["lesson_intro_narration"]["narration_segments"] = [
                 {"text": text, "audio_url": path, "segment_index": 0}
@@ -225,8 +228,8 @@ def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
     for sid, slide_list in slides.items():
         for i, slide in enumerate(slide_list):
-            # Skip slides that already have audio or don't have HTML yet
-            if slide.get("narration_segments") or not slide.get("html_content"):
+            # Skip slides that already have audio
+            if slide.get("narration_segments"):
                 continue
 
             narration_text = slide.get("narration_text")
@@ -245,7 +248,7 @@ def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 filename = f"segment_{seg_idx + 1}.mp3" if is_segmented else "full.mp3"
                 filepath = slide_dir / filename
                 try:
-                    path = generate_audio(client, segment_text, filepath, voice)
+                    path = await generate_audio(client, segment_text, filepath, voice)
                     narration_segments.append(
                         {
                             "text": segment_text,

@@ -155,6 +155,7 @@ class BlockType(Enum):
     HIERARCHY_TREE = "hierarchy_tree"
     SPLIT_PANEL = "split_panel"
     FORMULA_BLOCK = "formula_block"
+    HUB_AND_SPOKE = "hub_and_spoke"
 
     # Supporting blocks
     CALLOUT = "callout"

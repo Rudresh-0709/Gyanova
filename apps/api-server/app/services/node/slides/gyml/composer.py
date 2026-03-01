@@ -191,6 +191,14 @@ class SlideComposer:
         if "layout" in content:
             main_concept["layout"] = content["layout"]
 
+        if "imagePrompt" in content:
+            main_concept["image_prompt"] = content["imagePrompt"]
+
+        if "topic" in content:
+            main_concept["topic"] = content["topic"]
+        elif "subtopic" in content:
+            main_concept["topic"] = content["subtopic"]
+
         # Extract blocks from various content structures
         if "points" in content:
             points = content["points"]
@@ -382,6 +390,10 @@ class SlideComposer:
                     accent_image = image
             if "layout" in concept:
                 explicit_layout = concept["layout"]
+            if "image_prompt" in concept:
+                image_prompt = concept["image_prompt"]
+            if "topic" in concept:
+                topic = concept["topic"]
 
         return ComposedSlide(
             id=slide_id,
@@ -392,6 +404,8 @@ class SlideComposer:
             accent_image_alt=None,
             image_layout=explicit_layout,  # Default to None so ImageManager can decide
             index=index,  # Slide index for alternating layout logic
+            topic=topic,
+            image_prompt=image_prompt,
         )
 
     def _create_fallback_slide(self, content: Dict[str, Any]) -> ComposedSlide:
@@ -1370,7 +1384,7 @@ class SlideComposer:
         else:
             slide.image_layout = "blank"
 
-        # 4. Final Hard Validation
+        # 5. Final Hard Validation
         # If density is still critical < 0.25, we should technically fail.
         # Ideally, we would raise FitnessException here and catch it in compose()
         # to try a fallback strategy.
