@@ -197,6 +197,88 @@
                     },
                     {
                         "type": "object",
+                        "title": "Process Arrow Block",
+                        "properties": {
+                            "type": {
+                                "const": "process_arrow_block"
+                            },
+                            "items": {
+                                "type": "array",
+                                "minItems": 2,
+                                "maxItems": 4,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "label": {
+                                            "type": "string",
+                                            "description": "Short label for the process step (3-5 words)"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "Short explanation below the arrow (10-15 words)"
+                                        },
+                                        "imagePrompt": {
+                                            "type": "string",
+                                            "description": "Vivid, atmospheric prompt for a simple drawing/art representing this step. No words in the image."
+                                        },
+                                        "color": {
+                                            "type": "string",
+                                            "description": "Hex color for this step"
+                                        }
+                                    },
+                                    "required": [
+                                        "label",
+                                        "imagePrompt"
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "items"
+                        ]
+                    },
+                    {
+                        "type": "object",
+                        "title": "Cyclic Process Block",
+                        "properties": {
+                            "type": {
+                                "const": "cyclic_process_block"
+                            },
+                            "items": {
+                                "type": "array",
+                                "minItems": 2,
+                                "maxItems": 4,
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "label": {
+                                            "type": "string",
+                                            "description": "Short title (3-5 words)"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "description": "Short explanation (8-12 words)"
+                                        },
+                                        "imagePrompt": {
+                                            "type": "string",
+                                            "description": "Vivid prompt for a simple drawing. No words."
+                                        }
+                                    },
+                                    "required": [
+                                        "label",
+                                        "imagePrompt"
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "items"
+                        ]
+                    },
+                    {
+                        "type": "object",
                         "title": "Timeline (Legacy Format)",
                         "properties": {
                             "type": {

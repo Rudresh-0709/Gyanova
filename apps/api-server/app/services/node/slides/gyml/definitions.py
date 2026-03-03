@@ -12,6 +12,7 @@ from typing import List, Optional, Dict, Any, Union, Literal
 from enum import Enum
 
 from .hierarchy import VisualHierarchy
+from .constants import BlockType
 
 
 # =============================================================================
@@ -195,6 +196,62 @@ class ComposedSlide:
 # GYML NODE TYPES (Spec-Compliant)
 # =============================================================================
 
+
+@dataclass
+class GyMLCyclicItem:
+    """Item for CyclicBlock."""
+
+    label: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+
+
+@dataclass
+class GyMLCyclicBlock:
+    """
+    Cyclic visualization element.
+    """
+
+    items: List[GyMLCyclicItem]
+    hub_label: Optional[str] = None
+    variant: str = "chevron"
+
+
+@dataclass
+class GyMLProcessArrowItem:
+    """Item for horizontal interlocking process arrow."""
+
+    label: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    color: Optional[str] = None
+
+
+@dataclass
+class GyMLProcessArrowBlock:
+    """
+    Horizontal process visualization with interlocking arrows
+    and images above each step.
+    """
+
+    items: List[GyMLProcessArrowItem]
+    type: str = BlockType.PROCESS_ARROW_BLOCK
+    variant: str = "default"
+
+
+@dataclass
+class GyMLCyclicProcessItem:
+    label: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+
+
+@dataclass
+class GyMLCyclicProcessBlock:
+    items: List[GyMLCyclicProcessItem]
+    type: str = BlockType.CYCLIC_PROCESS_BLOCK
+
+
 GyMLNode = Union[
     "GyMLHeading",
     "GyMLParagraph",
@@ -213,6 +270,11 @@ GyMLNode = Union[
     "GyMLSplitPanel",
     "GyMLFormulaBlock",
     "GyMLHubAndSpoke",
+    "GyMLCyclicBlock",
+    "GyMLProcessArrowBlock",
+    "GyMLSequentialOutput",
+    "GyMLCyclicProcessBlock",
+    "GyMLFeatureShowcaseBlock",
 ]
 
 
@@ -526,3 +588,50 @@ class GyMLHubAndSpoke:
     hub_label: str
     items: List[GyMLHubAndSpokeItem]
     variant: str = "hexagon"
+
+
+@dataclass
+class GyMLCyclicItem:
+    """Item for Cyclic Block layout."""
+
+    label: str
+    description: Optional[str] = None
+    icon: Optional[str] = None  # RemixIcon class
+    color: Optional[str] = None  # CSS color override
+
+
+@dataclass
+class GyMLCyclicBlock:
+    """
+    Cyclic diagram element.
+    Shows a continuous process in a circle with attached info.
+    """
+
+    items: List[GyMLCyclicItem]
+    hub_label: Optional[str] = None
+    variant: str = "cycle"
+
+
+@dataclass
+class GyMLFeatureShowcaseItem:
+    """Item for Feature Showcase layout."""
+
+    label: str
+    description: Optional[str] = None
+    icon: Optional[str] = None  # RemixIcon class (e.g. "settings", "shield-check")
+    color: Optional[str] = None  # CSS color
+
+
+@dataclass
+class GyMLFeatureShowcaseBlock:
+    """
+    Feature Showcase visualization element.
+    Central image flanked by sub-features with Remix Icons.
+    Used for features, limitations, roles & responsibilities, etc.
+    """
+
+    title: str  # Central label (shown beneath the image)
+    items: List[GyMLFeatureShowcaseItem]
+    image_url: Optional[str] = None  # Leonardo-generated image URL
+    image_prompt: Optional[str] = None  # Prompt for image generation
+    type: str = BlockType.FEATURE_SHOWCASE_BLOCK

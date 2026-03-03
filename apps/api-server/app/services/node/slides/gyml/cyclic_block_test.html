@@ -1990,18 +1990,154 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
 .spoke-item[data-index="4"] .hexagon { background: #c0392b; } 
 .spoke-item[data-index="5"] .hexagon { background: #3498db; }
 
+/* ================================================
+   CYCLIC BLOCK (SVG Arc-Sector Wheel)
+   3-column flex layout: left-col | svg-wheel | right-col
+   ================================================ */
+
+.cyclic-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 520px;
+    flex: 1;
+    padding: 1rem 0;
+    overflow: visible;
+}
+
+.cyclic-main-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+/* SVG takes fixed square space */
+.cyclic-svg-wrapper {
+    flex-shrink: 0;
+    width: min(440px, 42vw);
+    height: min(440px, 42vw);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.cyclic-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Info columns */
+.cyclic-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2rem;
+    max-width: 260px;
+    padding-bottom: 40px;
+}
+
+.cyclic-col.spacer {
+    visibility: hidden;
+}
+
+.cyclic-bottom-area {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+    padding: 0 2rem;
+}
+
+.cyclic-bottom-area .cyclic-info-box {
+    max-width: 280px;
+    flex: 1;
+    min-width: 200px;
+    text-align: center;
+    border-left: none;
+    border-top: 3px solid var(--item-color, #1a1a1a);
+}
+
+.cyclic-col--left {
+    text-align: right;
+    align-items: flex-end;
+}
+
+.cyclic-col--right {
+    text-align: left;
+    align-items: flex-start;
+}
+
+/* Info box */
+.cyclic-info-box {
+    padding: 0;
+    background: transparent;
+    border-left: none;
+    border-right: none;
+}
+
+.cyclic-col--left .cyclic-info-box {
+    border-right: 3px solid var(--item-color, #1e3a5f);
+    padding-right: 0.875rem;
+}
+
+.cyclic-col--right .cyclic-info-box {
+    border-left: 3px solid var(--item-color, #1e3a5f);
+    padding-left: 0.875rem;
+}
+
+.cyclic-ib-title {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary, #1a1a1a);
+    margin-bottom: 0.25rem;
+    line-height: 1.3;
+}
+
+.cyclic-ib-text {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary, #555);
+    line-height: 1.5;
+}
+
+/* Animation */
+section[data-animated="true"] .cyclic-info-box[data-segment] {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0s 0.5s;
+}
+
+
+
+
 /* Responsive Scaling */
+
 @media (max-width: 1000px) {
-    .spokes-wrapper {
+    .spokes-wrapper, .cyclic-items-wrapper {
+        transform: scale(0.8);
+    }
+    .cyclic-track {
         transform: scale(0.8);
     }
 }
 @media (max-width: 768px) {
-    .hub-and-spoke-container {
+    .hub-and-spoke-container, .cyclic-container {
         transform: scale(0.6);
         padding: 1rem;
     }
-    .spoke-info-box {
+    .spoke-info-box, .cyclic-info-box {
         display: none; /* Hide boxes on mobile to prevent clutter */
     }
 }
@@ -2068,32 +2204,57 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
 </head>
 <body>
     <div class="gyml-deck">
-<section id="test-sequential" class="slide-section" role="region" aria-label="Slide test-sequential" data-image-layout="blank" style="--h1-size: 2.4rem; --h2-size: 2.15rem; --p-size: 1.25rem; --line-height: 1.5; --card-number-size: 1.125rem; --card-text-size: 0.875rem; --section-padding: 1.5rem 2.25rem; --block-gap: 1rem; --card-padding: 1.125rem; --heading-gap: 1rem">
+<section id="test_3" class="slide-section" role="region" aria-label="Slide test_3" data-image-layout="blank">
 <div class="body">
-<h1>Strategic Conclusion Process</h1>
-<p class="p-intro">This workflow illustrates the standard method for aggregating SWOT findings into actionable intelligence.</p>
-<div class="block-separator"></div>
-<div class="smart-layout" data-variant="sequentialSteps" data-item-count="3">
-<div class="card" data-index="0">
-<div class="card-content">
-<h4 class="card-title">Single strength/weakness</h4>
-<p class="card-text">Initial focused analysis on a single internal factor to understand immediate constraints or advantages.</p>
+<h1>The Learning Loop</h1>
+<div class="cyclic-container" data-variant="cycle" data-item-count="3"><div class="cyclic-main-row"><div class="cyclic-col cyclic-col--left"><div class="cyclic-info-box" style="--item-color:#e74c3c;"><strong class="cyclic-ib-title">Reflect</strong><p class="cyclic-ib-text">Analyze outcomes and identify areas for improvement.</p></div></div><div class="cyclic-svg-wrapper"><svg class="cyclic-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs></defs>
+<path d="M 250.000,70.000 A 180,180 0 0,1 411.783,328.907 L 353.150,324.943 L 317.410,282.878 A 75,75 0 0,0 250.000,175.000 L 272.140,124.437 Z" fill="#3498db" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="342.1" y="166.4" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-book-open-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 405.885,340.000 A 180,180 0 0,1 100.773,350.655 L 133.523,301.859 L 187.822,291.939 A 75,75 0 0,0 314.952,287.500 L 347.671,331.955 Z" fill="#2ecc71" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="238.4" y="361.4" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-hammer-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 94.115,340.000 A 180,180 0 0,1 237.444,70.438 L 263.327,123.198 L 244.768,175.183 A 75,75 0 0,0 185.048,287.500 L 130.189,293.608 Z" fill="#e74c3c" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="121.4" y="174.1" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-brain-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<circle cx="250" cy="250" r="69" fill="#0d1b2a" stroke="#1e3a5f" stroke-width="3"/><text x="250" y="250" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="800" fill="white" font-family="Inter,sans-serif" letter-spacing="-0.5">Grow</text>
+</svg></div><div class="cyclic-col cyclic-col--right"><div class="cyclic-info-box" style="--item-color:#3498db;"><strong class="cyclic-ib-title">Learn</strong><p class="cyclic-ib-text">Acquire new knowledge and theoretical foundations.</p></div></div></div><div class="cyclic-bottom-area"><div class="cyclic-info-box" style="--item-color:#2ecc71;"><strong class="cyclic-ib-title">Practice</strong><p class="cyclic-ib-text">Apply knowledge to real-world problems and projects.</p></div></div></div>
 </div>
+</section>
+
+<section id="test_4" class="slide-section" role="region" aria-label="Slide test_4" data-image-layout="blank">
+<div class="body">
+<h1>Product Development Cycle</h1>
+<div class="cyclic-container" data-variant="cycle" data-item-count="4"><div class="cyclic-main-row"><div class="cyclic-col cyclic-col--left"><div class="cyclic-info-box" style="--item-color:#e67e22;"><strong class="cyclic-ib-title">Develop</strong><p class="cyclic-ib-text">Build robust software following engineering best practices.</p></div><div class="cyclic-info-box" style="--item-color:#1abc9c;"><strong class="cyclic-ib-title">Deploy</strong><p class="cyclic-ib-text">Release to production and monitor initial performance.</p></div></div><div class="cyclic-svg-wrapper"><svg class="cyclic-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs></defs>
+<path d="M 250.000,70.000 A 180,180 0 0,1 429.562,237.444 L 376.802,263.327 L 324.817,244.768 A 75,75 0 0,0 250.000,175.000 L 272.140,124.437 Z" fill="#34495e" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="321.0" y="140.8" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-search-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 430.000,250.000 A 180,180 0 0,1 262.556,429.562 L 236.673,376.802 L 255.232,324.817 A 75,75 0 0,0 325.000,250.000 L 375.563,272.140 Z" fill="#9b59b6" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="327.2" y="321.0" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-pen-nib-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 250.000,430.000 A 180,180 0 0,1 70.438,262.556 L 123.198,236.673 L 175.183,255.232 A 75,75 0 0,0 250.000,325.000 L 227.860,375.563 Z" fill="#e67e22" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="147.0" y="327.2" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-code-s-slash-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 70.000,250.000 A 180,180 0 0,1 237.444,70.438 L 263.327,123.198 L 244.768,175.183 A 75,75 0 0,0 175.000,250.000 L 124.437,227.860 Z" fill="#1abc9c" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="140.8" y="147.0" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-rocket-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<circle cx="250" cy="250" r="69" fill="#0d1b2a" stroke="#1e3a5f" stroke-width="3"/><text x="250" y="250" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="800" fill="white" font-family="Inter,sans-serif" letter-spacing="-0.5">Agile</text>
+</svg></div><div class="cyclic-col cyclic-col--right"><div class="cyclic-info-box" style="--item-color:#34495e;"><strong class="cyclic-ib-title">Discover</strong><p class="cyclic-ib-text">Research user needs and identify market opportunities.</p></div><div class="cyclic-info-box" style="--item-color:#9b59b6;"><strong class="cyclic-ib-title">Design</strong><p class="cyclic-ib-text">Create prototypes and validate solutions with users.</p></div></div></div></div>
 </div>
-<div class="card" data-index="1">
-<div class="card-content">
-<h4 class="card-title">Multiple opportunities/threats</h4>
-<p class="card-text">Broaden scope to external factors, scanning the environment for multiple vectors of impact.</p>
-</div>
-</div>
-<div class="card" data-index="2">
-<div class="card-content">
-<h4 class="card-title">Multiple strengths/weaknesses</h4>
-<p class="card-text">Comprehensive internal audit comparing competing resource strengths and structural weaknesses.</p>
-</div>
-</div>
-</div>
-<p class="p-outro">The above sequence demonstrates that increasing complexity in analysis leads directly to more robust strategic options.</p>
+</section>
+
+<section id="test_5" class="slide-section" role="region" aria-label="Slide test_5" data-image-layout="blank">
+<div class="body">
+<h1>Design Thinking Process</h1>
+<div class="cyclic-container" data-variant="cycle" data-item-count="5"><div class="cyclic-main-row"><div class="cyclic-col cyclic-col--left"><div class="cyclic-info-box" style="--item-color:#8e44ad;"><strong class="cyclic-ib-title">Prototype</strong><p class="cyclic-ib-text">Build scaled-down versions of the product to investigate ideas.</p></div><div class="cyclic-info-box" style="--item-color:#c0392b;"><strong class="cyclic-ib-title">Test</strong><p class="cyclic-ib-text">Return to the users with prototypes to get feedback and refine.</p></div></div><div class="cyclic-svg-wrapper"><svg class="cyclic-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs></defs>
+<path d="M 250.000,70.000 A 180,180 0 0,1 416.893,182.571 L 374.714,223.491 L 319.539,221.905 A 75,75 0 0,0 250.000,175.000 L 272.140,124.437 Z" fill="#16a085" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="305.3" y="128.3" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-user-heart-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 421.190,194.377 A 180,180 0 0,1 365.702,387.888 L 313.750,360.418 L 298.209,307.453 A 75,75 0 0,0 321.329,226.824 L 376.259,232.255 Z" fill="#27ae60" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="356.6" y="269.1" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-focus-3-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 355.801,395.623 A 180,180 0 0,1 154.615,402.649 L 164.686,344.751 L 210.256,313.604 A 75,75 0 0,0 294.084,310.676 L 305.892,364.596 Z" fill="#2980b9" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="238.4" y="361.4" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-lightbulb-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 144.199,395.623 A 180,180 0 0,1 75.347,206.454 L 133.523,198.141 L 177.228,231.856 A 75,75 0 0,0 205.916,310.676 L 158.284,338.569 Z" fill="#8e44ad" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="114.2" y="277.6" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-mickey-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 78.810,194.377 A 180,180 0 0,1 237.444,70.438 L 263.327,123.198 L 244.768,175.183 A 75,75 0 0,0 178.671,226.824 L 137.424,190.142 Z" fill="#c0392b" stroke="#1e3a5f" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="155.5" y="133.5" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-test-tube-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<circle cx="250" cy="250" r="69" fill="#0d1b2a" stroke="#1e3a5f" stroke-width="3"/>
+</svg></div><div class="cyclic-col cyclic-col--right"><div class="cyclic-info-box" style="--item-color:#16a085;"><strong class="cyclic-ib-title">Empathize</strong><p class="cyclic-ib-text">Understand the user&#x27;s emotions, needs, and motivations deeply.</p></div><div class="cyclic-info-box" style="--item-color:#27ae60;"><strong class="cyclic-ib-title">Define</strong><p class="cyclic-ib-text">Synthesize findings to form a clear problem statement.</p></div></div></div><div class="cyclic-bottom-area"><div class="cyclic-info-box" style="--item-color:#2980b9;"><strong class="cyclic-ib-title">Ideate</strong><p class="cyclic-ib-text">Brainstorm a wide range of creative and radical solutions.</p></div></div></div>
 </div>
 </section>
     </div>

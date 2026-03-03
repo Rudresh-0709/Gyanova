@@ -34,6 +34,10 @@ from .definitions import (
     GyMLHierarchyTree,
     GyMLSplitPanel,
     GyMLFormulaBlock,
+    GyMLProcessArrowBlock,
+    GyMLProcessArrowItem,
+    GyMLFeatureShowcaseBlock,
+    GyMLFeatureShowcaseItem,
     GyMLNode,
 )
 from .constants import (
@@ -565,6 +569,74 @@ class GyMLSerializer:
                 hub_label=hub_label,
                 items=items,
                 variant=content.get("variant", "hexagon"),
+            )
+
+        # Process Arrow block
+        elif block_type == BlockType.PROCESS_ARROW_BLOCK.value:
+            from .definitions import GyMLProcessArrowItem
+
+            items_data = content.get("items", [])
+            items = []
+            for item in items_data:
+                if isinstance(item, dict):
+                    items.append(
+                        GyMLProcessArrowItem(
+                            label=item.get("label", ""),
+                            description=item.get("description"),
+                            image_url=item.get(
+                                "image_url",
+                                item.get("imageUrl", item.get("imagePrompt")),
+                            ),
+                            color=item.get("color"),
+                        )
+                    )
+            return GyMLProcessArrowBlock(items=items)
+
+        # Cyclic Process block
+        elif block_type == BlockType.CYCLIC_PROCESS_BLOCK.value:
+            from .definitions import GyMLCyclicProcessItem
+
+            items_data = content.get("items", [])
+            items = []
+            for item in items_data:
+                if isinstance(item, dict):
+                    items.append(
+                        GyMLCyclicProcessItem(
+                            label=item.get("label", ""),
+                            description=item.get("description"),
+                            # Store imagePrompt in image_url for the generator to pick it up
+                            image_url=item.get(
+                                "image_url",
+                                item.get("imageUrl", item.get("imagePrompt")),
+                            ),
+                        )
+                    )
+            return GyMLCyclicProcessBlock(items=items)
+
+        # Feature Showcase block
+        elif block_type == BlockType.FEATURE_SHOWCASE_BLOCK.value:
+            title = content.get("title", content.get("hub_label", "Features"))
+            image_url = content.get("image_url", content.get("imageUrl"))
+            image_prompt = content.get("image_prompt", content.get("imagePrompt"))
+            items_data = content.get("items", [])
+            items = []
+            for item in items_data:
+                if isinstance(item, dict):
+                    items.append(
+                        GyMLFeatureShowcaseItem(
+                            label=item.get("label", ""),
+                            description=item.get("description", item.get("text", "")),
+                            icon=item.get("icon"),
+                            color=item.get("color"),
+                        )
+                    )
+                else:
+                    items.append(GyMLFeatureShowcaseItem(label=str(item)))
+            return GyMLFeatureShowcaseBlock(
+                title=title,
+                items=items,
+                image_url=image_url,
+                image_prompt=image_prompt,
             )
 
         # Unknown block type - try to extract text

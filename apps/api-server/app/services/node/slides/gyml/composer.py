@@ -1348,6 +1348,10 @@ class SlideComposer:
             BlockType.SPLIT_PANEL.value,
             BlockType.FORMULA_BLOCK.value,
             BlockType.HIERARCHY_TREE.value,
+            BlockType.HUB_AND_SPOKE.value,
+            BlockType.CYCLIC_BLOCK.value,
+            BlockType.PROCESS_ARROW_BLOCK.value,
+            BlockType.CYCLIC_PROCESS_BLOCK.value,
             # Removed CARD_GRID and SMART_LAYOUT as they can be responsive
         }
         has_wide_block = any(

@@ -11,6 +11,7 @@ try:
     from .slides.gyml.renderer import GyMLRenderer
     from .slides.gyml.theme import get_theme
     from .slides.gyml.image_generator import ImageGenerator
+    from .slides.gyml.constants import BlockType
 except ImportError:
     # Use relative imports if running as package
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -20,6 +21,7 @@ except ImportError:
     from services.node.slides.gyml.renderer import GyMLRenderer
     from services.node.slides.gyml.theme import get_theme
     from services.node.slides.gyml.image_generator import ImageGenerator
+    from services.node.slides.gyml.constants import BlockType
 
 
 async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -85,7 +87,38 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     topic=s_obj.topic or "Educational content",
                 )
                 generation_tasks.append(task)
-                task_to_slide.append(s_obj)
+                task_to_slide.append((s_obj, None))  # (object, optional_item_dict)
+
+            # Block-level Multi-image (e.g., Process Arrow)
+            for section in s_obj.sections:
+                # Combine primary and secondary blocks
+                blocks = section.secondary_blocks + (
+                    [section.primary_block] if section.primary_block else []
+                )
+                for block in blocks:
+                    if block.type in {
+                        BlockType.PROCESS_ARROW_BLOCK.value,
+                        BlockType.CYCLIC_PROCESS_BLOCK.value,
+                    }:
+                        items = block.content.get("items", [])
+                        for item in items:
+                            prompt = item.get("imagePrompt")
+                            if prompt and (
+                                not item.get("image_url")
+                                or item.get("image_url") == "null"
+                            ):
+                                print(
+                                    f"   🎨 [Rendering Node] Item Image Gen for {block.type}"
+                                )
+                                # Use "simple_drawing" style as requested
+                                task = ImageGenerator.generate_image(
+                                    prompt=prompt,
+                                    width=512,
+                                    height=512,
+                                    style="simple_drawing",
+                                )
+                                generation_tasks.append(task)
+                                task_to_slide.append((block, item))
 
     # Run image generations concurrently
     if generation_tasks:
@@ -94,14 +127,20 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
         )
         results = await asyncio.gather(*generation_tasks)
 
-        # Map results back to ComposedSlide objects
-        for s_obj, url in zip(task_to_slide, results):
+        # Map results back to ComposedSlide or Item dicts
+        for (target, item), url in zip(task_to_slide, results):
             if url:
-                s_obj.accent_image_url = url
-                s_obj.accent_image_alt = f"Generated image for {s_obj.topic}"
-                print(f"   ✅ Image generated for {s_obj.id}")
+                if item:
+                    # Target is a block, we update the item dict inside it
+                    item["image_url"] = url
+                    print(f"   ✅ Item image generated for {target.type}")
+                else:
+                    # Target is a ComposedSlide (accent image)
+                    target.accent_image_url = url
+                    target.accent_image_alt = f"Generated image for {target.topic}"
+                    print(f"   ✅ Accent image generated for {target.id}")
             else:
-                print(f"   ⚠ Image generation failed for {s_obj.id}")
+                print(f"   ⚠ Image generation failed for a target")
 
     # 4. Step Three: Final Serialization and Rendering
     rendered_count = 0

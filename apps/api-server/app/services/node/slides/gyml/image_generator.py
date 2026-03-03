@@ -24,6 +24,25 @@ class ImageGenerator:
     DYNAMIC_STYLE_UUID = "111dc692-d470-4eec-b791-3475abac4c46"
 
     @classmethod
+    async def generate_image(
+        cls, prompt: str, width: int = 1024, height: int = 1024, style: str = "dynamic"
+    ) -> Optional[str]:
+        """Generic method to generate a single image."""
+        if not LEONARDO_API_KEY:
+            print(
+                "WARNING: LEONARDO_API_KEY not found in environment. Skipping image generation."
+            )
+            return None
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            generation_id = await cls._trigger_generation(
+                client, prompt, width, height, style=style
+            )
+            if not generation_id:
+                return None
+            return await cls._poll_for_result(client, generation_id)
+
+    @classmethod
     async def generate_accent_image(
         cls, prompt: str, layout: str, topic: str
     ) -> Optional[str]:
@@ -67,9 +86,17 @@ class ImageGenerator:
         return 1024, 1024
 
     @staticmethod
-    def _enhance_prompt(prompt: str, topic: str, layout: str) -> str:
+    def _enhance_prompt(
+        prompt: str, topic: str, layout: str, style: str = "dynamic"
+    ) -> str:
         clean_prompt = str(prompt).strip().rstrip(".")
-        style_suffix = "high-end photography, professional studio lighting, sharp focus, 8k resolution, cinematic composition"
+
+        if style == "simple_drawing":
+            # Direct user request for "simple drawings or arts, nothing complex or involving words"
+            style_suffix = "simple flat illustration, clean vector art, minimalist drawing, solid colors, no text, white background, professional educational graphic"
+        else:
+            style_suffix = "high-end photography, professional studio lighting, sharp focus, 8k resolution, cinematic composition"
+
         enhanced = f"{clean_prompt}. Subject: {topic}. Style: {style_suffix}"
 
         if layout in ["top", "bottom"]:
@@ -80,17 +107,26 @@ class ImageGenerator:
 
     @classmethod
     async def _trigger_generation(
-        cls, client: httpx.AsyncClient, prompt: str, width: int, height: int
+        cls,
+        client: httpx.AsyncClient,
+        prompt: str,
+        width: int,
+        height: int,
+        style: str = "dynamic",
     ) -> Optional[str]:
         """Call the POST /generations endpoint."""
         url = f"{cls.BASE_URL}/generations"
+
+        # Style UUIDs can be adjusted if we want specific Leonardo styles
+        style_uuid = cls.DYNAMIC_STYLE_UUID
+
         payload = {
             "modelId": cls.MODEL_ID,
             "prompt": prompt,
             "width": width,
             "height": height,
             "num_images": 1,
-            "styleUUID": cls.DYNAMIC_STYLE_UUID,
+            "styleUUID": style_uuid,
             "contrast": 3.5,
             "enhancePrompt": False,
         }
