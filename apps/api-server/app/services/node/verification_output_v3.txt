@@ -1,0 +1,156 @@
+﻿
+--- [DEBUG] SLIDE PLANNING LLM OUTPUT ---
+{
+  "slides": [
+    {
+      "title": "Introduction to Computer Generations",
+      "content_angle": "overview",
+      "intent": "concept",
+      "purpose": "definition",
+      "selected_template": "Title with bullets",
+      "role": "Introduce",
+      "goal": "Provide a broad overview and definition of computer generations to set foundational understanding.",
+      "reasoning": "Starting with a clear overview helps learners grasp what computer generations are and why they matter.",
+      "visual_required": false,
+      "visual_type": "none"
+    },
+    {
+      "title": "Evolution Mechanism of Computer Generations",
+      "content_angle": "mechanism",
+      "intent": "process",
+      "purpose": "process",
+      "selected_template": "Timeline",
+      "role": "Guide",
+      "goal": "Explain how computer technology evolved through different generations highlighting key technological changes.",
+      "reasoning": "A timeline visually clarifies the chronological progression and technological milestones across generations.",
+      "visual_required": true,
+      "visual_type": "diagram"
+    },
+    {
+      "title": "Characteristics of Each Computer Generation",
+      "content_angle": "comparison",
+      "intent": "comparison",
+      "purpose": "comparison",
+      "selected_template": "Comparison table",
+      "role": "Contrast",
+      "goal": "Compare and contrast the main features, advantages, and limitations of each generation.",
+      "reasoning": "A comparison table allows learners to easily differentiate generations by key attributes side-by-side.",
+      "visual_required": true,
+      "visual_type": "chart"
+    },
+    {
+      "title": "Example: First and Second Generation Computers",
+      "content_angle": "example",
+      "intent": "example",
+      "purpose": "reinforcement",
+      "selected_template": "Two columns",
+      "role": "Emphasize",
+      "goal": "Provide concrete examples of first and second generation computers to solidify understanding.",
+      "reasoning": "Using side-by-side examples helps learners visualize and remember specific generation traits.",
+      "visual_required": true,
+      "visual_type": "image"
+    },
+    {
+      "title": "Applications and Impact of Computer Generations",
+      "content_angle": "application",
+      "intent": "concept",
+      "purpose": "intuition",
+      "selected_template": "Icons with text",
+      "role": "Connect",
+      "goal": "Illustrate how different generations of computers influenced real-world applications and technology development.",
+      "reasoning": "Iconography combined with text aids intuitive understanding of practical relevance.",
+      "visual_required": true,
+      "visual_type": "illustration"
+    },
+    {
+      "title": "Summary of Computer Generations",
+      "content_angle": "summary",
+      "intent": "summary",
+      "purpose": "reinforcement",
+      "selected_template": "Large bullet list",
+      "role": "Reinforce",
+      "goal": "Recap the key points about computer generations to consolidate learning before assessment.",
+      "reasoning": "A concise bullet list provides a quick review to reinforce retention.",
+      "visual_required": false,
+      "visual_type": "none"
+    }
+  ]
+}
+------------------------------------------
+
+{
+  "slides": [
+    {
+      "title": "Introduction to Computer Generations",
+      "content_angle": "overview",
+      "intent": "concept",
+      "purpose": "definition",
+      "selected_template": "Title with bullets",
+      "role": "Introduce",
+      "goal": "Provide a broad overview and definition of computer generations to set foundational understanding.",
+      "reasoning": "Starting with a clear overview helps learners grasp what computer generations are and why they matter.",
+      "visual_required": false,
+      "visual_type": "none"
+    },
+    {
+      "title": "Evolution Mechanism of Computer Generations",
+      "content_angle": "mechanism",
+      "intent": "process",
+      "purpose": "process",
+      "selected_template": "Timeline",
+      "role": "Guide",
+      "goal": "Explain how computer technology evolved through different generations highlighting key technological changes.",
+      "reasoning": "A timeline visually clarifies the chronological progression and technological milestones across generations.",
+      "visual_required": true,
+      "visual_type": "diagram"
+    },
+    {
+      "title": "Characteristics of Each Computer Generation",
+      "content_angle": "comparison",
+      "intent": "comparison",
+      "purpose": "comparison",
+      "selected_template": "Comparison table",
+      "role": "Contrast",
+      "goal": "Compare and contrast the main features, advantages, and limitations of each generation.",
+      "reasoning": "A comparison table allows learners to easily differentiate generations by key attributes side-by-side.",
+      "visual_required": true,
+      "visual_type": "chart"
+    },
+    {
+      "title": "Example: First and Second Generation Computers",
+      "content_angle": "example",
+      "intent": "example",
+      "purpose": "reinforcement",
+      "selected_template": "Two columns",
+      "role": "Emphasize",
+      "goal": "Provide concrete examples of first and second generation computers to solidify understanding.",
+      "reasoning": "Using side-by-side examples helps learners visualize and remember specific generation traits.",
+      "visual_required": true,
+      "visual_type": "image"
+    },
+    {
+      "title": "Applications and Impact of Computer Generations",
+      "content_angle": "application",
+      "intent": "concept",
+      "purpose": "intuition",
+      "selected_template": "Icons with text",
+      "role": "Connect",
+      "goal": "Illustrate how different generations of computers influenced real-world applications and technology development.",
+      "reasoning": "Iconography combined with text aids intuitive understanding of practical relevance.",
+      "visual_required": true,
+      "visual_type": "illustration"
+    },
+    {
+      "title": "Summary of Computer Generations",
+      "content_angle": "summary",
+      "intent": "summary",
+      "purpose": "reinforcement",
+      "selected_template": "Large bullet list",
+      "role": "Reinforce",
+      "goal": "Recap the key points about computer generations to consolidate learning before assessment.",
+      "reasoning": "A concise bullet list provides a quick review to reinforce retention.",
+      "visual_required": false,
+      "visual_type": "none"
+    }
+  ]
+}

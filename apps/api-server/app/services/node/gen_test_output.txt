@@ -1,0 +1,100 @@
+﻿
+--- [DEBUG] GyML GENERATION LLM OUTPUT ---
+{
+  "title": "Timeline of Computer Generations",
+  "intent": "narrate",
+  "layout": "left",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "Explore the evolution of computers through five distinct generations, each marked by key technological innovations that shaped computing history."
+    },
+    {
+      "type": "smart_layout",
+      "variant": "timelineSequential",
+      "items": [
+        {
+          "label": "1st Generation (1940-1956)",
+          "description": "Used vacuum tubes; large, slow, and power-hungry machines.",
+          "imagePrompt": "A dimly lit vintage room with large, glowing vacuum tubes and old-fashioned machinery emitting soft warm light."
+        },
+        {
+          "label": "2nd Generation (1956-1963)",
+          "description": "Transistors replaced vacuum tubes, improving reliability and size.",
+          "imagePrompt": "Close-up of shiny, small transistors mounted on circuit boards with a background of early computer components."
+        },
+        {
+          "label": "3rd Generation (1964-1971)",
+          "description": "Integrated circuits enabled smaller, faster, and more efficient computers.",
+          "imagePrompt": "A detailed view of tiny integrated circuit chips with complex patterns and bright reflections."
+        },
+        {
+          "label": "4th Generation (1971-Present)",
+          "description": "Microprocessors revolutionized computing with compact and powerful CPUs.",
+          "imagePrompt": "A modern microprocessor chip on a motherboard glowing with neon blue and green lights."
+        },
+        {
+          "label": "5th Generation (Future)",
+          "description": "Focuses on AI, quantum computing, and advanced parallel processing.",
+          "imagePrompt": "A futuristic, glowing quantum computer core surrounded by abstract digital data streams and AI symbols."
+        }
+      ]
+    },
+    {
+      "type": "annotation_paragraph",
+      "text": "Each generation introduced innovations that drastically improved speed, size, and functionality, setting the stage for modern computing."
+    }
+  ],
+  "primary_block_index": 1,
+  "imagePrompt": "A dynamic progression of technology from bulky, glowing old machines to sleek, futuristic digital cores, symbolizing the evolution of computing over time."
+}
+------------------------------------------
+
+{
+  "title": "Timeline of Computer Generations",
+  "intent": "narrate",
+  "layout": "left",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "Explore the evolution of computers through five distinct generations, each marked by key technological innovations that shaped computing history."
+    },
+    {
+      "type": "smart_layout",
+      "variant": "timelineSequential",
+      "items": [
+        {
+          "label": "1st Generation (1940-1956)",
+          "description": "Used vacuum tubes; large, slow, and power-hungry machines.",
+          "imagePrompt": "A dimly lit vintage room with large, glowing vacuum tubes and old-fashioned machinery emitting soft warm light."
+        },
+        {
+          "label": "2nd Generation (1956-1963)",
+          "description": "Transistors replaced vacuum tubes, improving reliability and size.",
+          "imagePrompt": "Close-up of shiny, small transistors mounted on circuit boards with a background of early computer components."
+        },
+        {
+          "label": "3rd Generation (1964-1971)",
+          "description": "Integrated circuits enabled smaller, faster, and more efficient computers.",
+          "imagePrompt": "A detailed view of tiny integrated circuit chips with complex patterns and bright reflections."
+        },
+        {
+          "label": "4th Generation (1971-Present)",
+          "description": "Microprocessors revolutionized computing with compact and powerful CPUs.",
+          "imagePrompt": "A modern microprocessor chip on a motherboard glowing with neon blue and green lights."
+        },
+        {
+          "label": "5th Generation (Future)",
+          "description": "Focuses on AI, quantum computing, and advanced parallel processing.",
+          "imagePrompt": "A futuristic, glowing quantum computer core surrounded by abstract digital data streams and AI symbols."
+        }
+      ]
+    },
+    {
+      "type": "annotation_paragraph",
+      "text": "Each generation introduced innovations that drastically improved speed, size, and functionality, setting the stage for modern computing."
+    }
+  ],
+  "primary_block_index": 1,
+  "imagePrompt": "A dynamic progression of technology from bulky, glowing old machines to sleek, futuristic digital cores, symbolizing the evolution of computing over time."
+}

@@ -291,7 +291,64 @@ SLIDE_TEMPLATES = {
             "example": "One practical application showing numerical values",
         },
     },
+    "Hub and spoke": {
+        "template_name": "Hub and spoke",
+        "when_to_use": [
+            "Central concept with surrounding related ideas",
+            "Core-peripheral relationships",
+        ],
+        "how_to_make": {
+            "hub": "Central concept or entity",
+            "spokes": "4-6 related sub-concepts radiating outward",
+            "spoke_content": "Icon + Title + 1 sentence per spoke",
+        },
+    },
+    "Sequential output": {
+        "template_name": "Sequential output",
+        "when_to_use": [
+            "Step-by-step transformations",
+            "Pipeline or chain of operations",
+        ],
+        "how_to_make": {
+            "steps": "3-5 sequential stages",
+            "step_content": "Title + brief description of input/output at each stage",
+            "direction": "Left to right or top to bottom",
+        },
+    },
+    "Process arrow block": {
+        "template_name": "Process arrow block",
+        "when_to_use": ["Linear workflows", "Manufacturing or data pipelines"],
+        "how_to_make": {
+            "nodes": "3-5 process stages connected by arrows",
+            "node_content": "Icon + Title + 1-2 sentence description",
+        },
+    },
+    "Cyclic process block": {
+        "template_name": "Cyclic process block",
+        "when_to_use": ["Recurring processes", "Feedback loops", "Life cycles"],
+        "how_to_make": {
+            "nodes": "3-6 stages forming a loop",
+            "node_content": "Title + 1 sentence per stage",
+            "visual": "Circular arrangement with directional arrows",
+        },
+    },
+    "Feature showcase block": {
+        "template_name": "Feature showcase block",
+        "when_to_use": [
+            "Product features",
+            "Capabilities overview",
+            "Technology highlights",
+        ],
+        "how_to_make": {
+            "central_element": "Hero image or icon representing the main subject",
+            "features": "4-6 features orbiting the central element",
+            "feature_content": "Icon + Title + 1 sentence description",
+        },
+    },
 }
+
+# Lightweight list for the LLM prompt (avoids sending the full registry)
+AVAILABLE_TEMPLATE_NAMES = list(SLIDE_TEMPLATES.keys())
 
 SLIDE_PURPOSES = [
     "definition",
@@ -301,6 +358,16 @@ SLIDE_PURPOSES = [
     "visualization",
     "reinforcement",
     "assessment",
+]
+SLIDE_INTENTS = [
+    "concept",
+    "definition",
+    "process",
+    "comparison",
+    "data",
+    "example",
+    "summary",
+    "intuition",
 ]
 NARRATION_ROLES = [
     "Introduce",
@@ -312,53 +379,69 @@ NARRATION_ROLES = [
     "Reinforce",
     "Question",
 ]
+VISUAL_TYPES = [
+    "image",
+    "diagram",
+    "chart",
+    "illustration",
+    "none",
+]
+CONTENT_ANGLES = [
+    "overview",
+    "mechanism",
+    "example",
+    "comparison",
+    "application",
+    "visualization",
+    "summary",
+]
 
 
 def plan_slides_for_subtopic(
     subtopic: Dict[str, Any], teacher_profile: str = "Expert Teacher"
 ) -> Dict[str, Any]:
     """Calls LLM to plan slides for a single subtopic."""
-    # SINGLE-PASS ARCHITECTURE-AWARE PLANNING
-    # This prompt forces the model to first architect the technical content, then map to visuals.
     SYSTEM_PROMPT = f"""
-    You are an AI Curriculum Architect & Visual Pedagogy Expert.
-    Your goal is to design a high-depth, technically accurate slide plan for a lesson.
-    
-    SUBTOPIC: {subtopic.get('name')}
-    DIFFICULTY: {subtopic.get('difficulty', 'Beginner')}
-    TEACHER PROFILE: {teacher_profile}
-    
-    AVAILABLE TEMPLATES (Visual Delivery Mechanisms):
-    {json.dumps(SLIDE_TEMPLATES, indent=2)}
-    
+    ROLE: AI Curriculum Architect & Visual Pedagogy Expert.
+
+    CONTEXT:
+    Subtopic: {subtopic.get('name')}
+    Difficulty: {subtopic.get('difficulty', 'Beginner')}
+    Teacher Profile: {teacher_profile}
+
+    AVAILABLE TEMPLATES:
+    {chr(10).join(f'    * {name}' for name in AVAILABLE_TEMPLATE_NAMES)}
+
+    SLIDE INTENTS: {json.dumps(SLIDE_INTENTS)}
     SLIDE PURPOSES: {json.dumps(SLIDE_PURPOSES)}
     NARRATION ROLES: {json.dumps(NARRATION_ROLES)}
-    
-    ⭐ PLANNING STRATEGY (CRITICAL):
-    1. ARCHITECT FIRST: Identify the 4-7 specific technical "building blocks" (laws, formulas, mechanisms, examples) needed to cover this subtopic with high depth.
-    2. MAP TO VISUALS: Assign the BEST visual template for each block. Use diversity (don't repeat templates unless essential).
-    
-    ⭐ PRIMARY CONTENT TYPES (Best Uses):
-    - Comparison table: Side-by-side features.
-    - Formula block: Equations + Variable keys.
-    - Labeled diagram: Hardware/Anatomy/Spatial systems.
-    - Timeline/Arrows: Processes and flows.
-    - Key-Value list: Technical specs.
-    
-    RULES:
-    - Plan 4-7 slides.
-    - Output ONLY valid JSON.
-    
+    VISUAL TYPES: {json.dumps(VISUAL_TYPES)}
+
+    PLANNING RULES:
+    1. Plan 4-7 slides. Each slide should represent a key learning moment.
+    2. ARCHITECT BY ANGLE: Ensure a diverse progression of learning perspectives:
+       overview → mechanism → example → application → summary.
+    3. Determine slide intent and content angle first, then select the best template.
+    4. Maintain template diversity — no template more than twice.
+    5. Avoid repeating the same content angle twice in a row.
+    6. Prefer visuals when explaining processes, systems, or data.
+    7. Set "visual_required" to true and choose the appropriate "visual_type" when a visual enhances understanding.
+    8. Output ONLY valid JSON.
+
     OUTPUT FORMAT:
     {{
         "slides": [
             {{
                 "title": "Technical Concept Name",
-                "purpose": "...",
+                "content_angle": "overview | mechanism | example | comparison | application | visualization | summary",
+                "intent": "concept | definition | process | comparison | data | example | summary | intuition",
+                "purpose": "definition | intuition | process | comparison | visualization | reinforcement | assessment",
                 "selected_template": "...",
-                "role": "...",
+                "role": "Introduce | Interpret | Guide | Contrast | Emphasize | Connect | Reinforce | Question",
                 "goal": "Detailed learning objective",
-                "reasoning": "Quick pedagogical justification"
+                "reasoning": "Quick pedagogical justification",
+                "visual_required": true,
+                "visual_type": "image | diagram | chart | illustration | none"
             }}
         ]
     }}
@@ -377,32 +460,84 @@ def plan_slides_for_subtopic(
         data = json.loads(content)
 
         # ---- VALIDATION STARTS HERE ----
-        VALID_TEMPLATES = set(SLIDE_TEMPLATES.keys())
+        VALID_TEMPLATES = set(AVAILABLE_TEMPLATE_NAMES)
+        VALID_INTENTS = set(SLIDE_INTENTS)
         VALID_PURPOSES = set(SLIDE_PURPOSES)
         VALID_NARRATION = set(NARRATION_ROLES)
+        VALID_VISUAL_TYPES = set(VISUAL_TYPES)
+        VALID_ANGLES = set(CONTENT_ANGLES)
 
         validated_slides = []
 
         for slide in data.get("slides", []):
-            if slide.get("selected_template") not in VALID_TEMPLATES:
+            # 1. Content Angle Inference/Validation
+            angle = slide.get("content_angle", "").lower()
+            tmpl_raw = slide.get("selected_template", "")
+            # Normalize template for lookup (Title Case)
+            tmpl = tmpl_raw.strip().title()
+            if " And " in tmpl:
+                tmpl = tmpl.replace(" And ", " and ")  # Fix common title() artifact
+
+            purp = slide.get("purpose", "").lower()
+
+            if angle not in VALID_ANGLES:
+                # Inference Logic
+                if "Timeline" in tmpl or "process" in purp:
+                    angle = "mechanism"
+                elif "Comparison" in tmpl or "Comparison" in purp:
+                    angle = "comparison"
+                elif "Diagram" in tmpl or "visualization" in purp:
+                    angle = "visualization"
+                elif "bullets" in tmpl.lower() or "intro" in purp:
+                    angle = "overview"
+                elif "example" in purp or "demo" in purp:
+                    angle = "example"
+                elif "summary" in purp or "reinforcement" in purp:
+                    angle = "summary"
+                else:
+                    angle = "overview"
+                slide["content_angle"] = angle
+            else:
+                slide["content_angle"] = angle
+
+            intent = slide.get("intent", "").lower()
+            if intent not in VALID_INTENTS:
                 continue
+
+            if tmpl not in VALID_TEMPLATES:
+                # Fallback check for missing " card" etc if LLM clipped it
+                matched = False
+                for v_tmpl in VALID_TEMPLATES:
+                    if tmpl.lower() in v_tmpl.lower():
+                        tmpl = v_tmpl
+                        matched = True
+                        break
+                if not matched:
+                    continue
+
+            slide["selected_template"] = tmpl
+            slide["intent"] = intent
             if slide.get("purpose") not in VALID_PURPOSES:
-                # Support old legacy key for transition if needed, but here we enforce
-                if (
-                    "slide_purpose" in slide
-                    and slide["slide_purpose"] in VALID_PURPOSES
-                ):
-                    slide["purpose"] = slide.pop("slide_purpose")
-                else:
-                    continue
+                # Lenient matching or default
+                matched = False
+                for v_purp in VALID_PURPOSES:
+                    if v_purp in slide.get("purpose", "").lower():
+                        slide["purpose"] = v_purp
+                        matched = True
+                        break
+                if not matched:
+                    slide["purpose"] = "definition"  # Fallback
+
             if slide.get("role") not in VALID_NARRATION:
-                if (
-                    "narration_role" in slide
-                    and slide["narration_role"] in VALID_NARRATION
-                ):
-                    slide["role"] = slide.pop("narration_role")
-                else:
-                    continue
+                # Lenient matching or default
+                matched = False
+                for v_role in VALID_NARRATION:
+                    if v_role.lower() in slide.get("role", "").lower():
+                        slide["role"] = v_role
+                        matched = True
+                        break
+                if not matched:
+                    slide["role"] = "Guide"  # Fallback
             if not slide.get("title"):
                 if "slide_title" in slide:
                     slide["title"] = slide.pop("slide_title")
@@ -413,16 +548,71 @@ def plan_slides_for_subtopic(
             if "narration_goal" in slide:
                 slide["goal"] = slide.pop("narration_goal")
 
+            # Validate visual_type
+            vtype = slide.get("visual_type")
+            if vtype and vtype not in VALID_VISUAL_TYPES:
+                slide["visual_type"] = "none"
+                slide["visual_required"] = False
+            # Default visual fields if missing
+            if "visual_required" not in slide:
+                slide["visual_required"] = False
+            if "visual_type" not in slide:
+                slide["visual_type"] = "none"
+
             validated_slides.append(slide)
 
         data["slides"] = validated_slides
         # ---- VALIDATION ENDS HERE ----
 
+        # ---- DIVERSITY ENFORCEMENT ----
+        template_count = {}
+        diverse_slides = []
+        last_angle = None
+
+        for slide in data["slides"]:
+            tmpl = slide.get("selected_template")
+            angle = slide.get("content_angle")
+
+            # Template cap: max 2
+            template_count[tmpl] = template_count.get(tmpl, 0) + 1
+            if template_count[tmpl] > 2:
+                continue
+
+            # Sequential Angle check: Avoid back-to-back same angle
+            if angle == last_angle:
+                continue
+
+            diverse_slides.append(slide)
+            last_angle = angle
+
+        # Clamp to 4-7 slides
+        if len(diverse_slides) < 4:
+            # If we filtered too aggressively, keep the original validated ones
+            # but still try to respect the hard template cap
+            data["slides"] = validated_slides[:7]
+        else:
+            data["slides"] = diverse_slides[:7]
+        # ---- DIVERSITY ENFORCEMENT ENDS ----
+
         return data
 
     except Exception as e:
-        print(f"Error parsing slide plan for {subtopic_name}: {e}")
-        return {"slides": []}
+        print(f"Error parsing slide plan for {subtopic.get('name')}: {e}")
+        return {
+            "slides": [
+                {
+                    "title": subtopic.get("name", "Untitled"),
+                    "intent": "concept",
+                    "purpose": "definition",
+                    "selected_template": "Title with bullets",
+                    "role": "Introduce",
+                    "goal": "Fallback slide",
+                    "reasoning": "Auto-generated fallback due to planning error",
+                    "visual_required": False,
+                    "visual_type": "none",
+                }
+            ]
+        }
 
 
 if __name__ == "__main__":

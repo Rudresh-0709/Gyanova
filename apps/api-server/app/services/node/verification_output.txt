@@ -1,0 +1,83 @@
+﻿
+--- [DEBUG] SLIDE PLANNING LLM OUTPUT ---
+{
+  "slides": [
+    {
+      "title": "Introduction to Computer Generations",
+      "content_angle": "overview",
+      "intent": "concept",
+      "purpose": "definition",
+      "selected_template": "title with bullets and image",
+      "role": "Introduce",
+      "goal": "Introduce learners to the concept of computer generations and their significance in computing history.",
+      "reasoning": "Starting with a broad overview helps learners frame the topic and understand its relevance before diving into details.",
+      "visual_required": true,
+      "visual_type": "image"
+    },
+    {
+      "title": "How Computer Generations Evolved",
+      "content_angle": "mechanism",
+      "intent": "process",
+      "purpose": "intuition",
+      "selected_template": "timeline",
+      "role": "Interpret",
+      "goal": "Explain the chronological development and technological changes across different computer generations.",
+      "reasoning": "A timeline visually clarifies the sequential progression and highlights key technological milestones.",
+      "visual_required": true,
+      "visual_type": "diagram"
+    },
+    {
+      "title": "Characteristics of Each Computer Generation",
+      "content_angle": "comparison",
+      "intent": "comparison",
+      "purpose": "comparison",
+      "selected_template": "comparison table",
+      "role": "Contrast",
+      "goal": "Help learners distinguish features, technologies, and limitations of each generation of computers.",
+      "reasoning": "A comparison table succinctly organizes contrasting attributes for easy side-by-side analysis.",
+      "visual_required": true,
+      "visual_type": "chart"
+    },
+    {
+      "title": "Example: First vs. Fourth Generation Computers",
+      "content_angle": "example",
+      "intent": "example",
+      "purpose": "reinforcement",
+      "selected_template": "two columns",
+      "role": "Connect",
+      "goal": "Provide concrete examples to illustrate the differences in technology and performance between early and modern computers.",
+      "reasoning": "Using a two-column format allows direct visual comparison of examples, enhancing understanding.",
+      "visual_required": true,
+      "visual_type": "image"
+    },
+    {
+      "title": "Applications and Impact of Computer Generations",
+      "content_angle": "application",
+      "intent": "concept",
+      "purpose": "application",
+      "selected_template": "icons with text",
+      "role": "Emphasize",
+      "goal": "Highlight how advancements in computer generations have influenced real-world applications and industries.",
+      "reasoning": "Icons paired with text efficiently communicate diverse applications and their significance.",
+      "visual_required": true,
+      "visual_type": "illustration"
+    },
+    {
+      "title": "Summary: Key Takeaways on Computer Generations",
+      "content_angle": "summary",
+      "intent": "summary",
+      "purpose": "reinforcement",
+      "selected_template": "large bullet list",
+      "role": "Reinforce",
+      "goal": "Recap the main points about the evolution, characteristics, and impact of computer generations to solidify learning.",
+      "reasoning": "A bullet list effectively summarizes key ideas for quick review and retention.",
+      "visual_required": false,
+      "visual_type": "none"
+    }
+  ]
+}
+------------------------------------------
+
+{
+  "slides": []
+}
