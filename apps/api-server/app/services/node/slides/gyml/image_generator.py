@@ -63,7 +63,7 @@ class ImageGenerator:
         refined_prompt = cls._enhance_prompt(prompt, topic, layout)
 
         # 3. Request generation (Asynchronous)
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             generation_id = await cls._trigger_generation(
                 client, refined_prompt, width, height
             )
@@ -71,7 +71,9 @@ class ImageGenerator:
                 return None
 
             # 4. Poll for the result
-            image_url = await cls._poll_for_result(client, generation_id)
+            image_url = await cls._poll_for_result(
+                client, generation_id, max_attempts=40
+            )
             return image_url
 
     @staticmethod

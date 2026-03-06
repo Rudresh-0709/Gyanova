@@ -120,12 +120,22 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                                 generation_tasks.append(task)
                                 task_to_slide.append((block, item))
 
-    # Run image generations concurrently
+    # Run image generations concurrently with a semaphore to avoid rate limits
     if generation_tasks:
         print(
-            f"   🔥 [Rendering Node] Running {len(generation_tasks)} image generations in parallel..."
+            f"   🔥 [Rendering Node] Running {len(generation_tasks)} image generations with concurrency limit 3..."
         )
-        results = await asyncio.gather(*generation_tasks)
+
+        # Semaphore to limit concurrent requests
+        sem = asyncio.Semaphore(3)
+
+        async def sem_task(task_coro):
+            async with sem:
+                # Add a tiny stagger
+                await asyncio.sleep(0.5)
+                return await task_coro
+
+        results = await asyncio.gather(*(sem_task(t) for t in generation_tasks))
 
         # Map results back to ComposedSlide or Item dicts
         for (target, item), url in zip(task_to_slide, results):
@@ -140,7 +150,9 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     target.accent_image_alt = f"Generated image for {target.topic}"
                     print(f"   ✅ Accent image generated for {target.id}")
             else:
-                print(f"   ⚠ Image generation failed for a target")
+                print(
+                    f"   ⚠ Image generation failed for a target (possibly timeout or rate limit)"
+                )
 
     # 4. Step Three: Final Serialization and Rendering
     rendered_count = 0

@@ -1,190 +1,4 @@
-"""
-GyML Renderer
-
-PASSIVE renderer: GyML → HTML.
-Maps GyML structure to HTML without any inference or semantic decisions.
-Designed to match Gamma-style professional slides.
-"""
-
-from typing import List, Optional, Dict, Any
-import html
-
-from .definitions import (
-    GyMLSection,
-    GyMLBody,
-    GyMLHeading,
-    GyMLParagraph,
-    GyMLColumns,
-    GyMLColumnDiv,
-    GyMLSmartLayout,
-    GyMLSmartLayoutItem,
-    GyMLImage,
-    GyMLDivider,
-    GyMLTable,
-    GyMLCode,
-    GyMLComparisonTable,
-    GyMLKeyValueList,
-    GyMLRichText,
-    GyMLNumberedList,
-    GyMLLabeledDiagram,
-    GyMLHierarchyTree,
-    GyMLSplitPanel,
-    GyMLFormulaBlock,
-    GyMLHubAndSpoke,
-    GyMLCyclicBlock,
-    GyMLProcessArrowBlock,
-    GyMLProcessArrowItem,
-    GyMLCyclicProcessBlock,
-    GyMLCyclicProcessItem,
-    GyMLFeatureShowcaseBlock,
-    GyMLNode,
-)
-from .theme import Theme, THEMES
-from .responsive import ResponsiveConstraints
-from .hierarchy import VisualHierarchy
-
-
-class GyMLRenderer:
-    """
-    PASSIVE renderer: GyML → HTML.
-    Gamma-style professional output.
-
-    When animated=True, injects data-segment attributes on primary content
-    (smart_layout cards only) for reveal animations synced to narration audio.
-    All other elements (paragraphs, columns, headings, accent images, tables,
-    code blocks) remain always visible.
-    """
-
-    def __init__(
-        self,
-        theme: Optional[Theme] = None,
-        responsive_constraints: Optional[ResponsiveConstraints] = None,
-        animated: bool = False,
-    ):
-        self.theme = theme or THEMES.get("gamma_light")
-        self.responsive_constraints = (
-            responsive_constraints or ResponsiveConstraints.default()
-        )
-        self.animated = animated
-        self._segment_counter = 0  # tracks current segment index per section
-
-    def render(self, section: GyMLSection) -> str:
-        """Passively render GyML section to HTML."""
-        # Reset segment counter for each section
-        self._segment_counter = 0
-        lines = []
-
-        # Generate hierarchy CSS variables if present
-        style_attr = ""
-        if section.hierarchy:
-            vars_list = []
-            # Typography
-            vars_list.append(f"--h1-size: {section.hierarchy.typography.h1}")
-            vars_list.append(f"--h2-size: {section.hierarchy.typography.h2}")
-            vars_list.append(f"--p-size: {section.hierarchy.typography.body}")
-            vars_list.append(
-                f"--line-height: {section.hierarchy.typography.line_height_base}"
-            )
-            vars_list.append(
-                f"--card-number-size: {section.hierarchy.typography.card_number}"
-            )
-            vars_list.append(f"--card-text-size: {section.hierarchy.typography.small}")
-
-            # Spacing
-            vars_list.append(
-                f"--section-padding: {section.hierarchy.spacing.section_padding}"
-            )
-            vars_list.append(f"--block-gap: {section.hierarchy.spacing.block_gap}")
-            vars_list.append(
-                f"--card-padding: {section.hierarchy.spacing.card_padding}"
-            )
-            h_gap = (
-                section.hierarchy.spacing.heading_gap
-                or section.hierarchy.spacing.block_gap
-            )
-            vars_list.append(f"--heading-gap: {h_gap}")
-
-            style_attr = f' style="{"; ".join(vars_list)}"'
-
-        # Add animated data attribute so CSS knows to apply animation styles
-        anim_attr = ' data-animated="true"' if self.animated else ""
-
-        # Add density hint so CSS can compact card internals for dense slides
-        density_attr = ""
-        if section.hierarchy and section.hierarchy.name in ("super_dense", "compact"):
-            density_attr = f' data-density="{section.hierarchy.name}"'
-
-        # Add special class for hub-and-spoke slides to handle layout safely
-        has_hub = any(
-            isinstance(node, GyMLHubAndSpoke) for node in section.body.children
-        )
-        hub_class = " holds-hub" if has_hub else ""
-
-        # Identify if this slide has a comparison block (to adjust layout width)
-        has_comparison = any(
-            isinstance(node, GyMLSmartLayout) and node.variant.startswith("comparison")
-            for node in section.body.children
-        )
-        accent_width = "400px" if has_comparison else "500px"
-
-        lines.append(
-            f'<section id="{self._escape(section.id)}" '
-            f'class="slide-section{hub_class}" '
-            f'role="region" aria-label="Slide {section.id}" '
-            f'data-image-layout="{section.image_layout}" '
-            f'style="--accent-width: {accent_width}; {vars_list_str}">'
-            f"{anim_attr}{density_attr}>"
-        )
-
-        # Render Image (unless it's bottom layout, then we render it after body)
-        render_image_early = section.image_layout != "bottom"
-
-        if section.accent_image and render_image_early:
-            # Wrap accent image + optional caption in a container
-            has_caption = section.image_caption is not None
-            if has_caption:
-                lines.append('<div class="accent-image-group">')
-
-            lines.append(self._render_accent_image(section.accent_image))
-
-            if has_caption:
-                caption_text = self._escape(section.image_caption.text)
-                lines.append(
-                    f'<p class="p-annotation image-annotation">{caption_text}</p>'
-                )
-                lines.append("</div>")
-
-        lines.append(self._render_body(section.body))
-
-        # Render Image late if it's bottom layout
-        if section.accent_image and not render_image_early:
-            has_caption = section.image_caption is not None
-            if has_caption:
-                lines.append('<div class="accent-image-group">')
-
-            lines.append(self._render_accent_image(section.accent_image))
-
-            if has_caption:
-                caption_text = self._escape(section.image_caption.text)
-                lines.append(
-                    f'<p class="p-annotation image-annotation">{caption_text}</p>'
-                )
-                lines.append("</div>")
-        lines.append("</section>")
-
-        return "\n".join(lines)
-
-    def render_many(self, sections: List[GyMLSection]) -> str:
-        """Render multiple sections."""
-        rendered_sections = [self.render(s) for s in sections]
-        return "\n\n".join(rendered_sections)
-
-    def render_complete(self, sections: List[GyMLSection]) -> str:
-        """Render complete HTML document with Gamma-style styles."""
-        sections_html = self.render_many(sections)
-        animator_js = self._get_animator_js() if self.animated else ""
-
-        return f"""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -196,1138 +10,18 @@ class GyMLRenderer:
     <!-- KaTeX for professional math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {{ 
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, { 
         delimiters: [
-            {{left: '$$', right: '$$', display: true}},
-            {{left: '$', right: '$', display: false}},
-            {{left: '\\\\(', right: '\\\\)', display: false}},
-            {{left: '\\\\[', right: '\\\\]', display: true}}
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
         ],
         throwOnError : false 
-    }});"></script>
+    });"></script>
 
     <style>
-{self._get_gamma_styles()}
-{self.theme.to_css_vars() if self.theme else ""}
-{self._get_responsive_styles()}
-    </style>
-</head>
-<body>
-    <div class="gyml-deck">
-{sections_html}
-    </div>
-{animator_js}
-</body>
-</html>"""
 
-    def _get_responsive_styles(self) -> str:
-        """Generate responsive CSS from constraints."""
-        c = self.responsive_constraints
-        css = ["/* Dynamic Responsive Styles */"]
-
-        # 1. Breakpoints
-        for bp_name, width in c.breakpoints.items():
-            fallback_padding = c.viewport_padding.get(bp_name, "1rem")
-            scale = c.typography_scale.get(bp_name, 1.0)
-
-            css.append(f"@media (max-width: {width}px) {{")
-
-            # Global adjustments
-            css.append("  :root {")
-            css.append(f"    --section-padding: {fallback_padding};")
-            # We can scale the base font size if we used rems correctly
-            css.append(f"    font-size: {scale * 100}%;")
-            css.append("  }")
-
-            # Apply layout fallbacks
-            if c.layout_fallbacks.get("columns") == "stack":
-                css.append("  .columns { flex-direction: column; }")
-                css.append("  .column { flex: 1 1 100% !important; }")
-
-            if c.layout_fallbacks.get("image_layout") == "stack":
-                css.append(
-                    "  section[data-image-layout='right'], section[data-image-layout='left'] {"
-                )
-                css.append(
-                    "    grid-template-columns: 1fr; display: flex; flex-direction: column;"
-                )
-                css.append("  }")
-                css.append("  .accent-image { max-width: 100%; margin-bottom: 1rem; }")
-
-            css.append("}")
-
-        return "\n".join(css)
-
-    # =========================================================================
-    # ELEMENT RENDERERS
-    # =========================================================================
-
-    def _render_accent_image(self, image: GyMLImage) -> str:
-        """Render accent image."""
-        if image.src == "placeholder":
-            return (
-                f'<div class="accent-image-placeholder">'
-                f'<div class="placeholder-content">'
-                f'<span class="placeholder-icon">🖼️</span>'
-                f'<span class="placeholder-text">{self._escape(image.alt)}</span>'
-                f"</div>"
-                f"</div>"
-            )
-
-        return (
-            f'<div class="accent-image-wrapper">'
-            f'<img class="accent-image" '
-            f'src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
-            f"</div>"
-        )
-
-    def _render_body(self, body: GyMLBody) -> str:
-        """Render body container."""
-        children_html = []
-        separator_count = 0  # Max 1 separator per slide
-        for i, child in enumerate(body.children):
-            rendered = self._render_node(child)
-            if rendered:
-                children_html.append(rendered)
-
-                # Add separator logic (between distinct major blocks) — max 1 per slide
-                if i < len(body.children) - 1 and separator_count < 1:
-                    next_child = body.children[i + 1]
-
-                    # Geometry Rule: Separator between Dense (Visual) and Flow (Text)
-                    is_dense_current = isinstance(
-                        child, (GyMLColumns, GyMLSmartLayout, GyMLTable, GyMLCode)
-                    )
-                    is_dense_next = isinstance(
-                        next_child, (GyMLColumns, GyMLSmartLayout, GyMLTable, GyMLCode)
-                    )
-
-                    # Flow elements: Paragraph, Heading
-                    is_flow_current = isinstance(child, (GyMLParagraph, GyMLHeading))
-                    is_flow_next = isinstance(next_child, (GyMLParagraph, GyMLHeading))
-
-                    should_separate = (
-                        (is_dense_current and is_dense_next)  # Between two visuals
-                        or (is_dense_current and is_flow_next)  # Visual -> Text
-                        or (is_flow_current and is_dense_next)  # Text -> Visual
-                    )
-
-                    if should_separate:
-                        children_html.append('<div class="block-separator"></div>')
-                        separator_count += 1
-
-        return f'<div class="body">\n{chr(10).join(children_html)}\n</div>'
-
-    def _render_node(self, node: GyMLNode) -> Optional[str]:
-        """Render any GyML node by type."""
-        if isinstance(node, GyMLHeading):
-            return self._render_heading(node)
-        elif isinstance(node, GyMLParagraph):
-            return self._render_paragraph(node)
-        elif isinstance(node, GyMLColumns):
-            return self._render_columns(node)
-        elif isinstance(node, GyMLSmartLayout):
-            return self._render_smart_layout(node)
-        elif isinstance(node, GyMLImage):
-            return self._render_inline_image(node)
-        elif isinstance(node, GyMLDivider):
-            return self._render_divider()
-        elif isinstance(node, GyMLCode):
-            return self._render_code(node)
-        elif isinstance(node, GyMLTable):
-            return self._render_table(node)
-        elif isinstance(node, GyMLComparisonTable):
-            return self._render_comparison_table(node)
-        elif isinstance(node, GyMLKeyValueList):
-            return self._render_key_value_list(node)
-        elif isinstance(node, GyMLRichText):
-            return self._render_rich_text(node)
-        elif isinstance(node, GyMLNumberedList):
-            return self._render_numbered_list(node)
-        elif isinstance(node, GyMLLabeledDiagram):
-            return self._render_labeled_diagram(node)
-        elif isinstance(node, GyMLHierarchyTree):
-            return self._render_hierarchy_tree(node)
-        elif isinstance(node, GyMLSplitPanel):
-            return self._render_split_panel(node)
-        elif isinstance(node, GyMLFormulaBlock):
-            return self._render_formula_block(node)
-        elif isinstance(node, GyMLHubAndSpoke):
-            return self._render_hub_and_spoke(node)
-        elif isinstance(node, GyMLCyclicBlock):
-            return self._render_cyclic_block(node)
-        elif isinstance(node, GyMLProcessArrowBlock):
-            return self._render_process_arrow_block(node)
-        elif isinstance(node, GyMLCyclicProcessBlock):
-            return self._render_cyclic_process_block(node)
-        elif isinstance(node, GyMLFeatureShowcaseBlock):
-            return self._render_feature_showcase(node)
-        return f"<!-- Unknown node type: {type(node).__name__} -->"
-
-    def _render_heading(self, heading: GyMLHeading) -> str:
-        """Render heading."""
-        level = heading.level
-        text = self._escape(heading.text)
-        return f"<h{level}>{text}</h{level}>"
-
-    def _render_paragraph(self, paragraph: GyMLParagraph) -> str:
-        """Render paragraph."""
-        text = self._escape(paragraph.text)
-        variant_class = f"p-{paragraph.variant}" if paragraph.variant else ""
-
-        # Paragraphs are always visible (not animated)
-        # Only primary content (smart_layout cards) gets data-segment
-
-        class_attr = f' class="{variant_class}"' if variant_class else ""
-        return f"<p{class_attr}>{text}</p>"
-
-    def _render_divider(self) -> str:
-        """Render divider."""
-        return '<hr class="divider" />'
-
-    def _render_inline_image(self, image: GyMLImage) -> str:
-        """Render inline image."""
-        if not image.src or image.src.lower() == "null":
-            return ""
-
-        return (
-            f'<figure class="inline-image">'
-            f'<img src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
-            f"</figure>"
-        )
-
-    def _render_code(self, code: GyMLCode) -> str:
-        """Render code block."""
-        return (
-            f'<div class="code-block" data-variant="{self._escape(code.variant)}">'
-            f'<pre><code class="language-{self._escape(code.language)}">'
-            f"{self._escape(code.code)}"
-            f"</code></pre>"
-            f"</div>"
-        )
-
-    def _render_table(self, table: GyMLTable) -> str:
-        """Render table."""
-        headers_html = "".join(f"<th>{self._escape(h)}</th>" for h in table.headers)
-
-        rows_html = []
-        for row in table.rows:
-            cells_html = "".join(f"<td>{self._escape(c)}</td>" for c in row)
-            rows_html.append(f"<tr>{cells_html}</tr>")
-
-        return (
-            f'<div class="table-container" data-variant="{self._escape(table.variant)}">'
-            f"<table>"
-            f"<thead><tr>{headers_html}</tr></thead>"
-            f'<tbody>{"".join(rows_html)}</tbody>'
-            f"</table>"
-            f"</div>"
-        )
-
-    def _render_columns(self, columns: GyMLColumns) -> str:
-        """Render columns as flex container."""
-        widths_str = ",".join(str(w) for w in columns.colwidths)
-
-        html_parts = [f'<div class="columns" data-colwidths="{widths_str}">']
-
-        for i, col in enumerate(columns.columns):
-            width = columns.colwidths[i] if i < len(columns.colwidths) else 50
-
-            # Columns are always visible (not animated)
-            html_parts.append(
-                f'<div class="column" style="flex: 0 0 calc({width}% - 1rem);">'
-            )
-
-            for child in col.children:
-                rendered = self._render_node(child)
-                if rendered:
-                    html_parts.append(rendered)
-
-            html_parts.append("</div>")
-
-        html_parts.append("</div>")
-        return "\n".join(html_parts)
-
-    def _render_smart_layout(self, layout: GyMLSmartLayout) -> str:
-        """Render smart-layout as grid container."""
-        variant = self._escape(layout.variant)
-        item_count = len(layout.items)
-
-        html_parts = [
-            f'<div class="smart-layout" '
-            f'data-variant="{variant}" '
-            f'data-item-count="{item_count}">'
-        ]
-
-        for i, item in enumerate(layout.items):
-            html_parts.append(self._render_smart_layout_item(item, layout.variant, i))
-
-        html_parts.append("</div>")
-        return "\n".join(html_parts)
-
-    def _render_smart_layout_item(
-        self, item: GyMLSmartLayoutItem, variant: str, index: int = 0
-    ) -> str:
-        """Render smart-layout-item Gamma-style."""
-        # Animation: cards get data-segment for sequential reveal
-        # Each card maps to one narration segment
-        if self.animated:
-            seg = self._segment_counter
-            self._segment_counter += 1
-            # Comparison cards slide from sides, others slide up
-            if variant == "comparison":
-                direction = "left" if index == 0 else "right"
-                anim_class = f"anim-slide-{direction}"
-            else:
-                anim_class = "anim-slide-up"
-            html_parts = [
-                f'<div class="card {anim_class}" '
-                f'data-index="{index}" data-segment="{seg}">'
-            ]
-        else:
-            html_parts = [f'<div class="card" data-index="{index}">']
-
-        # Number badge at top (Gamma style)
-        if variant in [
-            "bigBullets",
-            "processSteps",
-            "processArrow",
-            "cardGrid",
-            "timelineSequential",
-        ]:
-            html_parts.append(f'<div class="card-number">{index + 1}</div>')
-
-        # timelineIcon: show icon in the badge position instead of a number
-        if variant == "timelineIcon":
-            icon_cls = "ri-checkbox-blank-circle-fill"  # default fallback
-            if item.icon:
-                icon_cls = item.icon.alt
-                if not icon_cls.startswith("ri-"):
-                    icon_cls = f"ri-{icon_cls}-line"
-            html_parts.append(
-                f'<div class="card-number timeline-icon-badge"><i class="{self._escape(icon_cls)}"></i></div>'
-            )
-
-        # Auto-Icon Selection for specific variants (if icon absent or needs override)
-        # SKIP for timeline/timelineSequential — they use dot markers / numbers, not icons
-        ICON_SKIP_VARIANTS = {"timeline", "timelineSequential"}
-        icon_class = None
-        if variant not in ICON_SKIP_VARIANTS:
-            if item.icon:
-                icon_class = item.icon.alt
-                if not icon_class.startswith("ri-"):
-                    icon_class = f"ri-{icon_class}-line"
-            elif variant == "bulletCheck":
-                icon_class = "ri-check-line"
-            elif variant == "bulletCross":
-                icon_class = "ri-close-line"
-            elif variant == "comparisonProsCons":
-                icon_class = "ri-check-line" if index == 0 else "ri-close-line"
-
-        if icon_class:
-            html_parts.append(
-                f'<div class="card-icon"><i class="{self._escape(icon_class)}"></i></div>'
-            )
-
-        # Content
-        html_parts.append('<div class="card-content">')
-
-        if variant == "timeline":
-            if item.year:
-                html_parts.append(
-                    f'<div class="card-year">{self._escape(item.year)}</div>'
-                )
-            if item.description:
-                html_parts.append(
-                    f'<p class="card-text">{self._escape(item.description)}</p>'
-                )
-
-        elif variant == "stats":
-            if item.value:
-                html_parts.append(
-                    f'<div class="card-value">{self._escape(item.value)}</div>'
-                )
-            if item.label:
-                html_parts.append(
-                    f'<div class="card-label">{self._escape(item.label)}</div>'
-                )
-
-        else:
-            title = item.heading or item.label
-            if title:
-                html_parts.append(f'<h4 class="card-title">{self._escape(title)}</h4>')
-            if item.description:
-                # Handle multiline descriptions (e.g. from comparison lists)
-                desc_html = self._escape(item.description).replace("\n", "<br>")
-                html_parts.append(f'<p class="card-text">{desc_html}</p>')
-
-        html_parts.append("</div>")
-        html_parts.append("</div>")
-
-        return "\n".join(html_parts)
-
-    def _render_comparison_table(self, table: GyMLComparisonTable) -> str:
-        """Render comparison table."""
-        headers_html = "".join(f"<th>{self._escape(h)}</th>" for h in table.headers)
-        rows_html = []
-        for row in table.rows:
-            cells_html = "".join(f"<td>{self._escape(c)}</td>" for c in row)
-            rows_html.append(f"<tr>{cells_html}</tr>")
-
-        caption_html = (
-            f'<div class="table-caption">{self._escape(table.caption)}</div>'
-            if table.caption
-            else ""
-        )
-
-        return (
-            f'<div class="comparison-table-container">'
-            f"<table>"
-            f"<thead><tr>{headers_html}</tr></thead>"
-            f'<tbody>{"".join(rows_html)}</tbody>'
-            f"</table>"
-            f"{caption_html}"
-            f"</div>"
-        )
-
-    def _render_key_value_list(self, kv_list: GyMLKeyValueList) -> str:
-        """Render key-value list."""
-        items_html = []
-        for item in kv_list.items:
-            key = self._escape(item.key)
-            val = self._escape(item.value)
-            items_html.append(
-                f'<div class="kv-item">'
-                f'<span class="kv-key">{key}</span>'
-                f'<span class="kv-value">{val}</span>'
-                f"</div>"
-            )
-        return f'<div class="key-value-list">{"".join(items_html)}</div>'
-
-    def _render_rich_text(self, rich_text: GyMLRichText) -> str:
-        """Render rich text block."""
-        paragraphs_html = "".join(
-            f"<p>{self._escape(p)}</p>" for p in rich_text.paragraphs
-        )
-        return f'<div class="rich-text-block">{paragraphs_html}</div>'
-
-    def _render_numbered_list(self, num_list: GyMLNumberedList) -> str:
-        """Render numbered list."""
-        items_html = []
-        for item in num_list.items:
-            title = self._escape(item.title)
-            desc = self._escape(item.description)
-            items_html.append(
-                f"<li>"
-                f'<div class="item-content">'
-                f'<div class="item-title">{title}</div>'
-                f'<div class="item-desc">{desc}</div>'
-                f"</div>"
-                f"</li>"
-            )
-        return f'<ol class="numbered-list">{"".join(items_html)}</ol>'
-
-    def _render_labeled_diagram(self, diagram: GyMLLabeledDiagram) -> str:
-        """Render labeled diagram."""
-        labels_html = []
-        for label in diagram.labels:
-            x = label.x
-            y = label.y
-            text = self._escape(label.text)
-            labels_html.append(
-                f'<div class="diagram-label" style="left: {x}%; top: {y}%;">'
-                f'<span class="label-dot"></span>'
-                f'<span class="label-text">{text}</span>'
-                f"</div>"
-            )
-        img_url = self._escape(diagram.image_url) if diagram.image_url else ""
-        return (
-            f'<div class="labeled-diagram-container">'
-            f'<img src="{img_url}" class="diagram-base" />'
-            f'<div class="diagram-labels">{"".join(labels_html)}</div>'
-            f"</div>"
-        )
-
-    def _render_hierarchy_tree(self, tree: GyMLHierarchyTree) -> str:
-        """Render hierarchy tree."""
-
-        def render_nested(node):
-            label = self._escape(node.label)
-            children = node.children
-            child_html = ""
-            if children:
-                child_items = "".join(f"<li>{render_nested(c)}</li>" for c in children)
-                child_html = f"<ul>{child_items}</ul>"
-            return f'<div class="tree-node">{label}</div>{child_html}'
-
-        return f'<div class="hierarchy-tree-container">{render_nested(tree.root)}</div>'
-
-    def _render_split_panel(self, panel: GyMLSplitPanel) -> str:
-        """Render split panel."""
-        left_html = self._render_embedded_panel(panel.left_panel)
-        right_html = self._render_embedded_panel(panel.right_panel)
-
-        return (
-            f'<div class="split-panel">'
-            f'<div class="panel-half left">{left_html}</div>'
-            f'<div class="panel-half right">{right_html}</div>'
-            f"</div>"
-        )
-
-    def _render_embedded_panel(self, panel_data: Any) -> str:
-        """Helper to render a panel in a split panel."""
-        title = self._escape(panel_data.title)
-        content = self._escape(panel_data.content).replace("\n", "<br>")
-        return f'<div class="embedded-panel"><h3>{title}</h3><p>{content}</p></div>'
-
-    def _render_embedded_block(self, block_data: Dict[str, Any]) -> str:
-        """Helper to render a block inside another block (like split panel)."""
-        from .serializer import GyMLSerializer
-        from .definitions import ComposedBlock
-
-        s = GyMLSerializer()
-        composed = ComposedBlock(
-            type=block_data.get("type", "paragraph"),
-            content=block_data.get("content", block_data),
-        )
-        node = s._serialize_block(composed)
-        return self._render_node(node) if node else ""
-
-    def _render_formula_block(self, block: GyMLFormulaBlock) -> str:
-        """Render formula block."""
-        expression = self._escape(block.expression)
-        example = self._escape(block.example) if block.example else ""
-
-        vars_html = []
-        for var in block.variables:
-            vars_html.append(
-                f'<div class="formula-var">'
-                f'<span class="var-name">{self._escape(var.name)}</span>'
-                f'<span class="var-def">{self._escape(var.definition)}</span>'
-                f"</div>"
-            )
-
-        return (
-            f'<div class="formula-block-container">'
-            f'<div class="formula-display">$${expression}$$</div>'
-            f'<div class="formula-example">{example}</div>'
-            f'<div class="formula-variables">{"".join(vars_html)}</div>'
-            f"</div>"
-        )
-
-    def _render_hub_and_spoke(self, node: "GyMLHubAndSpoke") -> str:
-        """Render hub and spoke visualization."""
-        hub_label = self._escape(node.hub_label)
-        items_html = []
-        for i, item in enumerate(node.items):
-            label = self._escape(item.label)
-            icon_html = ""
-            if item.icon:
-                icon_class = item.icon
-                if not icon_class.startswith("ri-"):
-                    icon_class = f"ri-{icon_class}-line"
-                icon_html = f'<i class="{self._escape(icon_class)}"></i>'
-
-            style = f' style="--item-color: {item.color};"' if item.color else ""
-            desc_html = ""
-            if item.description:
-                anim_attrs = ""
-                anim_class = ""
-                if self.animated:
-                    seg = self._segment_counter
-                    self._segment_counter += 1
-                    anim_attrs = f' data-segment="{seg}"'
-                    anim_class = " anim-fade"
-                desc_html = f'<div class="spoke-info-box{anim_class}"{anim_attrs}><p>{self._escape(item.description)}</p></div>'
-
-            items_html.append(
-                f'<div class="spoke-item" data-index="{i}"{style}>'
-                f'<div class="hexagon">'
-                f'<div class="hexagon-inner">'
-                f"{icon_html}"
-                f'<span class="spoke-label">{label}</span>'
-                f"</div>"
-                f"</div>"
-                f"{desc_html}"
-                f"</div>"
-            )
-
-        return (
-            f'<div class="hub-and-spoke-container" data-variant="{node.variant}" data-item-count="{len(node.items)}">'
-            f'<div class="hub-center">'
-            f'<div class="hub-circle">'
-            f'<span class="hub-label">{hub_label}</span>'
-            f"</div>"
-            f"</div>"
-            f'<div class="hub-connection-line"></div>'
-            f'<div class="spokes-wrapper">'
-            f'{"".join(items_html)}'
-            f"</div>"
-            f"</div>"
-        )
-
-    def _render_cyclic_block(self, node: "GyMLCyclicBlock") -> str:
-        """Render cyclic block visualization as pie-sector wheel (SVG-based).
-
-        Each item = a filled arc-sector. An icon is overlaid at the midpoint
-        of each sector. Info boxes float to the left or right of the wheel.
-        """
-        import math
-
-        n = len(node.items)
-        if n < 2:
-            n = 2  # safety
-
-        # SVG geometry config
-        cx, cy = 250, 250  # centre of SVG canvas
-        R_outer = 180  # outer radius of the ring
-        R_inner = 75  # inner radius (hole)
-        R_icon = (R_outer + R_inner) / 2  # icon sits at mid-ring
-        gap_deg = 8  # gap between sectors (degrees)
-        viewbox_size = 500
-
-        # Sector sweep with gap taken out
-        sweep_deg = (360 / n) - gap_deg
-
-        # Default dark navy colour for sectors
-        DEFAULT_SECTOR_COLOR = "#0d1b2a"
-        DEFAULT_STROKE = "#1e3a5f"
-
-        # ── SVG paths for sectors ──────────────────────────────────────────
-        def polar(cx, cy, r, angle_deg):
-            a = math.radians(angle_deg)
-            return cx + r * math.cos(a), cy + r * math.sin(a)
-
-        def chevron_arc_path(cx, cy, R_out, R_in, start_deg, sweep, chevron_deg=8.0):
-            """
-            Donut-sector with chevron (V-shape) interlocking edges.
-            The 'end' edge has a protruding tip at R_mid.
-            The 'start' edge has a matching notch.
-            This creates the 'arrow' effect.
-            """
-            R_mid = (R_out + R_in) / 2
-            end_deg = start_deg + sweep
-
-            # Outer arc points
-            ox1, oy1 = polar(cx, cy, R_out, start_deg)
-            ox2, oy2 = polar(cx, cy, R_out, end_deg)
-
-            # Tip at the end
-            tx, ty = polar(cx, cy, R_mid, end_deg + chevron_deg)
-
-            # Inner arc points
-            ix1, iy1 = polar(cx, cy, R_in, end_deg)
-            ix2, iy2 = polar(cx, cy, R_in, start_deg)
-
-            # Notch at the start
-            nx, ny = polar(cx, cy, R_mid, start_deg + chevron_deg)
-
-            large = 1 if sweep > 180 else 0
-
-            d = f"M {ox1:.3f},{oy1:.3f}"
-            d += f" A {R_out},{R_out} 0 {large},1 {ox2:.3f},{oy2:.3f}"  # Outer arc CW
-            d += f" L {tx:.3f},{ty:.3f}"  # To tip
-            d += f" L {ix1:.3f},{iy1:.3f}"  # To inner end
-            d += f" A {R_in},{R_in} 0 {large},0 {ix2:.3f},{iy2:.3f}"  # Inner arc CCW
-            d += f" L {nx:.3f},{ny:.3f}"  # To notch
-            d += " Z"
-            return d
-
-        svg_parts = [
-            f'<svg class="cyclic-svg" viewBox="0 0 {viewbox_size} {viewbox_size}" '
-            f'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
-        ]
-
-        svg_parts.append("<defs></defs>")
-
-        # Chevron angle: the protrusion depth of the arrow tip
-        chevron_deg = 10.0
-
-        # We need to ensure the gap accounts for the chevron overlap
-        gap_deg = 4.0
-        sweep_deg = (360 / n) - gap_deg
-
-        # Draw sectors
-        for i, item in enumerate(node.items):
-            start_angle = -90 + i * (360 / n)
-            mid_angle = start_angle + sweep_deg / 2
-            color = item.color or DEFAULT_SECTOR_COLOR
-
-            path_d = chevron_arc_path(
-                cx,
-                cy,
-                R_outer,
-                R_inner,
-                start_angle,
-                sweep_deg,
-                chevron_deg=chevron_deg,
-            )
-            svg_parts.append(
-                f'<path d="{path_d}" fill="{color}" stroke="{DEFAULT_STROKE}" '
-                f'stroke-width="1.5" stroke-linejoin="round"/>'
-            )
-
-            # Icon anchor (foreignObject for i-tag)
-            if item.icon:
-                icon_class = item.icon
-                if not icon_class.startswith("ri-"):
-                    icon_class = f"ri-{icon_class}-line"
-                ix, iy = polar(cx, cy, R_icon, mid_angle)
-                svg_parts.append(
-                    f'<foreignObject x="{ix-16:.1f}" y="{iy-16:.1f}" width="32" height="32">'
-                    f'<div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">'
-                    f'<i class="{self._escape(icon_class)}" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i>'
-                    f"</div>"
-                    f"</foreignObject>"
-                )
-
-        # Centre hole
-        hub_text = self._escape(node.hub_label) if node.hub_label else ""
-        if hub_text:
-            svg_parts.append(
-                f'<circle cx="{cx}" cy="{cy}" r="{R_inner - 6}" '
-                f'fill="{DEFAULT_SECTOR_COLOR}" stroke="{DEFAULT_STROKE}" stroke-width="3"/>'
-                f'<text x="{cx}" y="{cy}" text-anchor="middle" dominant-baseline="middle" '
-                f'font-size="16" font-weight="800" fill="white" font-family="Inter,sans-serif" letter-spacing="-0.5">'
-                f"{hub_text}</text>"
-            )
-        else:
-            svg_parts.append(
-                f'<circle cx="{cx}" cy="{cy}" r="{R_inner - 6}" '
-                f'fill="{DEFAULT_SECTOR_COLOR}" stroke="{DEFAULT_STROKE}" stroke-width="3"/>'
-            )
-
-        svg_parts.append("</svg>")
-        svg_html = "\n".join(svg_parts)
-
-        # ── Info boxes positioned around the wheel ─────────────────────────
-        # Split items into right vs left side based on which half of the circle
-        # they land on.  We emit them as absolutely-positioned divs alongside
-        # the SVG inside a wrapper.
-        infos_right = []
-        infos_left = []
-        infos_bottom = []
-
-        for i, item in enumerate(node.items):
-            start_angle = -90 + i * (360 / n)
-            mid_angle = (start_angle + sweep_deg / 2) % 360
-
-            anim_attrs = ""
-            anim_class = ""
-            if self.animated and item.description:
-                seg = self._segment_counter
-                self._segment_counter += 1
-                anim_attrs = f' data-segment="{seg}"'
-                anim_class = " anim-fade"
-
-            label_html = (
-                f'<strong class="cyclic-ib-title">{self._escape(item.label)}</strong>'
-            )
-            desc_html = ""
-            if item.description:
-                desc_html = (
-                    f'<p class="cyclic-ib-text">{self._escape(item.description)}</p>'
-                )
-
-            color = item.color or "#1e3a5f"
-            box_html = (
-                f'<div class="cyclic-info-box{anim_class}"{anim_attrs} '
-                f'style="--item-color:{color};">'
-                f"{label_html}{desc_html}"
-                f"</div>"
-            )
-
-            # Assign to areas:
-            # Bottom region: 60 to 120 deg (centered around 90deg)
-            if 60 < mid_angle < 120:
-                infos_bottom.append(box_html)
-            # Left half: 120 to 270 deg
-            elif 120 <= mid_angle < 270:
-                infos_left.append(box_html)
-            # Right half: 270 to 360 or 0 to 60 deg
-            else:
-                infos_right.append(box_html)
-
-        left_col = (
-            f'<div class="cyclic-col cyclic-col--left">{"".join(infos_left)}</div>'
-            if infos_left
-            else '<div class="cyclic-col cyclic-col--left spacer"></div>'
-        )
-        right_col = (
-            f'<div class="cyclic-col cyclic-col--right">{"".join(infos_right)}</div>'
-            if infos_right
-            else '<div class="cyclic-col cyclic-col--right spacer"></div>'
-        )
-        bottom_area = (
-            (f'<div class="cyclic-bottom-area">{"".join(infos_bottom)}</div>')
-            if infos_bottom
-            else ""
-        )
-
-        return (
-            f'<div class="cyclic-container" data-variant="{node.variant}" data-item-count="{n}">'
-            f'<div class="cyclic-main-row">'
-            f"{left_col}"
-            f'<div class="cyclic-svg-wrapper">{svg_html}</div>'
-            f"{right_col}"
-            f"</div>"
-            f"{bottom_area}"
-            f"</div>"
-        )
-
-    def _render_process_arrow_block(self, node: GyMLProcessArrowBlock) -> str:
-        """Render minimalist interlocking process arrow block using CSS clip-paths."""
-        n = len(node.items)
-        items_html = []
-
-        for i, item in enumerate(node.items):
-            color = item.color or "#6366f1"
-            image_url = item.image_url
-
-            # Minimalist Image Card
-            if not image_url or image_url == "null":
-                image_html = f'<div class="pa-img-minimal placeholder" style="--item-color: {color}"><i class="ri-image-line"></i></div>'
-            else:
-                image_html = f'<div class="pa-img-minimal"><img src="{self._escape(image_url)}" alt="{self._escape(item.label)}" /></div>'
-
-            is_first = i == 0
-            is_last = i == (n - 1)
-            item_class = "pa-col-min"
-            if is_first:
-                item_class += " is-first"
-            if is_last:
-                item_class += " is-last"
-
-            label = self._escape(item.label)
-            desc_html = ""
-            if item.description:
-                desc_html = (
-                    f'<div class="pa-desc-min">{self._escape(item.description)}</div>'
-                )
-
-            anim_attrs = ""
-            anim_class = ""
-            if self.animated:
-                seg = self._segment_counter
-                self._segment_counter += 1
-                anim_attrs = f' data-segment="{seg}"'
-                anim_class = " anim-fade"
-
-            items_html.append(
-                f'<div class="{item_class}{anim_class}"{anim_attrs} style="--item-color: {color};">'
-                f"  {image_html}"
-                f'  <div class="pa-arrow-min">'
-                f"    <span>{label}</span>"
-                f"  </div>"
-                f"  {desc_html}"
-                f"</div>"
-            )
-
-        return (
-            f'<div class="pa-container-min" data-count="{n}">'
-            f'  {"".join(items_html)}'
-            f"</div>"
-        )
-
-    def _render_cyclic_process_block(self, node: GyMLCyclicProcessBlock) -> str:
-        """Render cyclic process with circles and a single SVG overlay for sweeping arc arrows."""
-        n = len(node.items)
-        items_html = []
-
-        for i, item in enumerate(node.items):
-            label = self._escape(item.label)
-            desc = self._escape(item.description or "")
-            img_url = item.image_url
-
-            if not img_url or img_url == "null":
-                img_html = f'<div class="cp-circle-placeholder"><i class="ri-image-line"></i></div>'
-            else:
-                img_html = f'<img src="{self._escape(img_url)}" alt="{label}" />'
-
-            items_html.append(
-                f'<div class="cp-item">'
-                f'  <div class="cp-circle">{img_html}</div>'
-                f'  <div class="cp-info">'
-                f'    <div class="cp-label">{label}</div>'
-                f'    <div class="cp-description">{desc}</div>'
-                f"  </div>"
-                f"</div>"
-            )
-
-        # Build per-circle SVG arcs: simple semicircular arrows
-        import math
-
-        circle_d = 240
-        gap_px = 15
-        cr = 118.5  # center of the 3px CSS border (radius 120, border 117-120)
-        cy = circle_d / 2  # 120
-        total_w = n * circle_d + (n - 1) * gap_px
-        step = circle_d + gap_px  # distance between centers
-
-        defs_html = []
-        paths_html = []
-
-        for i in range(n):
-            cx_i = circle_d / 2 + i * step  # center x of circle i
-
-            # All arrows: start at mid-LEFT, end at mid-RIGHT
-            sx = cx_i - cr  # left midpoint (9 o'clock)
-            sy = cy
-            ex_pt = cx_i + cr  # right midpoint (3 o'clock)
-            ey_pt = cy
-
-            if i % 2 == 0:
-                # TOP semicircle: left → top → right (CW, sweep=1)
-                sweep = 1
-            else:
-                # BOTTOM semicircle: left → bottom → right (CCW, sweep=0)
-                sweep = 0
-
-            d = (
-                f"M {sx:.1f},{sy:.1f} "
-                f"A {cr:.1f},{cr:.1f} 0 0,{sweep} {ex_pt:.1f},{ey_pt:.1f}"
-            )
-
-            # Arrowhead marker
-            defs_html.append(
-                f'<marker id="cp-head-{i}" markerWidth="10" markerHeight="8" '
-                f'refX="8" refY="4" orient="auto">'
-                f'<polygon points="0 0, 10 4, 0 8" fill="#555" />'
-                f"</marker>"
-            )
-            # Filled dot at start point
-            paths_html.append(
-                f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="6" fill="#555" />'
-            )
-            # The arc path
-            paths_html.append(
-                f'<path d="{d}" fill="none" stroke="#555" '
-                f'stroke-width="4" stroke-linecap="round" '
-                f'marker-end="url(#cp-head-{i})" />'
-            )
-
-        svg_overlay = (
-            f'<svg class="cp-arrows-overlay" viewBox="0 0 {total_w} {circle_d}" '
-            f'width="{total_w}" height="{circle_d}" '
-            f'preserveAspectRatio="xMidYMid meet">'
-            f"<defs>{chr(10).join(defs_html)}</defs>"
-            f"{chr(10).join(paths_html)}"
-            f"</svg>"
-        )
-
-        return (
-            f'<div class="cyclic-process-container" data-count="{n}">'
-            f'  <div class="cp-items-row" style="gap:{gap_px}px; '
-            f'width:{total_w}px; margin:0 auto;">'
-            f'{"".join(items_html)}'
-            f"</div>"
-            f"  {svg_overlay}"
-            f"</div>"
-        )
-
-    def _render_feature_showcase(self, node: GyMLFeatureShowcaseBlock) -> str:
-        """Render feature showcase with radial arc layout.
-
-        Central image with icon circles placed along an arc, each
-        connected to a pill-label extending outward (left or right).
-        Matches the 'Roles & Responsibilities' reference style.
-        """
-        import math
-
-        n = len(node.items)
-        title = self._escape(node.title)
-
-        # Default palette
-        default_colors = [
-            "#3b82f6",
-            "#ef4444",
-            "#10b981",
-            "#8b5cf6",
-            "#f59e0b",
-            "#06b6d4",
-            "#ec4899",
-            "#14b8a6",
-        ]
-
-        # ── SVG canvas geometry ───────────────────────────────────
-        W, H = 1100, 680  # viewBox dimensions
-        cx, cy = W / 2, H / 2  # centre
-        R_center = 120  # radius of the central circle
-        R_orbit = 185  # radius where icon circles sit
-        r_icon = 40  # radius of each icon circle
-
-        # Distribute items in an arc from ~130° to ~410° (full wrap)
-        # 0° is 3-o'clock; we use -90 offset so 0 = top
-        start_deg = 110  # start angle (top-left area)
-        end_deg = 430  # end angle (wraps past bottom to top-right)
-        if n == 1:
-            angles = [(start_deg + end_deg) / 2]
-        else:
-            step = (end_deg - start_deg) / (n - 1)
-            angles = [start_deg + i * step for i in range(n)]
-
-        def polar(angle_deg, radius):
-            a = math.radians(angle_deg)
-            return cx + radius * math.cos(a), cy + radius * math.sin(a)
-
-        # ── Build SVG ─────────────────────────────────────────────
-        svg_parts = [
-            f'<svg class="fs-radial-svg" viewBox="0 0 {W} {H}" '
-            f'xmlns="http://www.w3.org/2000/svg" '
-            f'xmlns:xlink="http://www.w3.org/1999/xlink">'
-        ]
-
-        # Central circle background
-        svg_parts.append(
-            f'<circle cx="{cx}" cy="{cy}" r="{R_center + 8}" '
-            f'fill="none" stroke="rgba(99,102,241,0.08)" stroke-width="16" />'
-        )
-
-        # For each item: connector line + icon circle
-        for i, item in enumerate(node.items):
-            angle = angles[i]
-            color = item.color or default_colors[i % len(default_colors)]
-            ix, iy = polar(angle, R_orbit)
-
-            # Thin line from center edge to icon circle
-            lx1, ly1 = polar(angle, R_center + 4)
-            svg_parts.append(
-                f'<line x1="{lx1:.1f}" y1="{ly1:.1f}" '
-                f'x2="{ix:.1f}" y2="{iy:.1f}" '
-                f'stroke="{color}" stroke-width="2" stroke-opacity="0.35" />'
-            )
-
-            # Icon circle
-            svg_parts.append(
-                f'<circle cx="{ix:.1f}" cy="{iy:.1f}" r="{r_icon}" '
-                f'fill="{color}" />'
-            )
-
-            # Icon via foreignObject
-            icon_class = "ri-checkbox-blank-circle-fill"
-            if item.icon:
-                icon_class = item.icon
-                if not icon_class.startswith("ri-"):
-                    icon_class = f"ri-{icon_class}-line"
-
-            svg_parts.append(
-                f'<foreignObject x="{ix - r_icon:.1f}" y="{iy - r_icon:.1f}" '
-                f'width="{r_icon * 2}" height="{r_icon * 2}">'
-                f'<div xmlns="http://www.w3.org/1999/xhtml" '
-                f'style="width:100%;height:100%;display:flex;align-items:center;'
-                f'justify-content:center;">'
-                f'<i class="{self._escape(icon_class)}" '
-                f'style="font-size:1.6rem;color:white;"></i>'
-                f"</div></foreignObject>"
-            )
-
-            # ── Pill label ──────────────────────────────────────
-            # Determine if this item is on left or right
-            norm_angle = angle % 360
-            is_left = 90 < norm_angle < 270
-
-            # Line from icon circle outward to the label
-            extend = 75  # how far the connector goes
-            if is_left:
-                lbl_end_x = ix - extend
-            else:
-                lbl_end_x = ix + extend
-
-            lbl_y = iy
-
-            # Short connector line from icon to label area
-            svg_parts.append(
-                f'<line x1="{ix:.1f}" y1="{iy:.1f}" '
-                f'x2="{lbl_end_x:.1f}" y2="{lbl_y:.1f}" '
-                f'stroke="{color}" stroke-width="1.5" stroke-opacity="0.4" />'
-            )
-
-            # Small dot at end of connector
-            svg_parts.append(
-                f'<circle cx="{lbl_end_x:.1f}" cy="{lbl_y:.1f}" '
-                f'r="3" fill="{color}" fill-opacity="0.5" />'
-            )
-
-        svg_parts.append("</svg>")
-
-        # ── HTML items (absolutely positioned pill labels) ─────────
-        items_html = []
-        for i, item in enumerate(node.items):
-            angle = angles[i]
-            color = item.color or default_colors[i % len(default_colors)]
-            label = self._escape(item.label)
-            ix, iy = polar(angle, R_orbit)
-
-            norm_angle = angle % 360
-            is_left = 90 < norm_angle < 270
-            extend = 75
-
-            if is_left:
-                lbl_end_x = ix - extend
-                side = "left"
-            else:
-                lbl_end_x = ix + extend
-                side = "right"
-
-            # Convert SVG coordinates to percentage positions
-            x_pct = (lbl_end_x / W) * 100
-            y_pct = (iy / H) * 100
-
-            # Animation
-            anim_attrs = ""
-            anim_class = ""
-            if self.animated:
-                seg = self._segment_counter
-                self._segment_counter += 1
-                anim_attrs = f' data-segment="{seg}"'
-                anim_class = " anim-fade"
-
-            items_html.append(
-                f'<div class="fs-pill fs-pill--{side}{anim_class}"{anim_attrs} '
-                f'style="left:{x_pct:.1f}%;top:{y_pct:.1f}%;--item-color:{color};">'
-                f'<span class="fs-pill-text">{label}</span>'
-                f"</div>"
-            )
-
-        # ── Central image (HTML overlay) ──────────────────────────
-        if node.image_url and node.image_url != "null":
-            center_html = (
-                f'<div class="fs-hub-img">'
-                f'<img src="{self._escape(node.image_url)}" alt="{title}" />'
-                f"</div>"
-            )
-        else:
-            center_html = (
-                f'<div class="fs-hub-img fs-hub-placeholder">'
-                f'<i class="ri-user-line"></i>'
-                f"</div>"
-            )
-
-        # Bottom label
-        bottom_label = (
-            f'<div class="fs-bottom-label">' f"<span>{title}</span>" f"</div>"
-        )
-
-        return (
-            f'<div class="fs-radial-container" data-item-count="{n}">'
-            f'{"".join(svg_parts)}'
-            f"{center_html}"
-            f'{"".join(items_html)}'
-            f"{bottom_label}"
-            f"</div>"
-        )
-
-    def _escape(self, text: str) -> str:
-        """Escape HTML special characters."""
-        if not text:
-            return ""
-        return html.escape(str(text))
-
-    def _get_gamma_styles(self) -> str:
-        """Get Gamma-style CSS."""
-        return """
 /* ================================================
    GAMMA-STYLE SLIDE DESIGN
    Clean, professional, light theme
@@ -1788,7 +482,7 @@ section {
 /* ... image layouts ... */
 section[data-image-layout="right"] {
     display: grid;
-    grid-template-columns: 1fr var(--accent-width, 500px); /* body takes remaining, image wider */
+    grid-template-columns: 1fr 500px; /* body takes remaining, image wider */
     gap: var(--block-gap, 3rem);
     align-items: center;
 }
@@ -1799,7 +493,7 @@ section[data-image-layout="right"] .accent-image-group { order: 2; grid-column: 
 
 section[data-image-layout="left"] {
     display: grid;
-    grid-template-columns: var(--accent-width, 500px) 1fr; /* col 1 (Img) = 400-500px, col 2 (Text) = remaining */
+    grid-template-columns: 500px 1fr; /* col 1 (Img) = 500px, col 2 (Text) = remaining */
     gap: var(--block-gap, 3rem);
     align-items: center;
 }
@@ -2959,7 +1653,7 @@ section[data-density="super_dense"] .hierarchy-tree-container ul {
 }
 
 .smart-layout[data-variant="processArrow"] .card:not(:last-child)::after {
-    content: '\\ea6e';  /* remixicon arrow-right-line */
+    content: '\ea6e';  /* remixicon arrow-right-line */
     font-family: 'remixicon';
     position: absolute;
     right: -1.5rem;
@@ -3259,46 +1953,26 @@ th {
 .smart-layout[data-variant="comparison"],
 .smart-layout[data-variant="comparisonProsCons"],
 .smart-layout[data-variant="comparisonBeforeAfter"] {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1.25rem;
-    align-items: stretch;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
 }
 
 .smart-layout[data-variant="comparison"] .card,
 .smart-layout[data-variant="comparisonProsCons"] .card,
 .smart-layout[data-variant="comparisonBeforeAfter"] .card {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
+    border: 1px solid var(--border-color, #f1f5f9);
+    border-radius: 12px;
+    padding: 1.5rem;
+    background: var(--bg-secondary, #ffffff);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
 .smart-layout[data-variant="comparison"] .card:first-child {
-    border-top: 4px solid #3498db;
+    border-top: 4px solid var(--accent-1, #94a3b8);
 }
 
-.smart-layout[data-variant="comparison"] .card:nth-child(2) {
-    border-top: 4px solid #9b59b6;
-}
-
-.smart-layout[data-variant="comparison"] .card:nth-child(3) {
-    border-top: 4px solid #e67e22;
-}
-
-.smart-layout[data-variant="comparison"] .card-title {
-    font-size: 1.1rem;
-    margin-bottom: 0.75rem;
-    color: #fff;
-}
-
-.smart-layout[data-variant="comparison"] .card-text {
-    font-size: 0.85rem;
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.8);
+.smart-layout[data-variant="comparison"] .card:last-child {
+    border-top: 4px solid var(--accent-2, #cbd5e1);
 }
 
 /* --- Pros / Cons --- */
@@ -3327,7 +2001,7 @@ th {
     gap: 2.5rem;
 }
 .smart-layout[data-variant="comparisonBeforeAfter"]::after {
-    content: '\\ea6e';
+    content: '\ea6e';
     font-family: 'remixicon';
     position: absolute;
     left: 50%;
@@ -3939,11 +2613,102 @@ section[data-animated="true"] .cyclic-info-box[data-segment] {
         display: none; /* Hide boxes on mobile to prevent clutter */
     }
 }
-"""
 
-    def _get_animator_js(self) -> str:
-        """Get the SlideAnimator JavaScript controller."""
-        return """
+
+:root {
+    --bg-primary: #0a0f1a;
+    --bg-secondary: #0f172a;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent: #38bdf8;
+    --border-color: #1e293b;
+    --number-bg: #1e293b;
+    --callout-bg: #1e293b;
+    --icon-bg: #38bdf8;
+    --timeline-color: #2d8a6e;
+    --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* Component Styles */
+    --card-shadow: none;
+    --card-radius: 0.5rem;
+    --divider-style: solid;
+}
+
+/* Dynamic Responsive Styles */
+@media (max-width: 480px) {
+  :root {
+    --section-padding: 1rem;
+    font-size: 85.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+@media (max-width: 768px) {
+  :root {
+    --section-padding: 2rem;
+    font-size: 90.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+@media (max-width: 1024px) {
+  :root {
+    --section-padding: 1rem;
+    font-size: 100.0%;
+  }
+  .columns { flex-direction: column; }
+  .column { flex: 1 1 100% !important; }
+  section[data-image-layout='right'], section[data-image-layout='left'] {
+    grid-template-columns: 1fr; display: flex; flex-direction: column;
+  }
+  .accent-image { max-width: 100%; margin-bottom: 1rem; }
+}
+    </style>
+</head>
+<body>
+    <div class="gyml-deck">
+<section id="slide_f274a81f" class="slide-section" role="region" aria-label="Slide slide_f274a81f" data-image-layout="left" style="--h1-size: 2.6rem; --h2-size: 2.2rem; --p-size: 1.25rem; --line-height: 1.55; --card-number-size: 1.25rem; --card-text-size: 1.125rem; --section-padding: 1.5rem 2.25rem; --block-gap: 1rem; --card-padding: 1.125rem; --heading-gap: 1rem" data-animated="true">
+<div class="accent-image-wrapper"><img class="accent-image" src="https://cdn.leonardo.ai/users/82a057a7-025c-4000-87a9-cd43b4a072d7/generations/b4deba9c-1832-44c4-8b79-880653641222/segments/1:1:1/Flux_Schnell_A_dramatic_scene_of_a_crowd_gathered_in_front_of__0.jpg" alt="Generated image for None" loading="lazy" /></div>
+<div class="body">
+<h1>Introduction to the French Revolution</h1>
+<p class="p-intro">The French Revolution was a pivotal event in world history that reshaped France and inspired global change. Understanding its causes and significance provides foundational insight into modern political and social movements.</p>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="bulletIcon" data-item-count="3">
+<div class="card anim-slide-up" data-index="0" data-segment="0">
+<div class="card-icon"><i class="ri-flashlight-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Causes of the Revolution</h4>
+<p class="card-text">Economic hardship, social inequality, and political unrest fueled widespread discontent.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="1" data-segment="1">
+<div class="card-icon"><i class="ri-earth-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Key Events Overview</h4>
+<p class="card-text">From the Estates-General to the fall of the Bastille, early events sparked major changes.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="2" data-segment="2">
+<div class="card-icon"><i class="ri-star-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Significance</h4>
+<p class="card-text">The revolution led to the rise of democracy and challenged monarchy and aristocracy.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+    </div>
+
 <script>
 /**
  * SlideAnimator — Controls segment-by-segment reveal of slide elements.
@@ -4022,4 +2787,6 @@ document.querySelectorAll('section[data-animated="true"]').forEach(section => {
     }, 100);
 });
 </script>
-"""
+
+</body>
+</html>

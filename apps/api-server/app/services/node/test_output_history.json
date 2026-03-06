@@ -1,0 +1,276 @@
+{
+  "topic": "The French Revolution",
+  "slides": {
+    "hist-fr": [
+      {
+        "title": "Introduction to the French Revolution",
+        "intent": "concept",
+        "content_angle": "overview",
+        "selected_template": "Title with bullets and image",
+        "slide_density": "standard",
+        "gyml_content": {
+          "title": "Introduction to the French Revolution",
+          "intent": "introduce",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "The French Revolution was a pivotal event in world history that reshaped France and inspired global change. Understanding its causes and significance provides foundational insight into modern political and social movements."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "bulletIcon",
+              "items": [
+                {
+                  "icon": "ri-flashlight-line",
+                  "heading": "Causes of the Revolution",
+                  "text": "Economic hardship, social inequality, and political unrest fueled widespread discontent."
+                },
+                {
+                  "icon": "ri-earth-line",
+                  "heading": "Key Events Overview",
+                  "text": "From the Estates-General to the fall of the Bastille, early events sparked major changes."
+                },
+                {
+                  "icon": "ri-star-line",
+                  "heading": "Significance",
+                  "text": "The revolution led to the rise of democracy and challenged monarchy and aristocracy."
+                }
+              ]
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A dramatic scene of a crowd gathered in front of a historic stone fortress at dawn, with flags waving and a mood of tension and hope in the air"
+        },
+        "primary_block_index": 1
+      },
+      {
+        "title": "Key Causes of the French Revolution",
+        "intent": "process",
+        "content_angle": "mechanism",
+        "selected_template": "Diagram",
+        "slide_density": "standard",
+        "gyml_content": {
+          "title": "Key Causes of the French Revolution",
+          "intent": "explain",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "The French Revolution was triggered by a complex mix of social inequality, economic hardship, and political unrest. Understanding these causes reveals how tensions built up to ignite the revolution."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "diagramFlowchart",
+              "items": [
+                {
+                  "label": "Social Inequality",
+                  "description": "Rigid class structure favored nobility and clergy over commoners, causing widespread resentment.",
+                  "imagePrompt": "A divided society with three distinct layers: privileged nobles and clergy on top, oppressed commoners at the bottom, with a clear visual gap"
+                },
+                {
+                  "label": "Economic Crisis",
+                  "description": "Heavy taxation on peasants and rising national debt created financial strain and famine.",
+                  "imagePrompt": "A distressed peasant holding empty pockets beside a broken coin scale and looming debt documents"
+                },
+                {
+                  "label": "Political Weakness",
+                  "description": "King Louis XVI\u2019s ineffective leadership and lack of political reform fueled demands for change.",
+                  "imagePrompt": "A distant king on a throne looking overwhelmed, with frustrated citizens protesting outside a palace"
+                }
+              ]
+            },
+            {
+              "type": "annotation_paragraph",
+              "text": "These three factors interacted, amplifying tensions and setting the stage for revolutionary upheaval."
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A stormy, tense gathering of diverse French citizens from different social classes, symbolizing rising unrest and division under a dark, cloudy sky"
+        },
+        "primary_block_index": 1
+      },
+      {
+        "title": "Storming of the Bastille: A Pivotal Event",
+        "intent": "example",
+        "content_angle": "example",
+        "selected_template": "Image and text",
+        "slide_density": "standard",
+        "gyml_content": {
+          "title": "Storming of the Bastille: A Pivotal Event",
+          "intent": "explain",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "The Storming of the Bastille on July 14, 1789, marked a turning point in the French Revolution, symbolizing the uprising against royal authority and the fight for liberty."
+            },
+            {
+              "type": "split_panel",
+              "leftPanel": {
+                "title": "What Happened?",
+                "content": "Revolutionaries attacked the Bastille prison, a symbol of tyranny, to seize weapons and free prisoners, igniting widespread rebellion."
+              },
+              "rightPanel": {
+                "title": "Why It Matters",
+                "content": "This event united the people, challenged the monarchy's power, and became a lasting symbol of freedom and resistance."
+              }
+            },
+            {
+              "type": "image",
+              "url": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Prise_de_la_Bastille.jpg",
+              "caption": "Painting depicting the Storming of the Bastille, July 14, 1789",
+              "layout": "left"
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "Dramatic scene of a crowd storming a medieval fortress under a stormy sky, with flags waving and intense expressions of determination"
+        },
+        "primary_block_index": 1
+      },
+      {
+        "title": "Comparison of Estates Before the Revolution",
+        "intent": "comparison",
+        "content_angle": "comparison",
+        "selected_template": "Two columns",
+        "slide_density": "standard",
+        "gyml_content": {
+          "title": "Comparison of Estates Before the Revolution",
+          "intent": "compare",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Before the French Revolution, society was divided into three Estates with distinct rights, privileges, and burdens. Understanding these differences reveals the social inequalities that fueled unrest."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "comparison",
+              "items": [
+                {
+                  "heading": "First Estate: Clergy",
+                  "points": [
+                    "Privileges: Owned about 10% of land, exempt from many taxes.",
+                    "Rights: Controlled education and moral authority.",
+                    "Burdens: Provided some charity but had few obligations."
+                  ],
+                  "icon": "ri-church-line"
+                },
+                {
+                  "heading": "Second Estate: Nobility",
+                  "points": [
+                    "Privileges: Held high offices, exempt from most taxes.",
+                    "Rights: Owned land, collected feudal dues from peasants.",
+                    "Burdens: Military service expected, but few financial duties."
+                  ],
+                  "icon": "ri-crown-line"
+                },
+                {
+                  "heading": "Third Estate: Commoners",
+                  "points": [
+                    "Privileges: Very limited rights, no tax exemptions.",
+                    "Rights: Included peasants, urban workers, and bourgeoisie.",
+                    "Burdens: Paid heavy taxes and feudal dues; lacked political power."
+                  ],
+                  "icon": "ri-group-line"
+                }
+              ]
+            },
+            {
+              "type": "takeaway",
+              "text": "The First and Second Estates enjoyed privileges and exemptions, while the Third Estate bore the majority of taxes and burdens, highlighting stark social inequalities.",
+              "icon": "ri-alert-line",
+              "label": "Key Insight"
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A dramatic scene of a divided French society before the revolution, showing privileged clergy and nobles in fine attire on one side, and commoners burdened with heavy loads and working the fields on the other, under a cloudy sky symbolizing tension"
+        },
+        "primary_block_index": 1
+      },
+      {
+        "title": "Timeline of Major Events (1789-1794)",
+        "intent": "data",
+        "content_angle": "visualization",
+        "selected_template": "Timeline",
+        "slide_density": "standard",
+        "gyml_content": {
+          "title": "Timeline of Major Events (1789-1794)",
+          "intent": "narrate",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Explore the key milestones of the French Revolution from its outbreak in 1789 to the fall of Robespierre in 1794, highlighting the sequence and impact of major events."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "timelineSequential",
+              "items": [
+                {
+                  "heading": "Storming of the Bastille",
+                  "description": "July 14, 1789: Symbolic start of the revolution with the fall of the Bastille prison."
+                },
+                {
+                  "heading": "Declaration of the Rights of Man",
+                  "description": "August 1789: A foundational document proclaiming liberty and equality."
+                },
+                {
+                  "heading": "Women's March on Versailles",
+                  "description": "October 1789: Women demand bread and force the royal family to Paris."
+                },
+                {
+                  "heading": "Execution of Louis XVI",
+                  "description": "January 1793: The king is executed, marking the end of monarchy."
+                },
+                {
+                  "heading": "Reign of Terror",
+                  "description": "1793-1794: Period of political purges led by Robespierre."
+                }
+              ]
+            },
+            {
+              "type": "callout",
+              "text": "These events shaped the revolution\u2019s progression, showing how political and social upheaval escalated rapidly.",
+              "label": "Key Insight",
+              "icon": "ri-flashlight-line"
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A dramatic, moody scene of a crowded 18th-century Paris street with passionate crowds, flags waving, and historic architecture under a cloudy sky, evoking tension and change."
+        },
+        "primary_block_index": 1
+      },
+      {
+        "title": "Legacy and Impact of the French Revolution",
+        "intent": "summary",
+        "content_angle": "summary",
+        "selected_template": "Rich text",
+        "slide_density": "standard",
+        "gyml_content": {
+          "title": "Legacy and Impact of the French Revolution",
+          "intent": "summarize",
+          "layout": "blank",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "The French Revolution transformed France and influenced global political and social systems. Its legacy includes new ideas about rights, governance, and social equality."
+            },
+            {
+              "type": "rich_text",
+              "paragraphs": [
+                "Political Change: The revolution ended absolute monarchy, establishing republican ideals and inspiring democratic movements worldwide.",
+                "Social Equality: It challenged the old social hierarchies, promoting the principles of liberty, equality, and fraternity.",
+                "Legal Reforms: The Napoleonic Code laid foundations for modern legal systems emphasizing individual rights and secular laws.",
+                "Global Influence: Revolutionary ideas spurred independence movements and reforms across Europe and the Americas."
+              ]
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A dramatic sunrise over a historic European cityscape symbolizing hope and transformation, with subtle silhouettes of people raising flags and banners in peaceful celebration"
+        },
+        "primary_block_index": 1
+      }
+    ]
+  }
+}

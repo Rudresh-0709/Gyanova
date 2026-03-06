@@ -55,6 +55,7 @@ class SmartLayoutVariant(Enum):
     TIMELINE_HORIZONTAL = "timelineHorizontal"  # Alternating above/below
     TIMELINE_SEQUENTIAL = "timelineSequential"  # Numbered steps
     TIMELINE_MILESTONE = "timelineMilestone"  # Key moments
+    TIMELINE_ICON = "timelineIcon"  # With icons instead of numbers
 
     # Card grid variants
     CARD_GRID = "cardGrid"  # Default numbered
@@ -213,7 +214,7 @@ class Limits:
 
     # List limits
     MAX_BULLET_ITEMS: int = 7
-    MAX_TIMELINE_EVENTS: int = 6
+    MAX_TIMELINE_EVENTS: int = 5
     MAX_CARD_COUNT: int = 6
 
     @classmethod

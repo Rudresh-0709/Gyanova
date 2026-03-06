@@ -16,7 +16,6 @@ from typing import Dict, Any, List
 import os
 import sys  # Need this for all path manipulations
 from dotenv import load_dotenv
-from tavily import TavilyClient
 
 try:
     from ..llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
@@ -33,17 +32,25 @@ try:
 except ImportError:
     from audio_generation_node import segment_narration
 
-# Import icon selector
+# Import icon selector and GyML generator
 try:
     from ..icon_selector import select_icons_batch
     from .slides.gyml.generator import GyMLContentGenerator
 except ImportError:
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
     from icon_selector import select_icons_batch
-    from services.node.slides.gyml.generator import GyMLContentGenerator
+    from slides.gyml.generator import GyMLContentGenerator
 
 load_dotenv()
-tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+
+# Tavily is optional — fact-checking will be skipped if not installed
+try:
+    from tavily import TavilyClient
+
+    tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+except (ImportError, Exception):
+    print("⚠ tavily not available — fact-checking disabled.")
+    tavily = None
 
 # Initialize generator
 gyml_generator = GyMLContentGenerator()
@@ -182,6 +189,7 @@ BLOCK_TYPE_TO_ANIMATION_UNIT = {
     "timelineHorizontal": "step",
     "timelineSequential": "step",
     "timelineMilestone": "step",
+    "timelineIcon": "step",
     "cardGrid": "card",
     "cardGridIcon": "card",
     "cardGridSimple": "card",
@@ -337,6 +345,16 @@ def _validate_and_ensure_primary_block(
     # ── Check 3: No structured blocks at all — signal regeneration ──
     print("    ✗ No valid primary block found. Regeneration needed.")
     return None
+
+
+def _classify_density(block_count: int) -> str:
+    """Classify slide density based on block count."""
+    if block_count <= 2:
+        return "compact"
+    elif block_count <= 4:
+        return "standard"
+    else:
+        return "rich"
 
 
 def _extract_primary_items_detail(gyml_content: Dict[str, Any]) -> List[str]:
@@ -573,7 +591,7 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
         # ── STEP 1: Fact Check if needed ──
         search_context = ""
-        if should_fact_check(title, "explanation", subtopic_name):
+        if tavily and should_fact_check(title, "explanation", subtopic_name):
             try:
                 search_query = f"{subtopic_name} {title} verified facts and details"
                 search_results = tavily.search(query=search_query, max_results=3)
@@ -673,7 +691,12 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
             f"    → Animation: {animation_meta['animation_unit_count']} x {animation_meta['animation_unit']}"
         )
 
-        # ── STEP 5: Store ──
+        # ── STEP 5: Classify Slide Density ──
+        block_count = len(generated_content.get("contentBlocks", []))
+        slide_density = _classify_density(block_count)
+        print(f"    → Density: {slide_density} ({block_count} blocks)")
+
+        # ── STEP 6: Store ──
         slide_obj = {
             **concept,
             "subtopic_name": subtopic_name,
@@ -684,6 +707,7 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
             "animation_unit": animation_meta["animation_unit"],
             "animation_unit_count": animation_meta["animation_unit_count"],
             "animated_block_index": animation_meta["animated_block_index"],
+            "slide_density": slide_density,
         }
         state["slides"][sub_id].append(slide_obj)
 

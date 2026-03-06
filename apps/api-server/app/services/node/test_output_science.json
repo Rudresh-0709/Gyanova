@@ -1,0 +1,266 @@
+{
+  "topic": "Light and Optics",
+  "slides": {
+    "sci-01": [
+      {
+        "title": "What is Refraction?",
+        "intent": "concept",
+        "content_angle": "overview",
+        "selected_template": "Title with bullets",
+        "slide_density": "compact",
+        "primary_block_index": 1,
+        "animation_unit": "bullet",
+        "animation_unit_count": 3,
+        "animated_block_index": 1,
+        "gyml_content": {
+          "title": "What is Refraction?",
+          "intent": "teach",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Refraction is the bending of light as it passes from one medium to another. This phenomenon occurs because light changes speed depending on the material it travels through."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "bulletIcon",
+              "items": [
+                {
+                  "icon": "ri-lightbulb-line",
+                  "heading": "Definition of Refraction",
+                  "description": "Refraction is the change in direction of light when it passes between different media."
+                },
+                {
+                  "icon": "ri-arrow-left-right-line",
+                  "heading": "Why Light Bends",
+                  "description": "Light bends because its speed changes as it moves from one material to another."
+                },
+                {
+                  "icon": "ri-water-line",
+                  "heading": "Common Examples",
+                  "description": "Light bends when moving from air to water, making objects appear shifted."
+                }
+              ]
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A bright beam of light bending as it passes from clear air into calm, shimmering water, with a soft glow highlighting the bending path"
+        },
+        "narration_text": "Refraction happens when light changes its path as it travels from one material to another. This change in direction occurs because light doesn’t move at the same speed in every substance. Think of it like a car turning when it hits a patch of rough road.\n\nLight bends because its speed varies depending on the medium it’s passing through. For example, light travels faster in air but slows down in water or glass. This change in speed causes the light to shift direction, similar to how a runner changes course when moving from pavement to sand.\n\nYou can see refraction in everyday life, like when a straw looks bent in a glass of water. That bending effect happens because light slows down entering the water, making objects appear shifted or distorted. It’s a simple but powerful example of how refraction affects what we see."
+      },
+      {
+        "title": "Snell's Law",
+        "intent": "concept",
+        "content_angle": "mechanism",
+        "selected_template": "Formula block",
+        "slide_density": "compact",
+        "primary_block_index": 1,
+        "animation_unit": "term",
+        "animation_unit_count": 5,
+        "animated_block_index": 1,
+        "gyml_content": {
+          "title": "Snell's Law",
+          "intent": "explain",
+          "layout": "blank",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Snell's law describes how light bends when passing between two different media. It relates the angles of incidence and refraction using a simple formula."
+            },
+            {
+              "type": "formula_block",
+              "expression": "n₁ \\sin(θ₁) = n₂ \\sin(θ₂)",
+              "variables": [
+                {
+                  "name": "n₁",
+                  "definition": "Refractive index of the first medium"
+                },
+                {
+                  "name": "θ₁",
+                  "definition": "Angle of incidence — angle between incoming ray and normal"
+                },
+                {
+                  "name": "n₂",
+                  "definition": "Refractive index of the second medium"
+                },
+                {
+                  "name": "θ₂",
+                  "definition": "Angle of refraction — angle between refracted ray and normal"
+                }
+              ],
+              "example": "The formula predicts how much light bends when entering water from air."
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A serene scene showing a beam of light bending as it passes from air into water, with soft ripples and a clear boundary between the two media, evoking clarity and natural physics"
+        },
+        "narration_text": "Snell’s Law shows us how light bends when it passes from one material into another, like air into water; the formula relates the angle of incidence and refraction to the speeds of light in each medium, captured by the refractive indices. Understanding these variables helps us predict how lenses focus light or why a straw looks bent in a glass of water."
+      },
+      {
+        "title": "Total Internal Reflection",
+        "intent": "process",
+        "content_angle": "mechanism",
+        "selected_template": "Process steps",
+        "slide_density": "standard",
+        "primary_block_index": 1,
+        "animation_unit": "step",
+        "animation_unit_count": 4,
+        "animated_block_index": 1,
+        "gyml_content": {
+          "title": "Total Internal Reflection",
+          "intent": "explain",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Total internal reflection occurs when light travels from a denser medium to a rarer medium and is completely reflected back inside."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "processSteps",
+              "items": [
+                {
+                  "label": "Light Approaches Boundary",
+                  "description": "Light moves from a denser medium toward the boundary with a rarer medium.",
+                  "imagePrompt": "A bright beam of light traveling inside water towards a smooth glass surface boundary, soft glowing edges",
+                  "color": "#007ACC"
+                },
+                {
+                  "label": "Refracted and Reflected Rays",
+                  "description": "Some light refracts out; some reflects back inside depending on the angle of incidence.",
+                  "imagePrompt": "Light beam splitting at the water-air boundary with one ray bending outward and another reflecting inward, subtle light effects",
+                  "color": "#009688"
+                },
+                {
+                  "label": "Critical Angle Reached",
+                  "description": "At a specific angle, the refracted ray grazes along the boundary, creating the critical angle.",
+                  "imagePrompt": "Light ray traveling exactly along the water-air boundary line, glowing horizon effect",
+                  "color": "#FFC107"
+                },
+                {
+                  "label": "Total Internal Reflection",
+                  "description": "For angles greater than critical, all light reflects back inside; no refraction occurs.",
+                  "imagePrompt": "Light beam fully reflected inside water with bright internal glow and no light escaping, dramatic contrast",
+                  "color": "#E91E63"
+                }
+              ]
+            },
+            {
+              "type": "annotation_paragraph",
+              "text": "Total internal reflection enables technologies like fiber optics and prisms by trapping light within materials."
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A luminous beam of light bending and reflecting inside a transparent medium, glowing boundary lines with a dark background evoking clarity and precision"
+        },
+        "narration_text": "When light travels from a denser medium, like water or glass, toward the boundary with a less dense medium, such as air, it changes direction. This bending happens because light moves at different speeds in different materials, causing it to slow down or speed up.\n\nAs the light hits the boundary, part of it bends and passes through into the second medium—this is refraction. At the same time, some light bounces back into the original medium, reflecting inside. The balance between these two depends on the angle at which the light strikes the surface.\n\nThere’s a special angle called the critical angle where the refracted light doesn’t pass out but instead travels exactly along the boundary. This angle marks the tipping point between refraction and reflection, and it’s unique for each pair of materials.\n\nIf the light hits the boundary at an angle greater than this critical angle, it can’t escape at all. Instead, all the light reflects back inside the denser medium, a phenomenon known as total internal reflection, which is the principle behind fiber optics and some optical devices."
+      },
+      {
+        "title": "Real-World Applications",
+        "intent": "example",
+        "content_angle": "application",
+        "selected_template": "Card grid with icons",
+        "slide_density": "standard",
+        "primary_block_index": 1,
+        "animation_unit": "card",
+        "animation_unit_count": 3,
+        "animated_block_index": 1,
+        "gyml_content": {
+          "title": "Real-World Applications",
+          "intent": "explain",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Refraction of light enables many practical technologies and natural phenomena. Understanding these applications helps connect theory to everyday life."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "cardGridIcon",
+              "items": [
+                {
+                  "heading": "Fiber Optics",
+                  "text": "Uses light refraction to transmit data through thin glass fibers with minimal loss.",
+                  "icon": "ri-fiber-smart-record-line"
+                },
+                {
+                  "heading": "Mirages",
+                  "text": "Refraction causes light to bend in layers of hot air, creating illusions of water.",
+                  "icon": "ri-temperature-line"
+                },
+                {
+                  "heading": "Lenses",
+                  "text": "Curved lenses refract light to focus or spread rays for glasses and cameras.",
+                  "icon": "ri-camera-lens-line"
+                }
+              ]
+            },
+            {
+              "type": "outro_paragraph",
+              "text": "These examples illustrate how refraction impacts communication, vision, and natural optical effects."
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A serene desert landscape with a shimmering mirage in the distance, a fiber optic cable glowing softly, and a magnifying glass focusing sunlight on a leaf, bathed in warm golden light"
+        },
+        "narration_text": "Fiber optics use the principle of refraction to guide light through thin, flexible strands of glass or plastic. This allows data to travel over long distances quickly and with minimal loss, powering everything from internet connections to medical instruments.\n\nMirages happen because light bends when it passes through layers of air at different temperatures. This bending creates illusions, like water on a hot road, showing how refraction can affect what we see and sometimes trick our brains in nature.\n\nLenses rely on refraction to focus or spread light rays, which is essential in devices like glasses, cameras, and microscopes. By carefully shaping lenses, we can correct vision, capture sharp images, or magnify tiny details unseen by the naked eye."
+      },
+      {
+        "title": "Key Takeaways",
+        "intent": "summary",
+        "content_angle": "summary",
+        "selected_template": "Title with bullets",
+        "slide_density": "compact",
+        "primary_block_index": 1,
+        "animation_unit": "bullet",
+        "animation_unit_count": 5,
+        "animated_block_index": 1,
+        "gyml_content": {
+          "title": "Key Takeaways",
+          "intent": "summarize",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Review the essential concepts of light refraction to solidify your understanding."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "bulletCheck",
+              "items": [
+                {
+                  "icon": "ri-lightbulb-line",
+                  "heading": "Change in Speed",
+                  "description": "Light changes speed when passing between different media, causing refraction."
+                },
+                {
+                  "icon": "ri-arrow-left-right-line",
+                  "heading": "Bending of Light",
+                  "description": "Refraction bends light rays toward or away from the normal depending on medium."
+                },
+                {
+                  "icon": "ri-compass-2-line",
+                  "heading": "Snell's Law",
+                  "description": "The relationship between angles and refractive indices is defined by Snell's Law."
+                },
+                {
+                  "icon": "ri-refresh-line",
+                  "heading": "Reversibility",
+                  "description": "Light paths during refraction are reversible when direction is switched."
+                },
+                {
+                  "icon": "ri-eye-line",
+                  "heading": "Real-World Effects",
+                  "description": "Refraction explains phenomena like mirages and lens focusing."
+                }
+              ]
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A serene scene of sunlight passing through a clear glass prism, creating a subtle bending of light with soft rainbow hues in a calm, natural setting"
+        },
+        "narration_text": "When light travels from one material to another, like air to water, its speed changes. This change in speed is what causes the light to bend. Think of it like a car slowing down when it moves from a smooth road onto gravel.\n\nRefraction causes light rays to bend either toward or away from an imaginary line called the normal, which is perpendicular to the surface. This bending depends on whether light speeds up or slows down, and it’s why objects underwater sometimes appear displaced.\n\nSnell’s Law gives us a precise way to calculate how much light bends. It relates the angle at which light hits a surface to the refractive indices of the two materials, helping us predict refraction accurately in lenses and optical devices.\n\nThe path light takes during refraction is reversible. This means if light travels back along the same route, it will bend in the opposite way, following the exact reverse path. This principle is essential in designing optical systems like cameras and glasses.\n\nRefraction explains many everyday phenomena. For example, mirages occur because light bends through layers of hot air, and lenses focus light to form clear images. Understanding refraction helps us grasp how these effects happen naturally and in technology."
+      }
+    ]
+  }
+}

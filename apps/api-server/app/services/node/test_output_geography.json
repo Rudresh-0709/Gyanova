@@ -1,0 +1,221 @@
+{
+  "topic": "Plate Tectonics",
+  "slides": {
+    "geo-01": [
+      {
+        "title": "What Are Tectonic Plates?",
+        "intent": "concept",
+        "content_angle": "overview",
+        "selected_template": "Title with bullets",
+        "slide_density": "compact",
+        "primary_block_index": 1,
+        "animation_unit": "bullet",
+        "animation_unit_count": 4,
+        "animated_block_index": 1,
+        "gyml_content": {
+          "title": "What Are Tectonic Plates?",
+          "intent": "teach",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Tectonic plates are large sections of Earth's outer shell. They play a crucial role in shaping the planet's surface and geological activity."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "bulletIcon",
+              "items": [
+                {
+                  "icon": "ri-earth-line",
+                  "heading": "Definition",
+                  "text": "Tectonic plates are massive slabs of solid rock that make up Earth's lithosphere."
+                },
+                {
+                  "icon": "ri-shape-line",
+                  "heading": "Structure Role",
+                  "text": "These plates fit together like a jigsaw puzzle covering Earth's surface."
+                },
+                {
+                  "icon": "ri-globe-line",
+                  "heading": "Movement Impact",
+                  "text": "Their movement causes earthquakes, volcanic activity, and mountain formation."
+                },
+                {
+                  "icon": "ri-map-pin-line",
+                  "heading": "Plate Boundaries",
+                  "text": "Edges where plates meet are called boundaries, sites of intense geological activity."
+                }
+              ]
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A vast, dynamic Earth surface showing large, interlocking rocky plates with glowing edges and subtle movement, under a deep blue sky with soft sunlight illuminating textures"
+        },
+        "narration_text": "Tectonic plates are massive, rigid pieces of Earth’s outer shell, known as the lithosphere. Think of them as gigantic puzzle pieces that fit together to cover the planet’s surface. These plates vary in size and shape but collectively form the solid crust beneath our feet.\n\nThese plates play a crucial role in Earth’s structure by supporting the continents and ocean floors. They essentially act like a moving skin, floating on the softer, more fluid layer beneath called the asthenosphere. This layering helps explain why the surface isn’t static but constantly reshaping.\n\nThe movement of tectonic plates is responsible for many geological events we experience. As plates shift, they cause earthquakes, volcanic eruptions, and even the creation of mountain ranges. This slow but powerful motion shapes the Earth’s landscape over millions of years.\n\nWhere two plates meet, we find plate boundaries. These boundaries are dynamic zones where plates can collide, pull apart, or slide past each other. Understanding these interactions helps us predict natural disasters and explains the distribution of features like trenches, ridges, and fault lines."
+      },
+      {
+        "title": "Types of Plate Boundaries",
+        "intent": "comparison",
+        "content_angle": "comparison",
+        "selected_template": "Card grid with icons",
+        "slide_density": "standard",
+        "primary_block_index": 1,
+        "animation_unit": "side",
+        "animation_unit_count": 3,
+        "animated_block_index": 1,
+        "gyml_content": {
+          "title": "Types of Plate Boundaries",
+          "intent": "compare",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Tectonic plates interact at distinct boundaries where different geological processes occur. Understanding these boundary types helps explain Earth's dynamic surface."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "comparison",
+              "items": [
+                {
+                  "heading": "Convergent Boundary",
+                  "description": "Plates collide, causing subduction or mountain formation.",
+                  "icon": "ri-arrow-up-down-line"
+                },
+                {
+                  "heading": "Divergent Boundary",
+                  "description": "Plates move apart, forming new crust at mid-ocean ridges.",
+                  "icon": "ri-arrow-left-right-line"
+                },
+                {
+                  "heading": "Transform Boundary",
+                  "description": "Plates slide past each other, causing earthquakes.",
+                  "icon": "ri-arrows-left-right-line"
+                }
+              ]
+            },
+            {
+              "type": "takeaway",
+              "text": "Each plate boundary type drives unique geological activity shaping Earth's surface.",
+              "icon": "ri-lightbulb-line"
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A dramatic landscape showing Earth's crust with three distinct zones: towering mountains where plates collide, a glowing mid-ocean ridge where new crust forms, and a fault line with visible cracks illustrating sliding plates"
+        },
+        "narration_text": "When two tectonic plates collide at a convergent boundary, one plate often slides beneath the other in a process called subduction. This can create deep ocean trenches or push land upward, forming mountain ranges like the Himalayas. It’s a powerful force shaping Earth’s surface.\n\nAt divergent boundaries, plates move away from each other, allowing magma to rise and solidify, creating new crust. This process mainly happens along mid-ocean ridges, where underwater mountain chains slowly grow as the seafloor spreads apart, constantly renewing the ocean floor.\n\nTransform boundaries occur where plates slide horizontally past one another. This side-by-side movement doesn’t create or destroy crust but generates friction, causing earthquakes. The San Andreas Fault in California is a famous example, illustrating how these boundaries can impact human life dramatically."
+      },
+      {
+        "title": "How Mountains Form",
+        "intent": "process",
+        "content_angle": "mechanism",
+        "selected_template": "Process steps",
+        "slide_density": "standard",
+        "primary_block_index": 1,
+        "animation_unit": "step",
+        "animation_unit_count": 4,
+        "animated_block_index": 1,
+        "gyml_content": {
+          "title": "How Mountains Form",
+          "intent": "explain",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Mountains form primarily at convergent tectonic plate boundaries where two plates collide. This process pushes the Earth's crust upward, creating mountain ranges."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "processSteps",
+              "items": [
+                {
+                  "label": "Plate Convergence",
+                  "description": "Two tectonic plates move towards each other, initiating collision.",
+                  "imagePrompt": "Two massive landmasses slowly pushing against each other under a cloudy sky, emphasizing tectonic plates meeting",
+                  "color": "#4A90E2"
+                },
+                {
+                  "label": "Crust Compression",
+                  "description": "The plates compress the crust, causing it to fold and thicken.",
+                  "imagePrompt": "Layers of rock bending and folding under pressure, with visible cracks and folds in earthy tones",
+                  "color": "#50E3C2"
+                },
+                {
+                  "label": "Uplift and Folding",
+                  "description": "The compressed crust uplifts, forming folded mountain ranges.",
+                  "imagePrompt": "Tall jagged mountain peaks rising dramatically with layered rock formations under a bright sky",
+                  "color": "#F5A623"
+                },
+                {
+                  "label": "Mountain Formation",
+                  "description": "Over millions of years, uplifted crust forms towering mountains.",
+                  "imagePrompt": "A vast mountain range with snow-capped peaks stretching into the distance under a clear blue sky",
+                  "color": "#D0021B"
+                }
+              ]
+            },
+            {
+              "type": "annotation_paragraph",
+              "text": "This process can take millions of years and often results in some of the tallest and most rugged mountain ranges on Earth."
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A dynamic natural scene showing the collision of massive land plates beneath the Earth's surface, with emerging towering mountain peaks bathed in warm sunlight"
+        },
+        "narration_text": "When two tectonic plates move toward each other, they don’t just collide like solid objects; instead, they push against the Earth’s crust. This movement is slow but powerful, setting the stage for dramatic changes in the landscape over time.\n\nAs these plates press together, the crust between them experiences intense pressure. This compression causes the crust to crumple and fold, much like a rug pushed against a wall, which thickens the crust and stores energy for future uplift.\n\nThe folded and thickened crust begins to rise because of the immense pressure beneath it. This uplift pushes the land upward, creating ridges and peaks that form the early shapes of mountain ranges we see today.\n\nOver millions of years, this process continues, and the uplifted crust builds higher and higher. Weathering and erosion shape these mountains, but the core structure remains, resulting in the towering mountain ranges that define many regions on Earth."
+      },
+      {
+        "title": "Earthquake and Volcano Zones",
+        "intent": "data",
+        "content_angle": "visualization",
+        "selected_template": "Stats with icons",
+        "slide_density": "standard",
+        "primary_block_index": 1,
+        "animation_unit": "stat",
+        "animation_unit_count": 4,
+        "animated_block_index": 1,
+        "gyml_content": {
+          "title": "Earthquake and Volcano Zones",
+          "intent": "prove",
+          "layout": "left",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Earthquake and volcanic activities are concentrated along tectonic plate boundaries, where the Earth's crust is most active."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "stats",
+              "items": [
+                {
+                  "value": "90%",
+                  "label": "Earthquakes occur along plate boundaries"
+                },
+                {
+                  "value": "75%",
+                  "label": "Active volcanoes located on the Pacific Ring of Fire"
+                },
+                {
+                  "value": "81%",
+                  "label": "Largest earthquakes happen at convergent boundaries"
+                },
+                {
+                  "value": "50+",
+                  "label": "Major volcanic zones worldwide"
+                }
+              ]
+            },
+            {
+              "type": "callout",
+              "text": "Most seismic and volcanic activity aligns with tectonic plate edges, highlighting the dynamic nature of Earth's surface.",
+              "label": "Key Insight",
+              "icon": "ri-earthquake-line"
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A dramatic view of Earth's surface showing fiery volcanic eruptions and jagged fault lines glowing under a stormy sky with seismic waves radiating outward"
+        },
+        "narration_text": "Earthquakes mainly happen where tectonic plates meet because these boundaries are zones of intense stress and movement. When plates grind, pull apart, or collide, the built-up energy is suddenly released, causing the ground to shake. This explains why earthquake activity is concentrated along these edges.\n\nThe Pacific Ring of Fire is a horseshoe-shaped area around the Pacific Ocean known for its high number of active volcanoes. This region is so volcanically active because it sits on multiple plate boundaries where subduction and other processes create magma that fuels eruptions.\n\nThe most powerful earthquakes usually occur at convergent boundaries, where one plate is forced beneath another. This subduction generates enormous pressure and friction, which, when released, results in some of the largest and most destructive seismic events on Earth.\n\nVolcanic activity is not limited to one area but clusters in major zones worldwide, often along plate boundaries. These zones highlight the dynamic nature of Earth’s crust, where melting rock rises to the surface, forming volcanoes that shape landscapes and impact global ecosystems."
+      }
+    ]
+  }
+}

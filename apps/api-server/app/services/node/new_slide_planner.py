@@ -426,7 +426,16 @@ def plan_slides_for_subtopic(
     5. Avoid repeating the same content angle twice in a row.
     6. Prefer visuals when explaining processes, systems, or data.
     7. Set "visual_required" to true and choose the appropriate "visual_type" when a visual enhances understanding.
-    8. Output ONLY valid JSON.
+    8. VARIETY RULE (CRITICAL): No two slides within a subtopic may use the same CATEGORY of visual structure:
+       - Timeline category: Timeline
+       - Bullet category: Title with bullets, Title with bullets and image, Large bullet list
+       - Card category: Icons with text, Three columns, Four columns
+       - Process category: Arrows, Diagram, Process arrow block, Cyclic process block
+       - Comparison category: Two columns, Comparison table, Split panel
+       - Data category: Column chart, Line chart, Pie chart
+       Each category may appear AT MOST ONCE per subtopic.
+    9. Timeline slides must have MAX 5 items/steps.
+    10. Output ONLY valid JSON.
 
     OUTPUT FORMAT:
     {{
@@ -565,7 +574,30 @@ def plan_slides_for_subtopic(
         # ---- VALIDATION ENDS HERE ----
 
         # ---- DIVERSITY ENFORCEMENT ----
+        # Category mapping for variety enforcement
+        TEMPLATE_CATEGORIES = {
+            "Timeline": "timeline",
+            "Title with bullets": "bullet",
+            "Title with bullets and image": "bullet",
+            "Large bullet list": "bullet",
+            "Icons with text": "card",
+            "Three columns": "card",
+            "Four columns": "card",
+            "Arrows": "process",
+            "Diagram": "process",
+            "Process arrow block": "process",
+            "Cyclic process block": "process",
+            "Feature showcase block": "process",
+            "Two columns": "comparison",
+            "Comparison table": "comparison",
+            "Split panel": "comparison",
+            "Column chart": "data",
+            "Line chart": "data",
+            "Pie chart": "data",
+        }
+
         template_count = {}
+        used_categories = set()
         diverse_slides = []
         last_angle = None
 
@@ -578,12 +610,20 @@ def plan_slides_for_subtopic(
             if template_count[tmpl] > 2:
                 continue
 
+            # Category cap: max 1 per category
+            category = TEMPLATE_CATEGORIES.get(tmpl)
+            if category and category in used_categories:
+                print(f"    ⚠ Skipping '{tmpl}' — category '{category}' already used")
+                continue
+
             # Sequential Angle check: Avoid back-to-back same angle
             if angle == last_angle:
                 continue
 
             diverse_slides.append(slide)
             last_angle = angle
+            if category:
+                used_categories.add(category)
 
         # Clamp to 4-7 slides
         if len(diverse_slides) < 4:

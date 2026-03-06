@@ -149,6 +149,7 @@
                                     "timelineHorizontal",
                                     "timelineSequential",
                                     "timelineMilestone",
+                                    "timelineIcon",
                                     "cardGrid",
                                     "cardGridIcon",
                                     "cardGridSimple",
@@ -183,6 +184,7 @@
                             },
                             "items": {
                                 "type": "array",
+                                "maxItems": 5,
                                 "items": {
                                     "type": "object",
                                     "additionalProperties": true

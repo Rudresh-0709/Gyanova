@@ -1,0 +1,32 @@
+﻿DONE: Leonardo AI mocked with placeholders.
+--- Rendering previews for: science ---
+  Loaded state with 1 subtopics.
+    Subtopic sci-01: 5 slides
+  Calling rendering_node...
+DEBUG: Final hierarchy assessment: 0.71 -> profile: balanced
+   Γ¥î Composition failed: type object 'BlockType' has no attribute 'CYCLIC_BLOCK'
+   Γ¥î Composition failed: type object 'BlockType' has no attribute 'CYCLIC_BLOCK'
+   Γ¥î Composition failed: type object 'BlockType' has no attribute 'CYCLIC_BLOCK'
+DEBUG: Final hierarchy assessment: 0.77 -> profile: balanced
+DEBUG: Processing FLOW section (introduction)
+DEBUG: Secondary block heading serialized to <class 'app.services.node.slides.gyml.definitions.GyMLHeading'>
+DEBUG: Processing FLOW section (content)
+DEBUG: Secondary block columns serialized to <class 'app.services.node.slides.gyml.definitions.GyMLColumns'>
+DEBUG: Finished assembling body_children, length: 2
+   Γ£à Rendered unknown
+DEBUG: Processing FLOW section (introduction)
+DEBUG: Secondary block heading serialized to <class 'app.services.node.slides.gyml.definitions.GyMLHeading'>
+DEBUG: Processing FLOW section (content)
+DEBUG: Secondary block columns serialized to <class 'app.services.node.slides.gyml.definitions.GyMLColumns'>
+DEBUG: Finished assembling body_children, length: 2
+   Γ£à Rendered unknown
+≡ƒÄ¿ [Rendering Node] Completed. Rendered 2 slide(s).
+  rendering_node completed.
+  OK: Rendered Slide 1: What is Refraction?
+  FAIL: Slide 2 ('Snell's Law') failed: type object 'BlockType' has no attribute 'CYCLIC_BLOCK'
+  FAIL: Slide 3 ('Total Internal Reflection') failed: type object 'BlockType' has no attribute 'CYCLIC_BLOCK'
+  FAIL: Slide 4 ('Real-World Applications') failed: type object 'BlockType' has no attribute 'CYCLIC_BLOCK'
+  OK: Rendered Slide 5: Key Takeaways
+
+Finished! Rendered 2 slides.
+DONE: Open index in browser: D:\DATA\Desktop\AI_TUTOR\ai-teacher-app\apps\api-server\app\services\node\test_preview_science\index.html

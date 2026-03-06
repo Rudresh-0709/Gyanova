@@ -380,6 +380,8 @@ class SlideComposer:
         image_layout = "blank"
         accent_image = None
         explicit_layout = None
+        image_prompt = None
+        topic = None
 
         for concept in concept_group:
             if "image" in concept:
@@ -1232,6 +1234,7 @@ class SlideComposer:
             BlockType.COMPARISON_TABLE.value,
             BlockType.SPLIT_PANEL.value,
             BlockType.FORMULA_BLOCK.value,  # Formula can be narrow but usually has text under
+            BlockType.SMART_LAYOUT.value,  # Prevent side-by-side with intro text
         }
 
         for b in content_blocks:
@@ -1349,7 +1352,6 @@ class SlideComposer:
             BlockType.FORMULA_BLOCK.value,
             BlockType.HIERARCHY_TREE.value,
             BlockType.HUB_AND_SPOKE.value,
-            BlockType.CYCLIC_BLOCK.value,
             BlockType.PROCESS_ARROW_BLOCK.value,
             BlockType.CYCLIC_PROCESS_BLOCK.value,
             # Removed CARD_GRID and SMART_LAYOUT as they can be responsive
@@ -1359,6 +1361,40 @@ class SlideComposer:
             for section in slide.sections
             for block in section.blocks
         )
+
+        # Detect timeline slides with extra content — force blank to avoid overflow
+        TIMELINE_VARIANTS = {
+            "timeline",
+            "timelineSequential",
+            "timelineMilestone",
+            "timelineIcon",
+        }
+        has_timeline = False
+        timeline_item_count = 0
+        for section in slide.sections:
+            for block in section.blocks:
+                if block.type == BlockType.SMART_LAYOUT.value:
+                    variant = block.content.get("variant", "")
+                    if variant in TIMELINE_VARIANTS:
+                        has_timeline = True
+                        timeline_item_count = len(block.content.get("items", []))
+
+        # Count non-timeline text blocks (intro, annotation, context, etc.)
+        extra_text_blocks = 0
+        for section in slide.sections:
+            for block in section.blocks:
+                if block.type in {
+                    BlockType.PARAGRAPH.value,
+                    BlockType.RICH_TEXT.value,
+                }:
+                    extra_text_blocks += 1
+
+        # RULE: Timeline with 4+ items AND extra text -> drop the accent image
+        if has_timeline and timeline_item_count >= 4 and extra_text_blocks >= 2:
+            has_wide_block = True  # This forces blank placement
+            print(
+                f"DEBUG: Timeline({timeline_item_count} items) + {extra_text_blocks} text blocks -> forcing blank image"
+            )
 
         # 2. Determine Image Strategy
         placement = ImageManager.determine_placement(

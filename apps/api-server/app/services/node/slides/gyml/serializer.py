@@ -311,11 +311,19 @@ class GyMLSerializer:
             for item in items_data:
                 if isinstance(item, dict):
                     icon_alt = item.get("icon", "")
+                    # Points support: Join list with newlines for description
+                    points = item.get("points")
+                    desc = item.get("text", item.get("description", ""))
+                    if isinstance(points, list):
+                        desc = "\n".join(str(p) for p in points)
+
                     items.append(
                         GyMLSmartLayoutItem(
                             icon=GyMLIcon(alt=icon_alt) if icon_alt else None,
-                            heading=item.get("heading", ""),
-                            description=item.get("text", item.get("description", "")),
+                            heading=item.get(
+                                "heading", item.get("label", item.get("title", ""))
+                            ),
+                            description=desc,
                             year=item.get("year", ""),
                             value=item.get("value", ""),
                             label=item.get("label", ""),
@@ -380,42 +388,49 @@ class GyMLSerializer:
 
         # Comparison block -> SmartLayout
         elif block_type == BlockType.COMPARISON.value:
-            left = content.get("left", {})
-            right = content.get("right", {})
             items_data = content.get("items", [])
-
-            # Map items list to left/right if provided
-            if items_data and len(items_data) >= 2:
-                if not left:
-                    left = items_data[0]
-                if not right:
-                    right = items_data[1]
-
             variant = content.get("variant", SmartLayoutVariant.COMPARISON.value)
 
             items = []
-            # Left item
-            items.append(
-                GyMLSmartLayoutItem(
-                    heading=left.get("title", left.get("label", "Option A")),
-                    description=(
-                        "\n".join(left.get("points", []))
-                        if isinstance(left.get("points"), list)
-                        else left.get("text", "")
-                    ),
-                )
-            )
-            # Right item
-            items.append(
-                GyMLSmartLayoutItem(
-                    heading=right.get("title", right.get("label", "Option B")),
-                    description=(
-                        "\n".join(right.get("points", []))
-                        if isinstance(right.get("points"), list)
-                        else right.get("text", "")
-                    ),
-                )
-            )
+            for item in items_data:
+                if isinstance(item, dict):
+                    # Points support
+                    points = item.get("points")
+                    desc = item.get("text", item.get("description", ""))
+                    if isinstance(points, list):
+                        desc = "\n".join(f"• {str(p)}" for p in points)
+
+                    items.append(
+                        GyMLSmartLayoutItem(
+                            heading=item.get(
+                                "title",
+                                item.get("label", item.get("heading", "Option")),
+                            ),
+                            description=desc,
+                            icon=(
+                                GyMLIcon(alt=item.get("icon"))
+                                if item.get("icon")
+                                else None
+                            ),
+                        )
+                    )
+
+            # Legacy support for left/right fields if items missing
+            if not items:
+                left = content.get("left", {})
+                right = content.get("right", {})
+                if left or right:
+                    for side in [left, right]:
+                        points = side.get("points")
+                        desc = side.get("text", side.get("description", ""))
+                        if isinstance(points, list):
+                            desc = "\n".join(f"• {str(p)}" for p in points)
+                        items.append(
+                            GyMLSmartLayoutItem(
+                                heading=side.get("title", side.get("label", "Option")),
+                                description=desc,
+                            )
+                        )
 
             return GyMLSmartLayout(variant=variant, items=items)
 
@@ -654,13 +669,18 @@ class GyMLSerializer:
         for item in items:
             if isinstance(item, dict):
                 icon_alt = item.get("icon", "")
+                heading = item.get("heading", item.get("label", item.get("title", "")))
+                # Handle points in generic smart layout too
+                points = item.get("points")
+                desc = item.get("text", item.get("description", str(item)))
+                if isinstance(points, list):
+                    desc = "\n".join(f"• {str(p)}" for p in points)
+
                 gyml_items.append(
                     GyMLSmartLayoutItem(
                         icon=GyMLIcon(alt=icon_alt) if icon_alt else None,
-                        heading=item.get("heading", ""),
-                        description=item.get(
-                            "text", item.get("description", str(item))
-                        ),
+                        heading=heading,
+                        description=desc,
                     )
                 )
             else:

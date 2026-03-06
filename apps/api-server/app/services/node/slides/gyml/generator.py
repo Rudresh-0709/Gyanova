@@ -176,7 +176,7 @@ class GyMLContentGenerator:
            • bullets/Title with bullets → smart_layout (bulletIcon or bigBullets)
            • Comparison → smart_layout (comparison or comparisonProsCons) or comparison_table
            • Process/Steps → smart_layout (processArrow or processAccordion)
-           • Timeline → smart_layout (timelineMilestone or timelineSequential)
+           • Timeline → smart_layout (timelineSequential or timelineIcon)
            • Stats/Metrics → smart_layout (stats or statsComparison)
            • Key-Value list → key_value_list (top-level block)
            • Labeled diagram → labeled_diagram (top-level block)
@@ -189,7 +189,7 @@ class GyMLContentGenerator:
            • The primary block MUST contain 3–6 items (never fewer than 3, never more than 6).
            • 3 items → for high-level overviews or comparison slides
            • 4 items → standard explanations and process slides
-           • 5-6 items → detailed timelines, feature lists, or summaries
+           • 5 items → detailed timelines, feature lists, or summaries (MAX for timelines)
 
         B. ADD SUPPORTING CONTEXT (1-3 blocks around the primary block)
            These blocks frame, introduce, or annotate the primary block:
@@ -214,7 +214,7 @@ class GyMLContentGenerator:
            └─────────────────────────────────────────────────────────────┘
 
            Variant Dictionary:
-           TIMELINES: timeline, timelineHorizontal, timelineSequential, timelineMilestone
+           TIMELINES: timeline, timelineHorizontal, timelineSequential, timelineMilestone, timelineIcon
            CARD GRIDS: cardGrid, cardGridIcon, cardGridSimple, cardGridImage
            STATS: stats, statsComparison, statsPercentage
            BULLETS: bigBullets, bulletIcon, bulletCheck, bulletCross
