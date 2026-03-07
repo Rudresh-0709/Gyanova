@@ -41,7 +41,17 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     pending_slides = []
     for sid, slide_list in slides_map.items():
         for slide in slide_list:
-            if slide.get("gyml_content") and not slide.get("html_content"):
+            # Force re-render if it should have an image but doesn't have a real one yet
+            has_prompt = bool(slide.get("gyml_content", {}).get("imagePrompt"))
+            has_real_image = bool(
+                slide.get("accent_image_url")
+                and slide.get("accent_image_url") != "placeholder"
+            )
+            needs_render = not slide.get("html_content") or (
+                has_prompt and not has_real_image
+            )
+
+            if slide.get("gyml_content") and needs_render:
                 pending_slides.append(slide)
 
     if not pending_slides:
@@ -71,6 +81,9 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
         composed_objs = slide["_composed_objs"]
         for s_obj in composed_objs:
             # If it has a prompt and no real URL, generate it
+            print(
+                f"   [Debug] Slide {s_obj.id}: layout={s_obj.image_layout}, has_prompt={bool(s_obj.image_prompt)}, url={s_obj.accent_image_url}"
+            )
             if (
                 s_obj.image_layout != "blank"
                 and s_obj.image_prompt
@@ -123,11 +136,11 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     # Run image generations concurrently with a semaphore to avoid rate limits
     if generation_tasks:
         print(
-            f"   🔥 [Rendering Node] Running {len(generation_tasks)} image generations with concurrency limit 3..."
+            f"   🔥 [Rendering Node] Running {len(generation_tasks)} image generations SEQUENTIALLY..."
         )
 
-        # Semaphore to limit concurrent requests
-        sem = asyncio.Semaphore(3)
+        # Semaphore to limit concurrent requests (conservative to avoid Leonardo API issues)
+        sem = asyncio.Semaphore(1)
 
         async def sem_task(task_coro):
             async with sem:

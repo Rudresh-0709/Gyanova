@@ -34,7 +34,7 @@ class ImageGenerator:
             )
             return None
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             generation_id = await cls._trigger_generation(
                 client, prompt, width, height, style=style
             )
@@ -63,7 +63,7 @@ class ImageGenerator:
         refined_prompt = cls._enhance_prompt(prompt, topic, layout)
 
         # 3. Request generation (Asynchronous)
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             generation_id = await cls._trigger_generation(
                 client, refined_prompt, width, height
             )
@@ -149,7 +149,7 @@ class ImageGenerator:
 
     @classmethod
     async def _poll_for_result(
-        cls, client: httpx.AsyncClient, generation_id: str, max_attempts: int = 15
+        cls, client: httpx.AsyncClient, generation_id: str, max_attempts: int = 40
     ) -> Optional[str]:
         """Poll the GET /generations/{id} endpoint until complete."""
         url = f"{cls.BASE_URL}/generations/{generation_id}"
@@ -158,10 +158,11 @@ class ImageGenerator:
             "authorization": f"Bearer {LEONARDO_API_KEY}",
         }
 
-        await asyncio.sleep(4)  # Initial wait
+        await asyncio.sleep(5)  # Initial wait for GPU to start
 
         for attempt in range(max_attempts):
             try:
+                # Use a fresh client or specify a long timeout for each poll request to avoid individual poll timeouts
                 response = await client.get(url, headers=headers)
                 response.raise_for_status()
                 data = response.json()
@@ -177,13 +178,24 @@ class ImageGenerator:
                 status = generation_data.get("status")
                 if status == "COMPLETE":
                     images = generation_data.get("generated_images", [])
-                    return images[0].get("url") if images else None
+                    if images:
+                        print(
+                            f"   ✅ Leonardo Image Ready: {images[0].get('url')[:60]}..."
+                        )
+                        return images[0].get("url")
+                    return None
                 if status == "FAILED":
+                    print(f"   ❌ Leonardo Generation FAILED for job {generation_id}")
                     return None
 
-                await asyncio.sleep(2)
+                # Still processing
+                if attempt % 5 == 0:
+                    print(f"   ⏳ Polling Leonardo ({attempt}/{max_attempts})...")
+
+                await asyncio.sleep(2.5)
             except Exception as e:
                 print(f"ERROR: Local error during polling: {e}")
-                await asyncio.sleep(2)
+                await asyncio.sleep(3)
 
+        print(f"   ⚠ Polling timed out after {max_attempts} attempts.")
         return None

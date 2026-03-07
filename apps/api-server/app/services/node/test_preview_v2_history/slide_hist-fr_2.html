@@ -482,7 +482,7 @@ section {
 /* ... image layouts ... */
 section[data-image-layout="right"] {
     display: grid;
-    grid-template-columns: 1fr 500px; /* body takes remaining, image wider */
+    grid-template-columns: 1fr var(--accent-width, 500px); /* body takes remaining, image wider */
     gap: var(--block-gap, 3rem);
     align-items: center;
 }
@@ -493,7 +493,7 @@ section[data-image-layout="right"] .accent-image-group { order: 2; grid-column: 
 
 section[data-image-layout="left"] {
     display: grid;
-    grid-template-columns: 500px 1fr; /* col 1 (Img) = 500px, col 2 (Text) = remaining */
+    grid-template-columns: var(--accent-width, 500px) 1fr; /* col 1 (Img) = 400-500px, col 2 (Text) = remaining */
     gap: var(--block-gap, 3rem);
     align-items: center;
 }
@@ -1947,32 +1947,70 @@ th {
 }
 
 /* ================================================
-   COMPARISON VARIANT
+   COMPARISON VARIANT (Gamma-style Premium)
    ================================================ */
 
 .smart-layout[data-variant="comparison"],
 .smart-layout[data-variant="comparisonProsCons"],
 .smart-layout[data-variant="comparisonBeforeAfter"] {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    align-items: stretch;
+    padding: 1rem 0;
 }
 
 .smart-layout[data-variant="comparison"] .card,
 .smart-layout[data-variant="comparisonProsCons"] .card,
 .smart-layout[data-variant="comparisonBeforeAfter"] .card {
-    border: 1px solid var(--border-color, #f1f5f9);
-    border-radius: 12px;
-    padding: 1.5rem;
-    background: var(--bg-secondary, #ffffff);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
-.smart-layout[data-variant="comparison"] .card:first-child {
-    border-top: 4px solid var(--accent-1, #94a3b8);
+.smart-layout[data-variant="comparison"] .card:hover {
+    transform: translateY(-8px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
 }
 
-.smart-layout[data-variant="comparison"] .card:last-child {
-    border-top: 4px solid var(--accent-2, #cbd5e1);
+/* Accent strip at the top */
+.smart-layout[data-variant="comparison"] .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--card-accent, #3498db);
+}
+
+.smart-layout[data-variant="comparison"] .card:nth-child(1) { --card-accent: #3b82f6; }
+.smart-layout[data-variant="comparison"] .card:nth-child(2) { --card-accent: #8b5cf6; }
+.smart-layout[data-variant="comparison"] .card:nth-child(3) { --card-accent: #f59e0b; }
+
+.smart-layout[data-variant="comparison"] .card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #fff;
+    letter-spacing: -0.01em;
+}
+
+.smart-layout[data-variant="comparison"] .card-text {
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
 }
 
 /* --- Pros / Cons --- */
@@ -2676,8 +2714,8 @@ section[data-animated="true"] .cyclic-info-box[data-segment] {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_afba2bb9_0" class="slide-section" role="region" aria-label="Slide slide_afba2bb9_0" data-image-layout="left" style="--h1-size: 2.2rem; --h2-size: 1.8rem; --p-size: 1.1rem; --line-height: 1.45; --card-number-size: 1.125rem; --card-text-size: 1.0625rem; --section-padding: 1.25rem 2rem; --block-gap: 0.5rem; --card-padding: 0.75rem; --heading-gap: 0.25rem" data-animated="true" data-density="super_dense">
-<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<section id="slide_4617de85_0" class="slide-section" role="region" aria-label="Slide slide_4617de85_0" data-image-layout="left" style="--accent-width: 500px; --h1-size: 2.2rem; --h2-size: 1.8rem; --p-size: 1.1rem; --line-height: 1.45; --card-number-size: 1.125rem; --card-text-size: 1.0625rem; --section-padding: 1.25rem 2rem; --block-gap: 0.5rem; --card-padding: 0.75rem; --heading-gap: 0.25rem" data-animated="true" data-density="super_dense">
+<div class="accent-image-wrapper"><img class="accent-image" src="https://cdn.leonardo.ai/users/82a057a7-025c-4000-87a9-cd43b4a072d7/generations/f6905313-4a0e-4758-a2ae-1b913be19588/segments/1:1:1/Flux_Schnell_A_stormy_tense_gathering_of_diverse_French_citize_0.jpg" alt="Generated image for None" loading="lazy" referrerpolicy="no-referrer" /></div>
 <div class="body">
 <h1>Key Causes of the French Revolution</h1>
 <p class="p-intro">The French Revolution was triggered by a complex mix of social inequality, economic hardship, and political unrest. Understanding these causes reveals how tensions built up to ignite the revolution.</p>

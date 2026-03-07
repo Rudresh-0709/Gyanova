@@ -304,34 +304,11 @@ class GyMLSerializer:
             )
 
         # Smart layout (generic)
+        # Smart layout (generic)
         elif block_type == BlockType.SMART_LAYOUT.value:
             items_data = content.get("items", [])
             variant = content.get("variant", SmartLayoutVariant.BIG_BULLETS.value)
-            items = []
-            for item in items_data:
-                if isinstance(item, dict):
-                    icon_alt = item.get("icon", "")
-                    # Points support: Join list with newlines for description
-                    points = item.get("points")
-                    desc = item.get("text", item.get("description", ""))
-                    if isinstance(points, list):
-                        desc = "\n".join(str(p) for p in points)
-
-                    items.append(
-                        GyMLSmartLayoutItem(
-                            icon=GyMLIcon(alt=icon_alt) if icon_alt else None,
-                            heading=item.get(
-                                "heading", item.get("label", item.get("title", ""))
-                            ),
-                            description=desc,
-                            year=item.get("year", ""),
-                            value=item.get("value", ""),
-                            label=item.get("label", ""),
-                        )
-                    )
-                else:
-                    items.append(GyMLSmartLayoutItem(description=str(item)))
-            return GyMLSmartLayout(variant=variant, items=items)
+            return self._serialize_as_smart_layout(items_data, variant)
 
         # Columns → columns
         elif block_type == BlockType.COLUMNS.value:

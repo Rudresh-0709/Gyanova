@@ -394,6 +394,8 @@ class SlideComposer:
                 explicit_layout = concept["layout"]
             if "image_prompt" in concept:
                 image_prompt = concept["image_prompt"]
+            elif "imagePrompt" in concept:
+                image_prompt = concept["imagePrompt"]
             if "topic" in concept:
                 topic = concept["topic"]
 
@@ -626,6 +628,7 @@ class SlideComposer:
             image_layout="blank",
             accent_image_url=None,  # Removed
             hierarchy=dense_profile,  # Applied explicit hierarchy
+            image_prompt=slide.image_prompt,
         )
 
     def _split_smart_layout_content(
@@ -709,6 +712,7 @@ class SlideComposer:
                     slide.image_layout if i == 0 else "blank"
                 ),  # Only first slide gets the big image
                 accent_image_url=slide.accent_image_url if i == 0 else None,
+                image_prompt=slide.image_prompt if i == 0 else None,
             )
             slides.append(new_slide)
 
@@ -751,6 +755,7 @@ class SlideComposer:
                 ],
                 image_layout=slide.image_layout if i == 0 else "blank",
                 accent_image_url=slide.accent_image_url if i == 0 else None,
+                image_prompt=slide.image_prompt if i == 0 else None,
             )
             # Fix Title Reuse issue (should clone or just accept it)
             # For now, simplistic reuse

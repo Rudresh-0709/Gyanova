@@ -127,12 +127,13 @@ class GyMLRenderer:
         )
         accent_width = "400px" if has_comparison else "500px"
 
+        vars_list_str = "; ".join(vars_list) if section.hierarchy else ""
         lines.append(
             f'<section id="{self._escape(section.id)}" '
             f'class="slide-section{hub_class}" '
             f'role="region" aria-label="Slide {section.id}" '
             f'data-image-layout="{section.image_layout}" '
-            f'style="--accent-width: {accent_width}; {vars_list_str}">'
+            f'style="--accent-width: {accent_width}; {vars_list_str}"'
             f"{anim_attr}{density_attr}>"
         )
 
@@ -278,7 +279,8 @@ class GyMLRenderer:
             f'<div class="accent-image-wrapper">'
             f'<img class="accent-image" '
             f'src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
+            f'alt="{self._escape(image.alt or "")}" '
+            f'loading="lazy" referrerpolicy="no-referrer" />'
             f"</div>"
         )
 
@@ -391,12 +393,20 @@ class GyMLRenderer:
         if not image.src or image.src.lower() == "null":
             return ""
 
-        return (
-            f'<figure class="inline-image">'
+        components = [
+            f'<figure class="inline-image">',
             f'<img src="{self._escape(image.src)}" '
-            f'alt="{self._escape(image.alt or "")}" loading="lazy" />'
-            f"</figure>"
-        )
+            f'alt="{self._escape(image.alt or "")}" '
+            f'loading="lazy" referrerpolicy="no-referrer" />',
+        ]
+
+        if image.alt:
+            components.append(
+                f'<figcaption class="p-annotation image-caption">{self._escape(image.alt)}</figcaption>'
+            )
+
+        components.append("</figure>")
+        return "".join(components)
 
     def _render_code(self, code: GyMLCode) -> str:
         """Render code block."""
@@ -1899,8 +1909,16 @@ section[data-image-layout="right-wide"] .accent-image-wrapper img {
     display: flex;
     flex-direction: column;
     gap: var(--block-gap, 1rem);
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
     justify-content: center;
+}
+
+/* Chrome/Safari: Hide scrollbar for body content */
+.body::-webkit-scrollbar {
+    display: none;
 }
 
 /* ================================================
@@ -3253,52 +3271,70 @@ th {
 }
 
 /* ================================================
-   COMPARISON VARIANT
+   COMPARISON VARIANT (Gamma-style Premium)
    ================================================ */
 
 .smart-layout[data-variant="comparison"],
 .smart-layout[data-variant="comparisonProsCons"],
 .smart-layout[data-variant="comparisonBeforeAfter"] {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
     align-items: stretch;
+    padding: 1rem 0;
 }
 
 .smart-layout[data-variant="comparison"] .card,
 .smart-layout[data-variant="comparisonProsCons"] .card,
 .smart-layout[data-variant="comparisonBeforeAfter"] .card {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     display: flex;
     flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
-.smart-layout[data-variant="comparison"] .card:first-child {
-    border-top: 4px solid #3498db;
+.smart-layout[data-variant="comparison"] .card:hover {
+    transform: translateY(-8px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
 }
 
-.smart-layout[data-variant="comparison"] .card:nth-child(2) {
-    border-top: 4px solid #9b59b6;
+/* Accent strip at the top */
+.smart-layout[data-variant="comparison"] .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--card-accent, #3498db);
 }
 
-.smart-layout[data-variant="comparison"] .card:nth-child(3) {
-    border-top: 4px solid #e67e22;
-}
+.smart-layout[data-variant="comparison"] .card:nth-child(1) { --card-accent: #3b82f6; }
+.smart-layout[data-variant="comparison"] .card:nth-child(2) { --card-accent: #8b5cf6; }
+.smart-layout[data-variant="comparison"] .card:nth-child(3) { --card-accent: #f59e0b; }
 
 .smart-layout[data-variant="comparison"] .card-title {
-    font-size: 1.1rem;
-    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
     color: #fff;
+    letter-spacing: -0.01em;
 }
 
 .smart-layout[data-variant="comparison"] .card-text {
-    font-size: 0.85rem;
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
 }
 
 /* --- Pros / Cons --- */
