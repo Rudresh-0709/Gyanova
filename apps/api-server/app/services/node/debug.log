@@ -1,0 +1,49 @@
+DEBUG: Final hierarchy assessment: 1.02 -> profile: dense
+DEBUG: Final hierarchy assessment: 1.34 -> profile: super_dense
+DEBUG: Final hierarchy assessment: 0.98 -> profile: dense
+DEBUG: Comparison(3 items) + High Density -> forcing wide placement
+DEBUG: Final hierarchy assessment: 1.32 -> profile: super_dense
+DEBUG: Final hierarchy assessment: 1.31 -> profile: super_dense
+DEBUG: Final hierarchy assessment: 0.71 -> profile: balanced
+DEBUG image_style being passed: 'Illustration'
+DEBUG image_style being passed: None
+DEBUG image_style being passed: None
+DEBUG image_style being passed: None
+DEBUG image_style being passed: None
+DEBUG image_style being passed: 'Illustration'
+DEBUG: Processing FLOW section (introduction)
+DEBUG: Secondary block heading serialized to <class 'app.services.node.slides.gyml.definitions.GyMLHeading'>
+DEBUG: Processing FLOW section (content)
+DEBUG: Secondary block intro_paragraph serialized to <class 'app.services.node.slides.gyml.definitions.GyMLParagraph'>
+DEBUG: Secondary block smart_layout serialized to <class 'app.services.node.slides.gyml.definitions.GyMLSmartLayout'>
+DEBUG: Finished assembling body_children, length: 3
+DEBUG: Processing FLOW section (introduction)
+DEBUG: Secondary block heading serialized to <class 'app.services.node.slides.gyml.definitions.GyMLHeading'>
+DEBUG: Processing FLOW section (content)
+DEBUG: Secondary block intro_paragraph serialized to <class 'app.services.node.slides.gyml.definitions.GyMLParagraph'>
+DEBUG: Secondary block smart_layout serialized to <class 'app.services.node.slides.gyml.definitions.GyMLSmartLayout'>
+DEBUG: Secondary block annotation_paragraph serialized to <class 'app.services.node.slides.gyml.definitions.GyMLParagraph'>
+DEBUG: Finished assembling body_children, length: 4
+DEBUG: Processing FLOW section (introduction)
+DEBUG: Secondary block heading serialized to <class 'app.services.node.slides.gyml.definitions.GyMLHeading'>
+DEBUG: Processing FLOW section (content)
+DEBUG: Secondary block intro_paragraph serialized to <class 'app.services.node.slides.gyml.definitions.GyMLParagraph'>
+DEBUG: Secondary block split_panel serialized to <class 'app.services.node.slides.gyml.definitions.GyMLSplitPanel'>
+DEBUG: Secondary block image serialized to <class 'app.services.node.slides.gyml.definitions.GyMLImage'>
+DEBUG: Finished assembling body_children, length: 4
+DEBUG: Processing FLOW section (introduction)
+DEBUG: Secondary block heading serialized to <class 'app.services.node.slides.gyml.definitions.GyMLHeading'>
+DEBUG: Finished assembling body_children, length: 2
+DEBUG: Processing FLOW section (introduction)
+DEBUG: Secondary block heading serialized to <class 'app.services.node.slides.gyml.definitions.GyMLHeading'>
+DEBUG: Processing FLOW section (content)
+DEBUG: Secondary block intro_paragraph serialized to <class 'app.services.node.slides.gyml.definitions.GyMLParagraph'>
+DEBUG: Secondary block callout serialized to <class 'app.services.node.slides.gyml.definitions.GyMLParagraph'>
+DEBUG: Secondary block smart_layout serialized to <class 'app.services.node.slides.gyml.definitions.GyMLSmartLayout'>
+DEBUG: Finished assembling body_children, length: 4
+DEBUG: Processing FLOW section (introduction)
+DEBUG: Secondary block heading serialized to <class 'app.services.node.slides.gyml.definitions.GyMLHeading'>
+DEBUG: Processing FLOW section (content)
+DEBUG: Secondary block intro_paragraph serialized to <class 'app.services.node.slides.gyml.definitions.GyMLParagraph'>
+DEBUG: Secondary block rich_text serialized to <class 'app.services.node.slides.gyml.definitions.GyMLRichText'>
+DEBUG: Finished assembling body_children, length: 3

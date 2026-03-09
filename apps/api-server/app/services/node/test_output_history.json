@@ -40,7 +40,8 @@
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic scene of a crowd gathered in front of a historic stone fortress at dawn, with flags waving and a mood of tension and hope in the air"
+          "imagePrompt": "A dramatic scene of a crowd gathered in front of a historic stone fortress at dawn, with flags waving and a mood of tension and hope in the air",
+          "imageStyle": "Illustration"
         },
         "primary_block_index": 1
       },
@@ -86,7 +87,8 @@
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A stormy, tense gathering of diverse French citizens from different social classes, symbolizing rising unrest and division under a dark, cloudy sky"
+          "imagePrompt": "A stormy, tense gathering of diverse French citizens from different social classes, symbolizing rising unrest and division under a dark, cloudy sky",
+          "imageStyle": "Illustration"
         },
         "primary_block_index": 1
       },
@@ -118,13 +120,13 @@
             },
             {
               "type": "image",
-              "url": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Prise_de_la_Bastille.jpg",
               "caption": "Painting depicting the Storming of the Bastille, July 14, 1789",
               "layout": "left"
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "Dramatic scene of a crowd storming a medieval fortress under a stormy sky, with flags waving and intense expressions of determination"
+          "imagePrompt": "Dramatic scene of a crowd storming a medieval fortress under a stormy sky, with flags waving and intense expressions of determination",
+          "imageStyle": "Illustration"
         },
         "primary_block_index": 1
       },
@@ -184,7 +186,8 @@
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic scene of a divided French society before the revolution, showing privileged clergy and nobles in fine attire on one side, and commoners burdened with heavy loads and working the fields on the other, under a cloudy sky symbolizing tension"
+          "imagePrompt": "A dramatic scene of a divided French society before the revolution, showing privileged clergy and nobles in fine attire on one side, and commoners burdened with heavy loads and working the fields on the other, under a cloudy sky symbolizing tension",
+          "imageStyle": "Illustration"
         },
         "primary_block_index": 1
       },
@@ -237,7 +240,8 @@
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic, moody scene of a crowded 18th-century Paris street with passionate crowds, flags waving, and historic architecture under a cloudy sky, evoking tension and change."
+          "imagePrompt": "A dramatic, moody scene of a crowded 18th-century Paris street with passionate crowds, flags waving, and historic architecture under a cloudy sky, evoking tension and change.",
+          "imageStyle": "Illustration"
         },
         "primary_block_index": 1
       },
@@ -267,7 +271,8 @@
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic sunrise over a historic European cityscape symbolizing hope and transformation, with subtle silhouettes of people raising flags and banners in peaceful celebration"
+          "imagePrompt": "A dramatic sunrise over a historic European cityscape symbolizing hope and transformation, with subtle silhouettes of people raising flags and banners in peaceful celebration",
+          "imageStyle": "Illustration"
         },
         "primary_block_index": 1
       }

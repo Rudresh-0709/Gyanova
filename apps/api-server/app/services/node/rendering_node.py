@@ -94,10 +94,14 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
             ):
 
                 print(f"   🎨 [Rendering Node] Spawning Image Gen for {s_obj.id}")
+                print(
+                    f"   🐛 DEBUG image_style being passed: {repr(s_obj.image_style)}"
+                )
                 task = ImageGenerator.generate_accent_image(
                     prompt=s_obj.image_prompt,
                     layout=s_obj.image_layout,
                     topic=s_obj.topic or "Educational content",
+                    style=s_obj.image_style,
                 )
                 generation_tasks.append(task)
                 task_to_slide.append((s_obj, None))  # (object, optional_item_dict)

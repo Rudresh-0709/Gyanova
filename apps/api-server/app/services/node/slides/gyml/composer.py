@@ -194,6 +194,11 @@ class SlideComposer:
         if "imagePrompt" in content:
             main_concept["image_prompt"] = content["imagePrompt"]
 
+        if "imageStyle" in content:
+            main_concept["image_style"] = content["imageStyle"]
+        elif "image_style" in content:
+            main_concept["image_style"] = content["image_style"]
+
         if "topic" in content:
             main_concept["topic"] = content["topic"]
         elif "subtopic" in content:
@@ -381,6 +386,7 @@ class SlideComposer:
         accent_image = None
         explicit_layout = None
         image_prompt = None
+        image_style = None
         topic = None
 
         for concept in concept_group:
@@ -396,6 +402,10 @@ class SlideComposer:
                 image_prompt = concept["image_prompt"]
             elif "imagePrompt" in concept:
                 image_prompt = concept["imagePrompt"]
+            if "image_style" in concept:
+                image_style = concept["image_style"]
+            elif "imageStyle" in concept:
+                image_style = concept["imageStyle"]
             if "topic" in concept:
                 topic = concept["topic"]
 
@@ -410,6 +420,7 @@ class SlideComposer:
             index=index,  # Slide index for alternating layout logic
             topic=topic,
             image_prompt=image_prompt,
+            image_style=image_style,
         )
 
     def _create_fallback_slide(self, content: Dict[str, Any]) -> ComposedSlide:
@@ -629,6 +640,7 @@ class SlideComposer:
             accent_image_url=None,  # Removed
             hierarchy=dense_profile,  # Applied explicit hierarchy
             image_prompt=slide.image_prompt,
+            image_style=slide.image_style,
         )
 
     def _split_smart_layout_content(
@@ -713,6 +725,7 @@ class SlideComposer:
                 ),  # Only first slide gets the big image
                 accent_image_url=slide.accent_image_url if i == 0 else None,
                 image_prompt=slide.image_prompt if i == 0 else None,
+                image_style=slide.image_style if i == 0 else None,
             )
             slides.append(new_slide)
 
@@ -756,6 +769,7 @@ class SlideComposer:
                 image_layout=slide.image_layout if i == 0 else "blank",
                 accent_image_url=slide.accent_image_url if i == 0 else None,
                 image_prompt=slide.image_prompt if i == 0 else None,
+                image_style=slide.image_style if i == 0 else None,
             )
             # Fix Title Reuse issue (should clone or just accept it)
             # For now, simplistic reuse
@@ -1393,6 +1407,18 @@ class SlideComposer:
                     BlockType.RICH_TEXT.value,
                 }:
                     extra_text_blocks += 1
+
+        # Detect comparison blocks with many items - these should be wide if density is high
+        for section in slide.sections:
+            for block in section.blocks:
+                if block.type == BlockType.SMART_LAYOUT.value:
+                    if block.content.get("variant", "").startswith("comparison"):
+                        items_count = len(block.content.get("items", []))
+                        if items_count >= 3 and density > 0.95:
+                            has_wide_block = True
+                            print(
+                                f"DEBUG: Comparison({items_count} items) + High Density -> forcing wide placement"
+                            )
 
         # RULE: Timeline with 4+ items AND extra text -> drop the accent image
         if has_timeline and timeline_item_count >= 4 and extra_text_blocks >= 2:

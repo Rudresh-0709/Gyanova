@@ -158,6 +158,7 @@ class ComposedSlide:
     index: int = 0  # Slide index
     topic: Optional[str] = None
     image_prompt: Optional[str] = None
+    image_style: Optional[str] = None
 
     # Visual Hierarchy Rules (Assigned by Composer)
     hierarchy: Optional[VisualHierarchy] = None
@@ -331,6 +332,7 @@ class GyMLSmartLayoutItem:
     icon: Optional[GyMLIcon] = None
     heading: Optional[str] = None
     description: Optional[str] = None
+    points: Optional[List[str]] = None
 
     # For timeline variant
     year: Optional[str] = None
@@ -425,6 +427,7 @@ class GyMLSection:
     id: str
     image_layout: Literal["right", "left", "top", "bottom", "behind", "blank"] = "blank"
     accent_image: Optional[GyMLImage] = None
+    image_style: Optional[str] = None
     body: GyMLBody = field(default_factory=GyMLBody)
 
     # Hierarchy Profile - passed from Composer

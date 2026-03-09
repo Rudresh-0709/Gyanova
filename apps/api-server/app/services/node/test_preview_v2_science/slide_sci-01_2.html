@@ -1961,7 +1961,7 @@ th {
 .smart-layout[data-variant="comparison"],
 .smart-layout[data-variant="comparisonProsCons"],
 .smart-layout[data-variant="comparisonBeforeAfter"] {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 2rem;
     align-items: stretch;
     padding: 1rem 0;
@@ -1970,75 +1970,93 @@ th {
 .smart-layout[data-variant="comparison"] .card,
 .smart-layout[data-variant="comparisonProsCons"] .card,
 .smart-layout[data-variant="comparisonBeforeAfter"] .card {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    padding: 2rem 1.5rem;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 16px;
+    padding: 2.25rem 2rem;
+    background: var(--bg-secondary, #ffffff);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     display: flex;
     flex-direction: column;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    z-index: 1;
 }
 
-.smart-layout[data-variant="comparison"] .card:hover {
-    transform: translateY(-8px);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+.smart-layout[data-variant="comparison"] .card:hover,
+.smart-layout[data-variant="comparisonProsCons"] .card:hover,
+.smart-layout[data-variant="comparisonBeforeAfter"] .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* Accent strip at the top */
-.smart-layout[data-variant="comparison"] .card::before {
+.smart-layout[data-variant="comparison"] .card::before,
+.smart-layout[data-variant="comparisonProsCons"] .card::before,
+.smart-layout[data-variant="comparisonBeforeAfter"] .card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: var(--card-accent, #3498db);
+    height: 5px;
+    background: var(--card-accent, #3b82f6);
+    z-index: 2;
 }
 
 .smart-layout[data-variant="comparison"] .card:nth-child(1) { --card-accent: #3b82f6; }
 .smart-layout[data-variant="comparison"] .card:nth-child(2) { --card-accent: #8b5cf6; }
 .smart-layout[data-variant="comparison"] .card:nth-child(3) { --card-accent: #f59e0b; }
+.smart-layout[data-variant="comparison"] .card:nth-child(4) { --card-accent: #10b981; }
 
-.smart-layout[data-variant="comparison"] .card-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: #fff;
-    letter-spacing: -0.01em;
+.smart-layout[data-variant="comparison"] .card-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 1.5rem;
+    background: color-mix(in srgb, var(--card-accent) 12%, transparent);
+}
+.smart-layout[data-variant="comparison"] .card-icon i {
+    color: var(--card-accent);
+    font-size: 1.5rem;
 }
 
-.smart-layout[data-variant="comparison"] .card-text {
-    font-size: 0.9375rem;
+.smart-layout[data-variant="comparison"] .card-title,
+.smart-layout[data-variant="comparisonProsCons"] .card-title,
+.smart-layout[data-variant="comparisonBeforeAfter"] .card-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+    color: var(--text-primary, #1e293b);
+    letter-spacing: -0.02em;
+}
+
+.smart-layout[data-variant="comparison"] .card-text,
+.smart-layout[data-variant="comparisonProsCons"] .card-text,
+.smart-layout[data-variant="comparisonBeforeAfter"] .card-text {
+    font-size: 0.98rem;
     line-height: 1.65;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary, #475569);
     margin: 0;
 }
 
 /* --- Pros / Cons --- */
 .smart-layout[data-variant="comparisonProsCons"] .card:first-child {
-    border-top: 4px solid #10b981; /* Success Green */
-    background: linear-gradient(to bottom, rgba(16, 185, 129, 0.03), transparent);
+    --card-accent: #10b981; /* Success Green */
+    background: linear-gradient(to bottom, rgba(16, 185, 129, 0.05), var(--bg-secondary) 80%);
 }
 .smart-layout[data-variant="comparisonProsCons"] .card:last-child {
-    border-top: 4px solid #ef4444; /* Danger Red */
-    background: linear-gradient(to bottom, rgba(239, 68, 68, 0.03), transparent);
+    --card-accent: #ef4444; /* Danger Red */
+    background: linear-gradient(to bottom, rgba(239, 68, 68, 0.05), var(--bg-secondary) 80%);
 }
 .smart-layout[data-variant="comparisonProsCons"] .card-icon {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 1.25rem;
+    background: color-mix(in srgb, var(--card-accent) 15%, transparent);
 }
-.smart-layout[data-variant="comparisonProsCons"] .card:first-child .card-icon {
-    color: #10b981;
-}
-.smart-layout[data-variant="comparisonProsCons"] .card:last-child .card-icon {
-    color: #ef4444;
+.smart-layout[data-variant="comparisonProsCons"] .card-icon i {
+    color: var(--card-accent);
+    font-size: 1.4rem;
 }
 
 /* --- Before / After --- */
@@ -2046,6 +2064,8 @@ th {
     position: relative;
     gap: 2.5rem;
 }
+.smart-layout[data-variant="comparisonBeforeAfter"] .card:nth-child(1) { --card-accent: #64748b; }
+.smart-layout[data-variant="comparisonBeforeAfter"] .card:nth-child(2) { --card-accent: #3b82f6; }
 .smart-layout[data-variant="comparisonBeforeAfter"]::after {
     content: '\ea6e';
     font-family: 'remixicon';
@@ -2053,17 +2073,17 @@ th {
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     color: var(--text-secondary, #64748b);
     background: var(--bg-primary, #ffffff);
-    border: 1px solid var(--border-color, #f1f5f9);
+    border: 2px solid var(--border-color, #e2e8f0);
     border-radius: 50%;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     z-index: 10;
 }
 
@@ -2722,7 +2742,7 @@ section[data-animated="true"] .cyclic-info-box[data-segment] {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_20c039e4" class="slide-section" role="region" aria-label="Slide slide_20c039e4" data-image-layout="blank" style="--accent-width: 500px; --h1-size: 3.5rem; --h2-size: 3rem; --p-size: 1.6rem; --line-height: 1.65; --card-number-size: 2.2rem; --card-text-size: 1.4rem; --section-padding: 3.25rem 4rem 4rem 4rem; --block-gap: 2.5rem; --card-padding: 2rem; --heading-gap: 2.5rem" data-animated="true">
+<section id="slide_d4697a57" class="slide-section" role="region" aria-label="Slide slide_d4697a57" data-image-layout="blank" style="--accent-width: 500px; --h1-size: 3.5rem; --h2-size: 3rem; --p-size: 1.6rem; --line-height: 1.65; --card-number-size: 2.2rem; --card-text-size: 1.4rem; --section-padding: 3.25rem 4rem 4rem 4rem; --block-gap: 2.5rem; --card-padding: 2rem; --heading-gap: 2.5rem" data-animated="true">
 <div class="body">
 <h1>Snell&#x27;s Law</h1>
 <p class="p-intro">Snell&#x27;s law describes how light bends when passing between two different media. It relates the angles of incidence and refraction using a simple formula.</p>

@@ -154,6 +154,7 @@ class GyMLSerializer:
             id=slide.id,
             image_layout=image_layout,
             accent_image=accent_image,
+            image_style=slide.image_style,
             body=GyMLBody(children=body_children),
             hierarchy=slide.hierarchy,
             image_caption=None,
@@ -371,11 +372,15 @@ class GyMLSerializer:
             items = []
             for item in items_data:
                 if isinstance(item, dict):
-                    # Points support
+                    # Points support - keep as list for premium rendering
                     points = item.get("points")
                     desc = item.get("text", item.get("description", ""))
+
+                    # If it's a list, we don't squash it anymore
                     if isinstance(points, list):
-                        desc = "\n".join(f"• {str(p)}" for p in points)
+                        pass
+                    else:
+                        points = None
 
                     items.append(
                         GyMLSmartLayoutItem(
@@ -384,6 +389,7 @@ class GyMLSerializer:
                                 item.get("label", item.get("heading", "Option")),
                             ),
                             description=desc,
+                            points=points,
                             icon=(
                                 GyMLIcon(alt=item.get("icon"))
                                 if item.get("icon")
@@ -400,12 +406,14 @@ class GyMLSerializer:
                     for side in [left, right]:
                         points = side.get("points")
                         desc = side.get("text", side.get("description", ""))
-                        if isinstance(points, list):
-                            desc = "\n".join(f"• {str(p)}" for p in points)
+                        if not isinstance(points, list):
+                            points = None
+
                         items.append(
                             GyMLSmartLayoutItem(
                                 heading=side.get("title", side.get("label", "Option")),
                                 description=desc,
+                                points=points,
                             )
                         )
 
@@ -647,17 +655,22 @@ class GyMLSerializer:
             if isinstance(item, dict):
                 icon_alt = item.get("icon", "")
                 heading = item.get("heading", item.get("label", item.get("title", "")))
-                # Handle points in generic smart layout too
+
+                # Points support - keep as list for premium rendering
                 points = item.get("points")
                 desc = item.get("text", item.get("description", str(item)))
+
                 if isinstance(points, list):
-                    desc = "\n".join(f"• {str(p)}" for p in points)
+                    pass
+                else:
+                    points = None
 
                 gyml_items.append(
                     GyMLSmartLayoutItem(
                         icon=GyMLIcon(alt=icon_alt) if icon_alt else None,
                         heading=heading,
                         description=desc,
+                        points=points,
                     )
                 )
             else:
