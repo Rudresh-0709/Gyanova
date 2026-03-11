@@ -193,16 +193,6 @@ test_minimal = {
                             "heading": "Improvements Over Time",
                             "text": "Computers became faster, smaller, more reliable, and more efficient with each generation.",
                         },
-                        {
-                            "icon": "ri-arrow-right-line",
-                            "heading": "Understanding Evolution",
-                            "text": "Knowing generation differences shows how computing technology has evolved and impacts our world today.",
-                        },
-                        {
-                            "icon": "ri-book-line",
-                            "heading": "Foundation for Learning",
-                            "text": "Remembering main features of each generation builds a strong base for exploring advanced computer concepts.",
-                        },
                     ],
                 },
                 {
@@ -214,12 +204,40 @@ test_minimal = {
     ],
 }
 
+# Test 5: Comparison Table Update Test
+test_comparison = {
+    "intent": "Compare different computing paradigms",
+    "sections": [
+        {
+            "purpose": "content",
+            "blocks": [
+                {
+                    "type": "heading",
+                    "text": "Paradigm Evolution",
+                    "level": 1,
+                },
+                {
+                    "type": "comparison_table",
+                    "caption": "The Evolution of Computer Architecture",
+                    "headers": ["Mainframe", "Client-Server", "Cloud Computing"],
+                    "rows": [
+                        ["Centralized processing", "Distributed processing", "On-demand resources"],
+                        ["High upfront costs", "Moderate setup costs", "Pay-as-you-go model"],
+                        ["Dumb terminals", "Thick and thin clients", "Web browsers & APIs"],
+                    ]
+                }
+            ],
+        }
+    ]
+}
+
 # Render all tests
 tests = [
     ("simple", test_simple),
     ("rich", test_rich),
     ("mixed", test_mixed),
     ("minimal", test_minimal),
+    ("comparison_cards", test_comparison)
 ]
 
 output_dir = Path(__file__).parent / "test_rendered_slides"

@@ -136,6 +136,20 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                                 )
                                 generation_tasks.append(task)
                                 task_to_slide.append((block, item))
+                    elif block.type == BlockType.IMAGE.value:
+                        # Standalone image block
+                        prompt = block.content.get("imagePrompt") or block.content.get("prompt") or s_obj.image_prompt
+                        url = block.content.get("url") or block.content.get("src")
+                        if prompt and (not url or url == "placeholder" or "upload.wikimedia.org" in str(url)):
+                            print(f"   🎨 [Rendering Node] Standalone Image Gen for {block.type} using prompt: {prompt[:30]}...")
+                            task = ImageGenerator.generate_image(
+                                prompt=prompt,
+                                width=1024,
+                                height=576, # Default landscape
+                                style=s_obj.image_style
+                            )
+                            generation_tasks.append(task)
+                            task_to_slide.append((block, None))
 
     # Run image generations concurrently with a semaphore to avoid rate limits
     if generation_tasks:
@@ -162,10 +176,14 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     item["image_url"] = url
                     print(f"   ✅ Item image generated for {target.type}")
                 else:
-                    # Target is a ComposedSlide (accent image)
-                    target.accent_image_url = url
-                    target.accent_image_alt = f"Generated image for {target.topic}"
-                    print(f"   ✅ Accent image generated for {target.id}")
+                    if target.type == BlockType.IMAGE.value:
+                        target.content["url"] = url
+                        print(f"   ✅ Standalone image generated for {target.id}")
+                    else:
+                        # Target is a ComposedSlide (accent image)
+                        target.accent_image_url = url
+                        target.accent_image_alt = f"Generated image for {target.topic}"
+                        print(f"   ✅ Accent image generated for {target.id}")
             else:
                 print(
                     f"   ⚠ Image generation failed for a target (possibly timeout or rate limit)"

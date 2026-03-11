@@ -38,8 +38,7 @@ class ImageManager:
         - Wide Blocks: If Table/Tree/Grid present, AVOID 'left'/'right'.
         - Fallback: Alternate between 'left' and 'right' based on slide_index.
         """
-        # 1. Respect Explicit Layout from LLM/Teacher
-        if explicit_layout and explicit_layout != "blank":
+        if explicit_layout is not None:
             return explicit_layout
 
         # 2. Density / Complexity Overrides

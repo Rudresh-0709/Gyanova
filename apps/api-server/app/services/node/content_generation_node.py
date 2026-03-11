@@ -347,14 +347,14 @@ def _validate_and_ensure_primary_block(
     return None
 
 
-def _classify_density(block_count: int) -> str:
-    """Classify slide density based on block count."""
-    if block_count <= 2:
+def _classify_density(block_count: int, primary_item_count: int = 0) -> str:
+    """Classify slide density based on block count and primary items."""
+    if block_count > 4 or primary_item_count >= 5:
+        return "dense"
+    elif block_count <= 2 and primary_item_count <= 3:
         return "compact"
-    elif block_count <= 4:
-        return "standard"
     else:
-        return "rich"
+        return "medium"
 
 
 def _extract_primary_items_detail(gyml_content: Dict[str, Any]) -> List[str]:
@@ -614,6 +614,8 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 context=search_context,
                 layout_history=layout_history,
                 template_name=selected_template,
+                slide_index=i,
+                intent=concept.get("intent", "explain"),
             )
 
             validated = _validate_and_ensure_primary_block(raw_content)
@@ -693,8 +695,15 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
         # ── STEP 5: Classify Slide Density ──
         block_count = len(generated_content.get("contentBlocks", []))
-        slide_density = _classify_density(block_count)
-        print(f"    → Density: {slide_density} ({block_count} blocks)")
+        primary_items = _count_primary_items(generated_content)
+        slide_density = _classify_density(block_count, primary_items)
+        print(
+            f"    → Density: {slide_density} ({block_count} blocks, {primary_items} primary items)"
+        )
+
+        if slide_density == "dense":
+            generated_content["image_layout"] = "blank"
+            print("    → Enforcing 'blank' image layout for dense slide.")
 
         # ── STEP 6: Store ──
         slide_obj = {

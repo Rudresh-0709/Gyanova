@@ -111,8 +111,11 @@ class GyMLRenderer:
 
         # Add density hint so CSS can compact card internals for dense slides
         density_attr = ""
-        if section.hierarchy and section.hierarchy.name in ("super_dense", "compact"):
-            density_attr = f' data-density="{section.hierarchy.name}"'
+        density_val = section.slide_density or (
+            section.hierarchy.name if section.hierarchy else None
+        )
+        if density_val in ("super_dense", "compact", "dense"):
+            density_attr = f' data-density="{density_val}"'
 
         # Add special class for hub-and-spoke slides to handle layout safely
         has_hub = any(
@@ -521,8 +524,8 @@ class GyMLRenderer:
             )
 
         # Auto-Icon Selection for specific variants (if icon absent or needs override)
-        # SKIP for timeline/timelineSequential — they use dot markers / numbers, not icons
-        ICON_SKIP_VARIANTS = {"timeline", "timelineSequential"}
+        # SKIP for timeline/timelineSequential/comparison — they use dot markers / numbers / no icons
+        ICON_SKIP_VARIANTS = {"timeline", "timelineSequential", "comparison"}
         icon_class = None
         if variant not in ICON_SKIP_VARIANTS:
             if item.icon:
@@ -569,12 +572,29 @@ class GyMLRenderer:
             if title:
                 html_parts.append(f'<h4 class="card-title">{self._escape(title)}</h4>')
 
-            # Render points as a proper list if available
+            # Render points as a proper list or structured grid
             if item.points:
-                points_html = "".join(
-                    f"<li>{self._escape(p)}</li>" for p in item.points
-                )
-                html_parts.append(f'<ul class="card-list">{points_html}</ul>')
+                # HEURISTIC: Check for Dimension-centric format: ["Subject: Value", ...]
+                is_dim_centric = all(":" in str(p) for p in item.points) and len(item.points) > 0
+                
+                if is_dim_centric:
+                    dim_html = []
+                    for p in item.points:
+                        parts = str(p).split(":", 1)
+                        sub = parts[0].strip()
+                        val = parts[1].strip()
+                        dim_html.append(
+                            f'<div class="card-comparison-row">'
+                            f'<span class="card-comparison-subject">{self._escape(sub)}</span>'
+                            f'<span class="card-comparison-value">{self._escape(val)}</span>'
+                            f'</div>'
+                        )
+                    html_parts.append(f'<div class="card-comparison-grid">{"".join(dim_html)}</div>')
+                else:
+                    points_html = "".join(
+                        f"<li>{self._escape(p)}</li>" for p in item.points
+                    )
+                    html_parts.append(f'<ul class="card-list">{points_html}</ul>')
             elif item.description:
                 # Handle multiline descriptions (fallback)
                 desc_html = self._escape(item.description).replace("\n", "<br>")
@@ -586,28 +606,42 @@ class GyMLRenderer:
         return "\n".join(html_parts)
 
     def _render_comparison_table(self, table: GyMLComparisonTable) -> str:
-        """Render comparison table."""
-        headers_html = "".join(f"<th>{self._escape(h)}</th>" for h in table.headers)
-        rows_html = []
-        for row in table.rows:
-            cells_html = "".join(f"<td>{self._escape(c)}</td>" for c in row)
-            rows_html.append(f"<tr>{cells_html}</tr>")
+        """Render comparison table as a clean, refined HTML table."""
+        html_parts = ['<div class="comparison-table-wrapper">']
+        
+        if table.caption:
+            html_parts.append(
+                f'<h3 class="comparison-table-title">{self._escape(table.caption)}</h3>'
+            )
 
-        caption_html = (
-            f'<div class="table-caption">{self._escape(table.caption)}</div>'
-            if table.caption
-            else ""
-        )
-
-        return (
-            f'<div class="comparison-table-container">'
-            f"<table>"
-            f"<thead><tr>{headers_html}</tr></thead>"
-            f'<tbody>{"".join(rows_html)}</tbody>'
-            f"</table>"
-            f"{caption_html}"
-            f"</div>"
-        )
+        html_parts.append('<div class="comparison-table-scroll-container">')
+        html_parts.append('<table class="refined-comparison-table">')
+        
+        # Headers
+        if table.headers:
+            html_parts.append('<thead><tr>')
+            for header in table.headers:
+                html_parts.append(f'<th>{self._escape(header)}</th>')
+            html_parts.append('</tr></thead>')
+            
+        # Body rows
+        if table.rows:
+            html_parts.append('<tbody>')
+            for row in table.rows:
+                html_parts.append('<tr>')
+                # Guarantee matching column count
+                col_count = len(table.headers) if table.headers else len(row)
+                for col_idx in range(col_count):
+                    cell_val = self._escape(row[col_idx]) if col_idx < len(row) else ""
+                    html_parts.append(f'<td>{cell_val}</td>')
+                html_parts.append('</tr>')
+            html_parts.append('</tbody>')
+            
+        html_parts.append('</table>')
+        html_parts.append('</div>')
+        html_parts.append('</div>')
+        
+        return "\n".join(html_parts)
 
     def _render_key_value_list(self, kv_list: GyMLKeyValueList) -> str:
         """Render key-value list."""
@@ -1805,65 +1839,122 @@ section {
 /* ... image layouts ... */
 section[data-image-layout="right"] {
     display: grid;
-    grid-template-columns: 1fr var(--accent-width, 500px); /* body takes remaining, image wider */
-    gap: var(--block-gap, 3rem);
-    align-items: center;
+    grid-template-columns: 1fr var(--accent-width, 500px);
+    gap: 0;
+    align-items: stretch;
+    padding: 0 !important;
 }
-section[data-image-layout="right"] .body { order: 1; grid-column: 1; }
+section[data-image-layout="right"] .body { 
+    order: 1; 
+    grid-column: 1; 
+    padding: 2rem 0 2rem 3rem;
+    margin-right: var(--block-gap, 3rem);
+}
 section[data-image-layout="right"] .accent-image-wrapper,
 section[data-image-layout="right"] .accent-image-placeholder,
-section[data-image-layout="right"] .accent-image-group { order: 2; grid-column: 2; width: 100%; }
+section[data-image-layout="right"] .accent-image-group { 
+    order: 2; 
+    grid-column: 2; 
+    width: 100%;
+    height: 100%;
+}
 
 section[data-image-layout="left"] {
     display: grid;
-    grid-template-columns: var(--accent-width, 500px) 1fr; /* col 1 (Img) = 400-500px, col 2 (Text) = remaining */
-    gap: var(--block-gap, 3rem);
-    align-items: center;
+    grid-template-columns: var(--accent-width, 500px) 1fr;
+    gap: 0;
+    align-items: stretch;
+    padding: 0 !important;
 }
-section[data-image-layout="left"] .body { order: 2; grid-column: 2; }
+section[data-image-layout="left"] .body { 
+    order: 2; 
+    grid-column: 2; 
+    padding: 2rem 3rem 2rem 0;
+    margin-left: var(--block-gap, 3rem);
+}
 section[data-image-layout="left"] .accent-image-wrapper,
 section[data-image-layout="left"] .accent-image-placeholder,
-section[data-image-layout="left"] .accent-image-group { order: 1; grid-column: 1; width: 100%; }
+section[data-image-layout="left"] .accent-image-group { 
+    order: 1; 
+    grid-column: 1; 
+    width: 100%;
+    height: 100%;
+}
 
 section[data-image-layout="right-wide"] {
     display: grid;
-    grid-template-columns: 1fr 500px; /* Even wider image */
-    gap: var(--block-gap, 3rem);
-    align-items: center;
+    grid-template-columns: 1fr 500px;
+    gap: 0;
+    align-items: stretch;
+    padding: 0 !important;
 }
-section[data-image-layout="right-wide"] .body { order: 1; grid-column: 1; }
+section[data-image-layout="right-wide"] .body { 
+    order: 1; 
+    grid-column: 1; 
+    padding: 2rem 0 2rem 3rem;
+    margin-right: var(--block-gap, 3rem);
+}
 section[data-image-layout="right-wide"] .accent-image-wrapper,
 section[data-image-layout="right-wide"] .accent-image-placeholder,
-section[data-image-layout="right-wide"] .accent-image-group { order: 2; grid-column: 2; }
+section[data-image-layout="right-wide"] .accent-image-group { 
+    order: 2; 
+    grid-column: 2; 
+    width: 100%;
+    height: 100%;
+}
 
 /* Top / Bottom Layouts (Vertical Stacking) */
-section[data-image-layout="top"],
+section[data-image-layout="top"] {
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
+    gap: 0;
+}
 section[data-image-layout="bottom"] {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    padding: 0 !important;
+    gap: 0;
 }
 
 section[data-image-layout="top"] .accent-image-group,
 section[data-image-layout="top"] .accent-image-wrapper,
-section[data-image-layout="top"] .accent-image-placeholder {
-    width: 100%;
-    margin-bottom: 0.5rem;
-}
-
+section[data-image-layout="top"] .accent-image-placeholder,
 section[data-image-layout="bottom"] .accent-image-group,
 section[data-image-layout="bottom"] .accent-image-wrapper,
 section[data-image-layout="bottom"] .accent-image-placeholder {
     width: 100%;
-    margin-top: auto;
+    height: 300px; /* Taller hero banner */
+    margin: 0;
+    flex-shrink: 0;
+}
+
+section[data-image-layout="top"] .body {
+    flex: 1;
+    position: relative; /* Required for z-index */
+    padding: 1.5rem 2.5rem;
+    margin-top: -120px; /* Overlap the image */
+    z-index: 10;
+    /* Smooth gradient from transparent to solid dark background */
+    background: linear-gradient(to bottom, transparent 0%, rgba(13, 27, 42, 0.9) 80px, var(--bg-color, #0d1b2a) 120px);
+}
+section[data-image-layout="bottom"] .body {
+    flex: 1;
+    position: relative; /* Required for z-index */
+    padding: 1.5rem 2.5rem;
+    margin-bottom: -120px; /* Overlap the image from bottom */
+    z-index: 10;
+    background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 80px, var(--bg-color, #0d1b2a) 120px);
 }
 
 /* Adjust aspect ratios and heights for vertical layouts */
 section[data-image-layout="top"] .accent-image-placeholder,
 section[data-image-layout="bottom"] .accent-image-placeholder {
-    aspect-ratio: 16 / 5;
-    min-height: 150px;
-    max-height: 20vh;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
 }
 
 section[data-image-layout="left"] .accent-image-placeholder,
@@ -1877,17 +1968,20 @@ section[data-image-layout="right-wide"] .accent-image-placeholder {
 section[data-image-layout="top"] .accent-image-wrapper img,
 section[data-image-layout="bottom"] .accent-image-wrapper img {
     width: 100%;
-    max-height: 20vh;
+    height: 100%;
     object-fit: cover;
     object-position: center;
+    border-radius: 0;
 }
 
 section[data-image-layout="left"] .accent-image-wrapper img,
 section[data-image-layout="right"] .accent-image-wrapper img,
 section[data-image-layout="right-wide"] .accent-image-wrapper img {
     width: 100%;
-    max-height: 80vh;
+    height: 100%;
+    max-height: 100vh;
     object-fit: cover;
+    border-radius: 0;
 }
 
 /* Accent Image + Annotation Group */
@@ -2137,34 +2231,130 @@ p {
    NEW CONTENT TYPES STYLES
    ================================================ */
 
-/* Comparison Table */
-.comparison-table-container {
+/* Comparison Table (Refined Table Layout - Dark Mode Compatible) */
+.comparison-table-wrapper {
+    width: 100%;
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.comparison-table-title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-primary, #ffffff);
+    text-align: left;
+    letter-spacing: -0.02em;
+}
+
+.comparison-table-scroll-container {
     width: 100%;
     overflow-x: auto;
-    margin: 1rem 0;
-    border: 1px solid var(--border-color, #e5e5e5);
-    border-radius: 8px;
-    background: #fff;
+    border-radius: 12px;
+    background: var(--bg-secondary, #0f172a); /* Dark slate background */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
-.comparison-table-container table {
+
+.comparison-table-scroll-container::-webkit-scrollbar {
+    height: 6px;
+}
+.comparison-table-scroll-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.comparison-table-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+/* Base table styles */
+.refined-comparison-table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 1rem;
+    background: transparent;
+    table-layout: fixed;
+    min-width: 600px;
 }
-.comparison-table-container th, .comparison-table-container td {
-    padding: 1rem;
-    border: 1px solid var(--border-color, #e5e5e5);
+
+.refined-comparison-table th, 
+.refined-comparison-table td {
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Subtle dark borders */
+    padding: 1.5rem 1.25rem;
     text-align: left;
+    vertical-align: top;
+    line-height: 1.6;
 }
-.comparison-table-container th {
-    background: #f8f9fa;
+
+.refined-comparison-table th {
     font-weight: 700;
+    color: #94a3b8; /* Muted headers */
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
-.table-caption {
-    padding: 0.75rem;
-    font-size: 0.875rem;
-    color: #666;
-    font-style: italic;
-    text-align: center;
+
+.refined-comparison-table td {
+    color: #e2e8f0; /* Bright but soft white text */
+    font-weight: 400;
+}
+
+.refined-comparison-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Dimension-centric Card Styles */
+.card-comparison-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.card-comparison-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card-comparison-row:last-child {
+    border-bottom: none;
+}
+
+.card-comparison-subject {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.card-comparison-value {
+    font-size: 1rem;
+    color: #f8fafc;
+    text-align: right;
+    line-height: 1.4;
+}
+
+/* Light mode overrides if the user ever switches */
+:root:not([class~="dark"]) .comparison-table-scroll-container {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+}
+:root:not([class~="dark"]) .refined-comparison-table td {
+    color: #1e293b;
+    border-color: #e2e8f0;
+}
+:root:not([class~="dark"]) .refined-comparison-table th {
+    background: #f8fafc;
+    color: #64748b;
 }
 
 /* Key-Value List */
@@ -2400,57 +2590,69 @@ section[data-density="super_dense"] {
     padding-bottom: 2rem !important;
 }
 
-section[data-density="super_dense"] .body {
+section[data-density="super_dense"] .body,
+section[data-density="dense"] .body {
     justify-content: flex-start !important;
 }
 
-section[data-density="super_dense"] .card-icon {
+section[data-density="super_dense"] .card-icon,
+section[data-density="dense"] .card-icon {
     width: 2rem;
     height: 2rem;
     margin-bottom: 0.5rem;
 }
 
-section[data-density="super_dense"] .card-icon i {
+section[data-density="super_dense"] .card-icon i,
+section[data-density="dense"] .card-icon i {
     font-size: 0.9rem;
 }
 
-section[data-density="super_dense"] .card-number {
+section[data-density="super_dense"] .card-number,
+section[data-density="dense"] .card-number {
     padding: 0.375rem;
     margin: -1rem -1rem 0.625rem -1rem;
     width: calc(100% + 2rem);
     font-size: 0.875rem;
 }
 
-section[data-density="super_dense"] .card-content {
+section[data-density="super_dense"] .card-content,
+section[data-density="dense"] .card-content {
     gap: 0.25rem;
 }
 
-section[data-density="super_dense"] .card-title {
+section[data-density="super_dense"] .card-title,
+section[data-density="dense"] .card-title {
     font-size: 0.9375rem;
 }
 
-section[data-density="super_dense"] .block-separator {
+section[data-density="super_dense"] .block-separator,
+section[data-density="dense"] .block-separator {
     margin: 0.5rem 0;
 }
 
-section[data-density="super_dense"] .p-annotation {
+section[data-density="super_dense"] .p-annotation,
+section[data-density="dense"] .p-annotation {
     padding: 0.5rem 0.625rem;
     margin: 0;
 }
 
-section[data-density="super_dense"] .numbered-list {
+section[data-density="super_dense"] .numbered-list,
+section[data-density="dense"] .numbered-list {
     gap: 0.75rem;
 }
 
-section[data-density="super_dense"] .numbered-list li {
+section[data-density="super_dense"] .numbered-list li,
+section[data-density="dense"] .numbered-list li {
     padding: 0.75rem;
 }
 
-section[data-density="super_dense"] .hierarchy-tree-container {
+section[data-density="super_dense"] .hierarchy-tree-container,
+section[data-density="dense"] .hierarchy-tree-container {
     padding: 1rem;
 }
 
-section[data-density="super_dense"] .hierarchy-tree-container ul {
+section[data-density="super_dense"] .hierarchy-tree-container ul,
+section[data-density="dense"] .hierarchy-tree-container ul {
     margin-top: 0.25rem;
 }
 
@@ -3291,11 +3493,11 @@ th {
 .smart-layout[data-variant="comparison"] .card,
 .smart-layout[data-variant="comparisonProsCons"] .card,
 .smart-layout[data-variant="comparisonBeforeAfter"] .card {
-    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
-    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--card-accent) 25%, transparent);
+    border-radius: 16px;
     padding: 2.5rem 2rem;
-    background: linear-gradient(135deg, var(--bg-secondary, #1e293b) 0%, color-mix(in srgb, var(--bg-secondary, #1e293b) 95%, black) 100%);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    background: var(--bg-secondary, #0f172a);
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -3307,30 +3509,26 @@ th {
 .smart-layout[data-variant="comparison"] .card:hover,
 .smart-layout[data-variant="comparisonProsCons"] .card:hover,
 .smart-layout[data-variant="comparisonBeforeAfter"] .card:hover {
-    transform: translateY(-12px) scale(1.02);
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    transform: translateY(-4px);
+    box-shadow: none;
     border-color: var(--card-accent);
 }
 
-/* Accent strip at the top */
+/* Accent strip at the top (Removed based on user request) */
 .smart-layout[data-variant="comparison"] .card::before,
 .smart-layout[data-variant="comparisonProsCons"] .card::before,
 .smart-layout[data-variant="comparisonBeforeAfter"] .card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    background: var(--card-accent, #3b82f6);
-    z-index: 2;
-    box-shadow: 0 2px 10px var(--card-accent);
+    display: none;
 }
 
-.smart-layout[data-variant="comparison"] .card:nth-child(1) { --card-accent: #3b82f6; }
-.smart-layout[data-variant="comparison"] .card:nth-child(2) { --card-accent: #8b5cf6; }
-.smart-layout[data-variant="comparison"] .card:nth-child(3) { --card-accent: #f59e0b; }
-.smart-layout[data-variant="comparison"] .card:nth-child(4) { --card-accent: #10b981; }
+.smart-layout[data-variant="comparison"] .card:nth-child(1) { --card-accent: #3b82f6; } /* Blue */
+.smart-layout[data-variant="comparison"] .card:nth-child(2) { --card-accent: #8b5cf6; } /* Purple */
+.smart-layout[data-variant="comparison"] .card:nth-child(3) { --card-accent: #f59e0b; } /* Orange */
+.smart-layout[data-variant="comparison"] .card:nth-child(4) { --card-accent: #10b981; } /* Green */
+.smart-layout[data-variant="comparison"] .card:nth-child(5) { --card-accent: #ef4444; } /* Red */
+.smart-layout[data-variant="comparison"] .card:nth-child(6) { --card-accent: #06b6d4; } /* Cyan */
+.smart-layout[data-variant="comparison"] .card:nth-child(7) { --card-accent: #ec4899; } /* Pink */
+.smart-layout[data-variant="comparison"] .card:nth-child(8) { --card-accent: #eab308; } /* Yellow */
 
 .smart-layout[data-variant="comparison"] .card-icon {
     width: 4rem;
@@ -3357,12 +3555,13 @@ th {
 .smart-layout[data-variant="comparison"] .card-title,
 .smart-layout[data-variant="comparisonProsCons"] .card-title,
 .smart-layout[data-variant="comparisonBeforeAfter"] .card-title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 800;
     margin-bottom: 1.5rem;
-    color: var(--text-primary, #f8fafc);
-    letter-spacing: -0.03em;
-    line-height: 1.2;
+    color: var(--card-accent);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1.4;
 }
 
 /* Premium Card List */
@@ -3374,21 +3573,21 @@ th {
 
 .card-list li {
     position: relative;
-    padding-left: 1.75rem;
-    margin-bottom: 0.85rem;
-    font-size: 1rem;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
     line-height: 1.5;
-    color: var(--text-secondary, #94a3b8);
+    color: var(--text-secondary, #cbd5e1);
 }
 
 .card-list li::before {
-    content: '\\f2e6'; /* remixicon check or dot */
-    font-family: 'remixicon';
+    content: '•';
     position: absolute;
     left: 0;
-    top: 0.2rem;
+    top: 0;
     color: var(--card-accent);
-    font-size: 1rem;
+    font-size: 1.25rem;
+    line-height: 1.1;
     opacity: 0.8;
 }
 
@@ -3476,8 +3675,8 @@ th {
 /* Make the 3rd card span full width */
 .smart-layout[data-variant^="comparison"][data-item-count="3"] .card:nth-child(3) {
     grid-column: span 2;
-    display: grid;
-    grid-template-columns: auto 1fr;
+    display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 2rem;
     padding: 1.5rem 2rem;
@@ -3486,6 +3685,7 @@ th {
 /* Adjust card 3 icon/content for horizontal flow */
 .smart-layout[data-variant^="comparison"][data-item-count="3"] .card:nth-child(3) .card-icon {
     margin-bottom: 0;
+    flex-shrink: 0;
 }
 
 .smart-layout[data-variant^="comparison"][data-item-count="3"] .card:nth-child(3) .card-title {
@@ -3495,6 +3695,57 @@ th {
 .slide-section[data-density="super_dense"] .smart-layout[data-variant^="comparison"][data-item-count="3"] .card:nth-child(3) {
     padding: 1rem 1.25rem;
     gap: 1.25rem;
+}
+
+/* --- Dense Grid for 4-8 Items --- */
+.smart-layout[data-variant^="comparison"][data-item-count="4"],
+.smart-layout[data-variant^="comparison"][data-item-count="5"],
+.smart-layout[data-variant^="comparison"][data-item-count="6"],
+.smart-layout[data-variant^="comparison"][data-item-count="7"],
+.smart-layout[data-variant^="comparison"][data-item-count="8"] {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.smart-layout[data-variant^="comparison"][data-item-count="4"] .card,
+.smart-layout[data-variant^="comparison"][data-item-count="5"] .card,
+.smart-layout[data-variant^="comparison"][data-item-count="6"] .card,
+.smart-layout[data-variant^="comparison"][data-item-count="7"] .card,
+.smart-layout[data-variant^="comparison"][data-item-count="8"] .card {
+    padding: 1rem 1.25rem;
+}
+
+.smart-layout[data-variant^="comparison"][data-item-count="5"] .card-title,
+.smart-layout[data-variant^="comparison"][data-item-count="6"] .card-title,
+.smart-layout[data-variant^="comparison"][data-item-count="7"] .card-title,
+.smart-layout[data-variant^="comparison"][data-item-count="8"] .card-title {
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+}
+
+.smart-layout[data-variant^="comparison"][data-item-count="5"] .card-icon,
+.smart-layout[data-variant^="comparison"][data-item-count="6"] .card-icon,
+.smart-layout[data-variant^="comparison"][data-item-count="7"] .card-icon,
+.smart-layout[data-variant^="comparison"][data-item-count="8"] .card-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.smart-layout[data-variant^="comparison"][data-item-count="5"] .card-icon i,
+.smart-layout[data-variant^="comparison"][data-item-count="6"] .card-icon i,
+.smart-layout[data-variant^="comparison"][data-item-count="7"] .card-icon i,
+.smart-layout[data-variant^="comparison"][data-item-count="8"] .card-icon i {
+    font-size: 1.2rem;
+}
+
+.smart-layout[data-variant^="comparison"][data-item-count="5"] .card-text,
+.smart-layout[data-variant^="comparison"][data-item-count="6"] .card-text,
+.smart-layout[data-variant^="comparison"][data-item-count="7"] .card-text,
+.smart-layout[data-variant^="comparison"][data-item-count="8"] .card-text {
+    font-size: 0.85rem;
+    line-height: 1.4;
 }
 
 
@@ -3579,13 +3830,20 @@ th {
     width: 100%;
     aspect-ratio: 1 / 1;
     min-height: 400px; /* Baseline visibility */
-    max-height: 80vh;
     background: var(--bg-tertiary, #f1f5f9);
     border-radius: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 2px dashed var(--border-color, #cbd5e1);
+}
+
+section[data-image-layout="left"] .accent-image-placeholder,
+section[data-image-layout="right"] .accent-image-placeholder {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border: none;
 }
 
 .placeholder-content {

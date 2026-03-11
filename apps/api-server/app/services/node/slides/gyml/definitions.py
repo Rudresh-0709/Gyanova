@@ -159,6 +159,7 @@ class ComposedSlide:
     topic: Optional[str] = None
     image_prompt: Optional[str] = None
     image_style: Optional[str] = None
+    slide_density: Optional[str] = None
 
     # Visual Hierarchy Rules (Assigned by Composer)
     hierarchy: Optional[VisualHierarchy] = None
@@ -428,6 +429,7 @@ class GyMLSection:
     image_layout: Literal["right", "left", "top", "bottom", "behind", "blank"] = "blank"
     accent_image: Optional[GyMLImage] = None
     image_style: Optional[str] = None
+    slide_density: Optional[str] = None
     body: GyMLBody = field(default_factory=GyMLBody)
 
     # Hierarchy Profile - passed from Composer

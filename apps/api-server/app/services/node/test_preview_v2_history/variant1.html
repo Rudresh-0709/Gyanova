@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4b2bee",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0d0b1a",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-gold { box-shadow: 0 0 20px rgba(255, 215, 0, 0.15); border-top: 3px solid #ffd700; }
+        .glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); border-top: 3px solid #3b82f6; }
+        .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.15); border-top: 3px solid #22c55e; }
+        .glow-purple { box-shadow: 0 0 20px rgba(168, 85, 247, 0.15); border-top: 3px solid #a855f7; }
+        .glow-cyan { box-shadow: 0 0 20px rgba(6, 182, 212, 0.15); border-top: 3px solid #06b6d4; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-hidden h-screen flex flex-col">
+<!-- Header Section -->
+<header class="flex items-center justify-between p-6 pb-2">
+<button class="flex items-center justify-center size-10 rounded-full glass-card">
+<span class="material-symbols-outlined text-slate-100">arrow_back_ios_new</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight text-slate-100">The Five Estates</h1>
+<button class="flex items-center justify-center size-10 rounded-full glass-card">
+<span class="material-symbols-outlined text-slate-100">info</span>
+</button>
+</header>
+<!-- Page Title & Tabs -->
+<div class="px-6 py-4">
+<h2 class="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 mb-6 leading-tight">Societal Comparison Overview</h2>
+<div class="flex p-1 bg-white/5 rounded-xl glass-card">
+<button class="flex-1 py-2 text-sm font-bold rounded-lg bg-primary text-white">Power</button>
+<button class="flex-1 py-2 text-sm font-medium text-slate-400">Taxes</button>
+<button class="flex-1 py-2 text-sm font-medium text-slate-400">Duties</button>
+</div>
+</div>
+<!-- Dynamic Column View -->
+<div class="flex-1 overflow-x-auto overflow-y-hidden px-6 pb-8 snap-x snap-mandatory flex gap-4 scrollbar-hide">
+<!-- Clergy Card -->
+<div class="snap-center flex-shrink-0 w-[280px] flex flex-col gap-4">
+<div class="glass-card glow-gold rounded-xl p-5 flex flex-col h-full">
+<div class="w-full aspect-[4/3] rounded-lg overflow-hidden mb-4">
+<img class="w-full h-full object-cover" data-alt="Abstract golden cathedral architectural details" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9uJFGbi7Gj0HQtRUxzBRETY7fx4TeXQ0kDIenCz-iNGOkl44kp_j_10GFOhQCTj2TVEmNzBjOX6I6akHE1IGtecUIJoewIrNtJLK7_RgWEHBUl46ue552qxccdwFYZZzLiItjmAFYfj-ep6A7nrPDue1OsTPnlgVhCLCeNUrRuBxgGlWGQVQFGR3ijU9EsorsHuP2X8kJImV156CW3U7nMV2RUmOKnFVSjgDTtBrrIM8e3anwop2oAJ3xtdz9chX_7p0R5z1xCfyr"/>
+</div>
+<h3 class="text-xl font-bold text-white mb-1">Clergy</h3>
+<p class="text-slate-400 text-sm mb-6">The First Estate</p>
+<div class="space-y-6 flex-1">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-yellow-500">bolt</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Power</p>
+<p class="text-white font-medium">Supreme Spiritual</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-slate-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">payments</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Taxes</p>
+<p class="text-white font-medium">Tax Exempt</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-slate-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">balance</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Responsibility</p>
+<p class="text-white font-medium">Moral Guidance</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Nobility Card -->
+<div class="snap-center flex-shrink-0 w-[280px] flex flex-col gap-4">
+<div class="glass-card glow-blue rounded-xl p-5 flex flex-col h-full">
+<div class="w-full aspect-[4/3] rounded-lg overflow-hidden mb-4">
+<img class="w-full h-full object-cover" data-alt="Modern blue tinted palace interior architecture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeHDx4dryO71a-GRa845ewho7w2WiyNYpZ9n249xfO4ey3VK1hbRlVKs_Z5VvdeNncM48ifWNzcp4j1BPaQDg0ByVs0HlHwqxZkxvVq1x3b_m_9KgbiFGzixEdJBvK0VlQgFW98B6SULwewhvVRa7B_LOl0vVZg26ER1beoAIg6_iRHYdnLbOCWJn5NwxtOrfnspqpIjkkFVeePS7znW5Bq1mQ9zyQAEvumZKPD0TCb3CpzwbhrJwcu6OSVrc2unVJvztWsnRRsrj5"/>
+</div>
+<h3 class="text-xl font-bold text-white mb-1">Nobility</h3>
+<p class="text-slate-400 text-sm mb-6">The Second Estate</p>
+<div class="space-y-6 flex-1">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-500">crown</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Power</p>
+<p class="text-white font-medium">Political &amp; Military</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-slate-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">payments</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Taxes</p>
+<p class="text-white font-medium">Minimal Land Tax</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-slate-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">shield</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Responsibility</p>
+<p class="text-white font-medium">State Defense</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Commoners Card -->
+<div class="snap-center flex-shrink-0 w-[280px] flex flex-col gap-4">
+<div class="glass-card glow-green rounded-xl p-5 flex flex-col h-full">
+<div class="w-full aspect-[4/3] rounded-lg overflow-hidden mb-4">
+<img class="w-full h-full object-cover" data-alt="Dense urban city life green lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPcZYpwPtJwfd20216qjpaE47dwe9aJYJ9uC7eQ4zWX3F8E3mhQYuDgnkIaI6NnoyzkisvVQw3uCSK8h2SG6_b97m_5FQ38GsWSyC--mgG1knpsjVLoqh0f_kzR_pmBhgrSBLSCC-9yV4uLu7xrgETtsR_O6_NgtEjy4xxx8TrYuksMiUIE8MCfF9y8aQiArgtAUq2L55yEKylBs1N-8TGTv2gbhpINwhIUauPTuvVQrJdcpT-VmBIQ5Q_moEq4e8swXPZlOkjZGN5"/>
+</div>
+<h3 class="text-xl font-bold text-white mb-1">Commoners</h3>
+<p class="text-slate-400 text-sm mb-6">The Third Estate</p>
+<div class="space-y-6 flex-1">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-green-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-green-500">group</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Power</p>
+<p class="text-white font-medium">Labor &amp; Economic</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-green-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-green-500">trending_up</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Taxes</p>
+<p class="text-white font-medium">Full Tax Burden</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-slate-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">factory</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Responsibility</p>
+<p class="text-white font-medium">Production</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Press Card -->
+<div class="snap-center flex-shrink-0 w-[280px] flex flex-col gap-4">
+<div class="glass-card glow-purple rounded-xl p-5 flex flex-col h-full">
+<div class="w-full aspect-[4/3] rounded-lg overflow-hidden mb-4">
+<img class="w-full h-full object-cover" data-alt="Abstract purple media waves and signals" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJgxbmN_qZYW3nO4QBc-BLkq6zA3ueuVlWMfWZ0HvcWgHCC07sElW9McF0FIqLPpg71sY1MKDd2GPLmLIc6xs6KJT9hKxv9va-urN6z6GICHuCZH1cbi56QnHL1e_sCp_paRIegOlmDSipOfFOAy1QFq_jQAjZFXJRCb3bv63-mevLAO-p1FHGqgzyk-nCifPmkFz20jehE88l9kmi2ua7_BRYVAYqd7v5rOrNpIvcS8jz9bsuoCCKd9QWYDnOLsw1Mm_CFE03EuGd"/>
+</div>
+<h3 class="text-xl font-bold text-white mb-1">The Press</h3>
+<p class="text-slate-400 text-sm mb-6">The Fourth Estate</p>
+<div class="space-y-6 flex-1">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-purple-500">campaign</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Power</p>
+<p class="text-white font-medium">Public Opinion</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-slate-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">payments</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Taxes</p>
+<p class="text-white font-medium">Commercial Standard</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-slate-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">visibility</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Responsibility</p>
+<p class="text-white font-medium">Accountability</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Intellectuals Card -->
+<div class="snap-center flex-shrink-0 w-[280px] flex flex-col gap-4">
+<div class="glass-card glow-cyan rounded-xl p-5 flex flex-col h-full">
+<div class="w-full aspect-[4/3] rounded-lg overflow-hidden mb-4">
+<img class="w-full h-full object-cover" data-alt="Futuristic neon cyan digital library" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmyrlvPkKBup7VNBeBCmSkMbAHKr9XJS56u3wuz9VrF6Uxn4gkU3Rz2z3wCDYdfEUm393nNw-dLXwyeUMiuE2l3ul9ba--U1ksqzMMffB1taf0iXy0uaHlRYh1isXMOPapEpa-eXnQbas1muMn0ld5wVDqhwYv2PAb_3U1k23hWHV5nIYjJ9_ducc9rGjYQrLoqcunwZXjL9MviW1nhSfLePu2_iJKRfrPDLndZfnXM_iS6jFhKrkMtkA4JV85x_FaB7Nl6FzHbIt7"/>
+</div>
+<h3 class="text-xl font-bold text-white mb-1">Intellectuals</h3>
+<p class="text-slate-400 text-sm mb-6">The Fifth Estate</p>
+<div class="space-y-6 flex-1">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-cyan-500">psychology</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Power</p>
+<p class="text-white font-medium">Knowledge &amp; Tech</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-slate-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">payments</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Taxes</p>
+<p class="text-white font-medium">Professional Surtax</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-slate-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">lightbulb</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Responsibility</p>
+<p class="text-white font-medium">Innovation</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation -->
+<nav class="bg-background-dark/80 backdrop-blur-xl border-t border-white/10 px-6 py-4 pb-8 flex justify-between items-center">
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold uppercase">Overview</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">compare_arrows</span>
+<span class="text-[10px] font-bold uppercase">Compare</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-[10px] font-bold uppercase">Library</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold uppercase">Settings</span>
+</a>
+</nav>
+</body></html>

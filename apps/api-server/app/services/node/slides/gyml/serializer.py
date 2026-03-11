@@ -155,6 +155,7 @@ class GyMLSerializer:
             image_layout=image_layout,
             accent_image=accent_image,
             image_style=slide.image_style,
+            slide_density=slide.slide_density,
             body=GyMLBody(children=body_children),
             hierarchy=slide.hierarchy,
             image_caption=None,
@@ -309,6 +310,142 @@ class GyMLSerializer:
         elif block_type == BlockType.SMART_LAYOUT.value:
             items_data = content.get("items", [])
             variant = content.get("variant", SmartLayoutVariant.BIG_BULLETS.value)
+
+            # Auto-convert large comparison grids (>3 items) into cleanly formatted tables
+            if len(items_data) > 3 and variant in [
+                SmartLayoutVariant.COMPARISON.value,
+                "comparisonProsCons",
+                "comparisonBeforeAfter",
+            ]:
+                variant = "comparison_table"
+
+            # Special case: comparison_table variant inside smart_layout
+            if variant == "comparison_table":
+                headers = content.get("headers", [])
+                rows = content.get("rows", [])
+                caption = content.get(
+                    "caption", content.get("title", content.get("heading", ""))
+                )
+
+                # Fallback: Convert items to table if headers/rows are missing
+                if not headers and not rows and items_data:
+                    # HEURISTIC: Check if items are dimension-centric (each item is a criterion)
+                    # We look for "Subject: Value" pairs or "Subject ...; Subject ..." segments
+                    first_item = items_data[0]
+                    first_item_points = first_item.get("points", [])
+                    first_item_desc = first_item.get("description", "")
+                    
+                    has_sub_val_pairs = False
+                    if first_item_points:
+                        has_sub_val_pairs = all(":" in str(p) for p in first_item_points)
+                    elif first_item_desc:
+                        # Check for colon OR multiple semicolon-separated segments
+                        if ":" in first_item_desc:
+                            has_sub_val_pairs = True
+                        elif ";" in first_item_desc and len(first_item_desc.split(";")) >= 2:
+                            # Higher confidence if at least 2 segments start with Capitalized word
+                            segs = [s.strip() for s in first_item_desc.split(";")]
+                            if all(s and s[0].isupper() for s in segs[:2]):
+                                has_sub_val_pairs = True
+
+                    if has_sub_val_pairs:
+                        # DIMENSION-CENTRIC (Pivot)
+                        # Identify all subjects from all items to ensure uniform columns
+                        all_subjects = []
+                        for item in items_data:
+                            pts = item.get("points", [])
+                            desc = item.get("description", "")
+                            
+                            raw_segments = []
+                            if pts:
+                                raw_segments = [str(p) for p in pts]
+                            elif desc:
+                                raw_segments = [s.strip() for s in desc.split(";") if s.strip()]
+                                
+                            for s in raw_segments:
+                                if ":" in s:
+                                    subject = s.split(":", 1)[0].strip()
+                                else:
+                                    # Fallback: Assume first 1-2 words are the subject if they look like it
+                                    words = s.split()
+                                    if words:
+                                        # Take first word if capitalized
+                                        if words[0][0].isupper():
+                                            subject = words[0].strip(",.:;")
+                                            if subject not in all_subjects:
+                                                all_subjects.append(subject)
+                                        continue
+
+                                if subject not in all_subjects:
+                                    all_subjects.append(subject)
+
+                        headers = ["Dimension"] + all_subjects
+                        for item in items_data:
+                            row = [item.get("heading", item.get("title", "Criterion"))]
+                            
+                            # Extract pairs/segments from this item
+                            item_pairs = {}
+                            pts = item.get("points", [])
+                            desc = item.get("description", "")
+                            
+                            raw_segments = []
+                            if pts:
+                                raw_segments = [str(p) for p in pts]
+                            elif desc:
+                                raw_segments = [s.strip() for s in desc.split(";") if s.strip()]
+                                
+                            for s in raw_segments:
+                                if ":" in s:
+                                    sub, val = s.split(":", 1)
+                                    item_pairs[sub.strip()] = val.strip()
+                                else:
+                                    # Fallback split
+                                    words = s.split()
+                                    if words and words[0][0].isupper():
+                                        sub = words[0].strip(",.:;")
+                                        val = " ".join(words[1:])
+                                        item_pairs[sub] = val
+                            
+                            # Fill row according to all_subjects
+                            for sub in all_subjects:
+                                row.append(item_pairs.get(sub, "-"))
+                            rows.append(row)
+                    else:
+                        # SUBJECT-CENTRIC (Legacy/Flat)
+                        # Each item is a column (Subject)
+                        headers = [
+                            item.get("heading", item.get("title", item.get("label", "")))
+                            for item in items_data
+                        ]
+
+                        # Group points into rows
+                        max_points = 0
+                        all_points = []
+                        for item in items_data:
+                            pts = item.get("points", [])
+                            if not pts:
+                                desc = item.get(
+                                    "text", item.get("description", item.get("content", ""))
+                                )
+                                if desc:
+                                    pts = [desc]
+                            all_points.append(pts)
+                            max_points = max(max_points, len(pts))
+
+                        for i in range(max_points):
+                            row = []
+                            for pts in all_points:
+                                val = pts[i] if i < len(pts) else ""
+                                # Format dict if needed
+                                if isinstance(val, dict):
+                                    label = val.get("label", "")
+                                    desc = val.get("description", val.get("text", ""))
+                                    val = f"**{label}**: {desc}" if label else desc
+                                row.append(val)
+                            rows.append(row)
+
+                return GyMLComparisonTable(headers=headers, rows=rows, caption=caption)
+
             return self._serialize_as_smart_layout(items_data, variant)
 
         # Columns → columns
@@ -369,12 +506,25 @@ class GyMLSerializer:
             items_data = content.get("items", [])
             variant = content.get("variant", SmartLayoutVariant.COMPARISON.value)
 
+            # Auto-convert large comparison grids (>3 items) into cleanly formatted tables
+            if len(items_data) > 3 and variant in [
+                SmartLayoutVariant.COMPARISON.value,
+                "comparisonProsCons",
+                "comparisonBeforeAfter",
+            ]:
+                content["variant"] = "comparison_table"
+                return self._serialize_block(
+                    ComposedBlock(type=BlockType.SMART_LAYOUT.value, content=content)
+                )
+
             items = []
             for item in items_data:
                 if isinstance(item, dict):
                     # Points support - keep as list for premium rendering
                     points = item.get("points")
-                    desc = item.get("text", item.get("description", ""))
+                    desc = item.get(
+                        "text", item.get("description", item.get("content", ""))
+                    )
 
                     # If it's a list, we don't squash it anymore
                     if isinstance(points, list):
@@ -405,7 +555,9 @@ class GyMLSerializer:
                 if left or right:
                     for side in [left, right]:
                         points = side.get("points")
-                        desc = side.get("text", side.get("description", ""))
+                        desc = side.get(
+                            "text", side.get("description", side.get("content", ""))
+                        )
                         if not isinstance(points, list):
                             points = None
 
@@ -431,7 +583,9 @@ class GyMLSerializer:
                     items.append(
                         GyMLSmartLayoutItem(
                             heading=node.get("label", node.get("title", "")),
-                            description=node.get("text", node.get("description", "")),
+                            description=node.get(
+                                "text", node.get("description", node.get("content", ""))
+                            ),
                         )
                     )
                 else:
@@ -582,7 +736,9 @@ class GyMLSerializer:
                     items.append(
                         GyMLProcessArrowItem(
                             label=item.get("label", ""),
-                            description=item.get("description"),
+                            description=item.get(
+                                "description", item.get("content", "")
+                            ),
                             image_url=item.get(
                                 "image_url",
                                 item.get("imageUrl", item.get("imagePrompt")),
@@ -603,7 +759,9 @@ class GyMLSerializer:
                     items.append(
                         GyMLCyclicProcessItem(
                             label=item.get("label", ""),
-                            description=item.get("description"),
+                            description=item.get(
+                                "description", item.get("content", "")
+                            ),
                             # Store imagePrompt in image_url for the generator to pick it up
                             image_url=item.get(
                                 "image_url",
@@ -658,7 +816,21 @@ class GyMLSerializer:
 
                 # Points support - keep as list for premium rendering
                 points = item.get("points")
-                desc = item.get("text", item.get("description", str(item)))
+                desc = item.get(
+                    "text", item.get("description", item.get("content", ""))
+                )
+
+                # Support variant specific LLM output (e.g. comparisonBeforeAfter, comparison)
+                if not desc:
+                    before_val = item.get("before")
+                    after_val = item.get("after")
+                    if before_val and after_val:
+                        desc = f"Before: {before_val}\nAfter: {after_val}"
+                    else:
+                        pros_val = item.get("pros", item.get("pro"))
+                        cons_val = item.get("cons", item.get("con"))
+                        if pros_val and cons_val:
+                            desc = f"Pros: {pros_val}\nCons: {cons_val}"
 
                 if isinstance(points, list):
                     pass

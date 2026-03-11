@@ -17,6 +17,66 @@ except ImportError:
     from app.services.llm.model_loader import load_openai
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# VISUAL VARIANT ROTATION (Fix Visual Monotony)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Maps content_angle (and fallback intent) to a pool of renderable variants.
+# Each angle has 2-3 variants that rotate based on slide index, item count,
+# and layout history to prevent visual monotony.
+INTENT_VARIANTS = {
+    # Content Angles
+    "overview":      ["cardGridIcon", "bigBullets", "cardGridSimple"],
+    "mechanism":     ["timelineSequential", "timelineIcon", "processArrow"],
+    "example":       ["cardGridImage", "cardGridIcon", "bulletIcon"],
+    "comparison":    ["comparison", "comparisonProsCons", "comparisonBeforeAfter"],
+    "application":   ["cardGridIcon", "bulletIcon", "processSteps"],
+    "visualization": ["stats", "statsComparison", "cardGridSimple"],
+    "summary":       ["bigBullets", "bulletCheck", "bulletIcon"],
+    # Intent fallbacks (used if content_angle is missing or generic)
+    "explain":       ["cardGridIcon", "cardGridSimple", "bigBullets"],
+    "narrate":       ["timelineSequential", "timelineIcon", "processArrow"],
+    "compare":       ["comparison", "comparisonProsCons", "comparisonBeforeAfter"],
+    "list":          ["bigBullets", "bulletCheck", "processSteps"],
+    "prove":         ["stats", "statsComparison", "cardGridSimple"],
+    "teach":         ["cardGridIcon", "processSteps", "bulletIcon"],
+    "summarize":     ["bigBullets", "bulletCheck", "bulletIcon"],
+    "introduce":     ["cardGridSimple", "bigBullets", "cardGridIcon"],
+    "demo":          ["processArrow", "processSteps", "processAccordion"],
+}
+
+
+def pick_variant(
+    content_angle: str,
+    intent: str,
+    slide_index: int,
+    item_count: int,
+    layout_history: list,
+) -> str:
+    """
+    Deterministically pick a smart_layout variant.
+
+    Selection priority:
+      1. Resolve the variant pool from content_angle (or intent fallback)
+      2. Filter out variants used in the last 2 slides (history dedup)
+      3. Rotate through remaining variants using slide_index
+    """
+    # Resolve variant pool: prefer content_angle, fall back to intent
+    key = content_angle if content_angle in INTENT_VARIANTS else intent
+    variants = INTENT_VARIANTS.get(key, ["cardGrid", "bigBullets", "cardGridIcon"])
+
+    # ── Step 1: Filter out recently used variants ──
+    recent = set(layout_history[-2:]) if layout_history else set()
+    fresh = [v for v in variants if v not in recent]
+
+    # If all variants were recently used, reset to full pool
+    if not fresh:
+        fresh = variants
+
+    # ── Step 2: Rotate through fresh variants by slide index ──
+    return fresh[slide_index % len(fresh)]
+
+
 class GyMLContentGenerator:
     """
     Standalone utility to generate GyML-compliant slide content using LLMs.
@@ -73,6 +133,8 @@ class GyMLContentGenerator:
         context: str = "",
         layout_history: List[str] = None,
         template_name: str = None,
+        slide_index: int = 0,
+        intent: str = "explain",
     ) -> Dict[str, Any]:
         """
         Generate structured GyML content from slide metadata (Content-First).
@@ -94,6 +156,36 @@ class GyMLContentGenerator:
             "Quote",
         ]
         is_sparse = normalized_template in SPARSE_TEMPLATES
+
+        # ── VISUAL VARIANT ROTATION ──────────────────────────────────
+        # Templates that use top-level block types (not smart_layout) skip rotation
+        TOP_LEVEL_BLOCK_TEMPLATES = [
+            "Comparison table", "Key-Value list", "Labeled diagram",
+            "Hierarchy tree", "Split panel", "Formula block",
+            "Hub and spoke", "Process arrow block", "Cyclic process block",
+            "Feature showcase block",
+        ]
+        uses_smart_layout = (
+            not is_sparse and normalized_template not in TOP_LEVEL_BLOCK_TEMPLATES
+        )
+
+        chosen_variant = None
+        variant_directive = ""
+        if uses_smart_layout:
+            # Estimate item count from template hints (actual count decided by LLM)
+            estimated_items = 4  # sensible default
+            chosen_variant = pick_variant(
+                content_angle=content_angle,
+                intent=intent,
+                slide_index=slide_index,
+                item_count=estimated_items,
+                layout_history=layout_history or [],
+            )
+            variant_directive = f"""
+        ⚡ MANDATORY VARIANT: Use '{chosen_variant}' as the smart_layout variant for the primary block.
+           Do NOT use any other variant. This has been pre-selected for visual variety across the deck.
+            """
+            print(f"    🎨 Variant rotation: picked '{chosen_variant}' for angle='{content_angle}', intent='{intent}', slide_index={slide_index}")
 
         prompt = f"""
         You are an expert educational content designer who creates visually rich, cognitively balanced slides.
@@ -129,6 +221,9 @@ class GyMLContentGenerator:
         • mechanism    → How it works. Use timeline, processArrow, processSteps, or diagram.
         • example      → Concrete case. Use split_panel, two-column, or cardGridImage.
         • comparison   → Side-by-side. Use comparison, comparisonProsCons, or comparison_table.
+                         CRITICAL: For comparisons, each item MUST represent a 'Dimension' (a criterion like 'Power' or 'Cost').
+                         The item 'heading' should be the name of the criteria. The 'points' or 'description' should then list values for each subject being compared.
+                         Example: Heading: 'Power Source', Points: ['Monarchy: Divine Right', 'Republic: Popular Sovereignty'].
         • application  → Real-world use. Use cardGridIcon with practical icons, or key_value_list.
         • visualization → Visual representation. Use labeled_diagram, hierarchy_tree, or diagramFlowchart.
         • summary      → Key takeaways. Use bigBullets, bulletCheck, or stats.
@@ -156,11 +251,13 @@ class GyMLContentGenerator:
            teach     — Definitions, code, diagrams (build understanding)
            demo      — Walkthrough, live example
 
-        2. Choose ONE layout for the accent image:
+        2. Choose ONE layout for the accent image. 
+           VARIETY IS CRITICAL: Do NOT default to 'left'. You MUST rotate between layouts across the lesson.
            right  — Image on the right (Standard, balanced)
            left   — Image on the left (Great for alternating variety)
-           top    — Full-width image at the top (High impact, hero feel)
-           blank  — No accent image (Use only if content is extremely dense or for variety)
+           top    — Full-width banner image at the top (High impact hero)
+           bottom — Full-width banner image at the bottom (Modern visual anchor)
+           blank  — No accent image (Use only if content is extremely dense)
 
         ═══════════════════════════════════════════════
         STEP 2: BUILD AROUND THE PRIMARY BLOCK
@@ -172,9 +269,12 @@ class GyMLContentGenerator:
            {"USE 'smart_layout'" if not is_sparse else "AVOID 'smart_layout'"}
            {"" if is_sparse else f"This is a '{template_name}' slide. DO NOT use 'smart_layout'. Focus on a high-impact title and a single intro_paragraph." if is_sparse else ""}
 
+        {variant_directive}
+
            TEMPLATE → PRIMARY BLOCK MAPPING:
            • bullets/Title with bullets → smart_layout (bulletIcon or bigBullets)
-           • Comparison → smart_layout (comparison or comparisonProsCons) or comparison_table
+           • Comparison / Two columns → smart_layout (comparison, comparisonProsCons, comparisonBeforeAfter, or split_panel)
+           • Comparison table → comparison_table (MUST USE `comparison_table` block type)
            • Process/Steps → smart_layout (processArrow or processAccordion)
            • Timeline → smart_layout (timelineSequential or timelineIcon)
            • Stats/Metrics → smart_layout (stats or statsComparison)
@@ -186,10 +286,10 @@ class GyMLContentGenerator:
            • Code → code (top-level block)
 
            PRIMARY BLOCK ITEM COUNT:
-           • The primary block MUST contain 3–6 items (never fewer than 3, never more than 6).
-           • 3 items → for high-level overviews or comparison slides
-           • 4 items → standard explanations and process slides
-           • 5 items → detailed timelines, feature lists, or summaries (MAX for timelines)
+           • The primary block MUST contain 2–6 items (never more than 6).
+           • 2-3 items → for high-level overviews or compact slides
+           • 4 items → medium explanations and process slides
+           • 5-6 items → dense summaries, detailed comparisons, or timelines
 
         B. ADD SUPPORTING CONTEXT (1-3 blocks around the primary block)
            These blocks frame, introduce, or annotate the primary block:
@@ -233,25 +333,25 @@ class GyMLContentGenerator:
         STEP 3: DENSITY VARIATION
         ═══════════════════════════════════════════════
         Vary the number of blocks per slide to create visual rhythm across the lesson.
-        Do NOT make every slide the same density.
+        Do NOT make every slide the same density. You MUST intentionally vary between Compact, Medium, and Dense slides.
 
         DENSITY LEVELS:
-          Compact (2-3 blocks) — High impact, breathing room. Best for intros, hooks, or single-concept slides.
-            Example: intro_paragraph + smart_layout(bigBullets)
-          Standard (3-4 blocks) — Balanced teaching density. Best for most explanations.
+          Compact (2 blocks, 2-3 items) — High impact, breathing room. Best for intros, hooks, or single-concept slides.
+            Example: intro_paragraph + smart_layout(bigBullets, 3 items max)
+          Medium (3-4 blocks, 3-4 items) — Balanced teaching density. Best for most explanations.
             Example: intro_paragraph + smart_layout(cardGridIcon) + callout
-          Rich (4-5 blocks) — Deep dive density. Best for summaries, comparisons, or technical slides.
-            Example: intro_paragraph + smart_layout(processArrow) + annotation_paragraph + takeaway
+          Dense (5-7 blocks or 5-6 items) — Deep dive density. Best for summaries, comparisons, or technical slides.
+            Example: intro_paragraph + context_paragraph + smart_layout(processArrow, 5+ items) + annotation_paragraph + takeaway
 
         RULES:
-          • Max 5 content blocks per slide (hard limit).
+          • Max 7 content blocks per slide (hard limit).
           • Primary block = 70% visual weight. Supporting blocks = 30%.
           • The primary block MUST be the visual center of the slide.
           • ONE primary block only. NEVER put two smart_layouts on the same slide.
           • Max word count: ~300 words (hard limit: 400).
 
         CONTENT ORDERING:
-          Always: [optional intro] → PRIMARY BLOCK → [optional annotation/callout/takeaway]
+          Always: [optional intro] → [optional context] → PRIMARY BLOCK → [optional annotation/callout/takeaway]
 
         PROHIBITED:
           ✗ Dense paragraph + complex diagram (cognitive overload)

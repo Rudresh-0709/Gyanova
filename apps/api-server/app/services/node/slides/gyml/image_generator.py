@@ -73,7 +73,7 @@ class ImageGenerator:
             return None
 
         # 1. Map layout to dimensions
-        width, height = (1024, 1024)  # FLUX requires 1024x1024
+        width, height = cls._get_dimensions_for_layout(layout)
 
         # 2. Refine the prompt based on topic and layout
         refined_prompt = cls._enhance_prompt(
@@ -96,7 +96,17 @@ class ImageGenerator:
 
     @classmethod
     def _get_dimensions_for_layout(cls, layout: str) -> Tuple[int, int]:
-        return (1024, 1024)  # FLUX strictly requires 1024x1024, CSS will crop it
+        """
+        Map layout to Leonardo supported dimensions for FLUX Schnell.
+        Landscape: 1024x576 (Banner)
+        Portrait: 640x1024 (Side)
+        Square: 1024x1024 (Default)
+        """
+        if layout in ["top", "bottom"]:
+            return (1024, 576)  # Landscape (Banner)
+        if layout in ["left", "right", "right-wide"]:
+            return (640, 1024)  # Portrait (Side)
+        return (1024, 1024)  # Default square
 
     @staticmethod
     def _enhance_prompt(
@@ -125,7 +135,7 @@ class ImageGenerator:
         enhanced = f"{clean_prompt}. Subject: {topic}. Style: {style_suffix}"
 
         if layout in ["top", "bottom"]:
-            enhanced += ", wide-angle panoramic view, horizontal composition"
+            enhanced += ", wide-angle panoramic view, horizontal composition, subject centered vertically and horizontally, no cropping"
         elif layout in ["left", "right"]:
             enhanced += ", vertical composition, centralized subject"
         return enhanced

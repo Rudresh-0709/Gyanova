@@ -88,9 +88,9 @@ SLIDE_TEMPLATES = {
         "template_name": "Two columns",
         "when_to_use": ["Comparisons", "Pros vs cons", "Theory vs example"],
         "how_to_make": {
-            "left_column": "Title + 3-4 descriptive points (Bold + Text)",
-            "right_column": "Title + 3-4 descriptive points (Bold + Text)",
-            "balance": "Both sides must have equal word count (~60 words per side)",
+            "left_column": "Title + 1 descriptive paragraph (no bullet points)",
+            "right_column": "Title + 1 descriptive paragraph (no bullet points)",
+            "balance": "Both sides must have equal word count (~40-60 words per side)",
         },
     },
     "Three columns": {

@@ -33,14 +33,16 @@ class SlideFitnessGate:
 
         # Structural Utilization Heuristics
         BLOCK_WEIGHTS = {
-            "hierarchy_tree": 0.10,  # +0.02
-            "numbered_list": 0.08,  # +0.02
+            "hierarchy_tree": 0.10,
+            "numbered_list": 0.08,
             "labeled_diagram": 0.18,
             "table": 0.15,
             "split_panel": 0.25,
-            "formula_block": 0.10,  # +0.04
-            "code": 0.20,  # +0.05
+            "formula_block": 0.10,
+            "code": 0.20,
             "card_grid": 0.12,
+            "smart_layout": 0.15,  # Increased from default 0.08
+            "diagram": 0.25,       # Increased from default 0.08 (Flowcharts are tall)
             "hub_and_spoke": 0.55,
         }
         ITEM_WEIGHTS = {
@@ -62,6 +64,12 @@ class SlideFitnessGate:
 
             # Base weight
             weight += BLOCK_WEIGHTS.get(block.type, 0.08)
+
+            # Special variant bonuses for smart_layout
+            if block.type == "smart_layout":
+                variant = str(block.content.get("variant", "")).lower()
+                if "diagram" in variant or "flowchart" in variant or "process" in variant:
+                    weight += 0.10  # Diagrams/Flowcharts/Processes are vertically thirsty
 
             # Extra weight for internal items
             count = block.item_count()

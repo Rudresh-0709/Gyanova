@@ -1,280 +1,266 @@
 {
-  "topic": "The French Revolution",
+  "topic": "World War II",
   "slides": {
-    "hist-fr": [
+    "hist-01": [
       {
-        "title": "Introduction to the French Revolution",
+        "title": "The Treaty of Versailles",
         "intent": "concept",
         "content_angle": "overview",
-        "selected_template": "Title with bullets and image",
-        "slide_density": "standard",
+        "selected_template": "Title with bullets",
+        "slide_density": "medium",
+        "primary_block_index": 1,
+        "animation_unit": "card",
+        "animation_unit_count": 4,
+        "animated_block_index": 1,
         "gyml_content": {
-          "title": "Introduction to the French Revolution",
-          "intent": "introduce",
-          "layout": "left",
+          "title": "The Treaty of Versailles",
+          "intent": "explain",
+          "layout": "top",
           "contentBlocks": [
             {
               "type": "intro_paragraph",
-              "text": "The French Revolution was a pivotal event in world history that reshaped France and inspired global change. Understanding its causes and significance provides foundational insight into modern political and social movements."
+              "text": "The Treaty of Versailles ended World War I but imposed harsh terms on Germany, fueling resentment and political unrest."
             },
             {
               "type": "smart_layout",
-              "variant": "bulletIcon",
+              "variant": "cardGridIcon",
               "items": [
                 {
-                  "icon": "ri-flashlight-line",
-                  "heading": "Causes of the Revolution",
-                  "text": "Economic hardship, social inequality, and political unrest fueled widespread discontent."
+                  "heading": "Territorial Losses",
+                  "text": "Germany lost significant land, including Alsace-Lorraine and all overseas colonies.",
+                  "icon": "ri-map-pin-line"
                 },
                 {
-                  "icon": "ri-earth-line",
-                  "heading": "Key Events Overview",
-                  "text": "From the Estates-General to the fall of the Bastille, early events sparked major changes."
+                  "heading": "Military Restrictions",
+                  "text": "The treaty limited the German army to 100,000 troops and banned tanks and air force.",
+                  "icon": "ri-shield-line"
                 },
                 {
-                  "icon": "ri-star-line",
-                  "heading": "Significance",
-                  "text": "The revolution led to the rise of democracy and challenged monarchy and aristocracy."
+                  "heading": "War Guilt Clause",
+                  "text": "Germany was forced to accept full responsibility for starting the war.",
+                  "icon": "ri-hand-heart-line"
+                },
+                {
+                  "heading": "Reparations",
+                  "text": "Huge financial payments were demanded, crippling Germany's economy.",
+                  "icon": "ri-money-dollar-circle-line"
                 }
               ]
+            },
+            {
+              "type": "outro_paragraph",
+              "text": "These terms created widespread anger and economic hardship, setting the stage for political instability in Germany."
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic scene of a crowd gathered in front of a historic stone fortress at dawn, with flags waving and a mood of tension and hope in the air",
-          "imageStyle": "Illustration"
+          "imagePrompt": "A somber, dramatic scene of a torn German flag beneath stormy skies, symbolizing national humiliation and unrest after defeat"
         },
-        "primary_block_index": 1
+        "narration_text": "Germany was forced to give up significant territories after World War I, including valuable industrial areas and overseas colonies. This loss not only weakened Germany’s economy but also wounded national pride, making many Germans feel humiliated and unfairly treated.\n\nThe Treaty also severely limited Germany’s military capabilities. The army was drastically reduced, tanks and aircraft were banned, and the navy was restricted. This left Germany feeling vulnerable and powerless, fueling resentment toward the Allies who imposed these harsh restrictions.\n\nOne of the most bitter points was the War Guilt Clause, which placed full blame for the war on Germany. This clause justified the harsh penalties but deeply offended Germans, who believed the war’s causes were more complex and that they were being scapegoated.\n\nGermany was required to pay massive reparations to the victorious countries, which crippled its economy and caused widespread hardship. These payments created long-term economic instability and angered many Germans, who saw them as an unjust punishment that deepened their suffering."
       },
       {
-        "title": "Key Causes of the French Revolution",
+        "title": "Rise of Fascism",
         "intent": "process",
         "content_angle": "mechanism",
-        "selected_template": "Diagram",
-        "slide_density": "standard",
-        "gyml_content": {
-          "title": "Key Causes of the French Revolution",
-          "intent": "explain",
-          "layout": "left",
-          "contentBlocks": [
-            {
-              "type": "intro_paragraph",
-              "text": "The French Revolution was triggered by a complex mix of social inequality, economic hardship, and political unrest. Understanding these causes reveals how tensions built up to ignite the revolution."
-            },
-            {
-              "type": "smart_layout",
-              "variant": "diagramFlowchart",
-              "items": [
-                {
-                  "label": "Social Inequality",
-                  "description": "Rigid class structure favored nobility and clergy over commoners, causing widespread resentment.",
-                  "imagePrompt": "A divided society with three distinct layers: privileged nobles and clergy on top, oppressed commoners at the bottom, with a clear visual gap"
-                },
-                {
-                  "label": "Economic Crisis",
-                  "description": "Heavy taxation on peasants and rising national debt created financial strain and famine.",
-                  "imagePrompt": "A distressed peasant holding empty pockets beside a broken coin scale and looming debt documents"
-                },
-                {
-                  "label": "Political Weakness",
-                  "description": "King Louis XVI\u2019s ineffective leadership and lack of political reform fueled demands for change.",
-                  "imagePrompt": "A distant king on a throne looking overwhelmed, with frustrated citizens protesting outside a palace"
-                }
-              ]
-            },
-            {
-              "type": "annotation_paragraph",
-              "text": "These three factors interacted, amplifying tensions and setting the stage for revolutionary upheaval."
-            }
-          ],
-          "primary_block_index": 1,
-          "imagePrompt": "A stormy, tense gathering of diverse French citizens from different social classes, symbolizing rising unrest and division under a dark, cloudy sky",
-          "imageStyle": "Illustration"
-        },
-        "primary_block_index": 1
-      },
-      {
-        "title": "Storming of the Bastille: A Pivotal Event",
-        "intent": "example",
-        "content_angle": "example",
-        "selected_template": "Image and text",
-        "slide_density": "standard",
-        "gyml_content": {
-          "title": "Storming of the Bastille: A Pivotal Event",
-          "intent": "explain",
-          "layout": "left",
-          "contentBlocks": [
-            {
-              "type": "intro_paragraph",
-              "text": "The Storming of the Bastille on July 14, 1789, marked a turning point in the French Revolution, symbolizing the uprising against royal authority and the fight for liberty."
-            },
-            {
-              "type": "split_panel",
-              "leftPanel": {
-                "title": "What Happened?",
-                "content": "Revolutionaries attacked the Bastille prison, a symbol of tyranny, to seize weapons and free prisoners, igniting widespread rebellion."
-              },
-              "rightPanel": {
-                "title": "Why It Matters",
-                "content": "This event united the people, challenged the monarchy's power, and became a lasting symbol of freedom and resistance."
-              }
-            },
-            {
-              "type": "image",
-              "caption": "Painting depicting the Storming of the Bastille, July 14, 1789",
-              "layout": "left"
-            }
-          ],
-          "primary_block_index": 1,
-          "imagePrompt": "Dramatic scene of a crowd storming a medieval fortress under a stormy sky, with flags waving and intense expressions of determination",
-          "imageStyle": "Illustration"
-        },
-        "primary_block_index": 1
-      },
-      {
-        "title": "Comparison of Estates Before the Revolution",
-        "intent": "comparison",
-        "content_angle": "comparison",
-        "selected_template": "Two columns",
-        "slide_density": "standard",
-        "gyml_content": {
-          "title": "Comparison of Estates Before the Revolution",
-          "intent": "compare",
-          "layout": "left",
-          "contentBlocks": [
-            {
-              "type": "intro_paragraph",
-              "text": "Before the French Revolution, society was divided into three Estates with distinct rights, privileges, and burdens. Understanding these differences reveals the social inequalities that fueled unrest."
-            },
-            {
-              "type": "smart_layout",
-              "variant": "comparison",
-              "items": [
-                {
-                  "heading": "First Estate: Clergy",
-                  "points": [
-                    "Privileges: Owned about 10% of land, exempt from many taxes.",
-                    "Rights: Controlled education and moral authority.",
-                    "Burdens: Provided some charity but had few obligations."
-                  ],
-                  "icon": "ri-church-line"
-                },
-                {
-                  "heading": "Second Estate: Nobility",
-                  "points": [
-                    "Privileges: Held high offices, exempt from most taxes.",
-                    "Rights: Owned land, collected feudal dues from peasants.",
-                    "Burdens: Military service expected, but few financial duties."
-                  ],
-                  "icon": "ri-crown-line"
-                },
-                {
-                  "heading": "Third Estate: Commoners",
-                  "points": [
-                    "Privileges: Very limited rights, no tax exemptions.",
-                    "Rights: Included peasants, urban workers, and bourgeoisie.",
-                    "Burdens: Paid heavy taxes and feudal dues; lacked political power."
-                  ],
-                  "icon": "ri-group-line"
-                }
-              ]
-            },
-            {
-              "type": "takeaway",
-              "text": "The First and Second Estates enjoyed privileges and exemptions, while the Third Estate bore the majority of taxes and burdens, highlighting stark social inequalities.",
-              "icon": "ri-alert-line",
-              "label": "Key Insight"
-            }
-          ],
-          "primary_block_index": 1,
-          "imagePrompt": "A dramatic scene of a divided French society before the revolution, showing privileged clergy and nobles in fine attire on one side, and commoners burdened with heavy loads and working the fields on the other, under a cloudy sky symbolizing tension",
-          "imageStyle": "Illustration"
-        },
-        "primary_block_index": 1
-      },
-      {
-        "title": "Timeline of Major Events (1789-1794)",
-        "intent": "data",
-        "content_angle": "visualization",
         "selected_template": "Timeline",
-        "slide_density": "standard",
+        "slide_density": "dense",
+        "primary_block_index": 1,
+        "animation_unit": "step",
+        "animation_unit_count": 5,
+        "animated_block_index": 1,
         "gyml_content": {
-          "title": "Timeline of Major Events (1789-1794)",
+          "title": "Rise of Fascism",
           "intent": "narrate",
-          "layout": "left",
+          "layout": "top",
           "contentBlocks": [
             {
               "type": "intro_paragraph",
-              "text": "Explore the key milestones of the French Revolution from its outbreak in 1789 to the fall of Robespierre in 1794, highlighting the sequence and impact of major events."
+              "text": "Fascism emerged as a powerful political force in Europe between World War I and World War II. This timeline shows key events marking its rise."
             },
             {
               "type": "smart_layout",
-              "variant": "timelineSequential",
+              "variant": "timelineIcon",
               "items": [
                 {
-                  "heading": "Storming of the Bastille",
-                  "description": "July 14, 1789: Symbolic start of the revolution with the fall of the Bastille prison."
+                  "icon": "ri-calendar-event-line",
+                  "heading": "1919 - Mussolini's March",
+                  "description": "Benito Mussolini leads the March on Rome, establishing fascist power in Italy."
                 },
                 {
-                  "heading": "Declaration of the Rights of Man",
-                  "description": "August 1789: A foundational document proclaiming liberty and equality."
+                  "icon": "ri-sword-line",
+                  "heading": "1923 - Beer Hall Putsch",
+                  "description": "Hitler's failed coup attempt in Munich marks the start of Nazi prominence."
                 },
                 {
-                  "heading": "Women's March on Versailles",
-                  "description": "October 1789: Women demand bread and force the royal family to Paris."
+                  "icon": "ri-government-line",
+                  "heading": "1933 - Hitler Chancellor",
+                  "description": "Adolf Hitler becomes Chancellor of Germany, consolidating fascist control."
                 },
                 {
-                  "heading": "Execution of Louis XVI",
-                  "description": "January 1793: The king is executed, marking the end of monarchy."
+                  "icon": "ri-flag-line",
+                  "heading": "1936 - Spanish Civil War",
+                  "description": "Fascist forces under Franco gain momentum, spreading ideology in Spain."
                 },
                 {
-                  "heading": "Reign of Terror",
-                  "description": "1793-1794: Period of political purges led by Robespierre."
+                  "icon": "ri-globe-line",
+                  "heading": "1939 - Axis Powers Formed",
+                  "description": "Germany, Italy, and Japan unite, solidifying fascist alliance before WWII."
                 }
               ]
             },
             {
               "type": "callout",
-              "text": "These events shaped the revolution\u2019s progression, showing how political and social upheaval escalated rapidly.",
-              "label": "Key Insight",
-              "icon": "ri-flashlight-line"
+              "text": "Fascism's rise was marked by aggressive nationalism, authoritarian rule, and militarization across Europe.",
+              "icon": "ri-flashlight-line",
+              "label": "Key Insight"
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic, moody scene of a crowded 18th-century Paris street with passionate crowds, flags waving, and historic architecture under a cloudy sky, evoking tension and change.",
-          "imageStyle": "Illustration"
+          "imagePrompt": "A dramatic dawn over European capitals with shadowy figures symbolizing rising authoritarian leaders, evoking tension and power shifts in the early 20th century",
+          "image_layout": "blank"
         },
-        "primary_block_index": 1
+        "narration_text": "After World War I, Italy faced severe economic problems and political instability. Benito Mussolini capitalized on this unrest by leading the March on Rome in 1919, which symbolized the rise of fascism as a powerful, authoritarian movement promising order and national pride.\n\nAdolf Hitler’s Beer Hall Putsch in 1923 was an early, though failed, attempt to seize power in Germany. Despite its failure, this event marked the beginning of his rise and the foundation of the Nazi Party, which would later reshape German politics dramatically.\n\nWhen Hitler became Chancellor in 1933, he quickly dismantled democratic institutions and established a totalitarian regime. This consolidation of power allowed fascism to dominate Germany, leading to aggressive policies and the suppression of opposition, setting the stage for war.\n\nThe Spanish Civil War became a key battleground for fascist ideology. General Francisco Franco’s fascist forces gained strength by opposing the republicans, turning Spain into a testing ground for fascist military tactics and ideological influence in Europe.\n\nBy 1939, Germany, Italy, and Japan formed the Axis Powers, creating a formal alliance that combined their military and political ambitions. This coalition solidified the spread of fascism and directly challenged the existing world order, leading to the outbreak of World War II."
       },
       {
-        "title": "Legacy and Impact of the French Revolution",
-        "intent": "summary",
-        "content_angle": "summary",
-        "selected_template": "Rich text",
-        "slide_density": "standard",
+        "title": "Appeasement vs Confrontation",
+        "intent": "comparison",
+        "content_angle": "comparison",
+        "selected_template": "Comparison",
+        "slide_density": "dense",
+        "primary_block_index": 1,
+        "animation_unit": "side",
+        "animation_unit_count": 5,
+        "animated_block_index": 1,
         "gyml_content": {
-          "title": "Legacy and Impact of the French Revolution",
-          "intent": "summarize",
-          "layout": "blank",
+          "title": "Appeasement vs Confrontation",
+          "intent": "compare",
+          "layout": "top",
           "contentBlocks": [
             {
               "type": "intro_paragraph",
-              "text": "The French Revolution transformed France and influenced global political and social systems. Its legacy includes new ideas about rights, governance, and social equality."
+              "text": "Explore two key strategies used by nations before World War II: appeasement and confrontation. Understand their goals and consequences."
             },
             {
-              "type": "rich_text",
-              "paragraphs": [
-                "Political Change: The revolution ended absolute monarchy, establishing republican ideals and inspiring democratic movements worldwide.",
-                "Social Equality: It challenged the old social hierarchies, promoting the principles of liberty, equality, and fraternity.",
-                "Legal Reforms: The Napoleonic Code laid foundations for modern legal systems emphasizing individual rights and secular laws.",
-                "Global Influence: Revolutionary ideas spurred independence movements and reforms across Europe and the Americas."
+              "type": "smart_layout",
+              "variant": "comparisonBeforeAfter",
+              "items": [
+                {
+                  "heading": "Definition",
+                  "before": "Avoiding conflict by conceding to demands",
+                  "after": "Directly opposing aggression through force or threat"
+                },
+                {
+                  "heading": "Goal",
+                  "before": "Maintain peace and delay war",
+                  "after": "Stop aggressors and defend interests"
+                },
+                {
+                  "heading": "Key Proponent",
+                  "before": "British Prime Minister Neville Chamberlain",
+                  "after": "Winston Churchill and Allied leaders"
+                },
+                {
+                  "heading": "Outcome",
+                  "before": "Temporary peace but encouraged further aggression",
+                  "after": "Mobilization for war and eventual Allied victory"
+                },
+                {
+                  "heading": "Risk",
+                  "before": "Empowering dictators and losing credibility",
+                  "after": "Immediate conflict and high casualties"
+                }
               ]
+            },
+            {
+              "type": "takeaway",
+              "text": "Appeasement delayed war but emboldened aggressors; confrontation risked immediate conflict but aimed to stop expansion.",
+              "icon": "ri-lightbulb-line"
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic sunrise over a historic European cityscape symbolizing hope and transformation, with subtle silhouettes of people raising flags and banners in peaceful celebration",
-          "imageStyle": "Illustration"
+          "imagePrompt": "A dramatic scene showing a tense diplomatic meeting with one side offering an olive branch and the other side preparing for battle, set against a backdrop of darkening skies and looming warships.",
+          "image_layout": "blank"
         },
-        "primary_block_index": 1
+        "narration_text": "Appeasement is a diplomatic strategy where a country tries to avoid conflict by making concessions to an aggressive power. The idea is to satisfy demands to keep peace, often by allowing limited territorial expansion or policy changes. It’s like giving in to stop a fight before it starts.\n\nThe main goal of appeasement was to maintain peace and stability in Europe after the devastation of World War I. Leaders hoped that by avoiding confrontation, they could prevent another large-scale war and buy time to rebuild their own countries’ strength.\n\nThe key proponent of appeasement was British Prime Minister Neville Chamberlain. He believed that negotiating and compromising with Hitler could prevent war, famously declaring he achieved “peace for our time” after the Munich Agreement in 1938, though this proved overly optimistic.\n\nThe outcome of appeasement was ultimately failure. Instead of preventing war, it emboldened Hitler, encouraging further aggression. This strategy delayed confrontation but did not stop World War II, highlighting the dangers of underestimating an adversary’s ambitions.\n\nThe risk of appeasement lies in encouraging the aggressor to push boundaries further, assuming they won’t face serious opposition. In contrast, confrontation involves standing firm, but it risks immediate conflict. Both strategies carry significant consequences depending on timing and context."
+      },
+      {
+        "title": "Key Events Leading to War",
+        "intent": "process",
+        "content_angle": "mechanism",
+        "selected_template": "Timeline",
+        "slide_density": "dense",
+        "primary_block_index": 1,
+        "animation_unit": "step",
+        "animation_unit_count": 7,
+        "animated_block_index": 1,
+        "gyml_content": {
+          "title": "Key Events Leading to War",
+          "intent": "narrate",
+          "layout": "top",
+          "contentBlocks": [
+            {
+              "type": "intro_paragraph",
+              "text": "Explore the critical events from 1933 to 1939 that escalated tensions and led to World War II."
+            },
+            {
+              "type": "smart_layout",
+              "variant": "processArrow",
+              "items": [
+                {
+                  "label": "Hitler Becomes Chancellor (1933)",
+                  "description": "Adolf Hitler rises to power, initiating aggressive policies.",
+                  "imagePrompt": "A shadowy figure standing before a grand government building with stormy skies",
+                  "color": "#b22222"
+                },
+                {
+                  "label": "Reoccupation of the Rhineland (1936)",
+                  "description": "Germany remilitarizes the Rhineland, defying the Treaty of Versailles.",
+                  "imagePrompt": "Soldiers marching into a misty, forested border area with tense atmosphere",
+                  "color": "#cc5500"
+                },
+                {
+                  "label": "Annexation of Austria (Anschluss) (1938)",
+                  "description": "Germany annexes Austria, expanding its territory without resistance.",
+                  "imagePrompt": "Flags merging over mountainous terrain under a cloudy sky",
+                  "color": "#8b0000"
+                },
+                {
+                  "label": "Munich Agreement (1938)",
+                  "description": "European powers concede Sudetenland to Germany to avoid conflict.",
+                  "imagePrompt": "Diplomats shaking hands over a map with dimmed lighting",
+                  "color": "#556b2f"
+                },
+                {
+                  "label": "Invasion of Czechoslovakia (1939)",
+                  "description": "Germany occupies the rest of Czechoslovakia, breaking promises.",
+                  "imagePrompt": "Tanks rolling into a city with dark clouds overhead",
+                  "color": "#800000"
+                },
+                {
+                  "label": "Nazi-Soviet Pact Signed (1939)",
+                  "description": "Non-aggression pact between Germany and USSR shocks the world.",
+                  "imagePrompt": "Two leaders exchanging documents with a backdrop of divided flags",
+                  "color": "#2f4f4f"
+                },
+                {
+                  "label": "Invasion of Poland (1939)",
+                  "description": "Germany invades Poland, triggering the start of World War II.",
+                  "imagePrompt": "Armored vehicles crossing a border with explosions in the distance",
+                  "color": "#a52a2a"
+                }
+              ]
+            },
+            {
+              "type": "callout",
+              "text": "These events progressively dismantled peace efforts and set the stage for global conflict.",
+              "icon": "ri-alert-line",
+              "label": "Key Insight"
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "Darkened skies over a tense European cityscape with shadows of military forces advancing, evoking looming conflict and uncertainty",
+          "image_layout": "blank"
+        },
+        "narration_text": "Adolf Hitler becoming chancellor in 1933 marked a turning point in German politics. His rise allowed the Nazi Party to push aggressive nationalist policies, setting the stage for territorial expansion and challenging the post-World War I international order.\n\nWhen Germany remilitarized the Rhineland in 1936, it violated the Treaty of Versailles, which had demilitarized that region to act as a buffer. This bold move tested the resolve of other European powers, who chose not to intervene, encouraging further German aggression.\n\nThe annexation of Austria, or Anschluss, in 1938 was significant because it expanded Germany without military conflict. This event showed Hitler’s strategy of uniting all German-speaking peoples and revealed the weakness of European countries in resisting his demands.\n\nThe Munich Agreement in 1938 is often seen as a failed attempt at peace. European powers, especially Britain and France, allowed Germany to take the Sudetenland region of Czechoslovakia, hoping to avoid war. However, this concession only emboldened Hitler’s ambitions.\n\nGermany’s invasion of the rest of Czechoslovakia in 1939 shattered the promises made at Munich. This aggressive action demonstrated that Hitler’s goals went beyond uniting German speakers and exposed the dangers of appeasement policies.\n\nThe Nazi-Soviet Pact shocked the world because it was an agreement between two ideological enemies. This non-aggression pact ensured that Germany could invade Poland without fear of Soviet intervention, setting the stage for the outbreak of war.\n\nGermany’s invasion of Poland in 1939 was the final trigger for World War II. This blatant act of aggression forced Britain and France to declare war, as they had pledged to defend Poland’s sovereignty, marking the official start of the conflict."
       }
     ]
   }

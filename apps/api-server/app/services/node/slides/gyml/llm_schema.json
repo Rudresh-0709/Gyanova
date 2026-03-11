@@ -15,6 +15,7 @@
                 "right",
                 "left",
                 "top",
+                "bottom",
                 "behind",
                 "blank"
             ],
@@ -180,11 +181,12 @@
                                     "table",
                                     "tableStriped",
                                     "tableHighlight"
-                                ]
+                                ],
+                                "description": "Comparison variations. CRITICAL: For these, each 'item' MUST be a 'Dimension' of comparison (e.g. Heading: 'Speed', Description: 'A: 10km/h, B: 20km/h')."
                             },
                             "items": {
                                 "type": "array",
-                                "maxItems": 5,
+                                "maxItems": 7,
                                 "items": {
                                     "type": "object",
                                     "additionalProperties": true
@@ -492,6 +494,7 @@
                                     "left",
                                     "right",
                                     "top",
+                                    "bottom",
                                     "behind",
                                     "blank"
                                 ],

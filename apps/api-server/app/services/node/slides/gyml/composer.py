@@ -204,6 +204,9 @@ class SlideComposer:
         elif "subtopic" in content:
             main_concept["topic"] = content["subtopic"]
 
+        if "slide_density" in content:
+            main_concept["slide_density"] = content["slide_density"]
+
         # Extract blocks from various content structures
         if "points" in content:
             points = content["points"]
@@ -389,6 +392,7 @@ class SlideComposer:
         image_style = None
         topic = None
 
+        slide_density = None
         for concept in concept_group:
             if "image" in concept:
                 image = concept.get("image", {})
@@ -408,6 +412,8 @@ class SlideComposer:
                 image_style = concept["imageStyle"]
             if "topic" in concept:
                 topic = concept["topic"]
+            if "slide_density" in concept:
+                slide_density = concept["slide_density"]
 
         return ComposedSlide(
             id=slide_id,
@@ -421,6 +427,7 @@ class SlideComposer:
             topic=topic,
             image_prompt=image_prompt,
             image_style=image_style,
+            slide_density=slide_density,
         )
 
     def _create_fallback_slide(self, content: Dict[str, Any]) -> ComposedSlide:
@@ -641,6 +648,7 @@ class SlideComposer:
             hierarchy=dense_profile,  # Applied explicit hierarchy
             image_prompt=slide.image_prompt,
             image_style=slide.image_style,
+            slide_density=slide.slide_density,
         )
 
     def _split_smart_layout_content(
@@ -726,6 +734,7 @@ class SlideComposer:
                 accent_image_url=slide.accent_image_url if i == 0 else None,
                 image_prompt=slide.image_prompt if i == 0 else None,
                 image_style=slide.image_style if i == 0 else None,
+                slide_density=slide.slide_density,
             )
             slides.append(new_slide)
 
@@ -770,6 +779,7 @@ class SlideComposer:
                 accent_image_url=slide.accent_image_url if i == 0 else None,
                 image_prompt=slide.image_prompt if i == 0 else None,
                 image_style=slide.image_style if i == 0 else None,
+                slide_density=slide.slide_density,
             )
             # Fix Title Reuse issue (should clone or just accept it)
             # For now, simplistic reuse
@@ -1176,14 +1186,14 @@ class SlideComposer:
         # Calculate consistent FitnessGate density
         density_pct = SlideFitnessGate._calculate_estimated_height(slide)
 
-        # 1. Super Dense (> 120%)
-        if density_pct > 1.20:
+        # 1. Super Dense (> 110%)
+        if density_pct > 1.10:
             profile_name = "super_dense"
-        # 2. Dense / Standard (95% - 120%)
-        elif density_pct > 0.95:
+        # 2. Dense / Standard (85% - 110%)
+        elif density_pct > 0.85:
             profile_name = "dense"
-        # 3. Balanced / Relaxed (65% - 95%)
-        elif density_pct > 0.65:
+        # 3. Balanced / Relaxed (55% - 85%)
+        elif density_pct > 0.55:
             profile_name = "balanced"
         # 4. Impact / Sparse (< 65%)
         else:
@@ -1373,12 +1383,50 @@ class SlideComposer:
             BlockType.HUB_AND_SPOKE.value,
             BlockType.PROCESS_ARROW_BLOCK.value,
             BlockType.CYCLIC_PROCESS_BLOCK.value,
-            # Removed CARD_GRID and SMART_LAYOUT as they can be responsive
         }
+
+        def is_wide(b):
+            if b.type in WIDE_BLOCKS:
+                return True
+            # Smart layouts that act like tables or wide grids
+            if b.type == BlockType.SMART_LAYOUT.value:
+                variant = b.content.get("variant", "")
+                if variant == "comparison_table" or variant.startswith("comparison"):
+                    return True
+            if b.type == BlockType.COLUMNS.value:
+                # Look inside columns
+                cols = b.content.get("columns", [])
+                for col in cols:
+                    # Recursively check blocks inside column
+                    sub_blocks = col.get("blocks", [])
+                    for sub in sub_blocks:
+                        stype = getattr(
+                            sub,
+                            "type",
+                            sub.get("type") if isinstance(sub, dict) else None,
+                        )
+                        scontent = getattr(
+                            sub,
+                            "content",
+                            sub.get("content") if isinstance(sub, dict) else {},
+                        )
+
+                        if stype in WIDE_BLOCKS:
+                            return True
+                        if stype == BlockType.SMART_LAYOUT.value:
+                            svariant = (
+                                scontent.get("variant", "")
+                                if isinstance(scontent, dict)
+                                else ""
+                            )
+                            if svariant == "comparison_table" or svariant.startswith(
+                                "comparison"
+                            ):
+                                return True
+            return False
+
         has_wide_block = any(
-            block.type in WIDE_BLOCKS
-            for section in slide.sections
-            for block in section.blocks
+            is_wide(block) for section in slide.sections for block in section.blocks
         )
 
         # Detect timeline slides with extra content — force blank to avoid overflow
