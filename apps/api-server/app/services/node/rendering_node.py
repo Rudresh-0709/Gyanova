@@ -142,11 +142,17 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                         url = block.content.get("url") or block.content.get("src")
                         if prompt and (not url or url == "placeholder" or "upload.wikimedia.org" in str(url)):
                             print(f"   🎨 [Rendering Node] Standalone Image Gen for {block.type} using prompt: {prompt[:30]}...")
+                            
+                            # Determine style based on image_role if known
+                            style_to_use = s_obj.image_style
+                            if s_obj.image_role == "content" and not style_to_use:
+                                style_to_use = "diagrammatic, detailed, educational illustration"
+                            
                             task = ImageGenerator.generate_image(
                                 prompt=prompt,
                                 width=1024,
-                                height=576, # Default landscape
-                                style=s_obj.image_style
+                                height=768, # Landscape ratio better for content
+                                style=style_to_use
                             )
                             generation_tasks.append(task)
                             task_to_slide.append((block, None))

@@ -25,25 +25,155 @@ except ImportError:
 # Each angle has 2-3 variants that rotate based on slide index, item count,
 # and layout history to prevent visual monotony.
 INTENT_VARIANTS = {
-    # Content Angles
-    "overview":      ["cardGridIcon", "bigBullets", "cardGridSimple"],
-    "mechanism":     ["timelineSequential", "timelineIcon", "processArrow"],
-    "example":       ["cardGridImage", "cardGridIcon", "bulletIcon"],
-    "comparison":    ["comparison", "comparisonProsCons", "comparisonBeforeAfter"],
-    "application":   ["cardGridIcon", "bulletIcon", "processSteps"],
-    "visualization": ["stats", "statsComparison", "cardGridSimple"],
-    "summary":       ["bigBullets", "bulletCheck", "bulletIcon"],
+    # Content Angles — 5-6 options per pool for maximum variety
+    "overview":      ["cardGridIcon", "bigBullets", "cardGridSimple", "bulletIcon", "cardGridImage", "bulletCheck"],
+    "mechanism":     ["timelineSequential", "timelineIcon", "processArrow", "processSteps", "processAccordion"],
+    "example":       ["cardGridImage", "cardGridIcon", "bulletIcon", "bigBullets", "cardGridSimple"],
+    "comparison":    ["comparison", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "cardGridSimple"],
+    "application":   ["cardGridIcon", "bulletIcon", "processSteps", "processArrow", "bigBullets", "cardGridImage"],
+    "visualization": ["stats", "statsComparison", "cardGridSimple", "cardGridIcon", "bigBullets"],
+    "summary":       ["bigBullets", "bulletCheck", "bulletIcon", "cardGridSimple", "cardGridIcon"],
     # Intent fallbacks (used if content_angle is missing or generic)
-    "explain":       ["cardGridIcon", "cardGridSimple", "bigBullets"],
-    "narrate":       ["timelineSequential", "timelineIcon", "processArrow"],
-    "compare":       ["comparison", "comparisonProsCons", "comparisonBeforeAfter"],
-    "list":          ["bigBullets", "bulletCheck", "processSteps"],
-    "prove":         ["stats", "statsComparison", "cardGridSimple"],
-    "teach":         ["cardGridIcon", "processSteps", "bulletIcon"],
-    "summarize":     ["bigBullets", "bulletCheck", "bulletIcon"],
-    "introduce":     ["cardGridSimple", "bigBullets", "cardGridIcon"],
-    "demo":          ["processArrow", "processSteps", "processAccordion"],
+    "explain":       ["cardGridIcon", "cardGridSimple", "bigBullets", "bulletIcon", "cardGridImage", "processSteps"],
+    "narrate":       ["timelineSequential", "timelineIcon", "processArrow", "processSteps", "processAccordion"],
+    "compare":       ["comparison", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "cardGridSimple"],
+    "list":          ["bigBullets", "bulletCheck", "processSteps", "bulletIcon", "cardGridSimple", "bulletCross"],
+    "prove":         ["stats", "statsComparison", "cardGridSimple", "bigBullets", "cardGridIcon"],
+    "teach":         ["cardGridIcon", "processSteps", "bulletIcon", "bigBullets", "cardGridSimple", "processArrow"],
+    "summarize":     ["bigBullets", "bulletCheck", "bulletIcon", "cardGridSimple", "cardGridIcon"],
+    "introduce":     ["cardGridSimple", "bigBullets", "cardGridIcon", "bulletIcon", "cardGridImage"],
+    "demo":          ["processArrow", "processSteps", "processAccordion", "timelineSequential", "bulletIcon"],
 }
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# COMPOSITION STYLES (Fix Layout Monotony)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Each style defines a distinct block structure recipe.
+# The style is injected into the LLM prompt so every slide doesn't follow
+# the same intro → primary → annotation pattern.
+
+COMPOSITION_STYLES = {
+    "standard": {
+        "label": "Standard",
+        "recipe": "intro_paragraph → PRIMARY BLOCK → annotation_paragraph",
+        "description": "Classic teaching pattern. Opens with a brief intro that frames the topic, "
+                       "presents the primary visual, then closes with a contextual annotation.",
+        "block_count": "3 blocks",
+    },
+    "visual_lead": {
+        "label": "Visual Lead",
+        "recipe": "PRIMARY BLOCK → callout",
+        "description": "Opens directly with the primary visual block, no intro paragraph. "
+                       "Closes with a single punchy callout. Feels immediate and visual-first.",
+        "block_count": "2 blocks",
+    },
+    "context_heavy": {
+        "label": "Context Heavy",
+        "recipe": "context_paragraph → PRIMARY BLOCK",
+        "description": "Opens with a rich context/framing paragraph that explains WHY this matters, "
+                       "then delivers the primary visual. No closing block — let the content breathe.",
+        "block_count": "2 blocks",
+    },
+    "minimal": {
+        "label": "Minimal",
+        "recipe": "PRIMARY BLOCK only",
+        "description": "Just the primary teaching block, nothing else. Maximum breathing room "
+                       "and visual impact. Best for bold, simple concepts.",
+        "block_count": "1 block",
+    },
+    "bookend": {
+        "label": "Bookend",
+        "recipe": "callout → PRIMARY BLOCK → takeaway",
+        "description": "Opens with a hook callout ('Did you know...'), presents the primary visual, "
+                       "then closes with a memorable takeaway. Feels like a complete story.",
+        "block_count": "3 blocks",
+    },
+    "narrative": {
+        "label": "Narrative",
+        "recipe": "intro_paragraph → PRIMARY BLOCK → annotation_paragraph → outro_paragraph",
+        "description": "Full storytelling arc. Opens with scene-setting, presents visuals, "
+                       "adds a detail/insight annotation, and closes with a forward-looking outro.",
+        "block_count": "4 blocks",
+    },
+    "insight": {
+        "label": "Insight",
+        "recipe": "PRIMARY BLOCK → callout → takeaway",
+        "description": "Opens with the visual, then adds a surprising insight callout, "
+                       "and closes with the key takeaway. Conclusion-driven layout.",
+        "block_count": "3 blocks",
+    },
+    "discovery": {
+        "label": "Discovery",
+        "recipe": "context_paragraph → PRIMARY BLOCK → annotation_paragraph",
+        "description": "Opens with an exploratory question or 'what if' paragraph, "
+                       "presents the answer through the primary visual, then annotates with details.",
+        "block_count": "3 blocks",
+    },
+    "impact": {
+        "label": "Impact",
+        "recipe": "PRIMARY BLOCK → takeaway",
+        "description": "Data-forward. Opens directly with the primary visual (stats, comparison, chart), "
+                       "then hammers home the conclusion with a takeaway. No fluff.",
+        "block_count": "2 blocks",
+    },
+    "guided": {
+        "label": "Guided",
+        "recipe": "intro_paragraph → PRIMARY BLOCK → callout",
+        "description": "Teacher-led. Opens with a gentle intro that previews what's coming, "
+                       "presents the primary visual, then highlights a key detail with a callout.",
+        "block_count": "3 blocks",
+    },
+}
+
+# Maps content_angle → ordered list of preferred composition styles.
+# The picker cycles through these and avoids repeating the last 2 used.
+ANGLE_TO_STYLES = {
+    "overview":      ["standard", "guided", "visual_lead", "discovery", "bookend", "narrative"],
+    "mechanism":     ["context_heavy", "guided", "narrative", "discovery", "standard", "visual_lead"],
+    "example":       ["visual_lead", "minimal", "insight", "bookend", "guided", "standard"],
+    "comparison":    ["impact", "context_heavy", "bookend", "discovery", "visual_lead", "insight"],
+    "application":   ["guided", "narrative", "standard", "insight", "bookend", "discovery"],
+    "visualization": ["visual_lead", "impact", "minimal", "insight", "standard", "context_heavy"],
+    "summary":       ["insight", "impact", "minimal", "bookend", "visual_lead", "guided"],
+    # Intent-level fallbacks
+    "explain":       ["standard", "guided", "discovery", "context_heavy", "visual_lead", "narrative", "bookend"],
+    "narrate":       ["narrative", "context_heavy", "guided", "discovery", "standard", "bookend"],
+    "compare":       ["impact", "context_heavy", "bookend", "discovery", "insight", "visual_lead"],
+    "list":          ["visual_lead", "standard", "minimal", "guided", "insight", "bookend"],
+    "prove":         ["impact", "insight", "bookend", "visual_lead", "standard", "context_heavy"],
+    "teach":         ["guided", "standard", "narrative", "discovery", "context_heavy", "visual_lead"],
+    "summarize":     ["insight", "impact", "minimal", "bookend", "visual_lead", "guided"],
+    "introduce":     ["minimal", "visual_lead", "bookend", "standard", "guided", "impact"],
+    "demo":          ["guided", "narrative", "context_heavy", "standard", "visual_lead", "insight"],
+}
+
+
+def pick_composition_style(
+    content_angle: str,
+    intent: str,
+    slide_index: int,
+    composition_history: Optional[List[str]] = None,
+) -> str:
+    """
+    Select a composition style that is contextually appropriate and non-repetitive.
+    
+    Strategy:
+    1. Look up the preferred style pool for the content_angle (or intent fallback).
+    2. Filter out the last 2 styles used (from composition_history).
+    3. Cycle through remaining options based on slide_index.
+    """
+    key = content_angle if content_angle in ANGLE_TO_STYLES else intent
+    pool = ANGLE_TO_STYLES.get(key, ["standard", "guided", "visual_lead", "discovery", "bookend", "narrative"])
+    
+    # Filter out recently used styles
+    recent = set(composition_history[-2:]) if composition_history else set()
+    fresh = [s for s in pool if s not in recent]
+    if not fresh:
+        fresh = pool  # All exhausted, reset
+    
+    return fresh[slide_index % len(fresh)]
 
 
 def pick_variant(
@@ -51,30 +181,86 @@ def pick_variant(
     intent: str,
     slide_index: int,
     item_count: int,
-    layout_history: list,
-) -> str:
+    layout_history: List[str],
+    variant_history: Optional[List[str]] = None,
+) -> Tuple[str, str]:
     """
-    Deterministically pick a smart_layout variant.
+    Pick a (variant, image_layout) pair using weighted selection.
 
-    Selection priority:
-      1. Resolve the variant pool from content_angle (or intent fallback)
-      2. Filter out variants used in the last 2 slides (history dedup)
-      3. Rotate through remaining variants using slide_index
+    Goal: achieve visual variety while maintaining professional balance.
+    - Wide components (timelines, arrows) get full-width vertical layouts (top/bottom).
+    - Standard components get alternating sidebars (left/right).
+    - Content-dense slides get 'blank' to maximize space.
+
+    Weighting strategy (replaces pure modulo rotation):
+    - Variants NOT used in the subtopic so far → weight 3.0 (strongly preferred)
+    - Variants used once → weight 1.0
+    - Variants used 2+ times → weight 0.3 (heavily penalized)
+    - Variants used in the last 3 slides → EXCLUDED entirely
     """
-    # Resolve variant pool: prefer content_angle, fall back to intent
+    # 1. Resolve variant pool
     key = content_angle if content_angle in INTENT_VARIANTS else intent
-    variants = INTENT_VARIANTS.get(key, ["cardGrid", "bigBullets", "cardGridIcon"])
+    pool = INTENT_VARIANTS.get(key, ["cardGridIcon", "bigBullets", "cardGridSimple"])
 
-    # ── Step 1: Filter out recently used variants ──
-    recent = set(layout_history[-2:]) if layout_history else set()
-    fresh = [v for v in variants if v not in recent]
-
-    # If all variants were recently used, reset to full pool
+    # 2. History Filter (Avoid repetition — exclude last 3 slides)
+    recent = set(layout_history[-3:]) if layout_history else set()
+    fresh = [v for v in pool if v not in recent]
     if not fresh:
-        fresh = variants
+        # All variants recently used — at least avoid the very last one
+        last = layout_history[-1] if layout_history else None
+        fresh = [v for v in pool if v != last] or pool
 
-    # ── Step 2: Rotate through fresh variants by slide index ──
-    return fresh[slide_index % len(fresh)]
+    # 3. Weighted Selection (replace pure modulo)
+    # Count how many times each variant has been used in the full subtopic
+    full_history = variant_history or []
+    usage_counts = {}
+    for v in full_history:
+        usage_counts[v] = usage_counts.get(v, 0) + 1
+
+    weights = []
+    for v in fresh:
+        count = usage_counts.get(v, 0)
+        if count == 0:
+            weights.append(3.0)   # Never used — strongly preferred
+        elif count == 1:
+            weights.append(1.0)   # Used once — normal weight
+        else:
+            weights.append(0.3)   # Overused — heavily penalized
+
+    # Weighted random choice (seeded by slide_index for reproducibility within a run)
+    total = sum(weights)
+    if total > 0:
+        normalized = [w / total for w in weights]
+        # Use slide_index as seed for deterministic but varied selection
+        rng = random.Random(slide_index * 7 + len(full_history) * 13)
+        variant = rng.choices(fresh, weights=normalized, k=1)[0]
+    else:
+        variant = fresh[slide_index % len(fresh)]
+
+    # 4. Resolve Image Layout
+    # Define 'wide' variants that need full width (vertical layouts)
+    WIDE_VARIANTS = {
+        "timeline", "timelineHorizontal", "timelineSequential", "timelineMilestone", "timelineIcon",
+        "processArrow", "processSteps",
+        "comparison", "comparisonProsCons", "comparisonBeforeAfter",
+        "statsComparison"
+    }
+    is_wide = variant in WIDE_VARIANTS
+
+    # Logic priority:
+    if slide_index == 0:
+        image_layout = "behind"   # Hero style for start
+    elif item_count > 5:
+        image_layout = "blank"    # Max width for density
+    elif is_wide:
+        # Wide content gets vertical stacking (Full Width)
+        # Alternate top/bottom for variety
+        image_layout = "top" if (slide_index % 2 == 1) else "bottom"
+    else:
+        # Standard content gets alternating sidebars
+        image_layout = "right" if (slide_index % 2 == 1) else "left"
+
+    return variant, image_layout
 
 
 class GyMLContentGenerator:
@@ -135,6 +321,10 @@ class GyMLContentGenerator:
         template_name: str = None,
         slide_index: int = 0,
         intent: str = "explain",
+        composition_style: Optional[str] = None,
+        composition_history: Optional[List[str]] = None,
+        variant_history: Optional[List[str]] = None,
+        image_role: str = "accent",
     ) -> Dict[str, Any]:
         """
         Generate structured GyML content from slide metadata (Content-First).
@@ -157,7 +347,7 @@ class GyMLContentGenerator:
         ]
         is_sparse = normalized_template in SPARSE_TEMPLATES
 
-        # ── VISUAL VARIANT ROTATION ──────────────────────────────────
+        # ── VISUAL VARIANT & LAYOUT ROTATION ─────────────────────────
         # Templates that use top-level block types (not smart_layout) skip rotation
         TOP_LEVEL_BLOCK_TEMPLATES = [
             "Comparison table", "Key-Value list", "Labeled diagram",
@@ -169,23 +359,73 @@ class GyMLContentGenerator:
             not is_sparse and normalized_template not in TOP_LEVEL_BLOCK_TEMPLATES
         )
 
-        chosen_variant = None
-        variant_directive = ""
+        chosen_variant, chosen_layout = None, None
+        rotation_directives = ""
         if uses_smart_layout:
             # Estimate item count from template hints (actual count decided by LLM)
             estimated_items = 4  # sensible default
-            chosen_variant = pick_variant(
+            chosen_variant, chosen_layout = pick_variant(
                 content_angle=content_angle,
                 intent=intent,
                 slide_index=slide_index,
                 item_count=estimated_items,
                 layout_history=layout_history or [],
+                variant_history=variant_history,
             )
-            variant_directive = f"""
-        ⚡ MANDATORY VARIANT: Use '{chosen_variant}' as the smart_layout variant for the primary block.
-           Do NOT use any other variant. This has been pre-selected for visual variety across the deck.
+            rotation_directives = f"""
+        ⚡ MANDATORY VARIANT: Use '{chosen_variant}' for the primary smart_layout block.
+        ⚡ MANDATORY LAYOUT: Use '{chosen_layout}' as the slide-level image_layout.
             """
-            print(f"    🎨 Variant rotation: picked '{chosen_variant}' for angle='{content_angle}', intent='{intent}', slide_index={slide_index}")
+            print(f"    🎨 Rotation: variant='{chosen_variant}', layout='{chosen_layout}' for index={slide_index}")
+
+        # ── IMAGE ROLE ROUTING ──────────────────────────
+        image_role_directives = ""
+        if image_role == "content":
+            # Override layout to sidebars for inline content images
+            if chosen_layout not in ["left", "right"]:
+                chosen_layout = "right" if (slide_index % 2 == 1) else "left"
+            
+            image_role_directives = f"""
+        ⚡ IMAGE ROLE: CONTENT (MANDATORY)
+           You MUST include an 'image' block in `contentBlocks`.
+           This image is pedagogically necessary. Set a descriptive `imagePrompt`.
+           Set `image_layout` to "{chosen_layout}". Do not use an accent image.
+            """
+        elif image_role == "none":
+            chosen_layout = "blank"
+            image_role_directives = """
+        ⚡ IMAGE ROLE: NONE (MANDATORY)
+           No images should be generated for this slide.
+           Set `image_layout` to "blank". DO NOT include an 'image' block.
+            """
+        else:
+            # Default accent behavior
+            image_role_directives = f"""
+        ⚡ IMAGE ROLE: ACCENT
+           The image on this slide is decorative (in the sidebar or background).
+           Do NOT include an 'image' block within `contentBlocks`.
+           Instead, set `imagePrompt` at the ROOT level of the JSON.
+           Suggested layout: "{chosen_layout}".
+            """
+
+        # ── COMPOSITION STYLE SELECTION ──────────────────────────
+        # Pick a composition style if not explicitly provided
+        if composition_style is None:
+            composition_style = pick_composition_style(
+                content_angle=content_angle,
+                intent=intent,
+                slide_index=slide_index,
+                composition_history=composition_history,
+            )
+        style_info = COMPOSITION_STYLES.get(composition_style, COMPOSITION_STYLES["standard"])
+        composition_recipe_directive = f"""
+        ⚡ MANDATORY COMPOSITION STYLE: '{style_info['label']}'
+           Recipe: {style_info['recipe']}
+           Description: {style_info['description']}
+           Target block count: {style_info['block_count']}
+           YOU MUST follow this exact block pattern. Do NOT add extra blocks beyond this recipe.
+        """
+        print(f"    🎨 Composition style: {composition_style} ({style_info['recipe']})")
 
         prompt = f"""
         You are an expert educational content designer who creates visually rich, cognitively balanced slides.
@@ -269,7 +509,7 @@ class GyMLContentGenerator:
            {"USE 'smart_layout'" if not is_sparse else "AVOID 'smart_layout'"}
            {"" if is_sparse else f"This is a '{template_name}' slide. DO NOT use 'smart_layout'. Focus on a high-impact title and a single intro_paragraph." if is_sparse else ""}
 
-        {variant_directive}
+        {rotation_directives}
 
            TEMPLATE → PRIMARY BLOCK MAPPING:
            • bullets/Title with bullets → smart_layout (bulletIcon or bigBullets)
@@ -301,17 +541,12 @@ class GyMLContentGenerator:
            • 'callout'              — Highlight a key insight. Keep to 1-2 lines.
            • 'takeaway'             — The single most important point to remember.
 
-        C. COMPOSITION RECIPES (follow these patterns):
-           ┌─────────────────────────────────────────────────────────────┐
-           │ BULLET SLIDE        → intro_paragraph + smart_layout(bulletIcon) │
-           │ TIMELINE SLIDE      → smart_layout(timelineSequential) + callout │
-           │ DIAGRAM SLIDE       → smart_layout(diagramFlowchart) + annotation_paragraph │
-           │ COMPARISON SLIDE    → intro_paragraph + smart_layout(comparison) + takeaway │
-           │ STATS SLIDE         → smart_layout(stats) + callout │
-           │ PROCESS SLIDE       → intro_paragraph + smart_layout(processArrow) │
-           │ CARD GRID SLIDE     → intro_paragraph + smart_layout(cardGridIcon) + outro_paragraph │
-           │ KEY-VALUE SLIDE     → intro_paragraph + key_value_list │
-           └─────────────────────────────────────────────────────────────┘
+        C. COMPOSITION STYLE (FOLLOW THIS EXACT RECIPE FOR THIS SLIDE):
+           {composition_recipe_directive}
+
+           IMPORTANT: The recipe above specifies which supporting blocks to use and their order.
+           Do NOT deviate. If the recipe says "PRIMARY BLOCK only", output only the primary block.
+           If the recipe says "callout → PRIMARY BLOCK → takeaway", output exactly those 3 blocks in that order.
 
            Variant Dictionary:
            TIMELINES: timeline, timelineHorizontal, timelineSequential, timelineMilestone, timelineIcon
@@ -360,6 +595,8 @@ class GyMLContentGenerator:
 
         {"SPARSE VISUAL STYLE: For this '" + template_name + "' slide, keep it minimal. Use only a title and a single intro_paragraph. DO NOT use smart_layout." if is_sparse else ""}
 
+        {image_role_directives}
+
         ═══════════════════════════════════════════════
         STEP 4: FORMATTING & OUTPUT
         ═══════════════════════════════════════════════
@@ -402,6 +639,7 @@ class GyMLContentGenerator:
             result = {
                 "title": title,
                 "intent": "explain",
+                "image_role": image_role,
                 "contentBlocks": [
                     {
                         "type": "paragraph",
@@ -410,6 +648,9 @@ class GyMLContentGenerator:
                 ],
             }
 
+        # Ensure image_role is tracked
+        result["image_role"] = image_role
+        
         # Validate and ensure primary_block_index
         return self._validate_primary_block(result)
 

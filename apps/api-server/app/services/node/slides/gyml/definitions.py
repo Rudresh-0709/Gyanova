@@ -160,6 +160,7 @@ class ComposedSlide:
     image_prompt: Optional[str] = None
     image_style: Optional[str] = None
     slide_density: Optional[str] = None
+    image_role: Optional[str] = None  # "content", "accent", or "none"
 
     # Visual Hierarchy Rules (Assigned by Composer)
     hierarchy: Optional[VisualHierarchy] = None

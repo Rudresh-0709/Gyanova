@@ -15,11 +15,11 @@
         "gyml_content": {
           "title": "The Treaty of Versailles",
           "intent": "explain",
-          "layout": "top",
+          "layout": "behind",
           "contentBlocks": [
             {
               "type": "intro_paragraph",
-              "text": "The Treaty of Versailles ended World War I but imposed harsh terms on Germany, fueling resentment and political unrest."
+              "text": "The Treaty of Versailles officially ended World War I but imposed harsh terms on Germany, sowing the seeds of resentment that contributed to World War II."
             },
             {
               "type": "smart_layout",
@@ -32,30 +32,30 @@
                 },
                 {
                   "heading": "Military Restrictions",
-                  "text": "The treaty limited the German army to 100,000 troops and banned tanks and air force.",
+                  "text": "The treaty limited Germany's army size and banned conscription and certain weapons.",
                   "icon": "ri-shield-line"
                 },
                 {
                   "heading": "War Guilt Clause",
-                  "text": "Germany was forced to accept full responsibility for starting the war.",
+                  "text": "Germany was forced to accept full responsibility for the war, damaging national pride.",
                   "icon": "ri-hand-heart-line"
                 },
                 {
                   "heading": "Reparations",
-                  "text": "Huge financial payments were demanded, crippling Germany's economy.",
-                  "icon": "ri-money-dollar-circle-line"
+                  "text": "Heavy financial payments were imposed, crippling Germany’s economy.",
+                  "icon": "ri-coins-line"
                 }
               ]
             },
             {
               "type": "outro_paragraph",
-              "text": "These terms created widespread anger and economic hardship, setting the stage for political instability in Germany."
+              "text": "These terms fueled anger and economic hardship, creating fertile ground for nationalist movements and ultimately leading to World War II."
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A somber, dramatic scene of a torn German flag beneath stormy skies, symbolizing national humiliation and unrest after defeat"
+          "imagePrompt": "A somber, stormy sky over a shattered map of Europe with dark clouds gathering above a broken treaty scroll, evoking tension and unrest in post-war Germany"
         },
-        "narration_text": "Germany was forced to give up significant territories after World War I, including valuable industrial areas and overseas colonies. This loss not only weakened Germany’s economy but also wounded national pride, making many Germans feel humiliated and unfairly treated.\n\nThe Treaty also severely limited Germany’s military capabilities. The army was drastically reduced, tanks and aircraft were banned, and the navy was restricted. This left Germany feeling vulnerable and powerless, fueling resentment toward the Allies who imposed these harsh restrictions.\n\nOne of the most bitter points was the War Guilt Clause, which placed full blame for the war on Germany. This clause justified the harsh penalties but deeply offended Germans, who believed the war’s causes were more complex and that they were being scapegoated.\n\nGermany was required to pay massive reparations to the victorious countries, which crippled its economy and caused widespread hardship. These payments created long-term economic instability and angered many Germans, who saw them as an unjust punishment that deepened their suffering."
+        "narration_text": "Germany lost significant territory under the Treaty of Versailles, including valuable lands like the Saar Basin and Alsace-Lorraine. This not only shrank the country’s borders but also hurt national pride, making many Germans feel unfairly punished and weakened.\n\nThe treaty imposed strict limits on Germany’s military, reducing its army to just 100,000 soldiers and banning tanks, submarines, and an air force. This left Germany vulnerable and humiliated, as they could no longer defend themselves like other nations.\n\nOne of the most controversial parts was the War Guilt Clause, which forced Germany to accept full responsibility for starting World War I. This blame fueled anger and resentment because many Germans believed the causes of the war were more complex.\n\nGermany was also required to pay huge reparations to the Allied countries, which devastated its economy. These payments caused widespread hardship and instability, deepening the sense of injustice and setting the stage for future conflict."
       },
       {
         "title": "Rise of Fascism",
@@ -74,51 +74,51 @@
           "contentBlocks": [
             {
               "type": "intro_paragraph",
-              "text": "Fascism emerged as a powerful political force in Europe between World War I and World War II. This timeline shows key events marking its rise."
+              "text": "This timeline traces key events marking the rise of fascism across Europe, highlighting how political, economic, and social factors contributed to its spread."
             },
             {
               "type": "smart_layout",
               "variant": "timelineIcon",
               "items": [
                 {
-                  "icon": "ri-calendar-event-line",
-                  "heading": "1919 - Mussolini's March",
-                  "description": "Benito Mussolini leads the March on Rome, establishing fascist power in Italy."
+                  "heading": "1919 - Formation of Fasci",
+                  "description": "Benito Mussolini establishes the Fasci Italiani di Combattimento, the foundation of Italian Fascism.",
+                  "icon": "ri-flag-line"
                 },
                 {
-                  "icon": "ri-sword-line",
-                  "heading": "1923 - Beer Hall Putsch",
-                  "description": "Hitler's failed coup attempt in Munich marks the start of Nazi prominence."
+                  "heading": "1922 - March on Rome",
+                  "description": "Mussolini's Blackshirts march, leading to his appointment as Italy’s Prime Minister.",
+                  "icon": "ri-walk-line"
                 },
                 {
-                  "icon": "ri-government-line",
-                  "heading": "1933 - Hitler Chancellor",
-                  "description": "Adolf Hitler becomes Chancellor of Germany, consolidating fascist control."
+                  "heading": "1933 - Hitler Becomes Chancellor",
+                  "description": "Adolf Hitler is appointed Chancellor of Germany, marking the Nazi Party's rise to power.",
+                  "icon": "ri-crown-line"
                 },
                 {
-                  "icon": "ri-flag-line",
-                  "heading": "1936 - Spanish Civil War",
-                  "description": "Fascist forces under Franco gain momentum, spreading ideology in Spain."
+                  "heading": "1936 - Rome-Berlin Axis",
+                  "description": "Italy and Germany form a political and military alliance, solidifying fascist cooperation.",
+                  "icon": "ri-handshake-line"
                 },
                 {
-                  "icon": "ri-globe-line",
-                  "heading": "1939 - Axis Powers Formed",
-                  "description": "Germany, Italy, and Japan unite, solidifying fascist alliance before WWII."
+                  "heading": "1939 - Fascist Expansion",
+                  "description": "Fascist regimes influence Spain and other regions, expanding authoritarian control in Europe.",
+                  "icon": "ri-earth-line"
                 }
               ]
             },
             {
               "type": "callout",
-              "text": "Fascism's rise was marked by aggressive nationalism, authoritarian rule, and militarization across Europe.",
-              "icon": "ri-flashlight-line",
-              "label": "Key Insight"
+              "text": "Fascism rose through a combination of nationalist rhetoric, economic instability, and strategic political moves.",
+              "label": "Key Insight",
+              "icon": "ri-lightbulb-line"
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic dawn over European capitals with shadowy figures symbolizing rising authoritarian leaders, evoking tension and power shifts in the early 20th century",
+          "imagePrompt": "A dramatic European cityscape at dusk with shadowy figures marching under flags, evoking tension and rising authoritarianism.",
           "image_layout": "blank"
         },
-        "narration_text": "After World War I, Italy faced severe economic problems and political instability. Benito Mussolini capitalized on this unrest by leading the March on Rome in 1919, which symbolized the rise of fascism as a powerful, authoritarian movement promising order and national pride.\n\nAdolf Hitler’s Beer Hall Putsch in 1923 was an early, though failed, attempt to seize power in Germany. Despite its failure, this event marked the beginning of his rise and the foundation of the Nazi Party, which would later reshape German politics dramatically.\n\nWhen Hitler became Chancellor in 1933, he quickly dismantled democratic institutions and established a totalitarian regime. This consolidation of power allowed fascism to dominate Germany, leading to aggressive policies and the suppression of opposition, setting the stage for war.\n\nThe Spanish Civil War became a key battleground for fascist ideology. General Francisco Franco’s fascist forces gained strength by opposing the republicans, turning Spain into a testing ground for fascist military tactics and ideological influence in Europe.\n\nBy 1939, Germany, Italy, and Japan formed the Axis Powers, creating a formal alliance that combined their military and political ambitions. This coalition solidified the spread of fascism and directly challenged the existing world order, leading to the outbreak of World War II."
+        "narration_text": "After World War I, Italy faced economic hardship and social unrest. Benito Mussolini capitalized on this instability by founding the Fasci Italiani di Combattimento in 1919, a movement promoting strong nationalist and authoritarian ideas to restore order and pride.\n\nThe March on Rome in 1922 was a dramatic show of force by Mussolini’s Blackshirts. Thousands of armed supporters marched to demand power, which pressured the king to appoint Mussolini as Prime Minister, marking the start of fascist rule in Italy through intimidation rather than traditional elections.\n\nIn 1933, Adolf Hitler’s rise to Chancellor of Germany was a turning point. Exploiting economic despair and national humiliation, Hitler’s Nazi Party gained popular support, allowing him to dismantle democracy and establish a totalitarian regime driven by aggressive nationalism and racial ideology.\n\nThe Rome-Berlin Axis formed in 1936, solidifying the alliance between Mussolini’s Italy and Hitler’s Germany. This partnership combined their military strength and political influence, setting the stage for coordinated fascist expansion and increased aggression in Europe.\n\nBy 1939, fascist ideology had spread beyond Italy and Germany, influencing Spain’s civil war and other regions. These expansions demonstrated how fascism wasn’t isolated but part of a broader movement challenging democratic governments and destabilizing international peace."
       },
       {
         "title": "Appeasement vs Confrontation",
@@ -133,11 +133,11 @@
         "gyml_content": {
           "title": "Appeasement vs Confrontation",
           "intent": "compare",
-          "layout": "top",
+          "layout": "bottom",
           "contentBlocks": [
             {
               "type": "intro_paragraph",
-              "text": "Explore two key strategies used by nations before World War II: appeasement and confrontation. Understand their goals and consequences."
+              "text": "Explore two key diplomatic strategies before World War II: appeasement and confrontation. Understand their goals and impacts."
             },
             {
               "type": "smart_layout",
@@ -145,42 +145,42 @@
               "items": [
                 {
                   "heading": "Definition",
-                  "before": "Avoiding conflict by conceding to demands",
-                  "after": "Directly opposing aggression through force or threat"
+                  "before": "Appeasement: Avoiding conflict by conceding to aggressive demands.",
+                  "after": "Confrontation: Directly opposing aggression to deter further threats."
                 },
                 {
                   "heading": "Goal",
-                  "before": "Maintain peace and delay war",
-                  "after": "Stop aggressors and defend interests"
+                  "before": "Maintain peace and delay war.",
+                  "after": "Prevent aggression and uphold international order."
                 },
                 {
-                  "heading": "Key Proponent",
-                  "before": "British Prime Minister Neville Chamberlain",
-                  "after": "Winston Churchill and Allied leaders"
+                  "heading": "Key Example",
+                  "before": "Munich Agreement, 1938: Allowed Nazi annexation of Sudetenland.",
+                  "after": "Allied declarations against Axis expansion and military build-up."
                 },
                 {
                   "heading": "Outcome",
-                  "before": "Temporary peace but encouraged further aggression",
-                  "after": "Mobilization for war and eventual Allied victory"
+                  "before": "Temporary peace but encouraged further aggression.",
+                  "after": "Led to immediate conflict but aimed to stop expansion."
                 },
                 {
-                  "heading": "Risk",
-                  "before": "Empowering dictators and losing credibility",
-                  "after": "Immediate conflict and high casualties"
+                  "heading": "Criticism",
+                  "before": "Seen as weakness enabling Axis powers.",
+                  "after": "Risked escalating war sooner and higher casualties."
                 }
               ]
             },
             {
               "type": "takeaway",
-              "text": "Appeasement delayed war but emboldened aggressors; confrontation risked immediate conflict but aimed to stop expansion.",
+              "text": "Understanding these strategies reveals the complex choices nations faced in the lead-up to World War II.",
               "icon": "ri-lightbulb-line"
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic scene showing a tense diplomatic meeting with one side offering an olive branch and the other side preparing for battle, set against a backdrop of darkening skies and looming warships.",
+          "imagePrompt": "A tense diplomatic meeting room with representatives debating intensely, shadows of looming warplanes outside the window, evoking a mood of fragile peace and rising conflict.",
           "image_layout": "blank"
         },
-        "narration_text": "Appeasement is a diplomatic strategy where a country tries to avoid conflict by making concessions to an aggressive power. The idea is to satisfy demands to keep peace, often by allowing limited territorial expansion or policy changes. It’s like giving in to stop a fight before it starts.\n\nThe main goal of appeasement was to maintain peace and stability in Europe after the devastation of World War I. Leaders hoped that by avoiding confrontation, they could prevent another large-scale war and buy time to rebuild their own countries’ strength.\n\nThe key proponent of appeasement was British Prime Minister Neville Chamberlain. He believed that negotiating and compromising with Hitler could prevent war, famously declaring he achieved “peace for our time” after the Munich Agreement in 1938, though this proved overly optimistic.\n\nThe outcome of appeasement was ultimately failure. Instead of preventing war, it emboldened Hitler, encouraging further aggression. This strategy delayed confrontation but did not stop World War II, highlighting the dangers of underestimating an adversary’s ambitions.\n\nThe risk of appeasement lies in encouraging the aggressor to push boundaries further, assuming they won’t face serious opposition. In contrast, confrontation involves standing firm, but it risks immediate conflict. Both strategies carry significant consequences depending on timing and context."
+        "narration_text": "Appeasement is a diplomatic strategy where a country tries to avoid conflict by making concessions to an aggressive power. It’s like giving in to demands to keep peace, hoping the other side will be satisfied and stop pushing further.\n\nThe goal of appeasement was to maintain peace and prevent another devastating war. Leaders believed that by compromising, they could avoid conflict and buy time, underestimating the aggressor’s ambitions and the risks of encouraging further aggression.\n\nA key example of appeasement is the Munich Agreement of 1938, where Britain and France allowed Nazi Germany to annex the Sudetenland region of Czechoslovakia. This was intended to satisfy Hitler’s demands without resorting to war, but it ultimately failed.\n\nConfrontation, on the other hand, involves standing firm against aggression, refusing to give in, and preparing to challenge or stop the aggressor. This approach aims to deter further expansion by showing strength and resolve, rather than weakness.\n\nCriticism of appeasement points out that it often emboldened aggressive leaders, encouraging them to push boundaries even further. Many argue it delayed the inevitable conflict, making World War II more destructive when it finally erupted."
       },
       {
         "title": "Key Events Leading to War",
@@ -190,7 +190,7 @@
         "slide_density": "dense",
         "primary_block_index": 1,
         "animation_unit": "step",
-        "animation_unit_count": 7,
+        "animation_unit_count": 6,
         "animated_block_index": 1,
         "gyml_content": {
           "title": "Key Events Leading to War",
@@ -199,7 +199,7 @@
           "contentBlocks": [
             {
               "type": "intro_paragraph",
-              "text": "Explore the critical events from 1933 to 1939 that escalated tensions and led to World War II."
+              "text": "Explore the major events from 1933 to 1939 that set the stage for World War II."
             },
             {
               "type": "smart_layout",
@@ -207,60 +207,54 @@
               "items": [
                 {
                   "label": "Hitler Becomes Chancellor (1933)",
-                  "description": "Adolf Hitler rises to power, initiating aggressive policies.",
-                  "imagePrompt": "A shadowy figure standing before a grand government building with stormy skies",
-                  "color": "#b22222"
+                  "description": "Adolf Hitler rises to power, beginning Nazi rule in Germany.",
+                  "imagePrompt": "A dark silhouette of a man speaking to a crowd with a rising sun in the background, symbolizing a new era",
+                  "color": "#B22222"
                 },
                 {
-                  "label": "Reoccupation of the Rhineland (1936)",
-                  "description": "Germany remilitarizes the Rhineland, defying the Treaty of Versailles.",
-                  "imagePrompt": "Soldiers marching into a misty, forested border area with tense atmosphere",
-                  "color": "#cc5500"
+                  "label": "Rearmament & Expansion (1935)",
+                  "description": "Germany rebuilds its military, violating the Treaty of Versailles.",
+                  "imagePrompt": "Rows of tanks and planes emerging from shadows under a stormy sky",
+                  "color": "#FF4500"
                 },
                 {
-                  "label": "Annexation of Austria (Anschluss) (1938)",
-                  "description": "Germany annexes Austria, expanding its territory without resistance.",
-                  "imagePrompt": "Flags merging over mountainous terrain under a cloudy sky",
-                  "color": "#8b0000"
+                  "label": "Rhineland Remilitarized (1936)",
+                  "description": "German troops enter the Rhineland, defying international agreements.",
+                  "imagePrompt": "Soldiers marching through a misty forest with barbed wire fading behind",
+                  "color": "#8B0000"
+                },
+                {
+                  "label": "Annexation of Austria (1938)",
+                  "description": "Germany annexes Austria in the Anschluss, expanding its territory.",
+                  "imagePrompt": "A map with borders changing, mountains and flags blending together under a cloudy sky",
+                  "color": "#DC143C"
                 },
                 {
                   "label": "Munich Agreement (1938)",
-                  "description": "European powers concede Sudetenland to Germany to avoid conflict.",
-                  "imagePrompt": "Diplomats shaking hands over a map with dimmed lighting",
-                  "color": "#556b2f"
-                },
-                {
-                  "label": "Invasion of Czechoslovakia (1939)",
-                  "description": "Germany occupies the rest of Czechoslovakia, breaking promises.",
-                  "imagePrompt": "Tanks rolling into a city with dark clouds overhead",
-                  "color": "#800000"
-                },
-                {
-                  "label": "Nazi-Soviet Pact Signed (1939)",
-                  "description": "Non-aggression pact between Germany and USSR shocks the world.",
-                  "imagePrompt": "Two leaders exchanging documents with a backdrop of divided flags",
-                  "color": "#2f4f4f"
+                  "description": "European powers concede Sudetenland to Germany to avoid war.",
+                  "imagePrompt": "Diplomats shaking hands over a table with maps and documents, tense atmosphere",
+                  "color": "#FF6347"
                 },
                 {
                   "label": "Invasion of Poland (1939)",
-                  "description": "Germany invades Poland, triggering the start of World War II.",
-                  "imagePrompt": "Armored vehicles crossing a border with explosions in the distance",
-                  "color": "#a52a2a"
+                  "description": "Germany invades Poland, triggering the outbreak of World War II.",
+                  "imagePrompt": "Armored vehicles crossing a border with smoke rising in the distance at dawn",
+                  "color": "#B22222"
                 }
               ]
             },
             {
               "type": "callout",
-              "text": "These events progressively dismantled peace efforts and set the stage for global conflict.",
-              "icon": "ri-alert-line",
-              "label": "Key Insight"
+              "text": "These events progressively undermined peace and led directly to global conflict.",
+              "label": "Key Insight",
+              "icon": "ri-alert-line"
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "Darkened skies over a tense European cityscape with shadows of military forces advancing, evoking looming conflict and uncertainty",
+          "imagePrompt": "A dramatic sky over a European landscape with shadows of military forces advancing, evoking tension and looming conflict",
           "image_layout": "blank"
         },
-        "narration_text": "Adolf Hitler becoming chancellor in 1933 marked a turning point in German politics. His rise allowed the Nazi Party to push aggressive nationalist policies, setting the stage for territorial expansion and challenging the post-World War I international order.\n\nWhen Germany remilitarized the Rhineland in 1936, it violated the Treaty of Versailles, which had demilitarized that region to act as a buffer. This bold move tested the resolve of other European powers, who chose not to intervene, encouraging further German aggression.\n\nThe annexation of Austria, or Anschluss, in 1938 was significant because it expanded Germany without military conflict. This event showed Hitler’s strategy of uniting all German-speaking peoples and revealed the weakness of European countries in resisting his demands.\n\nThe Munich Agreement in 1938 is often seen as a failed attempt at peace. European powers, especially Britain and France, allowed Germany to take the Sudetenland region of Czechoslovakia, hoping to avoid war. However, this concession only emboldened Hitler’s ambitions.\n\nGermany’s invasion of the rest of Czechoslovakia in 1939 shattered the promises made at Munich. This aggressive action demonstrated that Hitler’s goals went beyond uniting German speakers and exposed the dangers of appeasement policies.\n\nThe Nazi-Soviet Pact shocked the world because it was an agreement between two ideological enemies. This non-aggression pact ensured that Germany could invade Poland without fear of Soviet intervention, setting the stage for the outbreak of war.\n\nGermany’s invasion of Poland in 1939 was the final trigger for World War II. This blatant act of aggression forced Britain and France to declare war, as they had pledged to defend Poland’s sovereignty, marking the official start of the conflict."
+        "narration_text": "When Hitler became Chancellor in 1933, it marked a turning point for Germany and the world. His rise wasn’t just about leadership change; it signaled the start of aggressive Nazi policies that aimed to reshape Germany’s future and challenge the post-World War I order.\n\nBy 1935, Germany openly began rebuilding its military, directly breaking the Treaty of Versailles, which had limited its armed forces after World War I. This rearmament showed Hitler’s clear intent to regain power and territory, increasing tensions across Europe.\n\nIn 1936, German troops marched into the Rhineland, a region that was supposed to remain demilitarized. This bold move tested the resolve of other European nations and revealed their reluctance to enforce the treaty, encouraging Hitler to push further.\n\nThe annexation of Austria in 1938, called the Anschluss, expanded Germany’s borders without a fight. This action demonstrated Hitler’s goal of uniting all German-speaking peoples and showed how easily European countries were allowing aggressive expansion to happen.\n\nThe Munich Agreement later that year was an attempt by Britain and France to avoid war by allowing Germany to take the Sudetenland, a part of Czechoslovakia. This policy of appeasement, though well-intentioned, only emboldened Hitler’s ambitions.\n\nWhen Germany invaded Poland in 1939, it crossed a line that forced Britain and France to declare war. This invasion was the spark that ignited World War II, showing that diplomatic efforts had failed and that conflict was unavoidable."
       }
     ]
   }

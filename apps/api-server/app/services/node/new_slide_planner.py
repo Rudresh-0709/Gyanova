@@ -435,7 +435,17 @@ def plan_slides_for_subtopic(
        - Data category: Column chart, Line chart, Pie chart
        Each category may appear AT MOST ONCE per subtopic.
     9. Timeline slides must have MAX 5 items/steps.
-    10. Output ONLY valid JSON.
+    10. IMAGE ROLE ASSIGNMENT (CRITICAL):
+        Every slide must have an "image_role" field set to one of:
+        - "content": Image is essential to understanding (diagrams, photos, anatomical illustrations, labeled visuals).
+          Templates that default to content: Labeled diagram, Image and text, Text and image, Diagram.
+        - "accent": Image is decorative atmosphere — enhances visual appeal but doesn't teach.
+          Templates that default to accent: Timeline, Icons with text, Title with bullets and image, Title card.
+        - "none": No image needed — the content is self-sufficient.
+          Templates that default to none: Comparison table, Formula block, Key-Value list, Split panel, Code.
+        Choose based on: Does a student NEED to see a picture to understand this slide's concept?
+        If yes → "content". If no but it would look nice → "accent". If it would distract → "none".
+    11. Output ONLY valid JSON.
 
     OUTPUT FORMAT:
     {{
@@ -450,7 +460,8 @@ def plan_slides_for_subtopic(
                 "goal": "Detailed learning objective",
                 "reasoning": "Quick pedagogical justification",
                 "visual_required": true,
-                "visual_type": "image | diagram | chart | illustration | none"
+                "visual_type": "image | diagram | chart | illustration | none",
+                "image_role": "content | accent | none"
             }}
         ]
     }}
@@ -567,6 +578,30 @@ def plan_slides_for_subtopic(
                 slide["visual_required"] = False
             if "visual_type" not in slide:
                 slide["visual_type"] = "none"
+
+            # Validate and default image_role
+            VALID_IMAGE_ROLES = {"content", "accent", "none"}
+            image_role = slide.get("image_role", "").lower()
+            if image_role not in VALID_IMAGE_ROLES:
+                # Infer from template
+                CONTENT_IMAGE_TEMPLATES = {
+                    "Labeled diagram", "Image and text", "Text and image", "Diagram",
+                }
+                ACCENT_IMAGE_TEMPLATES = {
+                    "Timeline", "Icons with text", "Title with bullets and image",
+                    "Title card", "Large bullet list", "Three columns", "Four columns",
+                }
+                NONE_IMAGE_TEMPLATES = {
+                    "Comparison table", "Formula block", "Key-Value list",
+                    "Split panel", "Code", "Hub and spoke",
+                }
+                if tmpl in CONTENT_IMAGE_TEMPLATES:
+                    image_role = "content"
+                elif tmpl in NONE_IMAGE_TEMPLATES:
+                    image_role = "none"
+                else:
+                    image_role = "accent"  # Default fallback
+            slide["image_role"] = image_role
 
             validated_slides.append(slide)
 

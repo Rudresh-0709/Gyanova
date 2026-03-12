@@ -35,11 +35,11 @@ except ImportError:
 # Import icon selector and GyML generator
 try:
     from ..icon_selector import select_icons_batch
-    from .slides.gyml.generator import GyMLContentGenerator
+    from .slides.gyml.generator import GyMLContentGenerator, pick_composition_style, pick_variant
 except ImportError:
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
     from icon_selector import select_icons_batch
-    from slides.gyml.generator import GyMLContentGenerator
+    from slides.gyml.generator import GyMLContentGenerator, pick_composition_style, pick_variant
 
 load_dotenv()
 
@@ -545,6 +545,8 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
         state["layout_history"] = []
     if "angle_history" not in state:
         state["angle_history"] = []
+    if "composition_history" not in state:
+        state["composition_history"] = []
 
     # ── Find the next subtopic + slide offset to generate ────────────
     next_subtopic = None
@@ -581,6 +583,13 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     )
     layout_history = state["layout_history"]
     angle_history = state["angle_history"]
+    composition_history = state["composition_history"]
+
+    # Variant history is per-subtopic (full list, no cap) to support weighted selection
+    # Reset when starting a new subtopic (offset == 0)
+    if start_offset == 0 or "variant_history" not in state:
+        state["variant_history"] = []
+    variant_history = state["variant_history"]
 
     for i in range(start_offset, end_offset):
         concept = slide_concepts[i]
@@ -616,6 +625,9 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 template_name=selected_template,
                 slide_index=i,
                 intent=concept.get("intent", "explain"),
+                composition_history=composition_history,
+                variant_history=variant_history,
+                image_role=concept.get("image_role", "accent"),
             )
 
             validated = _validate_and_ensure_primary_block(raw_content)
@@ -673,19 +685,32 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
         )
         if smart_layout:
             layout_history.append(smart_layout.get("variant", "unknown"))
+            variant_history.append(smart_layout.get("variant", "unknown"))
         else:
             layout_history.append(generated_content.get("intent", "explain"))
 
         # Update angle history
         angle_history.append(concept.get("content_angle", "overview"))
 
+        # Track composition style used (from the generated content or inferred)
+        used_style = pick_composition_style(
+            content_angle=concept.get("content_angle", "overview"),
+            intent=concept.get("intent", "explain"),
+            slide_index=i,
+            composition_history=composition_history,
+        )
+        composition_history.append(used_style)
+
         if len(layout_history) > 10:
             layout_history.pop(0)
         if len(angle_history) > 10:
             angle_history.pop(0)
+        if len(composition_history) > 10:
+            composition_history.pop(0)
 
         state["layout_history"] = layout_history
         state["angle_history"] = angle_history
+        state["composition_history"] = composition_history
 
         # ── STEP 4: Generate Animation Metadata ──
         animation_meta = _generate_animation_metadata(generated_content)
@@ -717,6 +742,7 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
             "animation_unit_count": animation_meta["animation_unit_count"],
             "animated_block_index": animation_meta["animated_block_index"],
             "slide_density": slide_density,
+            "composition_style": used_style,
         }
         state["slides"][sub_id].append(slide_obj)
 

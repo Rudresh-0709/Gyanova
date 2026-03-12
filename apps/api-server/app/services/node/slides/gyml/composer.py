@@ -207,6 +207,9 @@ class SlideComposer:
         if "slide_density" in content:
             main_concept["slide_density"] = content["slide_density"]
 
+        if "image_role" in content:
+            main_concept["image_role"] = content["image_role"]
+
         # Extract blocks from various content structures
         if "points" in content:
             points = content["points"]
