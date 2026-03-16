@@ -595,7 +595,10 @@ class GyMLContentGenerator:
            • Hierarchy tree → hierarchy_tree (top-level block)
            • Card grid → smart_layout (cardGridIcon or cardGridSimple)
            • Formula → formula_block (top-level block)
-           • Code → code (top-level block)
+            • Cyclic process block → cyclic_process_block (MUST USE `cyclic_process_block` block type)
+               ⚡ PREMIUM LAYOUT: These cards 'float' near the central wheel.
+               You MUST provide rich, multi-sentence descriptions (15-25 words) per item to fill these teaching containers.
+               Do not just use single words.
 
            PRIMARY BLOCK ITEM COUNT:
            • The primary block MUST contain 2–6 items (never more than 6).

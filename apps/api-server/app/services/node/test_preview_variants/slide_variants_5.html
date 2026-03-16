@@ -200,7 +200,12 @@ body {
     position: relative;
     width: 100%;
     margin: 0 auto;
-    aspect-ratio: 1100 / 680;
+    aspect-ratio: 1100 / 700;
+}
+
+.fs-radial-container--spacious {
+    max-width: 1320px;
+    max-height: 590px;
 }
 
 /* SVG layer (connectors, icon circles) */
@@ -233,6 +238,12 @@ body {
     transition: transform 0.3s ease;
 }
 
+.fs-radial-container--spacious .fs-hub-img {
+    width: 24.5%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+}
+
 .fs-hub-img:hover {
     transform: translate(-50%, -50%) scale(1.04);
 }
@@ -252,7 +263,6 @@ body {
     color: rgba(99, 102, 241, 0.35);
 }
 
-/* Bottom label (pill under center) */
 .fs-bottom-label {
     position: absolute;
     bottom: 2%;
@@ -275,50 +285,151 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-/* Pill labels (absolutely positioned by renderer) */
-.fs-pill {
+.fs-radial-container--spacious .fs-bottom-label span {
+    font-size: 0.95rem;
+    padding: 0.55rem 1.9rem;
+}
+
+.fs-info-card {
     position: absolute;
-    transform: translateY(-50%);
     z-index: 4;
-    white-space: nowrap;
+    cursor: default;
+    width: 200px;
+    --fs-connector-gap: 0px;
+}
+
+.fs-radial-container--spacious .fs-info-card {
+    width: 238px;
+}
+
+.fs-info-card--left {
+    transform: translateX(calc(-66% + var(--fs-connector-gap))) translateY(-50%);
     transition: transform 0.2s ease;
 }
 
-.fs-pill:hover {
-    transform: translateY(-50%) scale(1.06);
+.fs-info-card--left:hover {
+    transform: translateX(calc(-66% + var(--fs-connector-gap))) translateY(-50%) scale(1.03);
 }
 
-.fs-pill--left {
-    transform: translateX(-100%) translateY(-50%);
+.fs-info-card--right {
+    transform: translateX(calc(-34% - var(--fs-connector-gap))) translateY(-50%);
+    transition: transform 0.2s ease;
 }
 
-.fs-pill--left:hover {
-    transform: translateX(-100%) translateY(-50%) scale(1.06);
+.fs-info-card--right:hover {
+    transform: translateX(calc(-34% - var(--fs-connector-gap))) translateY(-50%) scale(1.03);
 }
 
-.fs-pill--right {
-    /* default: anchored at left edge */
+section[data-animated="true"] .fs-info-card--left.anim-fade.active {
+    transform: translateX(calc(-66% + var(--fs-connector-gap))) translateY(-50%) !important;
 }
 
-.fs-pill-text {
-    display: inline-block;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--text-primary, #1e293b);
-    padding: 0.35rem 1.1rem;
-    border: 2px solid color-mix(in srgb, var(--item-color) 35%, transparent);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--item-color) 6%, white);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    transition: border-color 0.2s ease, background 0.2s ease;
+section[data-animated="true"] .fs-info-card--right.anim-fade.active {
+    transform: translateX(calc(-34% - var(--fs-connector-gap))) translateY(-50%) !important;
 }
 
-.fs-pill:hover .fs-pill-text {
-    border-color: color-mix(in srgb, var(--item-color) 60%, transparent);
-    background: color-mix(in srgb, var(--item-color) 14%, white);
+.fs-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.7rem 0.9rem;
+    border: 2px solid color-mix(in srgb, var(--item-color, #6366f1) 30%, transparent);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    position: relative;
 }
 
-/* Responsive — stack vertically on small screens */
+.fs-radial-container--spacious .fs-card-content {
+    gap: 0.4rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 12px;
+}
+
+.fs-info-card:hover .fs-card-content {
+    border-color: var(--item-color, #6366f1);
+    background: white;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
+.fs-info-card--left .fs-card-content::before {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 9px solid color-mix(in srgb, var(--item-color, #6366f1) 30%, transparent);
+}
+
+.fs-info-card--left .fs-card-content::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-left: 8px solid rgba(255, 255, 255, 0.97);
+    filter: drop-shadow(2px 0 2px rgba(0, 0, 0, 0.04));
+}
+
+.fs-info-card--right .fs-card-content::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 9px solid color-mix(in srgb, var(--item-color, #6366f1) 30%, transparent);
+}
+
+.fs-info-card--right .fs-card-content::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-right: 8px solid rgba(255, 255, 255, 0.97);
+    filter: drop-shadow(-2px 0 2px rgba(0, 0, 0, 0.04));
+}
+
+.fs-card-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.fs-radial-container--spacious .fs-card-title {
+    font-size: 1rem;
+}
+
+.fs-card-desc {
+    font-size: 0.7rem;
+    color: #475569;
+    line-height: 1.4;
+    white-space: normal;
+}
+
+.fs-radial-container--spacious .fs-card-desc {
+    font-size: 0.82rem;
+}
+
 @media (max-width: 700px) {
     .fs-radial-container {
         aspect-ratio: unset;
@@ -340,12 +451,12 @@ body {
     .fs-hub-img:hover {
         transform: scale(1.04);
     }
-    .fs-pill {
+    .fs-info-card,
+    .fs-info-card--left,
+    .fs-info-card--right {
         position: static !important;
         transform: none !important;
-    }
-    .fs-pill--left {
-        transform: none !important;
+        width: min(100%, 320px);
     }
     .fs-bottom-label {
         position: static;
@@ -2943,13 +3054,8 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
 .hub-and-spoke-container[data-item-count="4"] .spoke-item[data-index="2"] .spoke-info-box,
 .hub-and-spoke-container[data-item-count="4"] .spoke-item[data-index="3"] .spoke-info-box { right: 140%; left: auto; }
 
-/* Specific item colors (matching user mockup) */
-.spoke-item[data-index="0"] .hexagon { background: #3498db; } 
-.spoke-item[data-index="1"] .hexagon { background: #2980b9; } 
-.spoke-item[data-index="2"] .hexagon { background: #ecf0f1; } .spoke-item[data-index="2"] .spoke-label { color: #2c3e50; }
-.spoke-item[data-index="3"] .hexagon { background: #e74c3c; } 
-.spoke-item[data-index="4"] .hexagon { background: #c0392b; } 
-.spoke-item[data-index="5"] .hexagon { background: #3498db; }
+/* Dynamically use the --item-color for the hexagon background */
+.hexagon { background: var(--item-color, #3498db); }
 
 /* ================================================
    CYCLIC BLOCK (SVG Arc-Sector Wheel)
@@ -2968,24 +3074,37 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
     overflow: visible;
 }
 
-.cyclic-main-row {
+.cyclic-container {
     display: flex;
-    flex-direction: row;
-    align-items: stretch;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    gap: 1rem;
     width: 100%;
+    min-height: 620px;
+    flex: 1;
+    padding: 2rem 0;
+    overflow: visible;
 }
 
-/* SVG takes fixed square space */
-.cyclic-svg-wrapper {
-    flex-shrink: 0;
-    width: min(440px, 42vw);
-    height: min(440px, 42vw);
+.cyclic-wheel-area {
+    position: relative;
+    width: min(520px, 92vw);
+    height: min(520px, 92vw);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 20px;
+    margin: auto;
+}
+
+.cyclic-svg-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
 }
 
 .cyclic-svg {
@@ -2994,67 +3113,60 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
     overflow: visible;
 }
 
-/* Info columns */
-.cyclic-col {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2rem;
-    max-width: 260px;
-    padding-bottom: 40px;
-}
-
-.cyclic-col.spacer {
-    visibility: hidden;
-}
-
-.cyclic-bottom-area {
+.cyclic-floating-cards {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 2rem;
-    padding: 0 2rem;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
 }
 
-.cyclic-bottom-area .cyclic-info-box {
-    max-width: 280px;
-    flex: 1;
-    min-width: 200px;
-    text-align: center;
-    border-left: none;
-    border-top: 3px solid var(--item-color, #1a1a1a);
-}
-
-.cyclic-col--left {
-    text-align: right;
-    align-items: flex-end;
-}
-
-.cyclic-col--right {
-    text-align: left;
-    align-items: flex-start;
-}
-
-/* Info box */
 .cyclic-info-box {
-    padding: 0;
-    background: transparent;
-    border-left: none;
-    border-right: none;
+    position: absolute;
+    pointer-events: auto;
+    width: min(250px, 35vw);
+    padding: 1rem 1.2rem;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(14px);
+    border: 1px solid color-mix(in srgb, var(--item-color, #2563eb) 20%, rgba(255,255,255,0.4));
+    border-radius: 20px;
+    box-shadow: 0 14px 40px rgba(2, 8, 23, 0.12);
+    text-align: left;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 }
 
-.cyclic-col--left .cyclic-info-box {
-    border-right: 3px solid var(--item-color, #1e3a5f);
-    padding-right: 0.875rem;
+.cyclic-info-box:hover {
+    box-shadow: 0 20px 50px rgba(2, 8, 23, 0.22);
+    z-index: 10;
 }
 
-.cyclic-col--right .cyclic-info-box {
-    border-left: 3px solid var(--item-color, #1e3a5f);
-    padding-left: 0.875rem;
+.cyclic-info-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(to right, var(--item-color, #2563eb), color-mix(in srgb, var(--item-color, #2563eb) 40%, white));
+    border-radius: 20px 20px 0 0;
+}
+
+.cyclic-ib-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--item-color, #2563eb), color-mix(in srgb, var(--item-color, #2563eb) 60%, white));
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 6px 14px color-mix(in srgb, var(--item-color, #2563eb) 35%, transparent);
+}
+
+.cyclic-ib-icon i {
+    font-size: 1.1rem;
 }
 
 .cyclic-ib-title {
@@ -3062,13 +3174,13 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
     font-size: 1rem;
     font-weight: 700;
     color: var(--text-primary, #1a1a1a);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.35rem;
     line-height: 1.3;
 }
 
 .cyclic-ib-text {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     color: var(--text-secondary, #555);
     line-height: 1.5;
 }
@@ -3165,12 +3277,23 @@ section[data-animated="true"] .cyclic-info-box[data-segment] {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_3993c2bc" class="slide-section" role="region" aria-label="Slide slide_3993c2bc" data-image-layout="left" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.4rem; --line-height: 1.65; --card-number-size: 1.75rem; --card-text-size: 1.25rem; --section-padding: 2.25rem 3.25rem; --block-gap: 1.5rem; --card-padding: 1.25rem; --heading-gap: 1.5rem" data-animated="true" data-density="balanced">
+<section id="slide_d6637fb9" class="slide-section" role="region" aria-label="Slide slide_d6637fb9" data-image-layout="left" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.4rem; --line-height: 1.65; --card-number-size: 1.75rem; --card-text-size: 1.25rem; --section-padding: 2.25rem 3.25rem; --block-gap: 1.5rem; --card-padding: 1.25rem; --heading-gap: 1.5rem" data-animated="true" data-density="balanced">
 <div class="accent-image-wrapper"><img class="accent-image" src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&amp;fit=crop&amp;q=80&amp;w=400" alt="" loading="lazy" referrerpolicy="no-referrer" /></div>
 <div class="body">
 <h1>Iterative Product Design</h1>
 <p>Our development process is a continuous loop of innovation, testing, and deployment to ensure we always deliver maximum value to users.</p>
-<p>{&#x27;type&#x27;: &#x27;cyclic_block&#x27;, &#x27;hub_label&#x27;: &#x27;AGILE&#x27;, &#x27;variant&#x27;: &#x27;cycle&#x27;, &#x27;items&#x27;: [{&#x27;label&#x27;: &#x27;Design&#x27;, &#x27;description&#x27;: &#x27;Rapid prototyping&#x27;, &#x27;icon&#x27;: &#x27;brush&#x27;, &#x27;color&#x27;: &#x27;#3b82f6&#x27;}, {&#x27;label&#x27;: &#x27;Build&#x27;, &#x27;description&#x27;: &#x27;Modular dev&#x27;, &#x27;icon&#x27;: &#x27;hammer&#x27;, &#x27;color&#x27;: &#x27;#8b5cf6&#x27;}, {&#x27;label&#x27;: &#x27;Test&#x27;, &#x27;description&#x27;: &#x27;Automated QA&#x27;, &#x27;icon&#x27;: &#x27;check-double&#x27;, &#x27;color&#x27;: &#x27;#f59e0b&#x27;}, {&#x27;label&#x27;: &#x27;Deploy&#x27;, &#x27;description&#x27;: &#x27;Edge rollout&#x27;, &#x27;icon&#x27;: &#x27;ship&#x27;, &#x27;color&#x27;: &#x27;#10b981&#x27;}]}</p>
+<div class="cyclic-container" data-variant="cycle" data-item-count="4">  <div class="cyclic-wheel-area">    <div class="cyclic-svg-wrapper"><svg class="cyclic-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs></defs>
+<path d="M 250.000,70.000 A 180,180 0 0,1 429.562,237.444 L 376.802,263.327 L 324.817,244.768 A 75,75 0 0,0 250.000,175.000 L 272.140,124.437 Z" fill="#2563eb" stroke="#1d3f6e" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="321.0" y="140.8" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-brush-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 430.000,250.000 A 180,180 0 0,1 262.556,429.562 L 236.673,376.802 L 255.232,324.817 A 75,75 0 0,0 325.000,250.000 L 375.563,272.140 Z" fill="#3b82f6" stroke="#1d3f6e" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="327.2" y="321.0" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-hammer-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 250.000,430.000 A 180,180 0 0,1 70.438,262.556 L 123.198,236.673 L 175.183,255.232 A 75,75 0 0,0 250.000,325.000 L 227.860,375.563 Z" fill="#1d4ed8" stroke="#1d3f6e" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="147.0" y="327.2" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-check-double-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<path d="M 70.000,250.000 A 180,180 0 0,1 237.444,70.438 L 263.327,123.198 L 244.768,175.183 A 75,75 0 0,0 175.000,250.000 L 124.437,227.860 Z" fill="#0ea5e9" stroke="#1d3f6e" stroke-width="1.5" stroke-linejoin="round"/>
+<foreignObject x="140.8" y="147.0" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-ship-line" style="font-size:1.2rem;color:rgba(255,255,255,0.85);"></i></div></foreignObject>
+<circle cx="250" cy="250" r="69" fill="#10233f" stroke="#1d3f6e" stroke-width="3"/><text x="250" y="250" text-anchor="middle" dominant-baseline="middle" font-size="16" font-weight="800" fill="white" font-family="Inter,sans-serif" letter-spacing="-0.5">AGILE</text>
+</svg></div>    <div class="cyclic-floating-cards"><div class="cyclic-info-box anim-fade" data-segment="0" style="left:87.5%; top:9.8%; transform: translate(-20%, -80%); --item-color:#2563eb;">  <div class="cyclic-ib-icon" aria-hidden="true"><i class="ri-brush-line"></i></div>  <strong class="cyclic-ib-title">Design</strong><p class="cyclic-ib-text">Rapid prototyping</p></div><div class="cyclic-info-box anim-fade" data-segment="1" style="left:90.2%; top:87.5%; transform: translate(-20%, -20%); --item-color:#3b82f6;">  <div class="cyclic-ib-icon" aria-hidden="true"><i class="ri-hammer-line"></i></div>  <strong class="cyclic-ib-title">Build</strong><p class="cyclic-ib-text">Modular dev</p></div><div class="cyclic-info-box anim-fade" data-segment="2" style="left:12.5%; top:90.2%; transform: translate(-80%, -20%); --item-color:#1d4ed8;">  <div class="cyclic-ib-icon" aria-hidden="true"><i class="ri-check-double-line"></i></div>  <strong class="cyclic-ib-title">Test</strong><p class="cyclic-ib-text">Automated QA</p></div><div class="cyclic-info-box anim-fade" data-segment="3" style="left:9.8%; top:12.5%; transform: translate(-80%, -80%); --item-color:#0ea5e9;">  <div class="cyclic-ib-icon" aria-hidden="true"><i class="ri-ship-line"></i></div>  <strong class="cyclic-ib-title">Deploy</strong><p class="cyclic-ib-text">Edge rollout</p></div></div>  </div></div>
 </div>
 </section>
     </div>

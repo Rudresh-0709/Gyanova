@@ -190,6 +190,7 @@ class GyMLValidator:
             "split_panel",
             "formula_block",
             "hub_and_spoke",
+            "cyclic_block",
             "cyclic_process_block",
             "process_arrow_block",
             "feature_showcase_block",

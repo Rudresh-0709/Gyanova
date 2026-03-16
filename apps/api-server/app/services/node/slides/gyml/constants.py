@@ -158,6 +158,7 @@ class BlockType(Enum):
     SPLIT_PANEL = "split_panel"
     FORMULA_BLOCK = "formula_block"
     HUB_AND_SPOKE = "hub_and_spoke"
+    CYCLIC_BLOCK = "cyclic_block"
     SEQUENTIAL_OUTPUT = "sequential_output"
     PROCESS_ARROW_BLOCK = "process_arrow_block"
     CYCLIC_PROCESS_BLOCK = "cyclic_process_block"

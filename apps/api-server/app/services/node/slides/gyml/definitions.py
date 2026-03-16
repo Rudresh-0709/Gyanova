@@ -207,6 +207,8 @@ class GyMLCyclicItem:
     label: str
     description: Optional[str] = None
     image_url: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
 
 
 @dataclass
@@ -218,6 +220,7 @@ class GyMLCyclicBlock:
     items: List[GyMLCyclicItem]
     hub_label: Optional[str] = None
     variant: str = "chevron"
+    type: str = BlockType.CYCLIC_BLOCK
 
 
 @dataclass

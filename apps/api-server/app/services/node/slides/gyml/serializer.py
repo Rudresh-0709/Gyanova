@@ -785,6 +785,36 @@ class GyMLSerializer:
                 variant=content.get("variant", "hexagon"),
             )
 
+        # Cyclic block
+        elif block_type == BlockType.CYCLIC_BLOCK.value:
+            hub_label = content.get("hub_label", content.get("title"))
+            items_data = content.get("items", [])
+            items = []
+            for item in items_data:
+                if isinstance(item, dict):
+                    items.append(
+                        GyMLCyclicItem(
+                            label=item.get("label", ""),
+                            description=item.get(
+                                "description", item.get("text", "")
+                            ),
+                            image_url=item.get(
+                                "image_url",
+                                item.get("imageUrl", item.get("imagePrompt")),
+                            ),
+                            icon=item.get("icon"),
+                            color=item.get("color"),
+                        )
+                    )
+                else:
+                    items.append(GyMLCyclicItem(label=str(item)))
+
+            return GyMLCyclicBlock(
+                hub_label=hub_label,
+                items=items,
+                variant=content.get("variant", "chevron"),
+            )
+
         # Sequential Output Block
         elif block_type == BlockType.SEQUENTIAL_OUTPUT.value:
              return GyMLSequentialOutput(items=content.get("items", []))

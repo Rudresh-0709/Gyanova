@@ -818,6 +818,7 @@ class GyMLRenderer:
         """Render hub and spoke visualization."""
         hub_label = self._escape(node.hub_label)
         items_html = []
+        blue_palette = ["#1e3a8a", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"]
         for i, item in enumerate(node.items):
             label = self._escape(item.label)
             icon_html = ""
@@ -827,7 +828,8 @@ class GyMLRenderer:
                     icon_class = f"ri-{icon_class}-line"
                 icon_html = f'<i class="{self._escape(icon_class)}"></i>'
 
-            style = f' style="--item-color: {item.color};"' if item.color else ""
+            color = item.color or blue_palette[i % len(blue_palette)]
+            style = f' style="--item-color: {color};"'
             desc_html = ""
             if item.description:
                 anim_attrs = ""
@@ -866,11 +868,7 @@ class GyMLRenderer:
         )
 
     def _render_cyclic_block(self, node: "GyMLCyclicBlock") -> str:
-        """Render cyclic block visualization as pie-sector wheel (SVG-based).
-
-        Each item = a filled arc-sector. An icon is overlaid at the midpoint
-        of each sector. Info boxes float to the left or right of the wheel.
-        """
+        """Render cyclic block as a blue-hue interlocking wheel with support cards."""
         import math
 
         n = len(node.items)
@@ -889,9 +887,16 @@ class GyMLRenderer:
         n_val = float(max(1, n))
         sweep_deg = (360.0 / n_val) - gap_deg
 
-        # Default dark navy colour for sectors
-        DEFAULT_SECTOR_COLOR = "#0d1b2a"
-        DEFAULT_STROKE = "#1e3a5f"
+        DEFAULT_SECTOR_COLOR = "#10233f"
+        DEFAULT_STROKE = "#1d3f6e"
+        blue_palette = [
+            "#2563eb",
+            "#3b82f6",
+            "#1d4ed8",
+            "#0ea5e9",
+            "#1e40af",
+            "#38bdf8",
+        ]
 
         # ── SVG paths for sectors ──────────────────────────────────────────
         def polar(cx, cy, r, angle_deg):
@@ -952,7 +957,7 @@ class GyMLRenderer:
         for i, item in enumerate(node.items):
             start_angle = -90.0 + float(i) * (360.0 / n_val)
             mid_angle = start_angle + sweep_deg / 2.0
-            color = item.color or DEFAULT_SECTOR_COLOR
+            color = blue_palette[i % len(blue_palette)]
 
             path_d = chevron_arc_path(
                 cx,
@@ -1001,17 +1006,31 @@ class GyMLRenderer:
         svg_parts.append("</svg>")
         svg_html = "\n".join(svg_parts)
 
-        # ── Info boxes positioned around the wheel ─────────────────────────
-        # Split items into right vs left side based on which half of the circle
-        # they land on.  We emit them as absolutely-positioned divs alongside
-        # the SVG inside a wrapper.
-        infos_right = []
-        infos_left = []
-        infos_bottom = []
+        # ── Floating Info Boxes positioned around the wheel ──────────────────
+        floating_cards = []
+        import math
+
+        # R_cards determines how far the cards float from the center (250, 250)
+        # The SVG outer radius is 180.
+        R_cards = 275 
 
         for i, item in enumerate(node.items):
             start_angle = -90.0 + float(i) * (360.0 / n_val)
-            mid_angle = (start_angle + sweep_deg / 2.0) % 360.0
+            mid_angle_deg = (start_angle + sweep_deg / 2.0) % 360.0
+            mid_angle_rad = math.radians(mid_angle_deg)
+
+            # Calculate position on a circle from center (250, 250)
+            # We use percentages 0-100 relative to the 500x500 space
+            pos_x = 50 + (R_cards / 500 * 100) * math.cos(mid_angle_rad)
+            pos_y = 50 + (R_cards / 500 * 100) * math.sin(mid_angle_rad)
+
+            # Adjust transform based on quadrant to prevent overlap and improve alignment
+            # 0-90: Bottom-Right, 90-180: Bottom-Left, 180-270: Top-Left, 270-360: Top-Right
+            tx, ty = -50, -50
+            if 0 <= mid_angle_deg < 90: tx, ty = -20, -20
+            elif 90 <= mid_angle_deg < 180: tx, ty = -80, -20
+            elif 180 <= mid_angle_deg < 270: tx, ty = -80, -80
+            else: tx, ty = -20, -80
 
             anim_attrs = ""
             anim_class = ""
@@ -1021,58 +1040,44 @@ class GyMLRenderer:
                 anim_attrs = f' data-segment="{seg}"'
                 anim_class = " anim-fade"
 
-            label_html = (
-                f'<strong class="cyclic-ib-title">{self._escape(item.label)}</strong>'
-            )
+            label_html = f'<strong class="cyclic-ib-title">{self._escape(item.label)}</strong>'
             desc_html = ""
             if item.description:
-                desc_html = (
-                    f'<p class="cyclic-ib-text">{self._escape(item.description)}</p>'
+                desc_html = f'<p class="cyclic-ib-text">{self._escape(item.description)}</p>'
+
+            icon_html = ""
+            if item.icon:
+                icon_class = item.icon
+                if not icon_class.startswith("ri-"):
+                    icon_class = f"ri-{icon_class}-line"
+                icon_html = (
+                    f'<div class="cyclic-ib-icon" aria-hidden="true">'
+                    f'<i class="{self._escape(icon_class)}"></i>'
+                    f"</div>"
                 )
 
-            color = item.color or "#1e3a5f"
-            box_html = (
-                f'<div class="cyclic-info-box{anim_class}"{anim_attrs} '
-                f'style="--item-color:{color};">'
-                f"{label_html}{desc_html}"
+            color = blue_palette[i % len(blue_palette)]
+            
+            # Absolute style for the floating card
+            card_style = (
+                f'left:{pos_x:.1f}%; top:{pos_y:.1f}%; '
+                f'transform: translate({tx}%, {ty}%); '
+                f'--item-color:{color};'
+            )
+
+            floating_cards.append(
+                f'<div class="cyclic-info-box{anim_class}"{anim_attrs} style="{card_style}">'
+                f"  {icon_html}"
+                f"  {label_html}{desc_html}"
                 f"</div>"
             )
 
-            # Assign to areas:
-            # Bottom region: 60 to 120 deg (centered around 90deg)
-            if 60 < mid_angle < 120:
-                infos_bottom.append(box_html)
-            # Left half: 120 to 270 deg
-            elif 120 <= mid_angle < 270:
-                infos_left.append(box_html)
-            # Right half: 270 to 360 or 0 to 60 deg
-            else:
-                infos_right.append(box_html)
-
-        left_col = (
-            f'<div class="cyclic-col cyclic-col--left">{"".join(infos_left)}</div>'
-            if infos_left
-            else '<div class="cyclic-col cyclic-col--left spacer"></div>'
-        )
-        right_col = (
-            f'<div class="cyclic-col cyclic-col--right">{"".join(infos_right)}</div>'
-            if infos_right
-            else '<div class="cyclic-col cyclic-col--right spacer"></div>'
-        )
-        bottom_area = (
-            (f'<div class="cyclic-bottom-area">{"".join(infos_bottom)}</div>')
-            if infos_bottom
-            else ""
-        )
-
         return (
             f'<div class="cyclic-container" data-variant="{node.variant}" data-item-count="{n}">'
-            f'<div class="cyclic-main-row">'
-            f"{left_col}"
-            f'<div class="cyclic-svg-wrapper">{svg_html}</div>'
-            f"{right_col}"
-            f"</div>"
-            f"{bottom_area}"
+            f'  <div class="cyclic-wheel-area">'
+            f'    <div class="cyclic-svg-wrapper">{svg_html}</div>'
+            f'    <div class="cyclic-floating-cards">{"".join(floating_cards)}</div>'
+            f'  </div>'
             f"</div>"
         )
 
@@ -1081,8 +1086,9 @@ class GyMLRenderer:
         n = len(node.items)
         items_html = []
 
+        blue_palette = ["#1e3a8a", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"]
         for i, item in enumerate(node.items):
-            color = item.color or "#6366f1"
+            color = item.color or blue_palette[i % len(blue_palette)]
             image_url = item.image_url
 
             # Minimalist Image Card
@@ -1227,43 +1233,39 @@ class GyMLRenderer:
         )
 
     def _render_feature_showcase(self, node: GyMLFeatureShowcaseBlock) -> str:
-        """Render feature showcase with radial arc layout.
-
-        Central image with icon circles placed along an arc, each
-        connected to a pill-label extending outward (left or right).
-        Matches the 'Roles & Responsibilities' reference style.
-        """
+        """Render feature showcase with radial connectors and supporting cards."""
         import math
 
         n = len(node.items)
         title = self._escape(node.title)
-
-        # Default palette
         default_colors = [
             "#3b82f6",
-            "#ef4444",
-            "#10b981",
             "#8b5cf6",
+            "#10b981",
             "#f59e0b",
             "#06b6d4",
             "#ec4899",
             "#14b8a6",
+            "#ef4444",
         ]
 
-        # ── SVG canvas geometry ───────────────────────────────────
-        W, H = 1100, 680  # viewBox dimensions
-        cx, cy = W / 2, H / 2  # centre
-        R_center = 120  # radius of the central circle
-        R_orbit = 185  # radius where icon circles sit
-        r_icon = 40  # radius of each icon circle
+        W, H = 1100, 700
+        cx, cy = W / 2, H / 2
+        R_center = 148
+        R_orbit = 268
+        r_icon = 40
+        connector_gap = 68
+        icon_fill = "#3b82f6"
 
-        # Distribute items in an arc from ~130° to ~410° (full wrap)
-        # 0° is 3-o'clock; we use -90 offset so 0 = top
-        start_deg = 110  # start angle (top-left area)
-        end_deg = 430  # end angle (wraps past bottom to top-right)
         if n == 1:
-            angles = [(start_deg + end_deg) / 2]
+            angles = [180]
+        elif n == 2:
+            angles = [140, 400]
+        elif n == 3:
+            angles = [130, 250, 410]
         else:
+            start_deg = 140
+            end_deg = 400
             step = (end_deg - start_deg) / (n - 1)
             angles = [start_deg + i * step for i in range(n)]
 
@@ -1271,40 +1273,33 @@ class GyMLRenderer:
             a = math.radians(angle_deg)
             return cx + radius * math.cos(a), cy + radius * math.sin(a)
 
-        # ── Build SVG ─────────────────────────────────────────────
         svg_parts = [
             f'<svg class="fs-radial-svg" viewBox="0 0 {W} {H}" '
             f'xmlns="http://www.w3.org/2000/svg" '
             f'xmlns:xlink="http://www.w3.org/1999/xlink">'
         ]
-
-        # Central circle background
         svg_parts.append(
-            f'<circle cx="{cx}" cy="{cy}" r="{R_center + 8}" '
+            f'<circle cx="{cx}" cy="{cy}" r="{R_center}" '
             f'fill="none" stroke="rgba(99,102,241,0.08)" stroke-width="16" />'
         )
 
-        # For each item: connector line + icon circle
+        items_html = []
         for i, item in enumerate(node.items):
             angle = angles[i]
             color = item.color or default_colors[i % len(default_colors)]
+            label = self._escape(item.label)
+            description = self._escape(item.description) if item.description else ""
             ix, iy = polar(angle, R_orbit)
+            lx1, ly1 = polar(angle, R_center + 2)
 
-            # Thin line from center edge to icon circle
-            lx1, ly1 = polar(angle, R_center + 4)
             svg_parts.append(
-                f'<line x1="{lx1:.1f}" y1="{ly1:.1f}" '
-                f'x2="{ix:.1f}" y2="{iy:.1f}" '
-                f'stroke="{color}" stroke-width="2" stroke-opacity="0.35" />'
+                f'<line x1="{lx1:.1f}" y1="{ly1:.1f}" x2="{ix:.1f}" y2="{iy:.1f}" '
+                f'stroke="{icon_fill}" stroke-width="2" stroke-opacity="0.35" />'
+            )
+            svg_parts.append(
+                f'<circle cx="{ix:.1f}" cy="{iy:.1f}" r="{r_icon}" fill="{icon_fill}" />'
             )
 
-            # Icon circle
-            svg_parts.append(
-                f'<circle cx="{ix:.1f}" cy="{iy:.1f}" r="{r_icon}" '
-                f'fill="{color}" />'
-            )
-
-            # Icon via foreignObject
             icon_class = "ri-checkbox-blank-circle-fill"
             if item.icon:
                 icon_class = item.icon
@@ -1312,69 +1307,29 @@ class GyMLRenderer:
                     icon_class = f"ri-{icon_class}-line"
 
             svg_parts.append(
-                f'<foreignObject x="{ix - r_icon:.1f}" y="{iy - r_icon:.1f}" '
-                f'width="{r_icon * 2}" height="{r_icon * 2}">'
-                f'<div xmlns="http://www.w3.org/1999/xhtml" '
-                f'style="width:100%;height:100%;display:flex;align-items:center;'
-                f'justify-content:center;">'
-                f'<i class="{self._escape(icon_class)}" '
-                f'style="font-size:1.6rem;color:white;"></i>'
+                f'<foreignObject x="{ix - r_icon:.1f}" y="{iy - r_icon:.1f}" width="{r_icon * 2}" height="{r_icon * 2}">'
+                f'<div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">'
+                f'<i class="{self._escape(icon_class)}" style="font-size:1.6rem;color:white;"></i>'
                 f"</div></foreignObject>"
             )
 
-            # ── Pill label ──────────────────────────────────────
-            # Determine if this item is on left or right
             norm_angle = angle % 360
             is_left = 90 < norm_angle < 270
-
-            # Line from icon circle outward to the label
-            extend = 75  # how far the connector goes
-            if is_left:
-                lbl_end_x = ix - extend
-            else:
-                lbl_end_x = ix + extend
-
+            lbl_end_x = ix - connector_gap if is_left else ix + connector_gap
             lbl_y = iy
 
-            # Short connector line from icon to label area
             svg_parts.append(
-                f'<line x1="{ix:.1f}" y1="{iy:.1f}" '
-                f'x2="{lbl_end_x:.1f}" y2="{lbl_y:.1f}" '
-                f'stroke="{color}" stroke-width="1.5" stroke-opacity="0.4" />'
+                f'<line x1="{ix:.1f}" y1="{iy:.1f}" x2="{lbl_end_x:.1f}" y2="{lbl_y:.1f}" '
+                f'stroke="{icon_fill}" stroke-width="1.5" stroke-opacity="0.4" />'
+            )
+            svg_parts.append(
+                f'<circle cx="{lbl_end_x:.1f}" cy="{lbl_y:.1f}" r="3" fill="{icon_fill}" fill-opacity="0.5" />'
             )
 
-            # Small dot at end of connector
-            svg_parts.append(
-                f'<circle cx="{lbl_end_x:.1f}" cy="{lbl_y:.1f}" '
-                f'r="3" fill="{color}" fill-opacity="0.5" />'
-            )
-
-        svg_parts.append("</svg>")
-
-        # ── HTML items (absolutely positioned pill labels) ─────────
-        items_html = []
-        for i, item in enumerate(node.items):
-            angle = angles[i]
-            color = item.color or default_colors[i % len(default_colors)]
-            label = self._escape(item.label)
-            ix, iy = polar(angle, R_orbit)
-
-            norm_angle = angle % 360
-            is_left = 90 < norm_angle < 270
-            extend = 75
-
-            if is_left:
-                lbl_end_x = ix - extend
-                side = "left"
-            else:
-                lbl_end_x = ix + extend
-                side = "right"
-
-            # Convert SVG coordinates to percentage positions
             x_pct = (lbl_end_x / W) * 100
             y_pct = (iy / H) * 100
+            side = "left" if is_left else "right"
 
-            # Animation
             anim_attrs = ""
             anim_class = ""
             if self.animated:
@@ -1383,14 +1338,19 @@ class GyMLRenderer:
                 anim_attrs = f' data-segment="{seg}"'
                 anim_class = " anim-fade"
 
+            desc_html = f'<div class="fs-card-desc">{description}</div>' if description else ""
             items_html.append(
-                f'<div class="fs-pill fs-pill--{side}{anim_class}"{anim_attrs} '
-                f'style="left:{x_pct:.1f}%;top:{y_pct:.1f}%;--item-color:{color};">'
-                f'<span class="fs-pill-text">{label}</span>'
+                f'<div class="fs-info-card fs-info-card--{side}{anim_class}"{anim_attrs} '
+                f'style="left:{x_pct:.2f}%;top:{y_pct:.2f}%;--item-color:{color};">'
+                f'<div class="fs-card-content">'
+                f'<div class="fs-card-title">{label}</div>'
+                f"{desc_html}"
+                f"</div>"
                 f"</div>"
             )
 
-        # ── Central image (HTML overlay) ──────────────────────────
+        svg_parts.append("</svg>")
+
         if node.image_url and node.image_url != "null":
             center_html = (
                 f'<div class="fs-hub-img">'
@@ -1404,13 +1364,10 @@ class GyMLRenderer:
                 f"</div>"
             )
 
-        # Bottom label
-        bottom_label = (
-            f'<div class="fs-bottom-label">' f"<span>{title}</span>" f"</div>"
-        )
+        bottom_label = f'<div class="fs-bottom-label"><span>{title}</span></div>'
 
         return (
-            f'<div class="fs-radial-container" data-item-count="{n}">'
+            f'<div class="fs-radial-container fs-radial-container--spacious" data-item-count="{n}">'
             f'{"".join(svg_parts)}'
             f"{center_html}"
             f'{"".join(items_html)}'
@@ -1605,7 +1562,12 @@ body {
     position: relative;
     width: 100%;
     margin: 0 auto;
-    aspect-ratio: 1100 / 680;
+    aspect-ratio: 1100 / 700;
+}
+
+.fs-radial-container--spacious {
+    max-width: 1320px;
+    max-height: 590px;
 }
 
 /* SVG layer (connectors, icon circles) */
@@ -1638,6 +1600,12 @@ body {
     transition: transform 0.3s ease;
 }
 
+.fs-radial-container--spacious .fs-hub-img {
+    width: 24.5%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+}
+
 .fs-hub-img:hover {
     transform: translate(-50%, -50%) scale(1.04);
 }
@@ -1657,7 +1625,6 @@ body {
     color: rgba(99, 102, 241, 0.35);
 }
 
-/* Bottom label (pill under center) */
 .fs-bottom-label {
     position: absolute;
     bottom: 2%;
@@ -1680,50 +1647,151 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-/* Pill labels (absolutely positioned by renderer) */
-.fs-pill {
+.fs-radial-container--spacious .fs-bottom-label span {
+    font-size: 0.95rem;
+    padding: 0.55rem 1.9rem;
+}
+
+.fs-info-card {
     position: absolute;
-    transform: translateY(-50%);
     z-index: 4;
-    white-space: nowrap;
+    cursor: default;
+    width: 200px;
+    --fs-connector-gap: 0px;
+}
+
+.fs-radial-container--spacious .fs-info-card {
+    width: 238px;
+}
+
+.fs-info-card--left {
+    transform: translateX(calc(-66% + var(--fs-connector-gap))) translateY(-50%);
     transition: transform 0.2s ease;
 }
 
-.fs-pill:hover {
-    transform: translateY(-50%) scale(1.06);
+.fs-info-card--left:hover {
+    transform: translateX(calc(-66% + var(--fs-connector-gap))) translateY(-50%) scale(1.03);
 }
 
-.fs-pill--left {
-    transform: translateX(-100%) translateY(-50%);
+.fs-info-card--right {
+    transform: translateX(calc(-34% - var(--fs-connector-gap))) translateY(-50%);
+    transition: transform 0.2s ease;
 }
 
-.fs-pill--left:hover {
-    transform: translateX(-100%) translateY(-50%) scale(1.06);
+.fs-info-card--right:hover {
+    transform: translateX(calc(-34% - var(--fs-connector-gap))) translateY(-50%) scale(1.03);
 }
 
-.fs-pill--right {
-    /* default: anchored at left edge */
+section[data-animated="true"] .fs-info-card--left.anim-fade.active {
+    transform: translateX(calc(-66% + var(--fs-connector-gap))) translateY(-50%) !important;
 }
 
-.fs-pill-text {
-    display: inline-block;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--text-primary, #1e293b);
-    padding: 0.35rem 1.1rem;
-    border: 2px solid color-mix(in srgb, var(--item-color) 35%, transparent);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--item-color) 6%, white);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    transition: border-color 0.2s ease, background 0.2s ease;
+section[data-animated="true"] .fs-info-card--right.anim-fade.active {
+    transform: translateX(calc(-34% - var(--fs-connector-gap))) translateY(-50%) !important;
 }
 
-.fs-pill:hover .fs-pill-text {
-    border-color: color-mix(in srgb, var(--item-color) 60%, transparent);
-    background: color-mix(in srgb, var(--item-color) 14%, white);
+.fs-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.7rem 0.9rem;
+    border: 2px solid color-mix(in srgb, var(--item-color, #6366f1) 30%, transparent);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    position: relative;
 }
 
-/* Responsive — stack vertically on small screens */
+.fs-radial-container--spacious .fs-card-content {
+    gap: 0.4rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 12px;
+}
+
+.fs-info-card:hover .fs-card-content {
+    border-color: var(--item-color, #6366f1);
+    background: white;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
+.fs-info-card--left .fs-card-content::before {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 9px solid color-mix(in srgb, var(--item-color, #6366f1) 30%, transparent);
+}
+
+.fs-info-card--left .fs-card-content::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-left: 8px solid rgba(255, 255, 255, 0.97);
+    filter: drop-shadow(2px 0 2px rgba(0, 0, 0, 0.04));
+}
+
+.fs-info-card--right .fs-card-content::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 9px solid color-mix(in srgb, var(--item-color, #6366f1) 30%, transparent);
+}
+
+.fs-info-card--right .fs-card-content::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-right: 8px solid rgba(255, 255, 255, 0.97);
+    filter: drop-shadow(-2px 0 2px rgba(0, 0, 0, 0.04));
+}
+
+.fs-card-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.fs-radial-container--spacious .fs-card-title {
+    font-size: 1rem;
+}
+
+.fs-card-desc {
+    font-size: 0.7rem;
+    color: #475569;
+    line-height: 1.4;
+    white-space: normal;
+}
+
+.fs-radial-container--spacious .fs-card-desc {
+    font-size: 0.82rem;
+}
+
 @media (max-width: 700px) {
     .fs-radial-container {
         aspect-ratio: unset;
@@ -1745,12 +1813,12 @@ body {
     .fs-hub-img:hover {
         transform: scale(1.04);
     }
-    .fs-pill {
+    .fs-info-card,
+    .fs-info-card--left,
+    .fs-info-card--right {
         position: static !important;
         transform: none !important;
-    }
-    .fs-pill--left {
-        transform: none !important;
+        width: min(100%, 320px);
     }
     .fs-bottom-label {
         position: static;
@@ -4348,13 +4416,8 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
 .hub-and-spoke-container[data-item-count="4"] .spoke-item[data-index="2"] .spoke-info-box,
 .hub-and-spoke-container[data-item-count="4"] .spoke-item[data-index="3"] .spoke-info-box { right: 140%; left: auto; }
 
-/* Specific item colors (matching user mockup) */
-.spoke-item[data-index="0"] .hexagon { background: #3498db; } 
-.spoke-item[data-index="1"] .hexagon { background: #2980b9; } 
-.spoke-item[data-index="2"] .hexagon { background: #ecf0f1; } .spoke-item[data-index="2"] .spoke-label { color: #2c3e50; }
-.spoke-item[data-index="3"] .hexagon { background: #e74c3c; } 
-.spoke-item[data-index="4"] .hexagon { background: #c0392b; } 
-.spoke-item[data-index="5"] .hexagon { background: #3498db; }
+/* Dynamically use the --item-color for the hexagon background */
+.hexagon { background: var(--item-color, #3498db); }
 
 /* ================================================
    CYCLIC BLOCK (SVG Arc-Sector Wheel)
@@ -4373,24 +4436,37 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
     overflow: visible;
 }
 
-.cyclic-main-row {
+.cyclic-container {
     display: flex;
-    flex-direction: row;
-    align-items: stretch;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    gap: 1rem;
     width: 100%;
+    min-height: 620px;
+    flex: 1;
+    padding: 2rem 0;
+    overflow: visible;
 }
 
-/* SVG takes fixed square space */
-.cyclic-svg-wrapper {
-    flex-shrink: 0;
-    width: min(440px, 42vw);
-    height: min(440px, 42vw);
+.cyclic-wheel-area {
+    position: relative;
+    width: min(520px, 92vw);
+    height: min(520px, 92vw);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 20px;
+    margin: auto;
+}
+
+.cyclic-svg-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
 }
 
 .cyclic-svg {
@@ -4399,67 +4475,60 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
     overflow: visible;
 }
 
-/* Info columns */
-.cyclic-col {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2rem;
-    max-width: 260px;
-    padding-bottom: 40px;
-}
-
-.cyclic-col.spacer {
-    visibility: hidden;
-}
-
-.cyclic-bottom-area {
+.cyclic-floating-cards {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 2rem;
-    padding: 0 2rem;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
 }
 
-.cyclic-bottom-area .cyclic-info-box {
-    max-width: 280px;
-    flex: 1;
-    min-width: 200px;
-    text-align: center;
-    border-left: none;
-    border-top: 3px solid var(--item-color, #1a1a1a);
-}
-
-.cyclic-col--left {
-    text-align: right;
-    align-items: flex-end;
-}
-
-.cyclic-col--right {
-    text-align: left;
-    align-items: flex-start;
-}
-
-/* Info box */
 .cyclic-info-box {
-    padding: 0;
-    background: transparent;
-    border-left: none;
-    border-right: none;
+    position: absolute;
+    pointer-events: auto;
+    width: min(250px, 35vw);
+    padding: 1rem 1.2rem;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(14px);
+    border: 1px solid color-mix(in srgb, var(--item-color, #2563eb) 20%, rgba(255,255,255,0.4));
+    border-radius: 20px;
+    box-shadow: 0 14px 40px rgba(2, 8, 23, 0.12);
+    text-align: left;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 }
 
-.cyclic-col--left .cyclic-info-box {
-    border-right: 3px solid var(--item-color, #1e3a5f);
-    padding-right: 0.875rem;
+.cyclic-info-box:hover {
+    box-shadow: 0 20px 50px rgba(2, 8, 23, 0.22);
+    z-index: 10;
 }
 
-.cyclic-col--right .cyclic-info-box {
-    border-left: 3px solid var(--item-color, #1e3a5f);
-    padding-left: 0.875rem;
+.cyclic-info-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(to right, var(--item-color, #2563eb), color-mix(in srgb, var(--item-color, #2563eb) 40%, white));
+    border-radius: 20px 20px 0 0;
+}
+
+.cyclic-ib-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--item-color, #2563eb), color-mix(in srgb, var(--item-color, #2563eb) 60%, white));
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 6px 14px color-mix(in srgb, var(--item-color, #2563eb) 35%, transparent);
+}
+
+.cyclic-ib-icon i {
+    font-size: 1.1rem;
 }
 
 .cyclic-ib-title {
@@ -4467,13 +4536,13 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
     font-size: 1rem;
     font-weight: 700;
     color: var(--text-primary, #1a1a1a);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.35rem;
     line-height: 1.3;
 }
 
 .cyclic-ib-text {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     color: var(--text-secondary, #555);
     line-height: 1.5;
 }
