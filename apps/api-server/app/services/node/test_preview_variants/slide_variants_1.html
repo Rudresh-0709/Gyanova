@@ -592,6 +592,59 @@ section[data-image-layout="bottom"] .body {
     background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
 }
 
+/* --- Aggressive Compacting for Super Dense Slides --- */
+section[data-density="super_dense"] {
+    --section-padding: 1rem 1.5rem !important;
+    --block-gap: 0.25rem !important;
+}
+
+section[data-density="super_dense"] h1 { font-size: 1.8rem !important; margin-bottom: 0.15rem; }
+section[data-density="super_dense"] h2 { font-size: 1.5rem !important; margin-bottom: 0.15rem; }
+section[data-density="super_dense"] p { font-size: 0.95rem !important; line-height: 1.4; }
+
+section[data-density="super_dense"] .body {
+    justify-content: flex-start;
+    padding-top: 0.5rem;
+}
+
+section[data-density="super_dense"] .hub-and-spoke-container {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+section[data-density="super_dense"] .spokes-wrapper {
+    width: 380px;
+    height: 380px;
+}
+
+section[data-density="super_dense"] .hexagon {
+    transform: scale(0.8);
+}
+
+section[data-density="super_dense"] .spoke-item {
+    width: 100px;
+    height: 120px;
+}
+
+section[data-density="super_dense"] .cyclic-container {
+    min-height: 380px;
+}
+
+section[data-density="super_dense"] .cyclic-svg-wrapper {
+    width: 340px;
+    height: 340px;
+}
+
+section[data-density="super_dense"] .fs-radial-container {
+    transform: scale(0.85);
+    margin: -20px 0;
+}
+
+section[data-density="super_dense"][data-image-layout="top"] .accent-image-wrapper,
+section[data-density="super_dense"][data-image-layout="bottom"] .accent-image-wrapper {
+    height: 160px !important;
+}
+
 /* Behind Layout (Hero/Background) */
 section[data-image-layout="behind"] {
     display: flex;
@@ -3112,50 +3165,12 @@ section[data-animated="true"] .cyclic-info-box[data-segment] {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_5c6fe8b8_0" class="slide-section" role="region" aria-label="Slide slide_5c6fe8b8_0" data-image-layout="top" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 2.6rem; --h2-size: 2.2rem; --p-size: 1.25rem; --line-height: 1.55; --card-number-size: 1.25rem; --card-text-size: 1.125rem; --section-padding: 1.5rem 2.25rem; --block-gap: 1rem; --card-padding: 1.125rem; --heading-gap: 1rem" data-animated="true" data-density="dense">
-<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<section id="slide_6ce20ba4" class="slide-section holds-hub" role="region" aria-label="Slide slide_6ce20ba4" data-image-layout="top" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 2.2rem; --h2-size: 1.8rem; --p-size: 1.1rem; --line-height: 1.45; --card-number-size: 1.125rem; --card-text-size: 1.0625rem; --section-padding: 1.25rem 2rem; --block-gap: 0.5rem; --card-padding: 0.75rem; --heading-gap: 0.25rem" data-animated="true" data-density="super_dense">
+<div class="accent-image-wrapper"><img class="accent-image" src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&amp;fit=crop&amp;q=80&amp;w=400" alt="" loading="lazy" referrerpolicy="no-referrer" /></div>
 <div class="body">
-<h1>Impact of the French Revolution on Modern Democracies</h1>
-<p>Did you know? Revolutionary ideals like liberty and equality shaped today&#x27;s democratic systems.</p>
-<div class="block-separator"></div>
-<div class="smart-layout" data-variant="cardGridIcon" data-item-count="5">
-<div class="card anim-slide-up" data-index="0" data-segment="0">
-<div class="card-icon"><i class="ri-shield-user-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Liberty &amp; Rights</h4>
-<p class="card-text">Emphasized individual freedoms as a foundation for democratic constitutions.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="1" data-segment="1">
-<div class="card-icon"><i class="ri-group-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Popular Sovereignty</h4>
-<p class="card-text">Introduced the idea that power derives from the people&#x27;s will.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="2" data-segment="2">
-<div class="card-icon"><i class="ri-settings-3-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Separation of Powers</h4>
-<p class="card-text">Inspired checks and balances within government branches.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="3" data-segment="3">
-<div class="card-icon"><i class="ri-equalizer-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Equal Representation</h4>
-<p class="card-text">Promoted fair political participation regardless of social class.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="4" data-segment="4">
-<div class="card-icon"><i class="ri-file-list-3-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Legal Equality</h4>
-<p class="card-text">Established laws applying equally to all citizens.</p>
-</div>
-</div>
-</div>
-<p>The French Revolution’s ideals continue to underpin modern democratic principles worldwide.</p>
+<h1>The Learning Ecosystem</h1>
+<p>Our platform integrates multiple cutting-edge technologies to provide a personalized, 24/7 learning experience that adapts to every student&#x27;s pace and style.</p>
+<div class="hub-and-spoke-container" data-variant="hexagon" data-item-count="4"><div class="hub-center"><div class="hub-circle"><span class="hub-label">Smart Tutor</span></div></div><div class="hub-connection-line"></div><div class="spokes-wrapper"><div class="spoke-item" data-index="0" style="--item-color: #3b82f6;"><div class="hexagon"><div class="hexagon-inner"><i class="ri-robot-line"></i><span class="spoke-label">AI Engine</span></div></div><div class="spoke-info-box anim-fade" data-segment="0"><p>Adaptive neural networks.</p></div></div><div class="spoke-item" data-index="1" style="--item-color: #10b981;"><div class="hexagon"><div class="hexagon-inner"><i class="ri-chat-3-line"></i><span class="spoke-label">Live Chat</span></div></div><div class="spoke-info-box anim-fade" data-segment="1"><p>Real-time query resolution.</p></div></div><div class="spoke-item" data-index="2" style="--item-color: #f59e0b;"><div class="hexagon"><div class="hexagon-inner"><i class="ri-line-chart-line"></i><span class="spoke-label">Progress</span></div></div><div class="spoke-info-box anim-fade" data-segment="2"><p>Visual diagnostic tracking.</p></div></div><div class="spoke-item" data-index="3" style="--item-color: #8b5cf6;"><div class="hexagon"><div class="hexagon-inner"><i class="ri-book-open-line"></i><span class="spoke-label">Resources</span></div></div><div class="spoke-info-box anim-fade" data-segment="3"><p>Curated study materials.</p></div></div></div></div>
 </div>
 </section>
     </div>

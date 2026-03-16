@@ -1,260 +1,360 @@
 {
-  "topic": "World War II",
+  "topic": "The French Revolution",
   "slides": {
-    "hist-01": [
+    "hist-fr": [
       {
-        "title": "The Treaty of Versailles",
+        "title": "The French Revolution: An Overview",
         "intent": "concept",
         "content_angle": "overview",
-        "selected_template": "Title with bullets",
+        "selected_template": "Title card",
         "slide_density": "medium",
-        "primary_block_index": 1,
-        "animation_unit": "card",
-        "animation_unit_count": 4,
-        "animated_block_index": 1,
         "gyml_content": {
-          "title": "The Treaty of Versailles",
-          "intent": "explain",
+          "title": "The French Revolution: An Overview",
+          "intent": "introduce",
           "layout": "behind",
           "contentBlocks": [
             {
               "type": "intro_paragraph",
-              "text": "The Treaty of Versailles officially ended World War I but imposed harsh terms on Germany, sowing the seeds of resentment that contributed to World War II."
+              "text": "The French Revolution was a pivotal period in history that reshaped France and influenced the modern world. This slide introduces its broad context and significance."
             },
             {
-              "type": "smart_layout",
-              "variant": "cardGridIcon",
-              "items": [
-                {
-                  "heading": "Territorial Losses",
-                  "text": "Germany lost significant land, including Alsace-Lorraine and all overseas colonies.",
-                  "icon": "ri-map-pin-line"
-                },
-                {
-                  "heading": "Military Restrictions",
-                  "text": "The treaty limited Germany's army size and banned conscription and certain weapons.",
-                  "icon": "ri-shield-line"
-                },
-                {
-                  "heading": "War Guilt Clause",
-                  "text": "Germany was forced to accept full responsibility for the war, damaging national pride.",
-                  "icon": "ri-hand-heart-line"
-                },
-                {
-                  "heading": "Reparations",
-                  "text": "Heavy financial payments were imposed, crippling Germany’s economy.",
-                  "icon": "ri-coins-line"
-                }
-              ]
+              "type": "paragraph",
+              "text": "Spanning from 1789 to 1799, the French Revolution challenged monarchy, social inequality, and traditional privileges, leading to profound political and social change."
             },
             {
-              "type": "outro_paragraph",
-              "text": "These terms fueled anger and economic hardship, creating fertile ground for nationalist movements and ultimately leading to World War II."
+              "type": "annotation_paragraph",
+              "text": "Understanding this overview sets the foundation for exploring the causes, events, and outcomes of the revolution in greater detail."
             }
           ],
-          "primary_block_index": 1,
-          "imagePrompt": "A somber, stormy sky over a shattered map of Europe with dark clouds gathering above a broken treaty scroll, evoking tension and unrest in post-war Germany"
+          "primary_block_index": 0,
+          "imagePrompt": "A dramatic, moody scene of 18th-century Paris with crowds gathered near the Bastille under a stormy sky, symbolizing unrest and change.",
+          "image_role": "accent"
         },
-        "narration_text": "Germany lost significant territory under the Treaty of Versailles, including valuable lands like the Saar Basin and Alsace-Lorraine. This not only shrank the country’s borders but also hurt national pride, making many Germans feel unfairly punished and weakened.\n\nThe treaty imposed strict limits on Germany’s military, reducing its army to just 100,000 soldiers and banning tanks, submarines, and an air force. This left Germany vulnerable and humiliated, as they could no longer defend themselves like other nations.\n\nOne of the most controversial parts was the War Guilt Clause, which forced Germany to accept full responsibility for starting World War I. This blame fueled anger and resentment because many Germans believed the causes of the war were more complex.\n\nGermany was also required to pay huge reparations to the Allied countries, which devastated its economy. These payments caused widespread hardship and instability, deepening the sense of injustice and setting the stage for future conflict."
+        "primary_block_index": 0
       },
       {
-        "title": "Rise of Fascism",
+        "title": "Causes of the French Revolution",
         "intent": "process",
         "content_angle": "mechanism",
-        "selected_template": "Timeline",
+        "selected_template": "Diagram",
         "slide_density": "dense",
-        "primary_block_index": 1,
-        "animation_unit": "step",
-        "animation_unit_count": 5,
-        "animated_block_index": 1,
         "gyml_content": {
-          "title": "Rise of Fascism",
-          "intent": "narrate",
-          "layout": "top",
+          "title": "Causes of the French Revolution",
+          "intent": "explain",
+          "layout": "bottom",
           "contentBlocks": [
             {
               "type": "intro_paragraph",
-              "text": "This timeline traces key events marking the rise of fascism across Europe, highlighting how political, economic, and social factors contributed to its spread."
+              "text": "The French Revolution was triggered by a complex mix of social, economic, and political factors that interacted to create widespread unrest."
             },
             {
               "type": "smart_layout",
               "variant": "timelineIcon",
               "items": [
                 {
-                  "heading": "1919 - Formation of Fasci",
-                  "description": "Benito Mussolini establishes the Fasci Italiani di Combattimento, the foundation of Italian Fascism.",
-                  "icon": "ri-flag-line"
+                  "label": "Social Inequality",
+                  "description": "Rigid class divisions left the Third Estate burdened with taxes and little political power.",
+                  "icon": "ri-group-line"
                 },
                 {
-                  "heading": "1922 - March on Rome",
-                  "description": "Mussolini's Blackshirts march, leading to his appointment as Italy’s Prime Minister.",
-                  "icon": "ri-walk-line"
+                  "label": "Economic Hardship",
+                  "description": "Financial crisis from debt and poor harvests caused widespread poverty and food shortages.",
+                  "icon": "ri-money-dollar-circle-line"
                 },
                 {
-                  "heading": "1933 - Hitler Becomes Chancellor",
-                  "description": "Adolf Hitler is appointed Chancellor of Germany, marking the Nazi Party's rise to power.",
-                  "icon": "ri-crown-line"
+                  "label": "Political Weakness",
+                  "description": "King Louis XVI\u2019s ineffective leadership and resistance to reform deepened public frustration.",
+                  "icon": "ri-government-line"
                 },
                 {
-                  "heading": "1936 - Rome-Berlin Axis",
-                  "description": "Italy and Germany form a political and military alliance, solidifying fascist cooperation.",
-                  "icon": "ri-handshake-line"
-                },
-                {
-                  "heading": "1939 - Fascist Expansion",
-                  "description": "Fascist regimes influence Spain and other regions, expanding authoritarian control in Europe.",
-                  "icon": "ri-earth-line"
+                  "label": "Enlightenment Ideas",
+                  "description": "New philosophies challenged traditional authority and inspired demands for equality and rights.",
+                  "icon": "ri-lightbulb-line"
                 }
               ]
             },
             {
               "type": "callout",
-              "text": "Fascism rose through a combination of nationalist rhetoric, economic instability, and strategic political moves.",
-              "label": "Key Insight",
-              "icon": "ri-lightbulb-line"
+              "text": "These interconnected causes created a tipping point that led to the outbreak of the French Revolution.",
+              "icon": "ri-flashlight-line",
+              "label": "Key Insight"
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic European cityscape at dusk with shadowy figures marching under flags, evoking tension and rising authoritarianism.",
-          "image_layout": "blank"
+          "imagePrompt": "A dramatic, moody scene of a divided French society in the late 18th century, showing a crowded marketplace with starving peasants contrasted against opulent aristocrats in grand estates under a stormy sky",
+          "image_role": "accent"
         },
-        "narration_text": "After World War I, Italy faced economic hardship and social unrest. Benito Mussolini capitalized on this instability by founding the Fasci Italiani di Combattimento in 1919, a movement promoting strong nationalist and authoritarian ideas to restore order and pride.\n\nThe March on Rome in 1922 was a dramatic show of force by Mussolini’s Blackshirts. Thousands of armed supporters marched to demand power, which pressured the king to appoint Mussolini as Prime Minister, marking the start of fascist rule in Italy through intimidation rather than traditional elections.\n\nIn 1933, Adolf Hitler’s rise to Chancellor of Germany was a turning point. Exploiting economic despair and national humiliation, Hitler’s Nazi Party gained popular support, allowing him to dismantle democracy and establish a totalitarian regime driven by aggressive nationalism and racial ideology.\n\nThe Rome-Berlin Axis formed in 1936, solidifying the alliance between Mussolini’s Italy and Hitler’s Germany. This partnership combined their military strength and political influence, setting the stage for coordinated fascist expansion and increased aggression in Europe.\n\nBy 1939, fascist ideology had spread beyond Italy and Germany, influencing Spain’s civil war and other regions. These expansions demonstrated how fascism wasn’t isolated but part of a broader movement challenging democratic governments and destabilizing international peace."
+        "primary_block_index": 1
       },
       {
-        "title": "Appeasement vs Confrontation",
-        "intent": "comparison",
-        "content_angle": "comparison",
-        "selected_template": "Comparison",
+        "title": "Key Events Timeline",
+        "intent": "process",
+        "content_angle": "example",
+        "selected_template": "Timeline",
         "slide_density": "dense",
-        "primary_block_index": 1,
-        "animation_unit": "side",
-        "animation_unit_count": 5,
-        "animated_block_index": 1,
         "gyml_content": {
-          "title": "Appeasement vs Confrontation",
-          "intent": "compare",
-          "layout": "bottom",
+          "title": "Key Events Timeline",
+          "layout": "left",
+          "intent": "narrate",
           "contentBlocks": [
             {
-              "type": "intro_paragraph",
-              "text": "Explore two key diplomatic strategies before World War II: appeasement and confrontation. Understand their goals and impacts."
+              "type": "smart_layout",
+              "variant": "bigBullets",
+              "items": [
+                {
+                  "heading": "1789: Storming the Bastille",
+                  "description": "Symbolic start of the revolution as Parisians seized the prison."
+                },
+                {
+                  "heading": "1791: New Constitution",
+                  "description": "France established a constitutional monarchy limiting royal power."
+                },
+                {
+                  "heading": "1793: King Executed",
+                  "description": "Louis XVI was executed, marking a radical phase of the revolution."
+                },
+                {
+                  "heading": "1794: Reign of Terror Ends",
+                  "description": "Robespierre's fall ended the violent crackdown on enemies."
+                },
+                {
+                  "heading": "1799: Napoleon's Coup",
+                  "description": "Napoleon seized power, concluding the revolutionary decade."
+                }
+              ]
+            },
+            {
+              "type": "callout",
+              "text": "Each event marks a turning point shaping France\u2019s political and social transformation.",
+              "icon": "ri-lightbulb-line",
+              "label": "Insight"
+            },
+            {
+              "type": "takeaway",
+              "text": "The French Revolution evolved through key milestones that shifted power from monarchy to new leadership.",
+              "icon": "ri-rocket-line",
+              "label": "Key Takeaway"
+            }
+          ],
+          "primary_block_index": 0,
+          "imagePrompt": "A dramatic, moody scene of a historic European city street with crowds gathered, flags waving, and a twilight sky symbolizing change and upheaval",
+          "image_role": "accent"
+        },
+        "primary_block_index": 0
+      },
+      {
+        "title": "Comparing the Old Regime and Revolutionary France",
+        "intent": "comparison",
+        "content_angle": "comparison",
+        "selected_template": "Two columns",
+        "slide_density": "medium",
+        "gyml_content": {
+          "title": "Comparing the Old Regime and Revolutionary France",
+          "intent": "compare",
+          "layout": "right",
+          "contentBlocks": [
+            {
+              "type": "context_paragraph",
+              "text": "How did the French Revolution transform society, governance, and rights compared to the Old Regime? Explore the fundamental shifts that redefined France."
             },
             {
               "type": "smart_layout",
-              "variant": "comparisonBeforeAfter",
+              "variant": "comparisonProsCons",
+              "criteria": [
+                {
+                  "id": "social_structure",
+                  "label": "Social Structure"
+                },
+                {
+                  "id": "governance",
+                  "label": "Governance"
+                },
+                {
+                  "id": "rights",
+                  "label": "Rights"
+                }
+              ],
+              "subjects": [
+                {
+                  "id": "old_regime",
+                  "label": "Old Regime",
+                  "values": [
+                    {
+                      "criterion_id": "social_structure",
+                      "value": "Divided into three estates: clergy, nobility, and commoners with rigid hierarchy."
+                    },
+                    {
+                      "criterion_id": "governance",
+                      "value": "Absolute monarchy with centralized royal power and limited political participation."
+                    },
+                    {
+                      "criterion_id": "rights",
+                      "value": "Privileges reserved for nobility and clergy; commoners had few legal rights."
+                    }
+                  ]
+                },
+                {
+                  "id": "revolutionary_france",
+                  "label": "Revolutionary France",
+                  "values": [
+                    {
+                      "criterion_id": "social_structure",
+                      "value": "Abolished estates; promoted equality and meritocracy among citizens."
+                    },
+                    {
+                      "criterion_id": "governance",
+                      "value": "Established republic with elected representatives and separation of powers."
+                    },
+                    {
+                      "criterion_id": "rights",
+                      "value": "Declared universal rights including liberty, equality, and fraternity for all citizens."
+                    }
+                  ]
+                },
+                {
+                  "id": "napoleonic_era",
+                  "label": "Napoleonic Era",
+                  "values": [
+                    {
+                      "criterion_id": "social_structure",
+                      "value": "Merit-based society but with a newly created aristocracy loyal to the Emperor."
+                    },
+                    {
+                      "criterion_id": "governance",
+                      "value": "Consolidated authoritarian rule disguised with democratic plebiscites."
+                    },
+                    {
+                      "criterion_id": "rights",
+                      "value": "Codified uniform civil laws but restricted press freedom and women's rights."
+                    }
+                  ]
+                }
+              ],
+              "conclusion": "France transitioned from absolute monarchy to a radical republic, before stabilizing under an authoritarian empire that preserved some revolutionary ideals while abandoning others."
+            },
+            {
+              "type": "annotation_paragraph",
+              "text": "These transformations laid the foundation for modern democratic principles and social equality in France and influenced global political thought."
+            }
+          ],
+          "primary_block_index": 1,
+          "imagePrompt": "A vivid scene showing contrasting images of a grand royal palace with nobles in ornate clothing on one side and a lively crowd of diverse citizens rallying with flags on the other, symbolizing dramatic social and political change",
+          "image_role": "accent"
+        },
+        "primary_block_index": 1
+      },
+      {
+        "title": "Impact of the French Revolution on Modern Democracies",
+        "intent": "example",
+        "content_angle": "application",
+        "selected_template": "Icons with text",
+        "slide_density": "dense",
+        "gyml_content": {
+          "title": "Impact of the French Revolution on Modern Democracies",
+          "intent": "application",
+          "layout": "top",
+          "contentBlocks": [
+            {
+              "type": "callout",
+              "text": "Did you know? Revolutionary ideals like liberty and equality shaped today's democratic systems.",
+              "icon": "ri-lightbulb-line"
+            },
+            {
+              "type": "smart_layout",
+              "variant": "cardGridIcon",
               "items": [
                 {
-                  "heading": "Definition",
-                  "before": "Appeasement: Avoiding conflict by conceding to aggressive demands.",
-                  "after": "Confrontation: Directly opposing aggression to deter further threats."
+                  "heading": "Liberty & Rights",
+                  "description": "Emphasized individual freedoms as a foundation for democratic constitutions.",
+                  "icon": "ri-shield-user-line"
                 },
                 {
-                  "heading": "Goal",
-                  "before": "Maintain peace and delay war.",
-                  "after": "Prevent aggression and uphold international order."
+                  "heading": "Popular Sovereignty",
+                  "description": "Introduced the idea that power derives from the people's will.",
+                  "icon": "ri-group-line"
                 },
                 {
-                  "heading": "Key Example",
-                  "before": "Munich Agreement, 1938: Allowed Nazi annexation of Sudetenland.",
-                  "after": "Allied declarations against Axis expansion and military build-up."
+                  "heading": "Separation of Powers",
+                  "description": "Inspired checks and balances within government branches.",
+                  "icon": "ri-settings-3-line"
                 },
                 {
-                  "heading": "Outcome",
-                  "before": "Temporary peace but encouraged further aggression.",
-                  "after": "Led to immediate conflict but aimed to stop expansion."
+                  "heading": "Equal Representation",
+                  "description": "Promoted fair political participation regardless of social class.",
+                  "icon": "ri-equalizer-line"
                 },
                 {
-                  "heading": "Criticism",
-                  "before": "Seen as weakness enabling Axis powers.",
-                  "after": "Risked escalating war sooner and higher casualties."
+                  "heading": "Legal Equality",
+                  "description": "Established laws applying equally to all citizens.",
+                  "icon": "ri-file-list-3-line"
                 }
               ]
             },
             {
               "type": "takeaway",
-              "text": "Understanding these strategies reveals the complex choices nations faced in the lead-up to World War II.",
-              "icon": "ri-lightbulb-line"
+              "text": "The French Revolution\u2019s ideals continue to underpin modern democratic principles worldwide.",
+              "icon": "ri-rocket-line"
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A tense diplomatic meeting room with representatives debating intensely, shadows of looming warplanes outside the window, evoking a mood of fragile peace and rising conflict.",
-          "image_layout": "blank"
+          "imagePrompt": "A vibrant scene of a diverse crowd gathered in a historic European square under a bright sky, holding banners symbolizing freedom, equality, and justice, with classical architecture in the background evoking a spirit of revolution and democratic awakening.",
+          "image_role": "accent"
         },
-        "narration_text": "Appeasement is a diplomatic strategy where a country tries to avoid conflict by making concessions to an aggressive power. It’s like giving in to demands to keep peace, hoping the other side will be satisfied and stop pushing further.\n\nThe goal of appeasement was to maintain peace and prevent another devastating war. Leaders believed that by compromising, they could avoid conflict and buy time, underestimating the aggressor’s ambitions and the risks of encouraging further aggression.\n\nA key example of appeasement is the Munich Agreement of 1938, where Britain and France allowed Nazi Germany to annex the Sudetenland region of Czechoslovakia. This was intended to satisfy Hitler’s demands without resorting to war, but it ultimately failed.\n\nConfrontation, on the other hand, involves standing firm against aggression, refusing to give in, and preparing to challenge or stop the aggressor. This approach aims to deter further expansion by showing strength and resolve, rather than weakness.\n\nCriticism of appeasement points out that it often emboldened aggressive leaders, encouraging them to push boundaries even further. Many argue it delayed the inevitable conflict, making World War II more destructive when it finally erupted."
+        "primary_block_index": 1
       },
       {
-        "title": "Key Events Leading to War",
-        "intent": "process",
-        "content_angle": "mechanism",
-        "selected_template": "Timeline",
+        "title": "Summary: Legacy of the French Revolution",
+        "intent": "summary",
+        "content_angle": "summary",
+        "selected_template": "Large bullet list",
         "slide_density": "dense",
-        "primary_block_index": 1,
-        "animation_unit": "step",
-        "animation_unit_count": 6,
-        "animated_block_index": 1,
         "gyml_content": {
-          "title": "Key Events Leading to War",
-          "intent": "narrate",
-          "layout": "top",
+          "title": "Summary: Legacy of the French Revolution",
+          "intent": "summarize",
+          "layout": "bottom",
           "contentBlocks": [
             {
               "type": "intro_paragraph",
-              "text": "Explore the major events from 1933 to 1939 that set the stage for World War II."
+              "text": "This slide recaps the main causes, key events, and lasting effects of the French Revolution to reinforce your understanding."
             },
             {
               "type": "smart_layout",
-              "variant": "processArrow",
+              "variant": "bulletCheck",
               "items": [
                 {
-                  "label": "Hitler Becomes Chancellor (1933)",
-                  "description": "Adolf Hitler rises to power, beginning Nazi rule in Germany.",
-                  "imagePrompt": "A dark silhouette of a man speaking to a crowd with a rising sun in the background, symbolizing a new era",
-                  "color": "#B22222"
+                  "heading": "Causes of the Revolution",
+                  "description": "Economic hardship, social inequality, and political unrest fueled the demand for change."
                 },
                 {
-                  "label": "Rearmament & Expansion (1935)",
-                  "description": "Germany rebuilds its military, violating the Treaty of Versailles.",
-                  "imagePrompt": "Rows of tanks and planes emerging from shadows under a stormy sky",
-                  "color": "#FF4500"
+                  "heading": "Key Events",
+                  "description": "From the Storming of the Bastille to the Reign of Terror, pivotal moments shaped the revolution's course."
                 },
                 {
-                  "label": "Rhineland Remilitarized (1936)",
-                  "description": "German troops enter the Rhineland, defying international agreements.",
-                  "imagePrompt": "Soldiers marching through a misty forest with barbed wire fading behind",
-                  "color": "#8B0000"
+                  "heading": "Lasting Effects",
+                  "description": "Established principles of liberty, equality, and fraternity influenced modern democracies worldwide."
                 },
                 {
-                  "label": "Annexation of Austria (1938)",
-                  "description": "Germany annexes Austria in the Anschluss, expanding its territory.",
-                  "imagePrompt": "A map with borders changing, mountains and flags blending together under a cloudy sky",
-                  "color": "#DC143C"
+                  "heading": "End of Monarchy",
+                  "description": "The revolution led to the fall of the monarchy and rise of the Republic in France."
                 },
                 {
-                  "label": "Munich Agreement (1938)",
-                  "description": "European powers concede Sudetenland to Germany to avoid war.",
-                  "imagePrompt": "Diplomats shaking hands over a table with maps and documents, tense atmosphere",
-                  "color": "#FF6347"
-                },
-                {
-                  "label": "Invasion of Poland (1939)",
-                  "description": "Germany invades Poland, triggering the outbreak of World War II.",
-                  "imagePrompt": "Armored vehicles crossing a border with smoke rising in the distance at dawn",
-                  "color": "#B22222"
+                  "heading": "Social Reforms",
+                  "description": "Abolition of feudal privileges and promotion of secular laws transformed French society."
                 }
               ]
             },
             {
               "type": "callout",
-              "text": "These events progressively undermined peace and led directly to global conflict.",
+              "text": "The French Revolution fundamentally reshaped political and social structures, inspiring future movements globally.",
               "label": "Key Insight",
-              "icon": "ri-alert-line"
+              "icon": "ri-lightbulb-line"
             }
           ],
           "primary_block_index": 1,
-          "imagePrompt": "A dramatic sky over a European landscape with shadows of military forces advancing, evoking tension and looming conflict",
-          "image_layout": "blank"
+          "imagePrompt": "A dramatic, atmospheric scene of a historic European city square at dusk, with symbolic elements like broken chains and fluttering tricolor flags, evoking revolution and change",
+          "image_role": "accent"
         },
-        "narration_text": "When Hitler became Chancellor in 1933, it marked a turning point for Germany and the world. His rise wasn’t just about leadership change; it signaled the start of aggressive Nazi policies that aimed to reshape Germany’s future and challenge the post-World War I order.\n\nBy 1935, Germany openly began rebuilding its military, directly breaking the Treaty of Versailles, which had limited its armed forces after World War I. This rearmament showed Hitler’s clear intent to regain power and territory, increasing tensions across Europe.\n\nIn 1936, German troops marched into the Rhineland, a region that was supposed to remain demilitarized. This bold move tested the resolve of other European nations and revealed their reluctance to enforce the treaty, encouraging Hitler to push further.\n\nThe annexation of Austria in 1938, called the Anschluss, expanded Germany’s borders without a fight. This action demonstrated Hitler’s goal of uniting all German-speaking peoples and showed how easily European countries were allowing aggressive expansion to happen.\n\nThe Munich Agreement later that year was an attempt by Britain and France to avoid war by allowing Germany to take the Sudetenland, a part of Czechoslovakia. This policy of appeasement, though well-intentioned, only emboldened Hitler’s ambitions.\n\nWhen Germany invaded Poland in 1939, it crossed a line that forced Britain and France to declare war. This invasion was the spark that ignited World War II, showing that diplomatic efforts had failed and that conflict was unavoidable."
+        "primary_block_index": 1
       }
     ]
   }

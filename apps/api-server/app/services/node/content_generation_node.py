@@ -12,34 +12,46 @@ Flow (Content-First):
 
 import json
 import re
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import os
 import sys  # Need this for all path manipulations
 from dotenv import load_dotenv
 
 try:
-    from ..llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
-    from ..state import TutorState
+    from app.services.llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
+    from app.services.state import TutorState
 except ImportError:
-    # Fallback for direct script execution
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    from llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
-    from state import TutorState
+    # Try relative if running from within app/services/node
+    try:
+        from ..llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
+        from ..state import TutorState
+    except ImportError:
+        # Fallback for direct script execution
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+        from llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
+        from state import TutorState
 
 # Import segment counting for narration↔content alignment
 try:
-    from .audio_generation_node import segment_narration
+    from app.services.node.audio_generation_node import segment_narration
 except ImportError:
-    from audio_generation_node import segment_narration
+    try:
+        from .audio_generation_node import segment_narration
+    except ImportError:
+        from audio_generation_node import segment_narration
 
 # Import icon selector and GyML generator
 try:
-    from ..icon_selector import select_icons_batch
-    from .slides.gyml.generator import GyMLContentGenerator, pick_composition_style, pick_variant
+    from app.services.icon_selector import select_icons_batch
+    from app.services.node.slides.gyml.generator import GyMLContentGenerator, pick_composition_style, pick_variant
 except ImportError:
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    from icon_selector import select_icons_batch
-    from slides.gyml.generator import GyMLContentGenerator, pick_composition_style, pick_variant
+    try:
+        from ..icon_selector import select_icons_batch
+        from .slides.gyml.generator import GyMLContentGenerator, pick_composition_style, pick_variant
+    except ImportError:
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+        from icon_selector import select_icons_batch
+        from slides.gyml.generator import GyMLContentGenerator, pick_composition_style, pick_variant
 
 load_dotenv()
 
@@ -148,8 +160,10 @@ def _summarize_content_for_narration(gyml_content: Dict[str, Any]) -> str:
     return "\n".join(summary_parts) if summary_parts else "No content blocks found."
 
 
-def _count_primary_items(gyml_content: Dict[str, Any]) -> int:
+def _count_primary_items(gyml_content: Optional[Dict[str, Any]]) -> int:
     """Count the number of items in the primary block for narration alignment."""
+    if gyml_content is None:
+        return 0
     blocks = gyml_content.get("contentBlocks", [])
     primary_idx = gyml_content.get("primary_block_index", 0)
 
@@ -164,6 +178,13 @@ def _count_primary_items(gyml_content: Dict[str, Any]) -> int:
     elif block_type in ("key_value_list", "numbered_list", "bullet_list", "step_list"):
         return len(primary.get("items", []))
     elif block_type in ("comparison", "comparison_table"):
+        # Structured handling
+        if "subjects" in primary and "criteria" in primary:
+            # Cards animate by subject, Table animates by criteria (row)
+            variant = primary.get("variant", "")
+            if variant == "comparison_table" or block_type == "comparison_table":
+                return len(primary.get("criteria", []))
+            return len(primary.get("subjects", []))
         return len(primary.get("rows", primary.get("items", []))) or 2
     elif block_type == "hierarchy_tree":
         root = primary.get("root", {})
@@ -234,7 +255,7 @@ BLOCK_TYPE_TO_ANIMATION_UNIT = {
 }
 
 
-def _generate_animation_metadata(gyml_content: Dict[str, Any]) -> Dict[str, Any]:
+def _generate_animation_metadata(gyml_content: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Generate animation metadata from the primary block.
     Only the primary block gets animated; other blocks appear statically.
@@ -246,6 +267,12 @@ def _generate_animation_metadata(gyml_content: Dict[str, Any]) -> Dict[str, Any]
             "animated_block_index": int
         }
     """
+    if gyml_content is None:
+        return {
+            "animation_unit": "item",
+            "animation_unit_count": 0,
+            "animated_block_index": 0,
+        }
     blocks = gyml_content.get("contentBlocks", [])
     primary_idx = gyml_content.get("primary_block_index", 0)
 
@@ -312,7 +339,7 @@ VALID_PRIMARY_BLOCK_TYPES = {
 
 def _validate_and_ensure_primary_block(
     generated_content: Dict[str, Any],
-) -> Dict[str, Any]:
+) -> Optional[Dict[str, Any]]:
     """
     Validate that the generated content has a valid primary block.
 
@@ -348,20 +375,30 @@ def _validate_and_ensure_primary_block(
 
 
 def _classify_density(block_count: int, primary_item_count: int = 0) -> str:
-    """Classify slide density based on block count and primary items."""
-    if block_count > 4 or primary_item_count >= 5:
+    """Classify slide density based on block count and primary items using a 6-tier system."""
+    total_elements = block_count + primary_item_count
+    
+    if total_elements >= 8 or primary_item_count >= 6:
+        return "super_dense"
+    elif total_elements >= 6 or primary_item_count >= 5:
         return "dense"
-    elif block_count <= 2 and primary_item_count <= 3:
-        return "compact"
+    elif total_elements >= 4 or primary_item_count >= 4:
+        return "standard"
+    elif total_elements >= 3 or primary_item_count >= 2:
+        return "balanced"
+    elif total_elements >= 2:
+        return "sparse"
     else:
-        return "medium"
+        return "ultra_sparse"
 
 
-def _extract_primary_items_detail(gyml_content: Dict[str, Any]) -> List[str]:
+def _extract_primary_items_detail(gyml_content: Optional[Dict[str, Any]]) -> List[str]:
     """
     Extract a list of item labels/headings from the primary block
     so the narration LLM can write one segment per item.
     """
+    if gyml_content is None:
+        return ["Main content"]
     blocks = gyml_content.get("contentBlocks", [])
     primary_idx = gyml_content.get("primary_block_index", 0)
 
@@ -385,8 +422,20 @@ def _extract_primary_items_detail(gyml_content: Dict[str, Any]) -> List[str]:
             title = item.get("title", item.get("text", ""))
             items_detail.append(title[:80])
     elif block_type in ("comparison", "comparison_table"):
-        for row in primary.get("rows", primary.get("items", [])):
-            items_detail.append(str(row)[:80])
+        # Structured handling
+        if "subjects" in primary and "criteria" in primary:
+            variant = primary.get("variant", "")
+            if variant == "comparison_table" or block_type == "comparison_table":
+                # Detail for rows (criteria)
+                for crit in primary.get("criteria", []):
+                    items_detail.append(f"Dimension: {crit.get('label', '')}")
+            else:
+                # Detail for subjects
+                for sub in primary.get("subjects", []):
+                    items_detail.append(f"Subject: {sub.get('label', '')}")
+        else:
+            for row in primary.get("rows", primary.get("items", [])):
+                items_detail.append(str(row)[:80])
     elif block_type == "hierarchy_tree":
         root = primary.get("root", {})
         for child in root.get("children", []):
@@ -408,7 +457,7 @@ def generate_narration(
     goal: str,
     role: str,
     subtopic_name: str,
-    gyml_content: Dict[str, Any],
+    gyml_content: Optional[Dict[str, Any]],
     context: str = "",
     template_name: str = "",
 ) -> str:
@@ -576,7 +625,9 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
         state["slides"][sub_id] = []
 
     # Determine batch range
-    end_offset = min(start_offset + BATCH_SIZE, len(slide_concepts))
+    # Fix for binary addition error by ensuring types are clear
+    total_slides = len(slide_concepts)
+    end_offset = min(start_offset + BATCH_SIZE, total_slides)
 
     print(
         f"\n🎬 [Batch Gen] Subtopic: {subtopic_name} | Slides {start_offset + 1}-{end_offset} of {len(slide_concepts)}"
@@ -661,10 +712,11 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 "imagePrompt": f"Abstract educational illustration representing {subtopic_name}",
             }
 
-        primary_items = _count_primary_items(generated_content)
-        print(
-            f"    → Content generated: {len(generated_content.get('contentBlocks', []))} blocks, primary has {primary_items} items"
-        )
+        if generated_content is not None:
+            primary_items_count = _count_primary_items(generated_content)
+            print(
+                f"    → Content generated: {len(generated_content.get('contentBlocks', []))} blocks, primary has {primary_items_count} items"
+            )
 
         # ── STEP 3: Generate Narration (AFTER content) ──
         role = concept.get("role", "Guide")
@@ -718,32 +770,32 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
             f"    → Animation: {animation_meta['animation_unit_count']} x {animation_meta['animation_unit']}"
         )
 
-        # ── STEP 5: Classify Slide Density ──
-        block_count = len(generated_content.get("contentBlocks", []))
-        primary_items = _count_primary_items(generated_content)
-        slide_density = _classify_density(block_count, primary_items)
-        print(
-            f"    → Density: {slide_density} ({block_count} blocks, {primary_items} primary items)"
-        )
+        if generated_content is not None:
+            block_count = len(generated_content.get("contentBlocks", []))
+            primary_items_count = _count_primary_items(generated_content)
+            slide_density = _classify_density(block_count, primary_items_count)
+            print(
+                f"    → Density: {slide_density} ({block_count} blocks, {primary_items_count} primary items)"
+            )
 
-        if slide_density == "dense":
+        if slide_density == "dense" and generated_content is not None:
             generated_content["image_layout"] = "blank"
             print("    → Enforcing 'blank' image layout for dense slide.")
 
-        # ── STEP 6: Store ──
-        slide_obj = {
-            **concept,
-            "subtopic_name": subtopic_name,
-            "narration_text": narration,
-            "gyml_content": generated_content,
-            "visual_content": generated_content,
-            "primary_block_index": generated_content.get("primary_block_index", 0),
-            "animation_unit": animation_meta["animation_unit"],
-            "animation_unit_count": animation_meta["animation_unit_count"],
-            "animated_block_index": animation_meta["animated_block_index"],
-            "slide_density": slide_density,
-            "composition_style": used_style,
-        }
-        state["slides"][sub_id].append(slide_obj)
+        if generated_content is not None:
+            slide_obj = {
+                **concept,
+                "subtopic_name": subtopic_name,
+                "narration_text": narration,
+                "gyml_content": generated_content,
+                "visual_content": generated_content,
+                "primary_block_index": generated_content.get("primary_block_index", 0),
+                "animation_unit": animation_meta["animation_unit"],
+                "animation_unit_count": animation_meta["animation_unit_count"],
+                "animated_block_index": animation_meta["animated_block_index"],
+                "slide_density": slide_density,
+                "composition_style": used_style,
+            }
+            state["slides"][sub_id].append(slide_obj)
 
     return state

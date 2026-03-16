@@ -82,6 +82,7 @@ class SmartLayoutVariant(Enum):
 
     # Comparison variants
     COMPARISON = "comparison"  # Two column
+    COMPARISON_CARDS = "comparisonCards"  # Card-based comparison
     COMPARISON_PROS_CONS = "comparisonProsCons"  # Green/red
     COMPARISON_BEFORE_AFTER = "comparisonBeforeAfter"  # Before → After
 

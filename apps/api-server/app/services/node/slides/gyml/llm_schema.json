@@ -166,6 +166,7 @@
                                     "processArrow",
                                     "processAccordion",
                                     "comparison",
+                                    "comparisonCards",
                                     "comparisonProsCons",
                                     "comparisonBeforeAfter",
                                     "quote",
@@ -191,12 +192,48 @@
                                     "type": "object",
                                     "additionalProperties": true
                                 }
+                            },
+                            "criteria": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": { "type": "string" },
+                                        "label": { "type": "string" }
+                                    },
+                                    "required": ["id", "label"]
+                                }
+                            },
+                            "subjects": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": { "type": "string" },
+                                        "label": { "type": "string" },
+                                        "values": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "criterion_id": { "type": "string" },
+                                                    "value": { "type": "string" }
+                                                },
+                                                "required": ["criterion_id", "value"]
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "label", "values"]
+                                }
+                            },
+                            "conclusion": {
+                                "type": "string",
+                                "description": "Short summary explaining the key difference."
                             }
                         },
                         "required": [
                             "type",
-                            "variant",
-                            "items"
+                            "variant"
                         ]
                     },
                     {
@@ -539,29 +576,47 @@
                             "type": {
                                 "const": "comparison_table"
                             },
-                            "headers": {
+                            "criteria": {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "type": "object",
+                                    "properties": {
+                                        "id": { "type": "string" },
+                                        "label": { "type": "string" }
+                                    },
+                                    "required": ["id", "label"]
                                 }
                             },
-                            "rows": {
+                            "subjects": {
                                 "type": "array",
                                 "items": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
+                                    "type": "object",
+                                    "properties": {
+                                        "id": { "type": "string" },
+                                        "label": { "type": "string" },
+                                        "values": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "criterion_id": { "type": "string" },
+                                                    "value": { "type": "string" }
+                                                },
+                                                "required": ["criterion_id", "value"]
+                                            }
+                                        }
+                                    },
+                                    "required": ["id", "label", "values"]
                                 }
                             },
-                            "caption": {
+                            "conclusion": {
                                 "type": "string"
                             }
                         },
                         "required": [
                             "type",
-                            "headers",
-                            "rows"
+                            "criteria",
+                            "subjects"
                         ]
                     },
                     {

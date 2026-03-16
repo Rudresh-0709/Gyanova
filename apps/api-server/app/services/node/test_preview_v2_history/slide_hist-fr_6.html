@@ -547,33 +547,107 @@ section[data-image-layout="right-wide"] .accent-image-group {
 }
 
 /* Top / Bottom Layouts (Vertical Stacking) */
-section[data-image-layout="top"],
+section[data-image-layout="top"] {
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
+    gap: 0;
+}
 section[data-image-layout="bottom"] {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    padding: 0 !important;
+    gap: 0;
 }
 
 section[data-image-layout="top"] .accent-image-group,
 section[data-image-layout="top"] .accent-image-wrapper,
-section[data-image-layout="top"] .accent-image-placeholder {
-    width: 100%;
-    margin-bottom: 0.5rem;
-}
-
+section[data-image-layout="top"] .accent-image-placeholder,
 section[data-image-layout="bottom"] .accent-image-group,
 section[data-image-layout="bottom"] .accent-image-wrapper,
 section[data-image-layout="bottom"] .accent-image-placeholder {
+    width: 100% !important;
+    height: 220px !important; /* Reduced to save vertical space */
+    min-height: 0 !important;   /* Kill the global min-height */
+    aspect-ratio: auto !important; /* Allow the height to take precedence */
+    margin: 0;
+    flex-shrink: 0;
+}
+
+section[data-image-layout="top"] .body {
+    flex: 1;
+    position: relative; /* Required for z-index */
+    padding: 1.5rem 2.5rem;
+    margin-top: -100px; /* Overlap adjusted for shorter image */
+    z-index: 10;
+    /* Smooth gradient from transparent to solid dark background */
+    background: linear-gradient(to bottom, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
+}
+section[data-image-layout="bottom"] .body {
+    flex: 1;
+    position: relative; /* Required for z-index */
+    padding: 1.5rem 2.5rem;
+    margin-bottom: -100px; /* Overlap adjusted for shorter image */
+    z-index: 10;
+    background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
+}
+
+/* Behind Layout (Hero/Background) */
+section[data-image-layout="behind"] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 !important;
+    text-align: center;
+}
+
+section[data-image-layout="behind"] .accent-image-group,
+section[data-image-layout="behind"] .accent-image-wrapper,
+section[data-image-layout="behind"] .accent-image-placeholder {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 1;
+}
+
+section[data-image-layout="behind"] .accent-image-group::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+    z-index: 2;
+}
+
+section[data-image-layout="behind"] .body {
+    position: relative;
+    z-index: 10;
     width: 100%;
-    margin-top: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+    color: white !important;
+}
+
+section[data-image-layout="behind"] .body h1,
+section[data-image-layout="behind"] .body h2,
+section[data-image-layout="behind"] .body p {
+    color: white !important;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
 
 /* Adjust aspect ratios and heights for vertical layouts */
 section[data-image-layout="top"] .accent-image-placeholder,
 section[data-image-layout="bottom"] .accent-image-placeholder {
-    aspect-ratio: 16 / 5;
-    min-height: 150px;
-    max-height: 20vh;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
 }
 
 section[data-image-layout="left"] .accent-image-placeholder,
@@ -587,9 +661,10 @@ section[data-image-layout="right-wide"] .accent-image-placeholder {
 section[data-image-layout="top"] .accent-image-wrapper img,
 section[data-image-layout="bottom"] .accent-image-wrapper img {
     width: 100%;
-    max-height: 20vh;
+    height: 100%;
     object-fit: cover;
     object-position: center;
+    border-radius: 0;
 }
 
 section[data-image-layout="left"] .accent-image-wrapper img,
@@ -726,6 +801,17 @@ p {
     display: flex;
     gap: 2rem;
     width: 100%;
+}
+
+/* Comparison Layout Overrides — Maximize horizontal room */
+.comparison-layout .body {
+    padding-left: 1.5rem !important;
+    padding-right: 0 !important;
+    max-width: none !important;
+}
+
+.comparison-layout[data-image-layout="right"] .body {
+    padding-right: 0 !important;
 }
 
 .column {
@@ -928,17 +1014,17 @@ p {
 .card-comparison-grid {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
 }
 
 .card-comparison-row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
 }
 
 .card-comparison-row:last-child {
@@ -946,19 +1032,19 @@ p {
 }
 
 .card-comparison-subject {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--text-secondary, #94a3b8);
     letter-spacing: 0.05em;
-    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .card-comparison-value {
-    font-size: 1rem;
-    color: #f8fafc;
+    font-size: 0.9rem;
+    color: var(--text-primary, #f8fafc);
     text-align: right;
-    line-height: 1.4;
+    line-height: 1.25;
 }
 
 /* Light mode overrides if the user ever switches */
@@ -2283,11 +2369,9 @@ th {
 }
 
 /* --- Bento Grid (3 items: 2 on top, 1 wide on bottom) --- */
-.smart-layout[data-variant="comparison"][data-item-count="3"],
-.smart-layout[data-variant="comparisonProsCons"][data-item-count="3"],
-.smart-layout[data-variant="comparisonBeforeAfter"][data-item-count="3"] {
+.smart-layout[data-variant^="comparison"][data-item-count="3"] {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 /* Make the 3rd card span full width */
@@ -3028,13 +3112,51 @@ section[data-animated="true"] .cyclic-info-box[data-segment] {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_1d14dc1a" class="slide-section" role="region" aria-label="Slide slide_1d14dc1a" data-image-layout="left" style="--accent-width: 500px; --h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.4rem; --line-height: 1.65; --card-number-size: 1.75rem; --card-text-size: 1.25rem; --section-padding: 2.25rem 3.25rem; --block-gap: 1.5rem; --card-padding: 1.25rem; --heading-gap: 1.5rem" data-animated="true">
-<div class="accent-image-wrapper"><img class="accent-image" src="https://cdn.leonardo.ai/users/82a057a7-025c-4000-87a9-cd43b4a072d7/generations/8b2fc049-eaa7-4f52-bda6-286c6757c2eb/segments/1:1:1/Flux_Schnell_A_dramatic_scene_of_a_diverse_crowd_gathered_in_f_0.jpg" alt="Generated image for None" loading="lazy" referrerpolicy="no-referrer" /></div>
+<section id="slide_22df97cc_0" class="slide-section" role="region" aria-label="Slide slide_22df97cc_0" data-image-layout="bottom" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 2.2rem; --h2-size: 1.8rem; --p-size: 1.1rem; --line-height: 1.45; --card-number-size: 1.125rem; --card-text-size: 1.0625rem; --section-padding: 1.25rem 2rem; --block-gap: 0.5rem; --card-padding: 0.75rem; --heading-gap: 0.25rem" data-animated="true" data-density="super_dense">
 <div class="body">
-<h1>Summary: The French Revolution in Perspective</h1>
-<p class="p-intro">The French Revolution was a pivotal period marked by social upheaval, political change, and lasting impacts on France and the world.</p>
-<div class="rich-text-block"><p>Causes: Economic hardship, social inequality, and Enlightenment ideas fueled discontent against the monarchy.</p><p>Key Events: The storming of the Bastille, the Reign of Terror, and the rise of Napoleon shaped the revolution&#x27;s course.</p><p>Impacts: The revolution led to the end of absolute monarchy, rise of republican ideals, and inspired future democratic movements.</p></div>
+<h1>Summary: Legacy of the French Revolution</h1>
+<p class="p-intro">This slide recaps the main causes, key events, and lasting effects of the French Revolution to reinforce your understanding.</p>
+<p>Key Insight: The French Revolution fundamentally reshaped political and social structures, inspiring future movements globally.</p>
+<div class="block-separator"></div>
+<div class="smart-layout" data-variant="bulletCheck" data-item-count="5">
+<div class="card anim-slide-up" data-index="0" data-segment="0">
+<div class="card-icon"><i class="ri-check-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Causes of the Revolution</h4>
+<p class="card-text">Economic hardship, social inequality, and political unrest fueled the demand for change.</p>
 </div>
+</div>
+<div class="card anim-slide-up" data-index="1" data-segment="1">
+<div class="card-icon"><i class="ri-check-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Key Events</h4>
+<p class="card-text">From the Storming of the Bastille to the Reign of Terror, pivotal moments shaped the revolution&#x27;s course.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="2" data-segment="2">
+<div class="card-icon"><i class="ri-check-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Lasting Effects</h4>
+<p class="card-text">Established principles of liberty, equality, and fraternity influenced modern democracies worldwide.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="3" data-segment="3">
+<div class="card-icon"><i class="ri-check-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">End of Monarchy</h4>
+<p class="card-text">The revolution led to the fall of the monarchy and rise of the Republic in France.</p>
+</div>
+</div>
+<div class="card anim-slide-up" data-index="4" data-segment="4">
+<div class="card-icon"><i class="ri-check-line"></i></div>
+<div class="card-content">
+<h4 class="card-title">Social Reforms</h4>
+<p class="card-text">Abolition of feudal privileges and promotion of secular laws transformed French society.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
 </section>
     </div>
 

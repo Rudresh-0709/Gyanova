@@ -71,6 +71,9 @@ class SlideComposer:
         Returns:
             List of ComposedSlide (may split into multiple slides)
         """
+        if content is None:
+            return []
+
         # 1. Detect intent
         intent = self._detect_intent(content)
 
@@ -187,6 +190,13 @@ class SlideComposer:
 
         if "image" in content:
             main_concept["image"] = content["image"]
+        elif "accent_image_url" in content:
+            main_concept["image"] = content["accent_image_url"]
+        elif "accentImageUrl" in content:
+            main_concept["image"] = content["accentImageUrl"]
+
+        if "index" in content:
+            main_concept["index"] = content["index"]
 
         if "layout" in content:
             main_concept["layout"] = content["layout"]
@@ -403,6 +413,10 @@ class SlideComposer:
                     accent_image = image.get("url")
                 else:
                     accent_image = image
+            elif "accent_image_url" in concept:
+                accent_image = concept["accent_image_url"]
+            elif "accentImageUrl" in concept:
+                accent_image = concept["accentImageUrl"]
             if "layout" in concept:
                 explicit_layout = concept["layout"]
             if "image_prompt" in concept:
@@ -842,6 +856,11 @@ class SlideComposer:
                     BlockType.STATS.value,
                     BlockType.COMPARISON.value,
                     BlockType.IMAGE.value,
+                    BlockType.HUB_AND_SPOKE.value,
+                    BlockType.PROCESS_ARROW_BLOCK.value,
+                    BlockType.CYCLIC_PROCESS_BLOCK.value,
+                    BlockType.HIERARCHY_TREE.value,
+                    BlockType.FEATURE_SHOWCASE_BLOCK.value,
                 ]:
                     if visual_block is None:
                         visual_block = block
@@ -864,6 +883,19 @@ class SlideComposer:
             # Identify if a slide-level accent image exists
             has_accent_image = bool(slide.accent_image_url)
 
+            # RULE: Complex "Thirsty" blocks should always be stacked (Top-Bottom)
+            # This ensures they get full width and don't look cramped beside text.
+            THIRSTY_BLOCKS = {
+                BlockType.HUB_AND_SPOKE.value,
+                BlockType.PROCESS_ARROW_BLOCK.value,
+                BlockType.CYCLIC_PROCESS_BLOCK.value,
+                BlockType.HIERARCHY_TREE.value,
+                BlockType.FEATURE_SHOWCASE_BLOCK.value,
+                BlockType.FORMULA_BLOCK.value,
+                BlockType.CODE.value,
+            }
+            has_thirsty_block = any(b.type in THIRSTY_BLOCKS for b in blocks)
+
             # Use FitnessGate calculation to match User/Playground metrics.
             density = SlideFitnessGate._calculate_estimated_height(slide)
 
@@ -871,7 +903,7 @@ class SlideComposer:
             # OVERRIDE: If INLINE image is present, allow side-by-side (Parallel/Anchored)
             # NOTE: If we have an accent image, we stay stacked to maintain a 2-column Body vs Image slide.
             if (
-                (0.55 <= density <= 0.70) or (1.20 <= density <= 1.50)
+                (0.55 <= density <= 0.70) or (1.20 <= density <= 1.50) or has_thirsty_block
             ) and not has_inline_image:
                 force_stacked = True
 
@@ -1184,30 +1216,33 @@ class SlideComposer:
     def _assign_hierarchy(self, slide: ComposedSlide) -> ComposedSlide:
         """
         Assign visual hierarchy constraints based on final density and intent.
-        Uses calibrated density thresholds (0.65, 0.95, 1.20).
+        Uses calibrated density thresholds appropriate for 6 tiers.
         """
         # Calculate consistent FitnessGate density
         density_pct = SlideFitnessGate._calculate_estimated_height(slide)
 
-        # 1. Super Dense (> 110%)
-        if density_pct > 1.10:
+        # 1. Super Dense (> 1.15)
+        if density_pct > 1.15:
             profile_name = "super_dense"
-        # 2. Dense / Standard (85% - 110%)
-        elif density_pct > 0.85:
+        # 2. Dense (0.90 - 1.15)
+        elif density_pct > 0.90:
             profile_name = "dense"
-        # 3. Balanced / Relaxed (55% - 85%)
-        elif density_pct > 0.55:
+        # 3. Standard (0.70 - 0.90)
+        elif density_pct > 0.70:
+            profile_name = "standard"
+        # 4. Balanced (0.50 - 0.70)
+        elif density_pct > 0.50:
             profile_name = "balanced"
-        # 4. Impact / Sparse (< 65%)
+        # 5. Sparse (0.35 - 0.50)
+        elif density_pct > 0.35:
+            profile_name = "sparse"
+        # 6. Ultra Sparse (< 0.35)
         else:
-            profile_name = "impact"
+            profile_name = "ultra_sparse"
 
-        # Intent Overrides (Only for sparse slides)
-        if profile_name == "impact":
-            if slide.intent == Intent.PROVE.value:
-                profile_name = "impact"  # Already impact, but keep for explicit logic
-            elif slide.intent == Intent.INTRODUCE.value:
-                profile_name = "impact"
+        slide.hierarchy = VisualHierarchy.get_profile(profile_name)
+
+        return slide
 
         print(
             f"DEBUG: Final hierarchy assessment: {density_pct:.2f} -> profile: {profile_name}"
@@ -1265,8 +1300,14 @@ class SlideComposer:
             BlockType.TABLE.value,
             BlockType.COMPARISON_TABLE.value,
             BlockType.SPLIT_PANEL.value,
-            BlockType.FORMULA_BLOCK.value,  # Formula can be narrow but usually has text under
-            BlockType.SMART_LAYOUT.value,  # Prevent side-by-side with intro text
+            BlockType.FORMULA_BLOCK.value,
+            BlockType.SMART_LAYOUT.value,
+            BlockType.HUB_AND_SPOKE.value,
+            BlockType.PROCESS_ARROW_BLOCK.value,
+            BlockType.CYCLIC_PROCESS_BLOCK.value,
+            BlockType.HIERARCHY_TREE.value,
+            BlockType.FEATURE_SHOWCASE_BLOCK.value,
+            BlockType.CODE.value,
         }
 
         for b in content_blocks:
@@ -1376,6 +1417,18 @@ class SlideComposer:
         density = SlideFitnessGate._calculate_estimated_height(slide)
         has_image = bool(slide.accent_image_url)
 
+        # 1b. Assign Density Classification for Styling
+        # Thresholds loosely aligned with hierarchy.py profiles
+        if not slide.slide_density:  # Don't override explicit density from planner
+            if density > 0.95:
+                slide.slide_density = "super_dense"
+            elif density > 0.75:
+                slide.slide_density = "dense"
+            elif density > 0.55:
+                slide.slide_density = "balanced"
+            else:
+                slide.slide_density = "default"
+
         # Detect wide blocks that shouldn't be squeezed by side images
         WIDE_BLOCKS = {
             BlockType.TABLE.value,
@@ -1386,6 +1439,8 @@ class SlideComposer:
             BlockType.HUB_AND_SPOKE.value,
             BlockType.PROCESS_ARROW_BLOCK.value,
             BlockType.CYCLIC_PROCESS_BLOCK.value,
+            BlockType.FEATURE_SHOWCASE_BLOCK.value,
+            BlockType.CODE.value,
         }
 
         def is_wide(b):
@@ -1570,10 +1625,11 @@ class SlideComposer:
 
         # 2. COMPARISON Logic
         if intent == Intent.COMPARE.value:
-            if count == 2 and try_variant("comparison", items):
-                return SmartLayoutVariant.COMPARISON.value
-            elif count == 3 and try_variant("solidBoxesWithIconsInside", items):
-                return SmartLayoutVariant.SOLID_BOXES_WITH_ICONS.value
+            # New structured comparison selection rule: <= 3 subjects -> comparisonCards
+            if count <= 3 and try_variant("comparisonCards", items):
+                return SmartLayoutVariant.COMPARISON_CARDS.value
+            elif try_variant("comparison_table", items):
+                return "comparison_table"
             elif try_variant("cardGrid", items):
                 return SmartLayoutVariant.CARD_GRID.value
 

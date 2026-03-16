@@ -189,6 +189,13 @@ class GyMLValidator:
             "hierarchy_tree",
             "split_panel",
             "formula_block",
+            "hub_and_spoke",
+            "cyclic_process_block",
+            "process_arrow_block",
+            "feature_showcase_block",
+            "sequential_output_block",
+            "code",
+            "table",
         ]
 
         for child in body.children:
@@ -271,6 +278,7 @@ class GyMLValidator:
             "stats",
             "bigBullets",
             "cardGrid",
+            "comparisonCards",
         ]
         if layout.variant not in valid_variants:
             result.add_warning(f"Unrecognized smart-layout variant: '{layout.variant}'")
@@ -332,6 +340,8 @@ class GyMLValidator:
             return "split_panel"
         elif isinstance(node, GyMLFormulaBlock):
             return "formula_block"
+        elif hasattr(node, "type"):
+            return getattr(node, "type")
         else:
             return type(node).__name__.lower()
 

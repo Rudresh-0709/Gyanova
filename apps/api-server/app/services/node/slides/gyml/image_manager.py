@@ -39,13 +39,20 @@ class ImageManager:
         - Fallback: Alternate between 'left' and 'right' based on slide_index.
         """
         if explicit_layout is not None:
+            # OVERRIDE: Even if LLM/User asked for side-layout, if we have a wide block,
+            # we MUST move to top/bottom/behind or blank to avoid squeezing it.
+            if has_wide_block and explicit_layout in ["left", "right"]:
+                if has_user_image:
+                    return "top" if slide_index % 2 == 0 else "bottom"
+                return "blank"
             return explicit_layout
 
         # 2. Density / Complexity Overrides
         # If density is very high (> 1.0) or has wide content, side layouts look cramped.
         if (slide_density > 1.0) or has_wide_block:
             if has_user_image:
-                return "right"
+                # Wide blocks (HubSpoke, etc.) need full width, so image moves to top/bottom
+                return "top" if slide_index % 2 == 0 else "bottom"
             return "blank"
 
         # 3. Variety Logic

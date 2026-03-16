@@ -28,14 +28,26 @@ from .definitions import (
     GyMLCode,
     GyMLComparisonTable,
     GyMLKeyValueList,
+    GyMLKeyValueItem,
     GyMLRichText,
     GyMLNumberedList,
+    GyMLNumberedListItem,
     GyMLLabeledDiagram,
+    GyMLDiagramLabel,
     GyMLHierarchyTree,
+    GyMLTreeNode,
     GyMLSplitPanel,
+    GyMLPanel,
     GyMLFormulaBlock,
+    GyMLFormulaVariable,
+    GyMLHubAndSpoke,
+    GyMLHubAndSpokeItem,
     GyMLProcessArrowBlock,
     GyMLProcessArrowItem,
+    GyMLCyclicBlock,
+    GyMLCyclicItem,
+    GyMLCyclicProcessBlock,
+    GyMLCyclicProcessItem,
     GyMLFeatureShowcaseBlock,
     GyMLFeatureShowcaseItem,
     GyMLNode,
@@ -319,6 +331,55 @@ class GyMLSerializer:
             ]:
                 variant = "comparison_table"
 
+            # 1. Handle STRUCTURED Comparison Schema (New)
+            if "criteria" in content and "subjects" in content:
+                criteria = content["criteria"]
+                subjects = content["subjects"]
+                conclusion = content.get("conclusion")
+
+                # Determine if we should use Table or Cards based on count
+                # (The composer usually sets this, but we reinforce here)
+                num_subjects = len(subjects)
+                if num_subjects > 3 or variant == "comparison_table":
+                    # Map to GyMLComparisonTable
+                    headers = ["Dimension"] + [s["label"] for s in subjects]
+                    rows = []
+                    for crit in criteria:
+                        row = [crit["label"]]
+                        for subject in subjects:
+                            # Find matching value
+                            val = "-"
+                            for v in subject.get("values", []):
+                                if v.get("criterion_id") == crit["id"]:
+                                    val = v.get("value", "-")
+                                    break
+                            row.append(val)
+                        rows.append(row)
+                    return GyMLComparisonTable(headers=headers, rows=rows, caption=conclusion)
+                else:
+                    # Map to GyMLSmartLayout (Cards)
+                    items = []
+                    for subject in subjects:
+                        points = []
+                        for crit in criteria:
+                            val = "-"
+                            for v in subject.get("values", []):
+                                if v.get("criterion_id") == crit["id"]:
+                                    val = v.get("value", "-")
+                                    break
+                            points.append(f"{crit['label']}: {val}")
+                        
+                        items.append(
+                            GyMLSmartLayoutItem(
+                                heading=subject["label"],
+                                points=points
+                            )
+                        )
+                    # Force comparisonCards variant for structured comparison schemas
+                    variant = "comparisonCards"
+                    return GyMLSmartLayout(variant=variant, items=items)
+
+            # 2. Handle LEGACY Heuristic Pivoting
             # Special case: comparison_table variant inside smart_layout
             if variant == "comparison_table":
                 headers = content.get("headers", [])
@@ -506,9 +567,16 @@ class GyMLSerializer:
             items_data = content.get("items", [])
             variant = content.get("variant", SmartLayoutVariant.COMPARISON.value)
 
+            # NEW: structured schema handling
+            if "criteria" in content and "subjects" in content:
+                return self._serialize_block(
+                    ComposedBlock(type=BlockType.SMART_LAYOUT.value, content=content)
+                )
+
             # Auto-convert large comparison grids (>3 items) into cleanly formatted tables
             if len(items_data) > 3 and variant in [
                 SmartLayoutVariant.COMPARISON.value,
+                SmartLayoutVariant.COMPARISON_CARDS.value,
                 "comparisonProsCons",
                 "comparisonBeforeAfter",
             ]:
@@ -595,6 +663,12 @@ class GyMLSerializer:
 
         # Comparison Table
         elif block_type == BlockType.COMPARISON_TABLE.value:
+            if "criteria" in content and "subjects" in content:
+                content["variant"] = "comparison_table"
+                return self._serialize_block(
+                    ComposedBlock(type=BlockType.SMART_LAYOUT.value, content=content)
+                )
+
             headers = content.get("headers", [])
             rows = content.get("rows", [])
             caption = content.get("caption", "")
@@ -602,8 +676,6 @@ class GyMLSerializer:
 
         # Key-Value List
         elif block_type == BlockType.KEY_VALUE_LIST.value:
-            from .definitions import GyMLKeyValueItem
-
             items_data = content.get("items", [])
             items = [
                 GyMLKeyValueItem(key=i.get("key", ""), value=i.get("value", ""))
@@ -619,8 +691,6 @@ class GyMLSerializer:
 
         # Numbered List
         elif block_type == BlockType.NUMBERED_LIST.value:
-            from .definitions import GyMLNumberedListItem
-
             items_data = content.get("items", [])
             items = [
                 GyMLNumberedListItem(
@@ -633,8 +703,6 @@ class GyMLSerializer:
 
         # Labeled Diagram
         elif block_type == BlockType.LABELED_DIAGRAM.value:
-            from .definitions import GyMLDiagramLabel
-
             image_url = content.get("image_url", content.get("imageUrl", ""))
             labels_data = content.get("labels", [])
             labels = [
@@ -653,8 +721,6 @@ class GyMLSerializer:
             root_data = content.get("root", {})
 
             def parse_node(node_data: dict) -> "GyMLTreeNode":
-                from .definitions import GyMLTreeNode
-
                 return GyMLTreeNode(
                     label=node_data.get("label", ""),
                     children=[parse_node(c) for c in node_data.get("children", [])],
@@ -664,8 +730,6 @@ class GyMLSerializer:
 
         # Split Panel
         elif block_type == BlockType.SPLIT_PANEL.value:
-            from .definitions import GyMLPanel
-
             left_data = content.get("leftPanel", content.get("left", {}))
             right_data = content.get("rightPanel", content.get("right", {}))
 
@@ -679,8 +743,6 @@ class GyMLSerializer:
 
         # Formula Block
         elif block_type == BlockType.FORMULA_BLOCK.value:
-            from .definitions import GyMLFormulaVariable
-
             expression = content.get("expression", content.get("formula", ""))
             example = content.get("example", content.get("description", ""))
             variables_data = content.get("variables", [])
@@ -701,8 +763,6 @@ class GyMLSerializer:
 
         # Hub and Spoke block
         elif block_type == BlockType.HUB_AND_SPOKE.value:
-            from .definitions import GyMLHubAndSpokeItem
-
             hub_label = content.get("hub_label", content.get("title", "Core"))
             items_data = content.get("items", [])
             items = []
@@ -725,9 +785,13 @@ class GyMLSerializer:
                 variant=content.get("variant", "hexagon"),
             )
 
+        # Sequential Output Block
+        elif block_type == BlockType.SEQUENTIAL_OUTPUT.value:
+             return GyMLSequentialOutput(items=content.get("items", []))
+
         # Process Arrow block
         elif block_type == BlockType.PROCESS_ARROW_BLOCK.value:
-            from .definitions import GyMLProcessArrowItem
+            items_data = content.get("items", [])
 
             items_data = content.get("items", [])
             items = []
@@ -750,7 +814,7 @@ class GyMLSerializer:
 
         # Cyclic Process block
         elif block_type == BlockType.CYCLIC_PROCESS_BLOCK.value:
-            from .definitions import GyMLCyclicProcessItem
+            items_data = content.get("items", [])
 
             items_data = content.get("items", [])
             items = []

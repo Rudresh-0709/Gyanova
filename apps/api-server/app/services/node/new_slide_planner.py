@@ -3,16 +3,19 @@ import uuid
 from typing import Dict, Any, List
 
 try:
-    from ..llm.model_loader import load_openai, load_groq
-    from ..state import TutorState
+    from app.services.llm.model_loader import load_openai, load_groq
+    from app.services.state import TutorState
 except ImportError:
-    # Fallback for direct script execution or different import paths
-    import sys
-    import os
-
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    from llm.model_loader import load_openai, load_groq
-    from state import TutorState
+    # Try relative if running from within app/services/node
+    try:
+        from ..llm.model_loader import load_openai, load_groq
+        from ..state import TutorState
+    except ImportError:
+        import sys
+        import os
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+        from llm.model_loader import load_openai, load_groq
+        from state import TutorState
 
 # TEMPLATE REGISTRY
 SLIDE_TEMPLATES = {
@@ -422,18 +425,18 @@ def plan_slides_for_subtopic(
     2. ARCHITECT BY ANGLE: Ensure a diverse progression of learning perspectives:
        overview → mechanism → example → application → summary.
     3. Determine slide intent and content angle first, then select the best template.
-    4. Maintain template diversity — no template more than twice.
+    4. STRICT VARIETY CONSTRAINT: Maintain template diversity — absolutely NEVER use any single template or primary content type more than TWICE in the entire presentation.
     5. Avoid repeating the same content angle twice in a row.
     6. Prefer visuals when explaining processes, systems, or data.
     7. Set "visual_required" to true and choose the appropriate "visual_type" when a visual enhances understanding.
-    8. VARIETY RULE (CRITICAL): No two slides within a subtopic may use the same CATEGORY of visual structure:
+    8. VARIETY RULE (CRITICAL): Ensure a wide mix of visual categories. NEVER use any of the following visual structure categories more than TWICE per subtopic:
        - Timeline category: Timeline
        - Bullet category: Title with bullets, Title with bullets and image, Large bullet list
        - Card category: Icons with text, Three columns, Four columns
        - Process category: Arrows, Diagram, Process arrow block, Cyclic process block
        - Comparison category: Two columns, Comparison table, Split panel
        - Data category: Column chart, Line chart, Pie chart
-       Each category may appear AT MOST ONCE per subtopic.
+       Force yourself to pick from different categories for each slide.
     9. Timeline slides must have MAX 5 items/steps.
     10. IMAGE ROLE ASSIGNMENT (CRITICAL):
         Every slide must have an "image_role" field set to one of:
@@ -445,7 +448,9 @@ def plan_slides_for_subtopic(
           Templates that default to none: Comparison table, Formula block, Key-Value list, Split panel, Code.
         Choose based on: Does a student NEED to see a picture to understand this slide's concept?
         If yes → "content". If no but it would look nice → "accent". If it would distract → "none".
-    11. Output ONLY valid JSON.
+    11. DENSITY TARGET (CRITICAL):
+        Plan a mix of density levels. A lesson MUST include at least one sparse slide (hero/intro) and at least one dense slide (data/comparison). Most slides should be balanced or standard.
+    12. Output ONLY valid JSON.
 
     OUTPUT FORMAT:
     {{
@@ -461,233 +466,261 @@ def plan_slides_for_subtopic(
                 "reasoning": "Quick pedagogical justification",
                 "visual_required": true,
                 "visual_type": "image | diagram | chart | illustration | none",
-                "image_role": "content | accent | none"
+                "image_role": "content | accent | none",
+                "target_density": "ultra_sparse | sparse | balanced | standard | dense | super_dense"
             }}
         ]
     }}
     """
 
     llm = load_openai()
-    response = llm.invoke([{"role": "system", "content": SYSTEM_PROMPT}])
 
-    # DEBUG: Show raw planning output
-    print("\n--- [DEBUG] SLIDE PLANNING LLM OUTPUT ---")
-    print(response.content)
-    print("------------------------------------------\n")
+    MAX_RETRIES = 3
+    for attempt in range(MAX_RETRIES):
+        response = llm.invoke([{"role": "system", "content": SYSTEM_PROMPT}])
 
-    try:
-        content = response.content.replace("```json", "").replace("```", "").strip()
-        data = json.loads(content)
+        # DEBUG: Show raw planning output
+        print(f"\n--- [DEBUG] SLIDE PLANNING LLM OUTPUT (Attempt {attempt+1}) ---")
+        print(response.content)
+        print("------------------------------------------\n")
 
-        # ---- VALIDATION STARTS HERE ----
-        VALID_TEMPLATES = set(AVAILABLE_TEMPLATE_NAMES)
-        VALID_INTENTS = set(SLIDE_INTENTS)
-        VALID_PURPOSES = set(SLIDE_PURPOSES)
-        VALID_NARRATION = set(NARRATION_ROLES)
-        VALID_VISUAL_TYPES = set(VISUAL_TYPES)
-        VALID_ANGLES = set(CONTENT_ANGLES)
+        try:
+            content_str = response.content.replace("```json", "").replace("```", "").strip()
+            data = json.loads(content_str)
 
-        validated_slides = []
-
-        for slide in data.get("slides", []):
-            # 1. Content Angle Inference/Validation
-            angle = slide.get("content_angle", "").lower()
-            tmpl_raw = slide.get("selected_template", "")
-            # Normalize template for lookup (Title Case)
-            tmpl = tmpl_raw.strip().title()
-            if " And " in tmpl:
-                tmpl = tmpl.replace(" And ", " and ")  # Fix common title() artifact
-
-            purp = slide.get("purpose", "").lower()
-
-            if angle not in VALID_ANGLES:
-                # Inference Logic
-                if "Timeline" in tmpl or "process" in purp:
-                    angle = "mechanism"
-                elif "Comparison" in tmpl or "Comparison" in purp:
-                    angle = "comparison"
-                elif "Diagram" in tmpl or "visualization" in purp:
-                    angle = "visualization"
-                elif "bullets" in tmpl.lower() or "intro" in purp:
-                    angle = "overview"
-                elif "example" in purp or "demo" in purp:
-                    angle = "example"
-                elif "summary" in purp or "reinforcement" in purp:
-                    angle = "summary"
+            # ---- VALIDATION STARTS HERE ----
+            VALID_TEMPLATES = set(AVAILABLE_TEMPLATE_NAMES)
+            VALID_INTENTS = set(SLIDE_INTENTS)
+            VALID_PURPOSES = set(SLIDE_PURPOSES)
+            VALID_NARRATION = set(NARRATION_ROLES)
+            VALID_VISUAL_TYPES = set(VISUAL_TYPES)
+            VALID_ANGLES = set(CONTENT_ANGLES)
+    
+            validated_slides = []
+    
+            for slide in data.get("slides", []):
+                # 1. Content Angle Inference/Validation
+                angle = slide.get("content_angle", "").lower()
+                tmpl_raw = slide.get("selected_template", "")
+                # Normalize template for lookup (Title Case)
+                tmpl = tmpl_raw.strip().title()
+                if " And " in tmpl:
+                    tmpl = tmpl.replace(" And ", " and ")  # Fix common title() artifact
+    
+                purp = slide.get("purpose", "").lower()
+    
+                if angle not in VALID_ANGLES:
+                    # Inference Logic
+                    if "Timeline" in tmpl or "process" in purp:
+                        angle = "mechanism"
+                    elif "Comparison" in tmpl or "Comparison" in purp:
+                        angle = "comparison"
+                    elif "Diagram" in tmpl or "visualization" in purp:
+                        angle = "visualization"
+                    elif "bullets" in tmpl.lower() or "intro" in purp:
+                        angle = "overview"
+                    elif "example" in purp or "demo" in purp:
+                        angle = "example"
+                    elif "summary" in purp or "reinforcement" in purp:
+                        angle = "summary"
+                    else:
+                        angle = "overview"
+                    slide["content_angle"] = angle
                 else:
-                    angle = "overview"
-                slide["content_angle"] = angle
-            else:
-                slide["content_angle"] = angle
-
-            intent = slide.get("intent", "").lower()
-            if intent not in VALID_INTENTS:
-                continue
-
-            if tmpl not in VALID_TEMPLATES:
-                # Fallback check for missing " card" etc if LLM clipped it
-                matched = False
-                for v_tmpl in VALID_TEMPLATES:
-                    if tmpl.lower() in v_tmpl.lower():
-                        tmpl = v_tmpl
-                        matched = True
-                        break
-                if not matched:
+                    slide["content_angle"] = angle
+    
+                intent = slide.get("intent", "").lower()
+                if intent not in VALID_INTENTS:
                     continue
+    
+                if tmpl not in VALID_TEMPLATES:
+                    # Fallback check for missing " card" etc if LLM clipped it
+                    matched = False
+                    for v_tmpl in VALID_TEMPLATES:
+                        if tmpl.lower() in v_tmpl.lower():
+                            tmpl = v_tmpl
+                            matched = True
+                            break
+                    if not matched:
+                        continue
+    
+                slide["selected_template"] = tmpl
+                slide["intent"] = intent
+                if slide.get("purpose") not in VALID_PURPOSES:
+                    # Lenient matching or default
+                    matched = False
+                    for v_purp in VALID_PURPOSES:
+                        if v_purp in slide.get("purpose", "").lower():
+                            slide["purpose"] = v_purp
+                            matched = True
+                            break
+                    if not matched:
+                        slide["purpose"] = "definition"  # Fallback
+    
+                if slide.get("role") not in VALID_NARRATION:
+                    # Lenient matching or default
+                    matched = False
+                    for v_role in VALID_NARRATION:
+                        if v_role.lower() in slide.get("role", "").lower():
+                            slide["role"] = v_role
+                            matched = True
+                            break
+                    if not matched:
+                        slide["role"] = "Guide"  # Fallback
+                if not slide.get("title"):
+                    if "slide_title" in slide:
+                        slide["title"] = slide.pop("slide_title")
+                    else:
+                        continue  # title is mandatory
+    
+                # Ensure goal is also handled
+                if "narration_goal" in slide:
+                    slide["goal"] = slide.pop("narration_goal")
+    
+                # Validate visual_type
+                vtype = slide.get("visual_type")
+                if vtype and vtype not in VALID_VISUAL_TYPES:
+                    slide["visual_type"] = "none"
+                    slide["visual_required"] = False
+                # Default visual fields if missing
+                if "visual_required" not in slide:
+                    slide["visual_required"] = False
+                if "visual_type" not in slide:
+                    slide["visual_type"] = "none"
+    
+                # Validate and default image_role
+                VALID_IMAGE_ROLES = {"content", "accent", "none"}
+                image_role = slide.get("image_role", "").lower()
+                if image_role not in VALID_IMAGE_ROLES:
+                    # Infer from template
+                    CONTENT_IMAGE_TEMPLATES = {
+                        "Labeled diagram", "Image and text", "Text and image", "Diagram",
+                    }
+                    ACCENT_IMAGE_TEMPLATES = {
+                        "Timeline", "Icons with text", "Title with bullets and image",
+                        "Title card", "Large bullet list", "Three columns", "Four columns",
+                    }
+                    NONE_IMAGE_TEMPLATES = {
+                        "Comparison table", "Formula block", "Key-Value list",
+                        "Split panel", "Code", "Hub and spoke",
+                    }
+                    if tmpl in CONTENT_IMAGE_TEMPLATES:
+                        image_role = "content"
+                    elif tmpl in NONE_IMAGE_TEMPLATES:
+                        image_role = "none"
+                    else:
+                        image_role = "accent"  # Default fallback
+                if slide is not None:
+                    slide["image_role"] = image_role
+    
+                    # Validate target_density
+                    VALID_DENSITIES = {"ultra_sparse", "sparse", "balanced", "standard", "dense", "super_dense"}
+                    target_density = slide.get("target_density", "").lower()
+                    if target_density not in VALID_DENSITIES:
+                        target_density = "standard"
+                    slide["target_density"] = target_density
+        
+                    validated_slides.append(slide)
+    
+            # ---- Density Diversity Validation ----
+            if validated_slides:
+                density_counts = {}
+                for s in validated_slides:
+                    d = s["target_density"]
+                    density_counts[d] = density_counts.get(d, 0) + 1
+                
+                max_density_count = max(density_counts.values()) if density_counts else 0
+                if max_density_count > len(validated_slides) / 2:
+                    raise ValueError("Density rejection: >50% of slides target the same density tier.")
+    
+            data["slides"] = validated_slides
+            # ---- VALIDATION ENDS HERE ----
+    
+            # ---- DIVERSITY ENFORCEMENT ----
+            # Category mapping for variety enforcement
+            TEMPLATE_CATEGORIES = {
+                "Timeline": "timeline",
+                "Title with bullets": "bullet",
+                "Title with bullets and image": "bullet",
+                "Large bullet list": "bullet",
+                "Icons with text": "card",
+                "Three columns": "card",
+                "Four columns": "card",
+                "Arrows": "process",
+                "Diagram": "process",
+                "Process arrow block": "process",
+                "Cyclic process block": "process",
+                "Feature showcase block": "process",
+                "Two columns": "comparison",
+                "Comparison table": "comparison",
+                "Split panel": "comparison",
+                "Column chart": "data",
+                "Line chart": "data",
+                "Pie chart": "data",
+            }
+    
+            template_count = {}
+            used_categories = set()
+            diverse_slides = []
+            last_angle = None
+    
+            for slide in data["slides"]:
+                tmpl = slide.get("selected_template")
+                angle = slide.get("content_angle")
+    
+                # Template cap: max 2
+                template_count[tmpl] = template_count.get(tmpl, 0) + 1
+                if template_count[tmpl] > 2:
+                    continue
+    
+                # Category cap: max 1 per category
+                category = TEMPLATE_CATEGORIES.get(tmpl)
+                if category and category in used_categories:
+                    print(f"    ⚠ Skipping '{tmpl}' — category '{category}' already used")
+                    continue
+    
+                # Sequential Angle check: Avoid back-to-back same angle
+                if angle == last_angle:
+                    continue
+    
+                diverse_slides.append(slide)
+                last_angle = angle
+                if category:
+                    used_categories.add(category)
+    
+            # Clamp to 4-7 slides
+            total_filtered = len(diverse_slides)
+            if total_filtered < 4:
+                data["slides"] = validated_slides[:7]
+            else:
+                data["slides"] = diverse_slides[:7]
+            # ---- DIVERSITY ENFORCEMENT ENDS ----
+    
+            return data
+    
+        except Exception as e:
+            print(f"Error parsing slide plan for {subtopic.get('name')}: {e}")
+            # Let the loop retry
+            continue
 
-            slide["selected_template"] = tmpl
-            slide["intent"] = intent
-            if slide.get("purpose") not in VALID_PURPOSES:
-                # Lenient matching or default
-                matched = False
-                for v_purp in VALID_PURPOSES:
-                    if v_purp in slide.get("purpose", "").lower():
-                        slide["purpose"] = v_purp
-                        matched = True
-                        break
-                if not matched:
-                    slide["purpose"] = "definition"  # Fallback
-
-            if slide.get("role") not in VALID_NARRATION:
-                # Lenient matching or default
-                matched = False
-                for v_role in VALID_NARRATION:
-                    if v_role.lower() in slide.get("role", "").lower():
-                        slide["role"] = v_role
-                        matched = True
-                        break
-                if not matched:
-                    slide["role"] = "Guide"  # Fallback
-            if not slide.get("title"):
-                if "slide_title" in slide:
-                    slide["title"] = slide.pop("slide_title")
-                else:
-                    continue  # title is mandatory
-
-            # Ensure goal is also handled
-            if "narration_goal" in slide:
-                slide["goal"] = slide.pop("narration_goal")
-
-            # Validate visual_type
-            vtype = slide.get("visual_type")
-            if vtype and vtype not in VALID_VISUAL_TYPES:
-                slide["visual_type"] = "none"
-                slide["visual_required"] = False
-            # Default visual fields if missing
-            if "visual_required" not in slide:
-                slide["visual_required"] = False
-            if "visual_type" not in slide:
-                slide["visual_type"] = "none"
-
-            # Validate and default image_role
-            VALID_IMAGE_ROLES = {"content", "accent", "none"}
-            image_role = slide.get("image_role", "").lower()
-            if image_role not in VALID_IMAGE_ROLES:
-                # Infer from template
-                CONTENT_IMAGE_TEMPLATES = {
-                    "Labeled diagram", "Image and text", "Text and image", "Diagram",
-                }
-                ACCENT_IMAGE_TEMPLATES = {
-                    "Timeline", "Icons with text", "Title with bullets and image",
-                    "Title card", "Large bullet list", "Three columns", "Four columns",
-                }
-                NONE_IMAGE_TEMPLATES = {
-                    "Comparison table", "Formula block", "Key-Value list",
-                    "Split panel", "Code", "Hub and spoke",
-                }
-                if tmpl in CONTENT_IMAGE_TEMPLATES:
-                    image_role = "content"
-                elif tmpl in NONE_IMAGE_TEMPLATES:
-                    image_role = "none"
-                else:
-                    image_role = "accent"  # Default fallback
-            slide["image_role"] = image_role
-
-            validated_slides.append(slide)
-
-        data["slides"] = validated_slides
-        # ---- VALIDATION ENDS HERE ----
-
-        # ---- DIVERSITY ENFORCEMENT ----
-        # Category mapping for variety enforcement
-        TEMPLATE_CATEGORIES = {
-            "Timeline": "timeline",
-            "Title with bullets": "bullet",
-            "Title with bullets and image": "bullet",
-            "Large bullet list": "bullet",
-            "Icons with text": "card",
-            "Three columns": "card",
-            "Four columns": "card",
-            "Arrows": "process",
-            "Diagram": "process",
-            "Process arrow block": "process",
-            "Cyclic process block": "process",
-            "Feature showcase block": "process",
-            "Two columns": "comparison",
-            "Comparison table": "comparison",
-            "Split panel": "comparison",
-            "Column chart": "data",
-            "Line chart": "data",
-            "Pie chart": "data",
-        }
-
-        template_count = {}
-        used_categories = set()
-        diverse_slides = []
-        last_angle = None
-
-        for slide in data["slides"]:
-            tmpl = slide.get("selected_template")
-            angle = slide.get("content_angle")
-
-            # Template cap: max 2
-            template_count[tmpl] = template_count.get(tmpl, 0) + 1
-            if template_count[tmpl] > 2:
-                continue
-
-            # Category cap: max 1 per category
-            category = TEMPLATE_CATEGORIES.get(tmpl)
-            if category and category in used_categories:
-                print(f"    ⚠ Skipping '{tmpl}' — category '{category}' already used")
-                continue
-
-            # Sequential Angle check: Avoid back-to-back same angle
-            if angle == last_angle:
-                continue
-
-            diverse_slides.append(slide)
-            last_angle = angle
-            if category:
-                used_categories.add(category)
-
-        # Clamp to 4-7 slides
-        if len(diverse_slides) < 4:
-            # If we filtered too aggressively, keep the original validated ones
-            # but still try to respect the hard template cap
-            data["slides"] = validated_slides[:7]
-        else:
-            data["slides"] = diverse_slides[:7]
-        # ---- DIVERSITY ENFORCEMENT ENDS ----
-
-        return data
-
-    except Exception as e:
-        print(f"Error parsing slide plan for {subtopic.get('name')}: {e}")
-        return {
-            "slides": [
-                {
-                    "title": subtopic.get("name", "Untitled"),
-                    "intent": "concept",
-                    "purpose": "definition",
-                    "selected_template": "Title with bullets",
-                    "role": "Introduce",
-                    "goal": "Fallback slide",
-                    "reasoning": "Auto-generated fallback due to planning error",
-                    "visual_required": False,
-                    "visual_type": "none",
-                }
-            ]
-        }
+    # If we exhaust retries, return fallback
+    print(f"Failed to generate valid slide plan after {MAX_RETRIES} attempts. Using fallback.")
+    return {
+        "slides": [
+            {
+                "title": subtopic.get("name", "Untitled"),
+                "intent": "concept",
+                "purpose": "definition",
+                "selected_template": "Title with bullets",
+                "role": "Introduce",
+                "goal": "Fallback slide",
+                "reasoning": "Auto-generated fallback due to planning error",
+                "visual_required": False,
+                "visual_type": "none",
+                "target_density": "standard",
+            }
+        ]
+    }
 
 
 if __name__ == "__main__":

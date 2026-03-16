@@ -5,23 +5,32 @@ import sys
 
 # Ensure imports work
 try:
-    from .slides.gyml.composer import SlideComposer
-    from .slides.gyml.serializer import GyMLSerializer
-    from .slides.gyml.validator import GyMLValidator
-    from .slides.gyml.renderer import GyMLRenderer
-    from .slides.gyml.theme import get_theme
-    from .slides.gyml.image_generator import ImageGenerator
-    from .slides.gyml.constants import BlockType
+    from app.services.node.slides.gyml.composer import SlideComposer
+    from app.services.node.slides.gyml.serializer import GyMLSerializer
+    from app.services.node.slides.gyml.validator import GyMLValidator
+    from app.services.node.slides.gyml.renderer import GyMLRenderer
+    from app.services.node.slides.gyml.theme import get_theme
+    from app.services.node.slides.gyml.image_generator import ImageGenerator
+    from app.services.node.slides.gyml.constants import BlockType
 except ImportError:
     # Use relative imports if running as package
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    from services.node.slides.gyml.composer import SlideComposer
-    from services.node.slides.gyml.serializer import GyMLSerializer
-    from services.node.slides.gyml.validator import GyMLValidator
-    from services.node.slides.gyml.renderer import GyMLRenderer
-    from services.node.slides.gyml.theme import get_theme
-    from services.node.slides.gyml.image_generator import ImageGenerator
-    from services.node.slides.gyml.constants import BlockType
+    try:
+        from .slides.gyml.composer import SlideComposer
+        from .slides.gyml.serializer import GyMLSerializer
+        from .slides.gyml.validator import GyMLValidator
+        from .slides.gyml.renderer import GyMLRenderer
+        from .slides.gyml.theme import get_theme
+        from .slides.gyml.image_generator import ImageGenerator
+        from .slides.gyml.constants import BlockType
+    except ImportError:
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+        from services.node.slides.gyml.composer import SlideComposer
+        from services.node.slides.gyml.serializer import GyMLSerializer
+        from services.node.slides.gyml.validator import GyMLValidator
+        from services.node.slides.gyml.renderer import GyMLRenderer
+        from services.node.slides.gyml.theme import get_theme
+        from services.node.slides.gyml.image_generator import ImageGenerator
+        from services.node.slides.gyml.constants import BlockType
 
 
 async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -63,9 +72,11 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     composed_objects_list = []  # List of List[ComposedSlide]
     for slide in pending_slides:
         try:
-            composed = composer.compose(slide["gyml_content"])
-            slide["_composed_objs"] = composed  # Temporary storage
-            composed_objects_list.append(composed)
+            gyml = slide.get("gyml_content")
+            if gyml:
+                composed = composer.compose(gyml)
+                slide["_composed_objs"] = composed  # Temporary storage
+                composed_objects_list.append(composed)
         except Exception as e:
             print(f"   ❌ Composition failed: {e}")
             slide["html_error"] = str(e)
@@ -196,21 +207,22 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 )
 
     # 4. Step Three: Final Serialization and Rendering
-    rendered_count = 0
+    rendered_count: int = 0
     for slide in pending_slides:
         if "html_error" in slide:
             continue
 
         try:
-            composed_objs = slide.pop("_composed_objs")
-            # Serialize
-            gyml_sections = serializer.serialize_many(composed_objs)
-            # Render
-            html_output = renderer.render_complete(gyml_sections)
+            composed_objs = slide.pop("_composed_objs", None)
+            if composed_objs:
+                # Serialize
+                gyml_sections = serializer.serialize_many(composed_objs)
+                # Render
+                html_output = renderer.render_complete(gyml_sections)
 
-            slide["html_content"] = html_output
-            rendered_count += 1
-            print(f"   ✅ Rendered {slide.get('slide_id', 'unknown')}")
+                slide["html_content"] = html_output
+                rendered_count += 1
+                print(f"   ✅ Rendered {slide.get('slide_id', 'unknown')}")
         except Exception as e:
             print(f"   ❌ Serialization/Rendering failed: {e}")
             slide["html_error"] = str(e)

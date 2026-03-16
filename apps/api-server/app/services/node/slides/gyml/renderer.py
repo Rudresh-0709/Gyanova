@@ -37,6 +37,7 @@ from .definitions import (
     GyMLCyclicProcessBlock,
     GyMLCyclicProcessItem,
     GyMLFeatureShowcaseBlock,
+    GyMLSequentialOutput,
     GyMLNode,
 )
 from .theme import Theme, THEMES
@@ -72,12 +73,12 @@ class GyMLRenderer:
         """Passively render GyML section to HTML."""
         # Reset segment counter for each section
         self._segment_counter = 0
-        lines = []
+        lines: List[str] = []
 
         # Generate hierarchy CSS variables if present
-        style_attr = ""
+        style_attr: str = ""
+        vars_list: List[str] = []
         if section.hierarchy:
-            vars_list = []
             # Typography
             vars_list.append(f"--h1-size: {section.hierarchy.typography.h1}")
             vars_list.append(f"--h2-size: {section.hierarchy.typography.h2}")
@@ -114,7 +115,7 @@ class GyMLRenderer:
         density_val = section.slide_density or (
             section.hierarchy.name if section.hierarchy else None
         )
-        if density_val in ("super_dense", "compact", "dense"):
+        if density_val:
             density_attr = f' data-density="{density_val}"'
 
         # Add special class for hub-and-spoke slides to handle layout safely
@@ -124,24 +125,41 @@ class GyMLRenderer:
         hub_class = " holds-hub" if has_hub else ""
 
         # Identify if this slide has a comparison block (to adjust layout width)
-        has_comparison = any(
-            isinstance(node, GyMLSmartLayout) and node.variant.startswith("comparison")
-            for node in section.body.children
-        )
-        accent_width = "340px" if has_comparison else "500px"
-
+        has_comparison = False
+        for node in section.body.children:
+            node_variant = getattr(node, "variant", "")
+            if isinstance(node, GyMLSmartLayout):
+                v = str(node_variant).lower()
+                if v.startswith("comparison") or "comparison" in v:
+                    has_comparison = True
+                    break
+            elif isinstance(node, GyMLComparisonTable):
+                has_comparison = True
+                break
+            elif str(getattr(node, "type", "")).endswith("comparison"):
+                has_comparison = True
+                break
+        
+        accent_width = "180px" if has_comparison else "500px"
+        block_gap = "1rem" if has_comparison else "3rem"
+        comparison_class = " comparison-layout" if has_comparison else ""
+        
         vars_list_str = "; ".join(vars_list) if section.hierarchy else ""
         lines.append(
             f'<section id="{self._escape(section.id)}" '
-            f'class="slide-section{hub_class}" '
+            f'class="slide-section{hub_class}{comparison_class}" '
             f'role="region" aria-label="Slide {section.id}" '
             f'data-image-layout="{section.image_layout}" '
-            f'style="--accent-width: {accent_width}; {vars_list_str}"'
+            f'style="--accent-width: {accent_width}; --block-gap: {block_gap}; {vars_list_str}"'
             f"{anim_attr}{density_attr}>"
         )
 
-        # Render Image (unless it's bottom layout, then we render it after body)
-        render_image_early = section.image_layout != "bottom"
+        # Check if we should render the image at all
+        render_image = section.image_layout != "blank"
+        
+        # 'behind' layout needs the image to be technically before the body 
+        # but styled as absolute background.
+        render_image_early = render_image and section.image_layout != "bottom"
 
         if section.accent_image and render_image_early:
             # Wrap accent image + optional caption in a container
@@ -161,7 +179,7 @@ class GyMLRenderer:
         lines.append(self._render_body(section.body))
 
         # Render Image late if it's bottom layout
-        if section.accent_image and not render_image_early:
+        if section.accent_image and render_image and not render_image_early:
             has_caption = section.image_caption is not None
             if has_caption:
                 lines.append('<div class="accent-image-group">')
@@ -289,15 +307,15 @@ class GyMLRenderer:
 
     def _render_body(self, body: GyMLBody) -> str:
         """Render body container."""
-        children_html = []
-        separator_count = 0  # Max 1 separator per slide
+        children_html: List[str] = []
+        separator_count: int = 0  # Max 1 separator per slide
         for i, child in enumerate(body.children):
             rendered = self._render_node(child)
             if rendered:
                 children_html.append(rendered)
 
                 # Add separator logic (between distinct major blocks) — max 1 per slide
-                if i < len(body.children) - 1 and separator_count < 1:
+                if i < len(body.children) - 1 and int(separator_count) < 1:
                     next_child = body.children[i + 1]
 
                     # Geometry Rule: Separator between Dense (Visual) and Flow (Text)
@@ -320,7 +338,7 @@ class GyMLRenderer:
 
                     if should_separate:
                         children_html.append('<div class="block-separator"></div>')
-                        separator_count += 1
+                        separator_count = int(separator_count) + 1
 
         return f'<div class="body">\n{chr(10).join(children_html)}\n</div>'
 
@@ -368,6 +386,8 @@ class GyMLRenderer:
             return self._render_cyclic_process_block(node)
         elif isinstance(node, GyMLFeatureShowcaseBlock):
             return self._render_feature_showcase(node)
+        elif isinstance(node, GyMLSequentialOutput):
+            return self._render_sequential_output(node)
         return f"<!-- Unknown node type: {type(node).__name__} -->"
 
     def _render_heading(self, heading: GyMLHeading) -> str:
@@ -630,9 +650,14 @@ class GyMLRenderer:
             for row in table.rows:
                 html_parts.append('<tr>')
                 # Guarantee matching column count
-                col_count = len(table.headers) if table.headers else len(row)
+                headers_list = table.headers
+                col_count = len(headers_list) if headers_list else len(row)
                 for col_idx in range(col_count):
-                    cell_val = self._escape(row[col_idx]) if col_idx < len(row) else ""
+                    # Manual indexing to avoid list(row) confusion
+                    cell_val = ""
+                    row_list = [str(x) for x in row]
+                    if col_idx < len(row_list):
+                        cell_val = self._escape(row_list[col_idx])
                     html_parts.append(f'<td>{cell_val}</td>')
                 html_parts.append('</tr>')
             html_parts.append('</tbody>')
@@ -642,6 +667,26 @@ class GyMLRenderer:
         html_parts.append('</div>')
         
         return "\n".join(html_parts)
+
+    def _render_sequential_output(self, node: GyMLSequentialOutput) -> str:
+        """Render sequential output block (terminal style)."""
+        items_html = []
+        for i, item in enumerate(node.items):
+            anim_attrs = ""
+            anim_class = ""
+            if self.animated:
+                seg = self._segment_counter
+                self._segment_counter += 1
+                anim_attrs = f' data-segment="{seg}"'
+                anim_class = " anim-typewriter"
+            
+            items_html.append(
+                f'<div class="output-line{anim_class}"{anim_attrs}>'
+                f'<span class="prompt-symbol">></span>'
+                f'<span class="line-text">{self._escape(item)}</span>'
+                f'</div>'
+            )
+        return f'<div class="sequential-output-container">{"".join(items_html)}</div>'
 
     def _render_key_value_list(self, kv_list: GyMLKeyValueList) -> str:
         """Render key-value list."""
@@ -744,7 +789,8 @@ class GyMLRenderer:
             content=block_data.get("content", block_data),
         )
         node = s._serialize_block(composed)
-        return self._render_node(node) if node else ""
+        rendered = self._render_node(node) if node else ""
+        return str(rendered) if rendered else ""
 
     def _render_formula_block(self, block: GyMLFormulaBlock) -> str:
         """Render formula block."""
@@ -840,7 +886,8 @@ class GyMLRenderer:
         viewbox_size = 500
 
         # Sector sweep with gap taken out
-        sweep_deg = (360 / n) - gap_deg
+        n_val = float(max(1, n))
+        sweep_deg = (360.0 / n_val) - gap_deg
 
         # Default dark navy colour for sectors
         DEFAULT_SECTOR_COLOR = "#0d1b2a"
@@ -898,12 +945,13 @@ class GyMLRenderer:
 
         # We need to ensure the gap accounts for the chevron overlap
         gap_deg = 4.0
-        sweep_deg = (360 / n) - gap_deg
+        n_val = float(max(1, n))
+        sweep_deg = (360.0 / n_val) - gap_deg
 
         # Draw sectors
         for i, item in enumerate(node.items):
-            start_angle = -90 + i * (360 / n)
-            mid_angle = start_angle + sweep_deg / 2
+            start_angle = -90.0 + float(i) * (360.0 / n_val)
+            mid_angle = start_angle + sweep_deg / 2.0
             color = item.color or DEFAULT_SECTOR_COLOR
 
             path_d = chevron_arc_path(
@@ -962,8 +1010,8 @@ class GyMLRenderer:
         infos_bottom = []
 
         for i, item in enumerate(node.items):
-            start_angle = -90 + i * (360 / n)
-            mid_angle = (start_angle + sweep_deg / 2) % 360
+            start_angle = -90.0 + float(i) * (360.0 / n_val)
+            mid_angle = (start_angle + sweep_deg / 2.0) % 360.0
 
             anim_attrs = ""
             anim_class = ""
@@ -1923,8 +1971,10 @@ section[data-image-layout="top"] .accent-image-placeholder,
 section[data-image-layout="bottom"] .accent-image-group,
 section[data-image-layout="bottom"] .accent-image-wrapper,
 section[data-image-layout="bottom"] .accent-image-placeholder {
-    width: 100%;
-    height: 300px; /* Taller hero banner */
+    width: 100% !important;
+    height: 220px !important; /* Reduced to save vertical space */
+    min-height: 0 !important;   /* Kill the global min-height */
+    aspect-ratio: auto !important; /* Allow the height to take precedence */
     margin: 0;
     flex-shrink: 0;
 }
@@ -1933,18 +1983,119 @@ section[data-image-layout="top"] .body {
     flex: 1;
     position: relative; /* Required for z-index */
     padding: 1.5rem 2.5rem;
-    margin-top: -120px; /* Overlap the image */
+    margin-top: -100px; /* Overlap adjusted for shorter image */
     z-index: 10;
     /* Smooth gradient from transparent to solid dark background */
-    background: linear-gradient(to bottom, transparent 0%, rgba(13, 27, 42, 0.9) 80px, var(--bg-color, #0d1b2a) 120px);
+    background: linear-gradient(to bottom, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
 }
 section[data-image-layout="bottom"] .body {
     flex: 1;
     position: relative; /* Required for z-index */
     padding: 1.5rem 2.5rem;
-    margin-bottom: -120px; /* Overlap the image from bottom */
+    margin-bottom: -100px; /* Overlap adjusted for shorter image */
     z-index: 10;
-    background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 80px, var(--bg-color, #0d1b2a) 120px);
+    background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
+}
+
+/* --- Aggressive Compacting for Super Dense Slides --- */
+section[data-density="super_dense"] {
+    --section-padding: 1rem 1.5rem !important;
+    --block-gap: 0.25rem !important;
+}
+
+section[data-density="super_dense"] h1 { font-size: 1.8rem !important; margin-bottom: 0.15rem; }
+section[data-density="super_dense"] h2 { font-size: 1.5rem !important; margin-bottom: 0.15rem; }
+section[data-density="super_dense"] p { font-size: 0.95rem !important; line-height: 1.4; }
+
+section[data-density="super_dense"] .body {
+    justify-content: flex-start;
+    padding-top: 0.5rem;
+}
+
+section[data-density="super_dense"] .hub-and-spoke-container {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+section[data-density="super_dense"] .spokes-wrapper {
+    width: 380px;
+    height: 380px;
+}
+
+section[data-density="super_dense"] .hexagon {
+    transform: scale(0.8);
+}
+
+section[data-density="super_dense"] .spoke-item {
+    width: 100px;
+    height: 120px;
+}
+
+section[data-density="super_dense"] .cyclic-container {
+    min-height: 380px;
+}
+
+section[data-density="super_dense"] .cyclic-svg-wrapper {
+    width: 340px;
+    height: 340px;
+}
+
+section[data-density="super_dense"] .fs-radial-container {
+    transform: scale(0.85);
+    margin: -20px 0;
+}
+
+section[data-density="super_dense"][data-image-layout="top"] .accent-image-wrapper,
+section[data-density="super_dense"][data-image-layout="bottom"] .accent-image-wrapper {
+    height: 160px !important;
+}
+
+/* Behind Layout (Hero/Background) */
+section[data-image-layout="behind"] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 !important;
+    text-align: center;
+}
+
+section[data-image-layout="behind"] .accent-image-group,
+section[data-image-layout="behind"] .accent-image-wrapper,
+section[data-image-layout="behind"] .accent-image-placeholder {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 1;
+}
+
+section[data-image-layout="behind"] .accent-image-group::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+    z-index: 2;
+}
+
+section[data-image-layout="behind"] .body {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+    color: white !important;
+}
+
+section[data-image-layout="behind"] .body h1,
+section[data-image-layout="behind"] .body h2,
+section[data-image-layout="behind"] .body p {
+    color: white !important;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
 
 /* Adjust aspect ratios and heights for vertical layouts */
@@ -2108,6 +2259,17 @@ p {
     display: flex;
     gap: 2rem;
     width: 100%;
+}
+
+/* Comparison Layout Overrides — Maximize horizontal room */
+.comparison-layout .body {
+    padding-left: 1.5rem !important;
+    padding-right: 0 !important;
+    max-width: none !important;
+}
+
+.comparison-layout[data-image-layout="right"] .body {
+    padding-right: 0 !important;
 }
 
 .column {
@@ -2310,17 +2472,17 @@ p {
 .card-comparison-grid {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
 }
 
 .card-comparison-row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
 }
 
 .card-comparison-row:last-child {
@@ -2328,19 +2490,19 @@ p {
 }
 
 .card-comparison-subject {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--text-secondary, #94a3b8);
     letter-spacing: 0.05em;
-    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .card-comparison-value {
-    font-size: 1rem;
-    color: #f8fafc;
+    font-size: 0.9rem;
+    color: var(--text-primary, #f8fafc);
     text-align: right;
-    line-height: 1.4;
+    line-height: 1.25;
 }
 
 /* Light mode overrides if the user ever switches */
@@ -3665,11 +3827,9 @@ th {
 }
 
 /* --- Bento Grid (3 items: 2 on top, 1 wide on bottom) --- */
-.smart-layout[data-variant="comparison"][data-item-count="3"],
-.smart-layout[data-variant="comparisonProsCons"][data-item-count="3"],
-.smart-layout[data-variant="comparisonBeforeAfter"][data-item-count="3"] {
+.smart-layout[data-variant^="comparison"][data-item-count="3"] {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 /* Make the 3rd card span full width */

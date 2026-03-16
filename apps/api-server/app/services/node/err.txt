@@ -1,1 +1,0 @@
-{"sdGenerationJob":{"generationId":"38c1f9ff-63f2-46d0-b1ff-c0ab2cda284f","apiCreditCost":null,"cost":{"amount":"0.003","unit":"DOLLARS"}}}

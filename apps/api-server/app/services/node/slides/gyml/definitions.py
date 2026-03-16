@@ -597,25 +597,11 @@ class GyMLHubAndSpoke:
 
 
 @dataclass
-class GyMLCyclicItem:
-    """Item for Cyclic Block layout."""
+class GyMLSequentialOutput:
+    """Sequential output block."""
 
-    label: str
-    description: Optional[str] = None
-    icon: Optional[str] = None  # RemixIcon class
-    color: Optional[str] = None  # CSS color override
-
-
-@dataclass
-class GyMLCyclicBlock:
-    """
-    Cyclic diagram element.
-    Shows a continuous process in a circle with attached info.
-    """
-
-    items: List[GyMLCyclicItem]
-    hub_label: Optional[str] = None
-    variant: str = "cycle"
+    items: List[str]
+    type: str = BlockType.SEQUENTIAL_OUTPUT
 
 
 @dataclass

@@ -592,6 +592,59 @@ section[data-image-layout="bottom"] .body {
     background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
 }
 
+/* --- Aggressive Compacting for Super Dense Slides --- */
+section[data-density="super_dense"] {
+    --section-padding: 1rem 1.5rem !important;
+    --block-gap: 0.25rem !important;
+}
+
+section[data-density="super_dense"] h1 { font-size: 1.8rem !important; margin-bottom: 0.15rem; }
+section[data-density="super_dense"] h2 { font-size: 1.5rem !important; margin-bottom: 0.15rem; }
+section[data-density="super_dense"] p { font-size: 0.95rem !important; line-height: 1.4; }
+
+section[data-density="super_dense"] .body {
+    justify-content: flex-start;
+    padding-top: 0.5rem;
+}
+
+section[data-density="super_dense"] .hub-and-spoke-container {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+section[data-density="super_dense"] .spokes-wrapper {
+    width: 380px;
+    height: 380px;
+}
+
+section[data-density="super_dense"] .hexagon {
+    transform: scale(0.8);
+}
+
+section[data-density="super_dense"] .spoke-item {
+    width: 100px;
+    height: 120px;
+}
+
+section[data-density="super_dense"] .cyclic-container {
+    min-height: 380px;
+}
+
+section[data-density="super_dense"] .cyclic-svg-wrapper {
+    width: 340px;
+    height: 340px;
+}
+
+section[data-density="super_dense"] .fs-radial-container {
+    transform: scale(0.85);
+    margin: -20px 0;
+}
+
+section[data-density="super_dense"][data-image-layout="top"] .accent-image-wrapper,
+section[data-density="super_dense"][data-image-layout="bottom"] .accent-image-wrapper {
+    height: 160px !important;
+}
+
 /* Behind Layout (Hero/Background) */
 section[data-image-layout="behind"] {
     display: flex;
@@ -3112,50 +3165,11 @@ section[data-animated="true"] .cyclic-info-box[data-segment] {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_5c6fe8b8_0" class="slide-section" role="region" aria-label="Slide slide_5c6fe8b8_0" data-image-layout="top" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 2.6rem; --h2-size: 2.2rem; --p-size: 1.25rem; --line-height: 1.55; --card-number-size: 1.25rem; --card-text-size: 1.125rem; --section-padding: 1.5rem 2.25rem; --block-gap: 1rem; --card-padding: 1.125rem; --heading-gap: 1rem" data-animated="true" data-density="dense">
-<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<section id="slide_51d27c20" class="slide-section" role="region" aria-label="Slide slide_51d27c20" data-image-layout="blank" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.4rem; --line-height: 1.65; --card-number-size: 1.75rem; --card-text-size: 1.25rem; --section-padding: 2.25rem 3.25rem; --block-gap: 1.5rem; --card-padding: 1.25rem; --heading-gap: 1.5rem" data-animated="true" data-density="balanced">
 <div class="body">
-<h1>Impact of the French Revolution on Modern Democracies</h1>
-<p>Did you know? Revolutionary ideals like liberty and equality shaped today&#x27;s democratic systems.</p>
-<div class="block-separator"></div>
-<div class="smart-layout" data-variant="cardGridIcon" data-item-count="5">
-<div class="card anim-slide-up" data-index="0" data-segment="0">
-<div class="card-icon"><i class="ri-shield-user-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Liberty &amp; Rights</h4>
-<p class="card-text">Emphasized individual freedoms as a foundation for democratic constitutions.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="1" data-segment="1">
-<div class="card-icon"><i class="ri-group-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Popular Sovereignty</h4>
-<p class="card-text">Introduced the idea that power derives from the people&#x27;s will.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="2" data-segment="2">
-<div class="card-icon"><i class="ri-settings-3-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Separation of Powers</h4>
-<p class="card-text">Inspired checks and balances within government branches.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="3" data-segment="3">
-<div class="card-icon"><i class="ri-equalizer-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Equal Representation</h4>
-<p class="card-text">Promoted fair political participation regardless of social class.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="4" data-segment="4">
-<div class="card-icon"><i class="ri-file-list-3-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Legal Equality</h4>
-<p class="card-text">Established laws applying equally to all citizens.</p>
-</div>
-</div>
-</div>
-<p>The French Revolution’s ideals continue to underpin modern democratic principles worldwide.</p>
+<h1>Smart Dashboard Features</h1>
+<p>Our unified dashboard puts all critical metrics at your fingertips, reducing context switching and improving operational efficiency by up to 30%.</p>
+<div class="fs-radial-container" data-item-count="4"><svg class="fs-radial-svg" viewBox="0 0 1100 680" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><circle cx="550.0" cy="340.0" r="128" fill="none" stroke="rgba(99,102,241,0.08)" stroke-width="16" /><line x1="507.6" y1="456.5" x2="486.7" y2="513.8" stroke="#10b981" stroke-width="2" stroke-opacity="0.35" /><circle cx="486.7" cy="513.8" r="40" fill="#10b981" /><foreignObject x="446.7" y="473.8" width="80" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-pulse-line" style="font-size:1.6rem;color:white;"></i></div></foreignObject><line x1="486.7" y1="513.8" x2="411.7" y2="513.8" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.4" /><circle cx="411.7" cy="513.8" r="3" fill="#10b981" fill-opacity="0.5" /><line x1="450.5" y1="266.0" x2="401.6" y2="229.5" stroke="#3b82f6" stroke-width="2" stroke-opacity="0.35" /><circle cx="401.6" cy="229.5" r="40" fill="#3b82f6" /><foreignObject x="361.6" y="189.5" width="80" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-cloud-line-line" style="font-size:1.6rem;color:white;"></i></div></foreignObject><line x1="401.6" y1="229.5" x2="326.6" y2="229.5" stroke="#3b82f6" stroke-width="1.5" stroke-opacity="0.4" /><circle cx="326.6" cy="229.5" r="3" fill="#3b82f6" fill-opacity="0.5" /><line x1="649.5" y1="266.0" x2="698.4" y2="229.5" stroke="#8b5cf6" stroke-width="2" stroke-opacity="0.35" /><circle cx="698.4" cy="229.5" r="40" fill="#8b5cf6" /><foreignObject x="658.4" y="189.5" width="80" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-shield-user-line" style="font-size:1.6rem;color:white;"></i></div></foreignObject><line x1="698.4" y1="229.5" x2="773.4" y2="229.5" stroke="#8b5cf6" stroke-width="1.5" stroke-opacity="0.4" /><circle cx="773.4" cy="229.5" r="3" fill="#8b5cf6" fill-opacity="0.5" /><line x1="592.4" y1="456.5" x2="613.3" y2="513.8" stroke="#f59e0b" stroke-width="2" stroke-opacity="0.35" /><circle cx="613.3" cy="513.8" r="40" fill="#f59e0b" /><foreignObject x="573.3" y="473.8" width="80" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="ri-settings-3-line" style="font-size:1.6rem;color:white;"></i></div></foreignObject><line x1="613.3" y1="513.8" x2="688.3" y2="513.8" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.4" /><circle cx="688.3" cy="513.8" r="3" fill="#f59e0b" fill-opacity="0.5" /></svg><div class="fs-hub-img"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&amp;fit=crop&amp;q=80&amp;w=400" alt="Control Center" /></div><div class="fs-pill fs-pill--left anim-fade" data-segment="0" style="left:37.4%;top:75.6%;--item-color:#10b981;"><span class="fs-pill-text">Live Monitoring</span></div><div class="fs-pill fs-pill--left anim-fade" data-segment="1" style="left:29.7%;top:33.8%;--item-color:#3b82f6;"><span class="fs-pill-text">Cloud Backup</span></div><div class="fs-pill fs-pill--right anim-fade" data-segment="2" style="left:70.3%;top:33.8%;--item-color:#8b5cf6;"><span class="fs-pill-text">Security Hub</span></div><div class="fs-pill fs-pill--right anim-fade" data-segment="3" style="left:62.6%;top:75.6%;--item-color:#f59e0b;"><span class="fs-pill-text">Admin Tools</span></div><div class="fs-bottom-label"><span>Control Center</span></div></div>
 </div>
 </section>
     </div>

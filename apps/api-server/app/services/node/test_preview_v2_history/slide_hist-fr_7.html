@@ -566,10 +566,8 @@ section[data-image-layout="top"] .accent-image-placeholder,
 section[data-image-layout="bottom"] .accent-image-group,
 section[data-image-layout="bottom"] .accent-image-wrapper,
 section[data-image-layout="bottom"] .accent-image-placeholder {
-    width: 100% !important;
-    height: 220px !important; /* Reduced to save vertical space */
-    min-height: 0 !important;   /* Kill the global min-height */
-    aspect-ratio: auto !important; /* Allow the height to take precedence */
+    width: 100%;
+    height: 220px; /* Reduced from 300px to save vertical space */
     margin: 0;
     flex-shrink: 0;
 }
@@ -590,54 +588,6 @@ section[data-image-layout="bottom"] .body {
     margin-bottom: -100px; /* Overlap adjusted for shorter image */
     z-index: 10;
     background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
-}
-
-/* Behind Layout (Hero/Background) */
-section[data-image-layout="behind"] {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 0 !important;
-    text-align: center;
-}
-
-section[data-image-layout="behind"] .accent-image-group,
-section[data-image-layout="behind"] .accent-image-wrapper,
-section[data-image-layout="behind"] .accent-image-placeholder {
-    position: absolute;
-    inset: 0;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: 1;
-}
-
-section[data-image-layout="behind"] .accent-image-group::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
-    z-index: 2;
-}
-
-section[data-image-layout="behind"] .body {
-    position: relative;
-    z-index: 10;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 4rem;
-    color: white !important;
-}
-
-section[data-image-layout="behind"] .body h1,
-section[data-image-layout="behind"] .body h2,
-section[data-image-layout="behind"] .body p {
-    color: white !important;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
 
 /* Adjust aspect ratios and heights for vertical layouts */
@@ -801,17 +751,6 @@ p {
     display: flex;
     gap: 2rem;
     width: 100%;
-}
-
-/* Comparison Layout Overrides — Maximize horizontal room */
-.comparison-layout .body {
-    padding-left: 1.5rem !important;
-    padding-right: 0 !important;
-    max-width: none !important;
-}
-
-.comparison-layout[data-image-layout="right"] .body {
-    padding-right: 0 !important;
 }
 
 .column {
@@ -1014,17 +953,17 @@ p {
 .card-comparison-grid {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    margin-top: 0.5rem;
+    gap: 0.75rem;
+    margin-top: 1rem;
 }
 
 .card-comparison-row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 0.5rem;
-    padding-bottom: 0.25rem;
-    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .card-comparison-row:last-child {
@@ -1032,19 +971,19 @@ p {
 }
 
 .card-comparison-subject {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    color: var(--text-secondary, #94a3b8);
+    color: #94a3b8;
     letter-spacing: 0.05em;
-    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .card-comparison-value {
-    font-size: 0.9rem;
-    color: var(--text-primary, #f8fafc);
+    font-size: 1rem;
+    color: #f8fafc;
     text-align: right;
-    line-height: 1.25;
+    line-height: 1.4;
 }
 
 /* Light mode overrides if the user ever switches */
@@ -2369,9 +2308,11 @@ th {
 }
 
 /* --- Bento Grid (3 items: 2 on top, 1 wide on bottom) --- */
-.smart-layout[data-variant^="comparison"][data-item-count="3"] {
+.smart-layout[data-variant="comparison"][data-item-count="3"],
+.smart-layout[data-variant="comparisonProsCons"][data-item-count="3"],
+.smart-layout[data-variant="comparisonBeforeAfter"][data-item-count="3"] {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 /* Make the 3rd card span full width */
@@ -3112,50 +3053,39 @@ section[data-animated="true"] .cyclic-info-box[data-segment] {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_5c6fe8b8_0" class="slide-section" role="region" aria-label="Slide slide_5c6fe8b8_0" data-image-layout="top" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 2.6rem; --h2-size: 2.2rem; --p-size: 1.25rem; --line-height: 1.55; --card-number-size: 1.25rem; --card-text-size: 1.125rem; --section-padding: 1.5rem 2.25rem; --block-gap: 1rem; --card-padding: 1.125rem; --heading-gap: 1rem" data-animated="true" data-density="dense">
+<section id="slide_2f15012e_0" class="slide-section" role="region" aria-label="Slide slide_2f15012e_0" data-image-layout="right-wide" style="--accent-width: 500px; --h1-size: 2.6rem; --h2-size: 2.2rem; --p-size: 1.25rem; --line-height: 1.55; --card-number-size: 1.25rem; --card-text-size: 1.125rem; --section-padding: 1.5rem 2.25rem; --block-gap: 1rem; --card-padding: 1.125rem; --heading-gap: 1rem" data-animated="true" data-density="dense">
 <div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
 <div class="body">
-<h1>Impact of the French Revolution on Modern Democracies</h1>
-<p>Did you know? Revolutionary ideals like liberty and equality shaped today&#x27;s democratic systems.</p>
+<h1>Estates Financial Burden Table</h1>
 <div class="block-separator"></div>
-<div class="smart-layout" data-variant="cardGridIcon" data-item-count="5">
+<div class="columns" data-colwidths="40,60">
+<div class="column" style="flex: 0 0 calc(40% - 1rem);">
+<p>Key Insight: Did you know? The Third Estate bore the heaviest tax burden despite having the least privileges.</p>
+<p>Takeaway: The unequal financial obligations fueled discontent, leading to revolutionary pressures.</p>
+</div>
+<div class="column" style="flex: 0 0 calc(60% - 1rem);">
+<div class="smart-layout" data-variant="cardGridSimple" data-item-count="3">
 <div class="card anim-slide-up" data-index="0" data-segment="0">
-<div class="card-icon"><i class="ri-shield-user-line"></i></div>
 <div class="card-content">
-<h4 class="card-title">Liberty &amp; Rights</h4>
-<p class="card-text">Emphasized individual freedoms as a foundation for democratic constitutions.</p>
+<h4 class="card-title">First Estate (Clergy)</h4>
+<p class="card-text">Paid minimal taxes; enjoyed many exemptions, contributing mostly voluntary gifts.</p>
 </div>
 </div>
 <div class="card anim-slide-up" data-index="1" data-segment="1">
-<div class="card-icon"><i class="ri-group-line"></i></div>
 <div class="card-content">
-<h4 class="card-title">Popular Sovereignty</h4>
-<p class="card-text">Introduced the idea that power derives from the people&#x27;s will.</p>
+<h4 class="card-title">Second Estate (Nobility)</h4>
+<p class="card-text">Paid few taxes; held privileges reducing their financial obligations significantly.</p>
 </div>
 </div>
 <div class="card anim-slide-up" data-index="2" data-segment="2">
-<div class="card-icon"><i class="ri-settings-3-line"></i></div>
 <div class="card-content">
-<h4 class="card-title">Separation of Powers</h4>
-<p class="card-text">Inspired checks and balances within government branches.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="3" data-segment="3">
-<div class="card-icon"><i class="ri-equalizer-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Equal Representation</h4>
-<p class="card-text">Promoted fair political participation regardless of social class.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="4" data-segment="4">
-<div class="card-icon"><i class="ri-file-list-3-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Legal Equality</h4>
-<p class="card-text">Established laws applying equally to all citizens.</p>
+<h4 class="card-title">Third Estate (Commoners)</h4>
+<p class="card-text">Paid majority of taxes including taille and gabelle; faced heavy financial burdens.</p>
 </div>
 </div>
 </div>
-<p>The French Revolution’s ideals continue to underpin modern democratic principles worldwide.</p>
+</div>
+</div>
 </div>
 </section>
     </div>

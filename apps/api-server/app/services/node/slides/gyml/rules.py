@@ -77,12 +77,15 @@ def validate_block_order(block_types: List[str]) -> List[str]:
     position_order = {pos: i for i, pos in enumerate(BLOCK_ORDER_GRAMMAR)}
 
     for block_type in block_types:
-        position = get_block_grammar_position(block_type)
+        pos = get_block_grammar_position(block_type)
+        position: str = str(pos)
 
         # Check if this position comes after all previous positions
         if seen_positions:
             last_position = seen_positions[-1]
-            if position_order.get(position, 0) < position_order.get(last_position, 0):
+            p_order = position_order.get(position, 0)
+            l_order = position_order.get(last_position, 0)
+            if p_order < l_order:
                 # Heading must always be first
                 if position == "heading" and last_position != "heading":
                     violations.append(
@@ -153,7 +156,11 @@ PRIMARY_BLOCKS: Set[str] = {
     BlockType.DIAGRAM.value,
     BlockType.TABLE.value,
     BlockType.HUB_AND_SPOKE.value,
-}
+    BlockType.CYCLIC_PROCESS_BLOCK.value,
+    BlockType.PROCESS_ARROW_BLOCK.value,
+    BlockType.FEATURE_SHOWCASE_BLOCK.value,
+    BlockType.SEQUENTIAL_OUTPUT.value,
+},
 
 # Supporting blocks - can be added alongside primary
 SUPPORTING_BLOCKS: Set[str] = {
@@ -174,25 +181,65 @@ TEXT_BLOCKS: Set[str] = {
     BlockType.CAPTION.value,
 }
 
-INTENT_PREFERRED_BLOCKS: Dict[str, List[str]] = {
-    Intent.INTRODUCE.value: [BlockType.HEADING.value, BlockType.IMAGE.value],
-    Intent.EXPLAIN.value: [BlockType.CARD_GRID.value, BlockType.SMART_LAYOUT.value],
-    Intent.NARRATE.value: [BlockType.TIMELINE.value, BlockType.STEP_LIST.value],
-    Intent.COMPARE.value: [
+# Updated for new intents from llm_content_schema.md
+INTENT_PREFERRED_BLOCKS: Dict[Intent, List[str]] = {
+    Intent.INTRODUCE: [
+        BlockType.HEADING.value,
+        BlockType.PARAGRAPH.value,
+        BlockType.IMAGE.value,
+    ],
+    Intent.EXPLAIN: [
+        BlockType.PARAGRAPH.value,
+        BlockType.CARD_GRID.value,
+        BlockType.DEFINITION.value,
+        BlockType.HUB_AND_SPOKE.value,
+    ],
+    Intent.NARRATE: [
+        BlockType.TIMELINE.value,
+        BlockType.STEP_LIST.value,
+        BlockType.PROCESS_ARROW_BLOCK.value,
+        BlockType.CYCLIC_PROCESS_BLOCK.value,
+    ],
+    Intent.COMPARE: [
         BlockType.COMPARISON.value,
         BlockType.TABLE.value,
-        BlockType.COLUMNS.value,
+        BlockType.STATS.value,
     ],
-    Intent.LIST.value: [BlockType.BULLET_LIST.value, BlockType.STEP_LIST.value],
-    Intent.PROVE.value: [BlockType.STATS.value, BlockType.QUOTE.value],
-    Intent.SUMMARIZE.value: [BlockType.TAKEAWAY.value, BlockType.BULLET_LIST.value],
-    Intent.TEACH.value: [
-        BlockType.CODE.value,
+    Intent.LIST: [
+        BlockType.BULLET_LIST.value,
+        BlockType.STEP_LIST.value,
+        BlockType.CARD_GRID.value,
+        BlockType.SEQUENTIAL_OUTPUT.value,
+    ],
+    Intent.PROVE: [
+        BlockType.STATS.value,
+        BlockType.QUOTE.value,
+        BlockType.CALLOUT.value,
+        BlockType.FEATURE_SHOWCASE_BLOCK.value,
+    ],
+    Intent.SUMMARIZE: [
+        BlockType.BULLET_LIST.value,
+        BlockType.TAKEAWAY.value,
+        BlockType.CARD_GRID.value,
+    ],
+    Intent.TEACH: [
         BlockType.DEFINITION.value,
+        BlockType.CODE.value,
         BlockType.DIAGRAM.value,
     ],
-    Intent.DEMO.value: [BlockType.STEP_LIST.value, BlockType.CODE.value],
+    Intent.DEMO: [
+        BlockType.CODE.value,
+        BlockType.STEP_LIST.value,
+        BlockType.DIAGRAM.value,
+    ],
 }
+
+
+def get_preferred_blocks_for_intent(intent: Intent) -> List[str]:
+    """Get preferred block types for a given intent."""
+    return INTENT_PREFERRED_BLOCKS.get(intent, [BlockType.PARAGRAPH.value])
+
+
 # Forbidden combinations - these blocks cannot appear together on same slide
 FORBIDDEN_COMBINATIONS: Set[tuple] = {
     # Sequential conflicts
@@ -303,17 +350,23 @@ def validate_block_combination(block_types: List[str]) -> List[str]:
     violations = []
 
     # Find primary blocks
-    primary_on_slide = [b for b in block_types if b in PRIMARY_BLOCKS]
+    primary_on_slide: List[str] = []
+    for b in block_types:
+        if b in PRIMARY_BLOCKS:
+            primary_on_slide.append(b)
 
-    # Only one primary block allowed
     if len(primary_on_slide) > 1:
+        primary_info = ", ".join(str(b) for b in primary_on_slide)
         violations.append(
-            f"Multiple primary blocks not allowed: {primary_on_slide}. Max 1 per slide."
+            f"Multiple primary blocks not allowed: {primary_info}. Max 1 per slide."
         )
 
     # Check forbidden combinations
-    for i, block_a in enumerate(block_types):
-        for block_b in block_types[i + 1 :]:
+    n_blocks = len(block_types)
+    for i in range(n_blocks):
+        block_a = block_types[i]
+        for j in range(i + 1, n_blocks):
+            block_b = block_types[j]
             if is_combination_forbidden(block_a, block_b):
                 violations.append(f"Forbidden combination: {block_a} + {block_b}")
 
@@ -458,27 +511,70 @@ TEXT_PROMOTION_RULES = {
 }
 
 
-def suggest_block_type_from_content(content: Dict) -> str:
+def select_best_block_for_intent(intent: Intent, content: Dict) -> str:
     """
-    Suggest appropriate block type based on content structure.
+    Select the most appropriate block type for an intent and content.
+    Ranked by preference from INTENT_PREFERRED_BLOCKS.
+    """
+    preferred = get_preferred_blocks_for_intent(intent)
+    
+    # Check what content we have
+    stats_like = "stats" in content or "numbers" in content
+    timeline_like = "events" in content or "years" in content
+    ordered = "items" in content or "cards" in content
+    
+    # 1. First priority: Does a preferred block match the specific content?
+    for block_type in preferred:
+        if block_type == BlockType.STATS.value and stats_like:
+            return block_type
+        if block_type == BlockType.TIMELINE.value and timeline_like:
+            return block_type
+        if block_type in [BlockType.CARD_GRID.value, BlockType.BULLET_LIST.value] and ordered:
+            return block_type
+            
+    # 2. Second priority: Structural suggestion if no direct intent match
+    suggestion = suggest_block_type_from_content(content)
+    if suggestion != BlockType.PARAGRAPH.value:
+        return suggestion
+        
+    # 3. Third priority: Just pick the first preferred block that isn't too specialized
+    specialized = {BlockType.IMAGE.value, BlockType.HEADING.value, BlockType.CALLOUT.value}
+    for block_type in preferred:
+        if block_type not in specialized:
+            return block_type
+            
+    return BlockType.PARAGRAPH.value
+
+
+def suggest_block_type_from_content(content: Dict, intent: Optional[Intent] = None) -> str:
+    """
+    Suggest appropriate block type based on content structure and intent.
     From slide_engine.md §11.
     """
+    # If intent is provided, use the specialized selector
+    if intent:
+        return select_best_block_for_intent(intent, content)
+
+    # Fallback to structural inference
     # Check for list-like content
     if "items" in content:
         items = content["items"]
-        item_count = len(items)
+        if isinstance(items, list):
+            item_count = len(items)
 
-        # Check if items are sequential/numbered
-        if any(str(i + 1) in str(items[i])[:5] for i in range(min(3, item_count))):
-            return BlockType.STEP_LIST.value
+            # Check if items are sequential/numbered
+            for i in range(min(3, item_count)):
+                item_str = str(items[i])
+                if item_str.startswith(str(i + 1)):
+                    return BlockType.STEP_LIST.value
 
-        # 3-4 parallel items
-        if 3 <= item_count <= 4:
-            return BlockType.BULLET_LIST.value
+            # 3-4 parallel items
+            if 3 <= item_count <= 4:
+                return BlockType.BULLET_LIST.value
 
-        # More items suggest card grid
-        if item_count > 4:
-            return BlockType.CARD_GRID.value
+            # More items suggest card grid
+            if item_count > 4:
+                return BlockType.CARD_GRID.value
 
     # Check for timeline content
     if "events" in content or "years" in content:
@@ -492,60 +588,9 @@ def suggest_block_type_from_content(content: Dict) -> str:
     return BlockType.PARAGRAPH.value
 
 
+
 # =============================================================================
 # INTENT-BASED BLOCK SELECTION
 # =============================================================================
 
-# Updated for new intents from llm_content_schema.md
-INTENT_PREFERRED_BLOCKS: Dict[Intent, List[str]] = {
-    Intent.INTRODUCE: [
-        BlockType.HEADING.value,
-        BlockType.PARAGRAPH.value,
-        BlockType.IMAGE.value,
-    ],
-    Intent.EXPLAIN: [
-        BlockType.PARAGRAPH.value,
-        BlockType.CARD_GRID.value,
-        BlockType.DEFINITION.value,
-    ],
-    Intent.NARRATE: [
-        BlockType.TIMELINE.value,
-        BlockType.STEP_LIST.value,
-        BlockType.PARAGRAPH.value,
-    ],
-    Intent.COMPARE: [
-        BlockType.COMPARISON.value,
-        BlockType.TABLE.value,
-        BlockType.STATS.value,
-    ],
-    Intent.LIST: [
-        BlockType.BULLET_LIST.value,
-        BlockType.STEP_LIST.value,
-        BlockType.CARD_GRID.value,
-    ],
-    Intent.PROVE: [
-        BlockType.STATS.value,
-        BlockType.QUOTE.value,
-        BlockType.CALLOUT.value,
-    ],
-    Intent.SUMMARIZE: [
-        BlockType.BULLET_LIST.value,
-        BlockType.TAKEAWAY.value,
-        BlockType.CARD_GRID.value,
-    ],
-    Intent.TEACH: [
-        BlockType.DEFINITION.value,
-        BlockType.CODE.value,
-        BlockType.DIAGRAM.value,
-    ],
-    Intent.DEMO: [
-        BlockType.CODE.value,
-        BlockType.STEP_LIST.value,
-        BlockType.DIAGRAM.value,
-    ],
-}
-
-
-def get_preferred_blocks_for_intent(intent: Intent) -> List[str]:
-    """Get preferred block types for a given intent."""
-    return INTENT_PREFERRED_BLOCKS.get(intent, [BlockType.PARAGRAPH.value])
+# All logic moved to lines 185-241 to avoid duplication.

@@ -66,6 +66,7 @@ def remake_history():
     final_slides = []
     layout_history = []
     angle_history = []
+    variant_history = []
 
     for i, slide_plan in enumerate(plan["slides"]):
         print(
@@ -80,6 +81,8 @@ def remake_history():
             content_angle=slide_plan["content_angle"],
             template_name=slide_plan["selected_template"],
             layout_history=layout_history,
+            slide_index=i,
+            variant_history=variant_history,
         )
 
         # Classify density dynamically
@@ -90,39 +93,21 @@ def remake_history():
         total_text = sum(len(str(b.get("text", b.get("content", "")))) for b in blocks)
         density = _classify_density(len(blocks), primary_item_count, total_text)
 
-        # Rotation list for variety
-        LAYOUTS = ["left", "right", "top", "bottom"]
-        
-        # Determine current layout
-        current_layout = gyml.get("layout", "left")
-        
-        # 1. Prevent repetition
-        if layout_history and layout_history[-1] == current_layout and current_layout != "blank":
-            # Pick the next layout in the rotation that isn't the last one
-            last_layout = layout_history[-1]
-            try:
-                next_idx = (LAYOUTS.index(last_layout) + 1) % len(LAYOUTS)
-                new_layout = LAYOUTS[next_idx]
-            except ValueError:
-                new_layout = "right" if last_layout == "left" else "left"
-            
-            gyml["layout"] = new_layout
-            print(f"    🔄 Rotated layout to {new_layout} for variety (last was {last_layout})")
-
-        # Enforce blank layout for dense slides to prevent overflow
-        if density == "dense":
-            gyml["layout"] = "blank"
-            # Also prune any standalone image blocks from contentBlocks to save space
-            if "contentBlocks" in gyml:
-                gyml["contentBlocks"] = [b for b in gyml["contentBlocks"] if b.get("type") != "image"]
-            print(f"    → Enforcing 'blank' layout and PRUNING image blocks for DENSE slide ({primary_item_count} items)")
-
         # Update history for variety
         layout_history.append(gyml.get("layout", "left"))
 
         angle_history.append(slide_plan["content_angle"])
         if len(layout_history) > 10:
             layout_history.pop(0)
+
+        # Track variant for variety
+        # The primary block variant is stored in the content block at primary_block_index
+        primary_idx = gyml.get("primary_block_index", 0)
+        blocks = gyml.get("contentBlocks", [])
+        if primary_idx < len(blocks):
+            primary = blocks[primary_idx]
+            if "variant" in primary:
+                variant_history.append(primary["variant"])
 
         # Merge plan metadata with generated gyml
         slide_output = {

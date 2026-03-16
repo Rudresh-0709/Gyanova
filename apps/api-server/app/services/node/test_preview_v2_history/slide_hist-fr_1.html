@@ -566,8 +566,10 @@ section[data-image-layout="top"] .accent-image-placeholder,
 section[data-image-layout="bottom"] .accent-image-group,
 section[data-image-layout="bottom"] .accent-image-wrapper,
 section[data-image-layout="bottom"] .accent-image-placeholder {
-    width: 100%;
-    height: 300px; /* Taller hero banner */
+    width: 100% !important;
+    height: 220px !important; /* Reduced to save vertical space */
+    min-height: 0 !important;   /* Kill the global min-height */
+    aspect-ratio: auto !important; /* Allow the height to take precedence */
     margin: 0;
     flex-shrink: 0;
 }
@@ -576,18 +578,66 @@ section[data-image-layout="top"] .body {
     flex: 1;
     position: relative; /* Required for z-index */
     padding: 1.5rem 2.5rem;
-    margin-top: -120px; /* Overlap the image */
+    margin-top: -100px; /* Overlap adjusted for shorter image */
     z-index: 10;
     /* Smooth gradient from transparent to solid dark background */
-    background: linear-gradient(to bottom, transparent 0%, rgba(13, 27, 42, 0.9) 80px, var(--bg-color, #0d1b2a) 120px);
+    background: linear-gradient(to bottom, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
 }
 section[data-image-layout="bottom"] .body {
     flex: 1;
     position: relative; /* Required for z-index */
     padding: 1.5rem 2.5rem;
-    margin-bottom: -120px; /* Overlap the image from bottom */
+    margin-bottom: -100px; /* Overlap adjusted for shorter image */
     z-index: 10;
-    background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 80px, var(--bg-color, #0d1b2a) 120px);
+    background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
+}
+
+/* Behind Layout (Hero/Background) */
+section[data-image-layout="behind"] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 !important;
+    text-align: center;
+}
+
+section[data-image-layout="behind"] .accent-image-group,
+section[data-image-layout="behind"] .accent-image-wrapper,
+section[data-image-layout="behind"] .accent-image-placeholder {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 1;
+}
+
+section[data-image-layout="behind"] .accent-image-group::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+    z-index: 2;
+}
+
+section[data-image-layout="behind"] .body {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+    color: white !important;
+}
+
+section[data-image-layout="behind"] .body h1,
+section[data-image-layout="behind"] .body h2,
+section[data-image-layout="behind"] .body p {
+    color: white !important;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
 
 /* Adjust aspect ratios and heights for vertical layouts */
@@ -751,6 +801,17 @@ p {
     display: flex;
     gap: 2rem;
     width: 100%;
+}
+
+/* Comparison Layout Overrides — Maximize horizontal room */
+.comparison-layout .body {
+    padding-left: 1.5rem !important;
+    padding-right: 0 !important;
+    max-width: none !important;
+}
+
+.comparison-layout[data-image-layout="right"] .body {
+    padding-right: 0 !important;
 }
 
 .column {
@@ -953,17 +1014,17 @@ p {
 .card-comparison-grid {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
 }
 
 .card-comparison-row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
 }
 
 .card-comparison-row:last-child {
@@ -971,19 +1032,19 @@ p {
 }
 
 .card-comparison-subject {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--text-secondary, #94a3b8);
     letter-spacing: 0.05em;
-    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .card-comparison-value {
-    font-size: 1rem;
-    color: #f8fafc;
+    font-size: 0.9rem;
+    color: var(--text-primary, #f8fafc);
     text-align: right;
-    line-height: 1.4;
+    line-height: 1.25;
 }
 
 /* Light mode overrides if the user ever switches */
@@ -2308,11 +2369,9 @@ th {
 }
 
 /* --- Bento Grid (3 items: 2 on top, 1 wide on bottom) --- */
-.smart-layout[data-variant="comparison"][data-item-count="3"],
-.smart-layout[data-variant="comparisonProsCons"][data-item-count="3"],
-.smart-layout[data-variant="comparisonBeforeAfter"][data-item-count="3"] {
+.smart-layout[data-variant^="comparison"][data-item-count="3"] {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 /* Make the 3rd card span full width */
@@ -3053,35 +3112,13 @@ section[data-animated="true"] .cyclic-info-box[data-segment] {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_6238cfae_0" class="slide-section" role="region" aria-label="Slide slide_6238cfae_0" data-image-layout="blank" style="--accent-width: 500px; --h1-size: 2.6rem; --h2-size: 2.2rem; --p-size: 1.25rem; --line-height: 1.55; --card-number-size: 1.25rem; --card-text-size: 1.125rem; --section-padding: 1.5rem 2.25rem; --block-gap: 1rem; --card-padding: 1.125rem; --heading-gap: 1rem" data-animated="true" data-density="dense">
+<section id="slide_c9e6afc5_0" class="slide-section" role="region" aria-label="Slide slide_c9e6afc5_0" data-image-layout="behind" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.4rem; --line-height: 1.65; --card-number-size: 1.75rem; --card-text-size: 1.25rem; --section-padding: 2.25rem 3.25rem; --block-gap: 1.5rem; --card-padding: 1.25rem; --heading-gap: 1.5rem" data-animated="true">
+<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
 <div class="body">
 <h1>The French Revolution: An Overview</h1>
-<p class="p-intro">The French Revolution was a pivotal period in history that reshaped France and influenced the modern world. It marked the end of absolute monarchy and the rise of democratic ideals.</p>
-<div class="block-separator"></div>
-<div class="smart-layout" data-variant="cardGridIcon" data-item-count="3">
-<div class="card anim-slide-up" data-index="0" data-segment="0">
-<div class="card-icon"><i class="ri-history-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Historical Context</h4>
-<p class="card-text">Economic hardship, social inequality, and political unrest fueled the revolution.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="1" data-segment="1">
-<div class="card-icon"><i class="ri-calendar-event-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Key Events</h4>
-<p class="card-text">From the Estates-General to the fall of the Bastille, major events sparked change.</p>
-</div>
-</div>
-<div class="card anim-slide-up" data-index="2" data-segment="2">
-<div class="card-icon"><i class="ri-star-line"></i></div>
-<div class="card-content">
-<h4 class="card-title">Significance</h4>
-<p class="card-text">The revolution introduced ideas of liberty, equality, and fraternity worldwide.</p>
-</div>
-</div>
-</div>
-<p class="p-outro">Understanding this overview sets the foundation for exploring the causes, events, and impacts of the French Revolution in detail.</p>
+<p class="p-intro">The French Revolution was a pivotal period in history that reshaped France and influenced the modern world. This slide introduces its broad context and significance.</p>
+<p>Spanning from 1789 to 1799, the French Revolution challenged monarchy, social inequality, and traditional privileges, leading to profound political and social change.</p>
+<p class="p-annotation">Understanding this overview sets the foundation for exploring the causes, events, and outcomes of the revolution in greater detail.</p>
 </div>
 </section>
     </div>

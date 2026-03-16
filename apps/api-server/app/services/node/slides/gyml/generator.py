@@ -1,7 +1,8 @@
 import json
 import os
 import sys
-from typing import Dict, Any, List, Optional
+import random
+from typing import Dict, Any, List, Optional, Tuple
 from dotenv import load_dotenv
 
 try:
@@ -27,22 +28,22 @@ except ImportError:
 INTENT_VARIANTS = {
     # Content Angles — 5-6 options per pool for maximum variety
     "overview":      ["cardGridIcon", "bigBullets", "cardGridSimple", "bulletIcon", "cardGridImage", "bulletCheck"],
-    "mechanism":     ["timelineSequential", "timelineIcon", "processArrow", "processSteps", "processAccordion"],
-    "example":       ["cardGridImage", "cardGridIcon", "bulletIcon", "bigBullets", "cardGridSimple"],
-    "comparison":    ["comparison", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "cardGridSimple"],
+    "mechanism":     ["timelineSequential", "timelineIcon", "processArrow", "processSteps", "processAccordion", "timeline"],
+    "example":       ["cardGridImage", "cardGridIcon", "bulletIcon", "bigBullets", "cardGridSimple", "timeline"],
+    "comparison":    ["comparisonCards", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "cardGridSimple"],
     "application":   ["cardGridIcon", "bulletIcon", "processSteps", "processArrow", "bigBullets", "cardGridImage"],
     "visualization": ["stats", "statsComparison", "cardGridSimple", "cardGridIcon", "bigBullets"],
     "summary":       ["bigBullets", "bulletCheck", "bulletIcon", "cardGridSimple", "cardGridIcon"],
     # Intent fallbacks (used if content_angle is missing or generic)
     "explain":       ["cardGridIcon", "cardGridSimple", "bigBullets", "bulletIcon", "cardGridImage", "processSteps"],
-    "narrate":       ["timelineSequential", "timelineIcon", "processArrow", "processSteps", "processAccordion"],
-    "compare":       ["comparison", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "cardGridSimple"],
+    "narrate":       ["timelineSequential", "timelineIcon", "processArrow", "processSteps", "processAccordion", "timeline"],
+    "compare":       ["comparisonCards", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "cardGridSimple"],
     "list":          ["bigBullets", "bulletCheck", "processSteps", "bulletIcon", "cardGridSimple", "bulletCross"],
     "prove":         ["stats", "statsComparison", "cardGridSimple", "bigBullets", "cardGridIcon"],
     "teach":         ["cardGridIcon", "processSteps", "bulletIcon", "bigBullets", "cardGridSimple", "processArrow"],
     "summarize":     ["bigBullets", "bulletCheck", "bulletIcon", "cardGridSimple", "cardGridIcon"],
     "introduce":     ["cardGridSimple", "bigBullets", "cardGridIcon", "bulletIcon", "cardGridImage"],
-    "demo":          ["processArrow", "processSteps", "processAccordion", "timelineSequential", "bulletIcon"],
+    "demo":          ["processArrow", "processSteps", "processAccordion", "timelineSequential", "bulletIcon", "timeline"],
 }
 
 
@@ -150,6 +151,28 @@ ANGLE_TO_STYLES = {
 }
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# LAYOUT COMPATIBILITY MATRIX (Fix Spatial Monotony)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Category A: Wide/Fixed-Width Content -> NO Left/Right
+WIDE_VARIANTS = {
+    "timeline", "timelineHorizontal", "timelineSequential", "timelineMilestone", "timelineIcon",
+    "hub_and_spoke", "hierarchy_tree"
+}
+
+# Category B: Dynamic Grid Content (Flexible height/width)
+WIDE_VARIANTS_MAYBE = {
+    "comparison", "comparisonCards", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison"
+}
+
+# Category C: Self-Contained Visuals & Data-Heavy -> Forced Blank
+FORCED_BLANK_VARIANTS = {
+    "table", "comparison_table",
+    "cyclic_process", "processArrow", "processSteps", "feature_showcase", "diagram", "labeled_diagram"
+}
+
+
 def pick_composition_style(
     content_angle: str,
     intent: str,
@@ -185,82 +208,108 @@ def pick_variant(
     variant_history: Optional[List[str]] = None,
 ) -> Tuple[str, str]:
     """
-    Pick a (variant, image_layout) pair using weighted selection.
+    Pick a (variant, image_layout) pair using weighted selection, enforcing Strict Variety 
+    and the Layout Compatibility Matrix.
 
-    Goal: achieve visual variety while maintaining professional balance.
-    - Wide components (timelines, arrows) get full-width vertical layouts (top/bottom).
-    - Standard components get alternating sidebars (left/right).
-    - Content-dense slides get 'blank' to maximize space.
-
-    Weighting strategy (replaces pure modulo rotation):
-    - Variants NOT used in the subtopic so far → weight 3.0 (strongly preferred)
-    - Variants used once → weight 1.0
-    - Variants used 2+ times → weight 0.3 (heavily penalized)
-    - Variants used in the last 3 slides → EXCLUDED entirely
+    Goal: achieve visual variety while optimizing layout for spatial constraints.
+    - Max 2 uses per variant strictly enforced.
+    - Wide components get full-width vertical layouts (top/bottom) or blank.
+    - Tall grids get vertical constraints (left/right) or blank.
+    - Self-contained components (diagrams, processes) force 'blank' to avoid clutter.
+    - Dense slides get 'blank' to maximize space.
     """
     # 1. Resolve variant pool
     key = content_angle if content_angle in INTENT_VARIANTS else intent
     pool = INTENT_VARIANTS.get(key, ["cardGridIcon", "bigBullets", "cardGridSimple"])
 
-    # 2. History Filter (Avoid repetition — exclude last 3 slides)
-    recent = set(layout_history[-3:]) if layout_history else set()
-    fresh = [v for v in pool if v not in recent]
-    if not fresh:
-        # All variants recently used — at least avoid the very last one
-        last = layout_history[-1] if layout_history else None
-        fresh = [v for v in pool if v != last] or pool
-
-    # 3. Weighted Selection (replace pure modulo)
-    # Count how many times each variant has been used in the full subtopic
+    # 2. History Filter (Strict Max 2 Uses)
     full_history = variant_history or []
     usage_counts = {}
     for v in full_history:
         usage_counts[v] = usage_counts.get(v, 0) + 1
 
+    eligible_variants = [v for v in pool if usage_counts.get(v, 0) < 2]
+    # If all variants in pool have been used twice or more, fallback to those with lowest usage
+    if not eligible_variants:
+        min_usage = min([usage_counts.get(v, 0) for v in pool]) if pool else 0
+        eligible_variants = [v for v in pool if usage_counts.get(v, 0) == min_usage]
+
+    # Exclude last slide's variant strictly to avoid sequential monotony
+    last_v = full_history[-1] if full_history else None
+    fresh = [v for v in eligible_variants if v != last_v] or eligible_variants
+
+    # 3. Weighted Selection
     weights = []
     for v in fresh:
         count = usage_counts.get(v, 0)
         if count == 0:
             weights.append(3.0)   # Never used — strongly preferred
-        elif count == 1:
-            weights.append(1.0)   # Used once — normal weight
         else:
-            weights.append(0.3)   # Overused — heavily penalized
+            weights.append(1.0)   # Used once
 
-    # Weighted random choice (seeded by slide_index for reproducibility within a run)
+    # Selection
     total = sum(weights)
     if total > 0:
         normalized = [w / total for w in weights]
-        # Use slide_index as seed for deterministic but varied selection
         rng = random.Random(slide_index * 7 + len(full_history) * 13)
         variant = rng.choices(fresh, weights=normalized, k=1)[0]
     else:
         variant = fresh[slide_index % len(fresh)]
 
-    # 4. Resolve Image Layout
-    # Define 'wide' variants that need full width (vertical layouts)
-    WIDE_VARIANTS = {
-        "timeline", "timelineHorizontal", "timelineSequential", "timelineMilestone", "timelineIcon",
-        "processArrow", "processSteps",
-        "comparison", "comparisonProsCons", "comparisonBeforeAfter",
-        "statsComparison"
-    }
-    is_wide = variant in WIDE_VARIANTS
-
-    # Logic priority:
-    if slide_index == 0:
-        image_layout = "behind"   # Hero style for start
-    elif item_count > 5:
-        image_layout = "blank"    # Max width for density
-    elif is_wide:
-        # Wide content gets vertical stacking (Full Width)
-        # Alternate top/bottom for variety
-        image_layout = "top" if (slide_index % 2 == 1) else "bottom"
-    else:
-        # Standard content gets alternating sidebars
-        image_layout = "right" if (slide_index % 2 == 1) else "left"
+    # Use the shared layout picker
+    image_layout = pick_layout(
+        variant=variant,
+        item_count=item_count,
+        slide_index=slide_index,
+        layout_history=layout_history,
+    )
 
     return variant, image_layout
+
+
+def pick_layout(
+    variant: Optional[str],
+    item_count: int,
+    slide_index: int,
+    layout_history: List[str],
+) -> str:
+    """Shared logic for picking an image_layout based on rotation and compatibility."""
+    if slide_index == 0:
+        return "behind"
+
+    if variant in FORCED_BLANK_VARIANTS:
+        return "blank"
+
+    if item_count > 6:
+        return "blank"
+
+    if variant in WIDE_VARIANTS:
+        # Category A (Wide) -> Top/Bottom
+        if slide_index % 4 in [1, 2]:
+            return "bottom"
+        else:
+            return "top"
+
+    # Category D or B (Flexible/Tall) -> Alternating sidebars
+    recent_lr = [ly for ly in reversed(layout_history) if ly in ["left", "right"]]
+    last_lr = recent_lr[0] if recent_lr else ""
+
+    # Primary rotation: left -> right
+    if last_lr == "left":
+        image_layout = "right"
+    else:
+        image_layout = "left"
+
+    # Variety: Occasionally use top/bottom even if not wide
+    flexible_count = len([ly for ly in layout_history if ly in ["left", "right"]])
+    if (flexible_count + 1) % 3 == 0:
+        # Avoid top if it was used very recently
+        if layout_history and layout_history[-1] == "top":
+            return "bottom"
+        else:
+            return "top" if (slide_index % 2 == 0) else "bottom"
+
+    return image_layout
 
 
 class GyMLContentGenerator:
@@ -348,34 +397,54 @@ class GyMLContentGenerator:
         is_sparse = normalized_template in SPARSE_TEMPLATES
 
         # ── VISUAL VARIANT & LAYOUT ROTATION ─────────────────────────
-        # Templates that use top-level block types (not smart_layout) skip rotation
+        # Templates that use top-level block types (not smart_layout) skip variant rotation
+        # but SHOULD still participate in image_layout rotation.
         TOP_LEVEL_BLOCK_TEMPLATES = [
             "Comparison table", "Key-Value list", "Labeled diagram",
             "Hierarchy tree", "Split panel", "Formula block",
             "Hub and spoke", "Process arrow block", "Cyclic process block",
             "Feature showcase block",
         ]
+        
+        # Determine if we should at least rotate the image_layout
+        # Sparse templates (Title, Image and text) and standard teaching slides should rotate.
+        # Only hard-structured templates like Comparison Table might want to force a specific layout (blank).
+        can_rotate_layout = normalized_template not in ["Comparison table", "Formula block", "Code"]
+        
         uses_smart_layout = (
             not is_sparse and normalized_template not in TOP_LEVEL_BLOCK_TEMPLATES
         )
 
         chosen_variant, chosen_layout = None, None
         rotation_directives = ""
-        if uses_smart_layout:
-            # Estimate item count from template hints (actual count decided by LLM)
-            estimated_items = 4  # sensible default
-            chosen_variant, chosen_layout = pick_variant(
-                content_angle=content_angle,
-                intent=intent,
-                slide_index=slide_index,
-                item_count=estimated_items,
-                layout_history=layout_history or [],
-                variant_history=variant_history,
-            )
-            rotation_directives = f"""
-        ⚡ MANDATORY VARIANT: Use '{chosen_variant}' for the primary smart_layout block.
-        ⚡ MANDATORY LAYOUT: Use '{chosen_layout}' as the slide-level image_layout.
-            """
+        
+        # ── COMPREHENSIVE LAYOUT ROTATION ────────────────────────────
+        # Even if not using smart variant, we should rotate the image layout
+        if can_rotate_layout:
+            estimated_items = 4
+            # If it uses a smart layout variant pool, pick both. Otherwise just pick layout.
+            if uses_smart_layout:
+                chosen_variant, chosen_layout = pick_variant(
+                    content_angle=content_angle,
+                    intent=intent,
+                    slide_index=slide_index,
+                    item_count=estimated_items,
+                    layout_history=layout_history or [],
+                    variant_history=variant_history,
+                )
+            else:
+                # Use the shared layout picker even if no variant rotation is needed
+                chosen_layout = pick_layout(
+                    variant=None, # Not using smart variant
+                    item_count=estimated_items,
+                    slide_index=slide_index,
+                    layout_history=layout_history or [],
+                )
+
+            rotation_directives = f"⚡ MANDATORY LAYOUT: Use '{chosen_layout}' as the slide-level image_layout."
+            if chosen_variant:
+                rotation_directives += f"\n        ⚡ MANDATORY VARIANT: Use '{chosen_variant}' for the primary smart_layout block."
+            
             print(f"    🎨 Rotation: variant='{chosen_variant}', layout='{chosen_layout}' for index={slide_index}")
 
         # ── IMAGE ROLE ROUTING ──────────────────────────
@@ -460,10 +529,13 @@ class GyMLContentGenerator:
         • overview     → Broad introduction. Use cardGridIcon, bigBullets, or intro_paragraph.
         • mechanism    → How it works. Use timeline, processArrow, processSteps, or diagram.
         • example      → Concrete case. Use split_panel, two-column, or cardGridImage.
-        • comparison   → Side-by-side. Use comparison, comparisonProsCons, or comparison_table.
-                         CRITICAL: For comparisons, each item MUST represent a 'Dimension' (a criterion like 'Power' or 'Cost').
-                         The item 'heading' should be the name of the criteria. The 'points' or 'description' should then list values for each subject being compared.
-                         Example: Heading: 'Power Source', Points: ['Monarchy: Divine Right', 'Republic: Popular Sovereignty'].
+        • comparison   → Side-by-side. Use comparisonCards, comparisonProsCons, or comparison_table.
+                         CRITICAL: For comparisons, you MUST use the structured `criteria` and `subjects` schema.
+                         • `criteria`: Array of dimension objects {{id, label}} (e.g., Purpose, Strength).
+                         • `subjects`: Array of subject objects {{id, label, values}}.
+                         • `values`: Array of {{criterion_id, value}} matching the defined criteria.
+                         • `conclusion`: A short summary sentence explaining the key difference.
+                         Example: Criteria: [Purpose, Efficiency]. Subjects: [SQL, NoSQL].
         • application  → Real-world use. Use cardGridIcon with practical icons, or key_value_list.
         • visualization → Visual representation. Use labeled_diagram, hierarchy_tree, or diagramFlowchart.
         • summary      → Key takeaways. Use bigBullets, bulletCheck, or stats.
@@ -650,7 +722,21 @@ class GyMLContentGenerator:
 
         # Ensure image_role is tracked
         result["image_role"] = image_role
+
+        # ── POST-GENERATION ENFORCEMENT ──────────────────
+        # Force the rotation choices if they were mandatory
+        if chosen_layout:
+            result["layout"] = chosen_layout
         
+        if chosen_variant:
+            # Find the primary block and force its variant
+            blocks = result.get("contentBlocks", [])
+            primary_idx = result.get("primary_block_index", 0)
+            if 0 <= primary_idx < len(blocks):
+                block = blocks[primary_idx]
+                if block.get("type") == "smart_layout":
+                    block["variant"] = chosen_variant
+
         # Validate and ensure primary_block_index
         return self._validate_primary_block(result)
 
