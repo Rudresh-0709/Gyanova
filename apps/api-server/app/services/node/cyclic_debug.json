@@ -1,0 +1,46 @@
+{
+  "title": "Agile Product Lifecycle",
+  "intent": "explain",
+  "layout": "left",
+  "contentBlocks": [
+    {
+      "type": "cyclic_process_block",
+      "items": [
+        {
+          "label": "Ideation & Discovery",
+          "description": "Generate and validate product ideas by understanding user needs and market opportunities through research and brainstorming.",
+          "imagePrompt": "A glowing lightbulb surrounded by diverse people sharing ideas in a creative workspace with sticky notes and sketches."
+        },
+        {
+          "label": "Planning & Prioritization",
+          "description": "Define product vision, roadmap, and prioritize features based on impact, feasibility, and user feedback to guide development focus.",
+          "imagePrompt": "A team gathered around a table with charts, a roadmap on a whiteboard, and sticky notes representing prioritized tasks."
+        },
+        {
+          "label": "Development & Iteration",
+          "description": "Build product increments in short cycles, continuously integrating feedback and improving features through agile sprints.",
+          "imagePrompt": "Developers collaborating at computers with code on screens, sprint boards, and iterative feedback loops visible."
+        },
+        {
+          "label": "Testing & Validation",
+          "description": "Conduct rigorous testing including user acceptance and quality assurance to ensure product meets requirements and delight users.",
+          "imagePrompt": "Testers examining software on devices, checking for bugs, and users providing feedback in a lab-like environment."
+        },
+        {
+          "label": "Launch & Scale",
+          "description": "Release the product to market, monitor performance, and scale operations while iterating based on user data and market trends.",
+          "imagePrompt": "A rocket launching from a platform with graphs and user engagement icons symbolizing growth and scaling."
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "text": "The Agile Product Lifecycle is a continuous, iterative process that fosters rapid learning and adaptation to deliver customer value effectively.",
+      "icon": "ri-rocket-line",
+      "label": "Key Insight"
+    }
+  ],
+  "primary_block_index": 0,
+  "imagePrompt": "A dynamic, collaborative workspace filled with diverse team members actively engaging in creative discussions and digital tools, radiating energy and innovation.",
+  "image_role": "accent"
+}

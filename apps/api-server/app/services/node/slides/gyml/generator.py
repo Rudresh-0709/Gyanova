@@ -597,7 +597,9 @@ class GyMLContentGenerator:
            • Formula → formula_block (top-level block)
             • Cyclic process block → cyclic_process_block (MUST USE `cyclic_process_block` block type)
                ⚡ PREMIUM LAYOUT: These cards 'float' near the central wheel.
-               You MUST provide rich, multi-sentence descriptions (15-25 words) per item to fill these teaching containers.
+               You MUST provide:
+               1. A meaningful `icon_name` for each item (Remix Icon, e.g., ri-line-chart-line).
+               2. Rich, multi-sentence descriptions (15-25 words) per item to fill these teaching containers.
                Do not just use single words.
 
            PRIMARY BLOCK ITEM COUNT:

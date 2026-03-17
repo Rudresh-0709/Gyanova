@@ -69,20 +69,20 @@ class SlideFitnessGate:
             weight = 0.0
             
             # Extract block type and content safely
-            if hasattr(block, "type"):
-                # ComposedBlock or GyML (some nodes have type)
-                b_type = block.type
-                b_content = getattr(block, "content", {})
-                b_item_count = getattr(block, "item_count", lambda: 0)() if callable(getattr(block, "item_count", None)) else 0
-                b_word_count = getattr(block, "word_count", lambda: 0)() if callable(getattr(block, "word_count", None)) else 0
-            elif isinstance(block, dict):
-                # Raw JSON dictionary
+            if isinstance(block, dict):
+                # Raw JSON dictionary - check this first to avoid dict-as-object attribute errors
                 b_type = block.get("type", "paragraph")
                 b_content = block.get("content", block)
                 # Rudimentary counts for dicts
                 items = b_content.get("items") or b_content.get("cards") or b_content.get("steps") or b_content.get("events", [])
                 b_item_count = len(items) if isinstance(items, list) else 1
                 b_word_count = len(str(b_content).split()) # Very rough fallback
+            elif hasattr(block, "type"):
+                # ComposedBlock or GyML (some nodes have type)
+                b_type = getattr(block, "type")
+                b_content = getattr(block, "content", {})
+                b_item_count = getattr(block, "item_count", lambda: 0)() if callable(getattr(block, "item_count", None)) else 0
+                b_word_count = getattr(block, "word_count", lambda: 0)() if callable(getattr(block, "word_count", None)) else 0
             else:
                 # Fallback for GyML nodes without .type (like GyMLHeading)
                 # Identify by class name or assume neutral weight

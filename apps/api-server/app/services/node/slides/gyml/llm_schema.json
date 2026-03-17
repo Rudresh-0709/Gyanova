@@ -304,11 +304,16 @@
                                         "imagePrompt": {
                                             "type": "string",
                                             "description": "Vivid prompt for a simple drawing. No words."
+                                        },
+                                        "icon_name": {
+                                            "type": "string",
+                                            "description": "Remix Icon name (e.g. ri-rocket-line)"
                                         }
                                     },
                                     "required": [
                                         "label",
-                                        "imagePrompt"
+                                        "imagePrompt",
+                                        "icon_name"
                                     ]
                                 }
                             }

@@ -1,0 +1,42 @@
+{
+  "title": "Modern Tech Stack",
+  "intent": "explain",
+  "layout": "left",
+  "contentBlocks": [
+    {
+      "type": "smart_layout",
+      "variant": "cardGridIcon",
+      "items": [
+        {
+          "heading": "Presentation Layer",
+          "description": "User interfaces and client apps that interact with users.",
+          "icon": "ri-computer-line"
+        },
+        {
+          "heading": "Application Layer",
+          "description": "Business logic and processing rules that drive the app's behavior.",
+          "icon": "ri-cpu-line"
+        },
+        {
+          "heading": "Data Layer",
+          "description": "Databases and data storage systems managing persistent data.",
+          "icon": "ri-database-2-line"
+        },
+        {
+          "heading": "Integration Layer",
+          "description": "APIs and services enabling communication between systems.",
+          "icon": "ri-connection-line"
+        },
+        {
+          "heading": "Infrastructure Layer",
+          "description": "Cloud, servers, and networks supporting the entire stack.",
+          "icon": "ri-cloud-line"
+        }
+      ]
+    }
+  ],
+  "primary_block_index": 0,
+  "takeaway": "A modern enterprise application stack is layered to separate concerns, ensuring scalability, maintainability, and flexibility.",
+  "imagePrompt": "A sleek futuristic cityscape at dawn with glowing interconnected digital layers symbolizing technology infrastructure and data flow",
+  "image_role": "accent"
+}

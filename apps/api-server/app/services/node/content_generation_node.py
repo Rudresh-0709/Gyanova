@@ -27,7 +27,7 @@ except ImportError:
         from ..state import TutorState
     except ImportError:
         # Fallback for direct script execution
-        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))); sys.path.append(os.path.dirname(os.path.abspath(__file__)))
         from llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
         from state import TutorState
 
@@ -49,7 +49,7 @@ except ImportError:
         from ..icon_selector import select_icons_batch
         from .slides.gyml.generator import GyMLContentGenerator, pick_composition_style, pick_variant
     except ImportError:
-        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))); sys.path.append(os.path.dirname(os.path.abspath(__file__)))
         from icon_selector import select_icons_batch
         from slides.gyml.generator import GyMLContentGenerator, pick_composition_style, pick_variant
 

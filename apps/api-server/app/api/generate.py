@@ -10,8 +10,33 @@ from app.services.langgraphflow import planning_graph, full_graph
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Simple in-memory task store for MVP
+import json
+import os
+
+# Simple in-memory task store with file persistence
+TASKS_FILE = "tasks.json"
 tasks_db: Dict[str, Dict[str, Any]] = {}
+
+def load_tasks():
+    global tasks_db
+    if os.path.exists(TASKS_FILE):
+        try:
+            with open(TASKS_FILE, "r") as f:
+                tasks_db = json.load(f)
+            logger.info(f"Loaded {len(tasks_db)} tasks from {TASKS_FILE}")
+        except Exception as e:
+            logger.error(f"Failed to load tasks from {TASKS_FILE}: {e}")
+            tasks_db = {}
+
+def save_tasks():
+    try:
+        with open(TASKS_FILE, "w") as f:
+            json.dump(tasks_db, f, indent=2)
+    except Exception as e:
+        logger.error(f"Failed to save tasks to {TASKS_FILE}: {e}")
+
+# Initial load
+load_tasks()
 
 
 class GenerateLessonRequest(BaseModel):
@@ -29,9 +54,10 @@ class ConfirmPlanRequest(BaseModel):
     plans: Dict[str, Any]
 
 
-def run_planning_task(task_id: str, request: GenerateLessonRequest):
+async def run_planning_task(task_id: str, request: GenerateLessonRequest):
     logger.info(f"Starting planning task {task_id} for topic: {request.topic}")
     tasks_db[task_id]["status"] = "planning"
+    save_tasks()
 
     try:
         initial_state = {
@@ -50,7 +76,7 @@ def run_planning_task(task_id: str, request: GenerateLessonRequest):
         tasks_db[task_id]["result"] = initial_state
 
         # Use streaming to get incremental updates from nodes
-        for chunk in planning_graph.stream(initial_state):
+        async for chunk in planning_graph.astream(initial_state):
             for node_name, state_update in chunk.items():
                 if "messages" in state_update:
                     del state_update["messages"]
@@ -61,16 +87,19 @@ def run_planning_task(task_id: str, request: GenerateLessonRequest):
 
         tasks_db[task_id]["status"] = "planning_completed"
         logger.info(f"Planning for {task_id} completed successfully.")
+        save_tasks()
 
     except Exception as e:
         logger.error(f"Planning task {task_id} failed: {str(e)}", exc_info=True)
         tasks_db[task_id]["status"] = "failed"
         tasks_db[task_id]["error"] = str(e)
+        save_tasks()
 
 
-def run_generation_task(task_id: str, request: ConfirmPlanRequest):
+async def run_generation_task(task_id: str, request: ConfirmPlanRequest):
     logger.info(f"Starting full generation task {task_id}")
     tasks_db[task_id]["status"] = "processing"
+    save_tasks()
 
     try:
         # Resume from the previous state but with confirmed/modified plans
@@ -84,7 +113,7 @@ def run_generation_task(task_id: str, request: ConfirmPlanRequest):
         current_state["plans"] = request.plans
 
         # Run Phase 2 (Streaming for incremental updates)
-        for chunk in full_graph.stream(current_state):
+        async for chunk in full_graph.astream(current_state):
             # chunk is {node_name: state_update}
             for node_name, state_update in chunk.items():
                 if "messages" in state_update:
@@ -95,14 +124,17 @@ def run_generation_task(task_id: str, request: ConfirmPlanRequest):
                 logger.info(
                     f"  ⚡ Incremental update from {node_name} for mission {task_id}"
                 )
+                save_tasks()
 
         tasks_db[task_id]["status"] = "completed"
         logger.info(f"Generation for {task_id} completed successfully.")
+        save_tasks()
 
     except Exception as e:
         logger.error(f"Generation task {task_id} failed: {str(e)}", exc_info=True)
         tasks_db[task_id]["status"] = "failed"
         tasks_db[task_id]["error"] = str(e)
+        save_tasks()
 
 
 @router.post("/")
@@ -111,6 +143,7 @@ async def generate_lesson(
 ):
     task_id = str(uuid.uuid4())
     tasks_db[task_id] = {"status": "pending"}
+    save_tasks()
 
     background_tasks.add_task(run_planning_task, task_id, request)
     return {
