@@ -1,0 +1,117 @@
+--- [DEBUG] GyML GENERATION LLM OUTPUT ---
+{
+  "title": "Understanding Assumed Mean",
+  "intent": "introduce",
+  "layout": "blank",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "The assumed mean is a simplifying technique used in statistics to make calculations easier when working with large data sets or grouped data."
+    },
+    {
+      "type": "paragraph",
+      "text": "It is a value chosen from the data set, usually near the center, to reduce the complexity of calculations by shifting the data values relative to this mean."
+    },
+    {
+      "type": "annotation_paragraph",
+      "text": "Using an assumed mean helps in faster computation and reduces errors during manual calculations."
+    }
+  ],
+  "primary_block_index": 1,
+  "imagePrompt": "A calm, focused study environment with a notebook open to statistical notes, soft light highlighting key concepts, evoking clarity and understanding."
+}
+------------------------------------------
+
+    ✗ No valid primary block found. Regeneration needed.
+    🔄 Regenerating slide (attempt 2/2)...
+    🎨 Rotation: variant='None', layout='behind' for index=0
+    🎨 Composition style: standard (intro_paragraph → PRIMARY BLOCK → annotation_paragraph)
+INFO:     127.0.0.1:57673 - "GET /api/generate/24f3af13-54a5-4150-b4d9-9420943ebd9c HTTP/1.1" 200 OK
+
+--- [DEBUG] GyML GENERATION LLM OUTPUT ---
+{
+  "title": "Understanding Assumed Mean",
+  "intent": "introduce",
+  "layout": "blank",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "The assumed mean is a statistical technique used to simplify calculations of averages by choosing a convenient central value as a reference point."
+    },
+    {
+      "type": "paragraph",
+      "text": "This method helps reduce computational effort, especially with large data sets, by focusing on deviations from the assumed mean rather than actual values."
+    },
+    {
+      "type": "annotation_paragraph",
+      "text": "Using an assumed mean is especially helpful in manual calculations and builds foundational understanding of mean calculation methods."
+    }
+  ],
+  "primary_block_index": 1,
+  "imagePrompt": "A calm classroom scene with a chalkboard showing a simple average calculation, evoking clarity and foundational learning in statistics."
+}
+------------------------------------------
+
+    ✗ No valid primary block found. Regeneration needed.
+    ✗ All retries failed. Using fallback slide.
+    → Content generated: 2 blocks, primary has 1 items
+INFO:     127.0.0.1:57673 - "GET /api/generate/24f3af13-54a5-4150-b4d9-9420943ebd9c HTTP/1.1" 200 OK
+
+--- [DEBUG] NARRATION LLM OUTPUT ---
+Template: Title card, Sparse: True, Expected segments: 1
+Have you ever wondered how statisticians simplify complex calculations when dealing with large data sets? The assumed mean is a clever shortcut that makes finding averages faster and easier, especially when numbers are big or spread out. Understanding this concept will help you handle data more efficiently and build a strong foundation for more advanced statistical methods ahead.
+--------------------------------------
+
+    → Animation: 1 x bullet
+    → Density: balanced (2 blocks, 1 primary items)
+  📝 Generating Slide 2: What is Assumed Mean?
+    🎨 Rotation: variant='timeline', layout='bottom' for index=1        
+    🎨 Composition style: guided (intro_paragraph → PRIMARY BLOCK → callout)
+INFO:     127.0.0.1:57673 - "GET /api/generate/24f3af13-54a5-4150-b4d9-9420943ebd9c HTTP/1.1" 200 OK
+
+--- [DEBUG] GyML GENERATION LLM OUTPUT ---
+{
+  "title": "What is Assumed Mean?",
+  "intent": "teach",
+  "layout": "blank",
+  "contentBlocks": [
+    {
+      "type": "intro_paragraph",
+      "text": "Understanding the assumed mean helps simplify calculations in statistics, especially when dealing with large data sets."
+    },
+    {
+      "type": "smart_layout",
+      "variant": "timeline",
+      "items": [
+        {
+          "label": "Definition",
+          "description": "Assumed mean is a value chosen near the data's center to simplify calculations."
+        },
+        {
+          "label": "Purpose",
+          "description": "It reduces complexity by minimizing the size of deviations from the mean."
+        },
+        {
+          "label": "Calculation Mechanism",
+          "description": "Data values are transformed by subtracting the assumed mean, easing arithmetic operations."
+        },
+        {
+          "label": "Use in Statistics",
+          "description": "Facilitates faster computation of mean and variance in grouped data."
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "text": "Choosing an assumed mean close to the data’s center streamlines calculations without affecting accuracy.",
+      "label": "Key Insight",
+      "icon": "ri-lightbulb-line"
+    }
+  ],
+  "primary_block_index": 1,
+  "imagePrompt": "A calm, focused workspace with scattered papers and a calculator, evoking clarity and simplification in mathematical thinking."
+}
+------------------------------------------
+
+    ✓ Primary block valid: [1] smart_layout
+    → Content generated: 3 blocks, primary has 4 items

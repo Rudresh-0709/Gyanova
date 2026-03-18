@@ -39,4 +39,5 @@ def lesson_planning_node(state: TutorState) -> TutorState:
 
         state["plans"][sub_id] = slide_plans
 
-    return state
+    # Return only modified fields for clean state management
+    return {"plans": state["plans"]}

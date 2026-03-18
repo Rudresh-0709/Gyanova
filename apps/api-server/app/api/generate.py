@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
+from enum import Enum
 
 # Import the LangGraph workflow
 from app.services.langgraphflow import planning_graph, full_graph
@@ -12,10 +13,59 @@ logger = logging.getLogger(__name__)
 
 import json
 import os
+from dataclasses import asdict, is_dataclass
 
 # Simple in-memory task store with file persistence
 TASKS_FILE = "tasks.json"
 tasks_db: Dict[str, Dict[str, Any]] = {}
+
+
+def _json_safe(value: Any) -> Any:
+    """
+    Recursively convert any value to a JSON-serializable form.
+    
+    Handles:
+    - Primitives (str, int, float, bool, None)
+    - Dicts (filtering keys starting with '_')
+    - Lists, tuples, sets
+    - Dataclasses (converts to dict via asdict)
+    - Enums (converts to their value)
+    - Objects with __dict__ (converts to dict)
+    - Fallback: converts to string
+    
+    Special behavior:
+    - Drops all dict keys starting with '_' (transient/private fields)
+    - Converts Enum instances to their values
+    - If a ComposedSlide or similar non-serializable object leaks into state,
+      this will safely convert it rather than crash
+    """
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+
+    # Handle Enums (including from GyML definitions like Emphasis)
+    if isinstance(value, Enum):
+        return value.value
+
+    if isinstance(value, dict):
+        safe_dict = {}
+        for key, item in value.items():
+            # Drop transient/internal fields from persisted task state.
+            if isinstance(key, str) and key.startswith("_"):
+                continue
+            safe_dict[key] = _json_safe(item)
+        return safe_dict
+
+    if isinstance(value, (list, tuple, set)):
+        return [_json_safe(item) for item in value]
+
+    if is_dataclass(value):
+        return _json_safe(asdict(value))
+
+    if hasattr(value, "__dict__"):
+        return _json_safe(vars(value))
+
+    # Fallback: convert to string (e.g., for objects that aren't JSON-serializable)
+    return str(value)
 
 def load_tasks():
     global tasks_db
@@ -31,7 +81,7 @@ def load_tasks():
 def save_tasks():
     try:
         with open(TASKS_FILE, "w") as f:
-            json.dump(tasks_db, f, indent=2)
+            json.dump(_json_safe(tasks_db), f, indent=2)
     except Exception as e:
         logger.error(f"Failed to save tasks to {TASKS_FILE}: {e}")
 

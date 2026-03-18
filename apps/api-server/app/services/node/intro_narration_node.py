@@ -130,7 +130,11 @@ def intro_narration_node(state: Dict[str, Any]) -> Dict[str, Any]:
             )
             state["subtopic_intro_narrations"][sub_id] = {"narration_text": sub_intro}
 
-    return state
+    # Return only modified fields for clean state management
+    return {
+        "lesson_intro_narration": state["lesson_intro_narration"],
+        "subtopic_intro_narrations": state["subtopic_intro_narrations"],
+    }
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Sparkles, BookOpen, GraduationCap, Mic2, ChevronDown, Check, Target, Layers } from "lucide-react";
+import { ArrowLeft, Sparkles, BookOpen, Mic2, ChevronDown, Check, Target, Layers } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -32,6 +32,32 @@ interface PlanData {
     topic: string;
     sub_topics: Array<{ id: string; name: string }>;
     plans: Record<string, SlidePlan[]>;
+}
+
+interface LessonRenderResult {
+    lesson_intro_narration?: unknown;
+    slides?: Record<string, Array<{ html_content?: string | null }> | undefined>;
+}
+
+function hasRenderableSlides(
+    result: LessonRenderResult | null | undefined
+): boolean {
+    /**
+     * Return true only when we have actual renderable content.
+     * - Intro narration presence alone is NOT sufficient (just metadata).
+     * - We need at least one slide with actual html_content string.
+     * The viewer can synthesize intro HTML from topic if needed, but
+     * requires real slides for content.
+     */
+    const slideGroups = Object.values(result?.slides || {});
+    return slideGroups.some((slides) =>
+        Array.isArray(slides) &&
+        slides.some(
+            (slide) =>
+                typeof slide?.html_content === "string" &&
+                slide.html_content.trim().length > 0
+        )
+    );
 }
 
 const LessonPlanPreview = ({
@@ -397,18 +423,7 @@ export default function LessonInputPage() {
                 const res = await fetch(`/api/lesson/generate?taskId=${taskId}`);
                 const statusData = await res.json();
 
-                // Redirect as soon as ANY slide has audio ready
-                const slides = statusData.result?.slides || {};
-                let readySlideCount = 0;
-                for (const subId of Object.keys(slides)) {
-                    for (const slide of slides[subId]) {
-                        if (slide.narration_segments && slide.narration_segments.length > 0) {
-                            readySlideCount++;
-                        }
-                    }
-                }
-
-                if (statusData.status === "completed" || readySlideCount >= 2) {
+                if (statusData.status === "completed" || hasRenderableSlides(statusData.result)) {
                     router.push(`/lesson/${taskId}`);
                     break;
                 } else if (statusData.status === "failed") {

@@ -31,6 +31,29 @@ except ImportError:
         from llm.model_loader import load_groq, load_groq_fast, load_openai, load_gemini
         from state import TutorState
 
+# Import narration techniques for sparse templates
+try:
+    from app.services.node.narration_techniques import (
+        NARRATION_TECHNIQUES,
+        get_narration_technique,
+        build_technique_prompt,
+        SPARSE_TEMPLATES,
+    )
+except ImportError:
+    try:
+        from .narration_techniques import (
+            NARRATION_TECHNIQUES,
+            get_narration_technique,
+            build_technique_prompt,
+            SPARSE_TEMPLATES,
+        )
+    except ImportError:
+        # Fallback if not available
+        NARRATION_TECHNIQUES = {}
+        SPARSE_TEMPLATES = []
+        def get_narration_technique(x): return None
+        def build_technique_prompt(x, y, z, w, v=""): return ""
+
 # Import segment counting for narration↔content alignment
 try:
     from app.services.node.audio_generation_node import segment_narration
@@ -465,37 +488,66 @@ def generate_narration(
 ) -> str:
     """
     Generates spoken narration for a slide AFTER the visual content is created.
-    Produces exactly N segments (one per primary block item), separated by double newlines.
+    Uses template-specific techniques for sparse templates (Title card, Formula block, etc.)
+    Uses segment-aligned narration for structured teaching templates.
     """
     llm = load_openai()
 
-    # Extract primary block details
-    primary_item_count = _count_primary_items(gyml_content)
-    primary_items = _extract_primary_items_detail(gyml_content)
-    animation_meta = _generate_animation_metadata(gyml_content)
-    animation_unit = animation_meta["animation_unit"]
+    # Check if this is a sparse template with a special technique
+    technique = get_narration_technique(template_name)
+    is_sparse = technique is not None
+    
+    if is_sparse:
+        # ─── SPARSE TEMPLATE NARRATION ───────────────────────────────────
+        # Templates like Title card, Formula block use specialized techniques
+        expected_segments = technique["segments"]
+        
+        # Build base prompt info
+        base_info = build_technique_prompt(
+            template_name=template_name,
+            title=title,
+            goal=goal,
+            subtopic=subtopic_name,
+            context=context,
+        )
+        
+        prompt = f"""
+    You are an expert teacher. Write the spoken narration for a slide.
+    The slide's visual content has already been designed. Your job is to explain what the student sees.
+    
+    CONTEXT:
+    {base_info}
 
-    # Build item listing for the prompt
-    items_listing = "\n".join(
-        [
-            f"  {animation_unit.upper()} {i+1}: {item}"
-            for i, item in enumerate(primary_items)
-        ]
-    )
+    CONTENT RULES:
+    1. Write exactly what the teacher would say out loud.
+    2. Be engaging, clear, and pedagogically sound.
+    3. NO markdown, NO "In this slide", NO "Moving on".
+    4. Each segment should stand on its own as a self-contained explanation.
+    5. Do NOT use transition markers like "First,", "Second,", "Third,", "Next,", or "Finally,".
+    6. Connect visual elements to real-world applications and student understanding.
+    """
+        
+    else:
+        # ─── STANDARD STRUCTURED NARRATION ──────────────────────────────
+        # Use segment-aligned approach for teaching blocks
+        
+        # Extract primary block details
+        primary_item_count = _count_primary_items(gyml_content)
+        primary_items = _extract_primary_items_detail(gyml_content)
+        animation_meta = _generate_animation_metadata(gyml_content)
+        animation_unit = animation_meta["animation_unit"]
 
-    # Define sparse templates
-    SPARSE_TEMPLATES = [
-        "Title card",
-        "Image and text",
-        "Text and image",
-        "Rich text",
-        "Formula block",
-        "Definition",
-        "Quote",
-    ]
-    is_sparse = template_name in SPARSE_TEMPLATES
+        # Build item listing for the prompt
+        items_listing = "\n".join(
+            [
+                f"  {animation_unit.upper()} {i+1}: {item}"
+                for i, item in enumerate(primary_items)
+            ]
+        )
+        
+        expected_segments = primary_item_count
 
-    prompt = f"""
+        prompt = f"""
     You are an expert teacher. Write the spoken narration for a slide.
     The slide's visual content has already been designed. Your job is to EXPLAIN what the student sees.
     
@@ -507,17 +559,12 @@ def generate_narration(
     - Slide Template: {template_name}
     {f"📚 RESEARCH CONTEXT:\\n{context}" if context else ""}
 
-    {"" if is_sparse else f"""═══════════════════════════════════════════════
+    ═══════════════════════════════════════════════
     PRIMARY BLOCK ITEMS (the animated content the student sees one-by-one):
     ═══════════════════════════════════════════════
 {items_listing}
-    """}
 
-    {f'''STRUCTURE RULES (SPARSE TEMPLATE):
-    1. Write a SINGLE, high-impact, engaging paragraph.
-    2. Length: 40-70 words.
-    3. Focus on a broad overview or a strong takeaway.
-    4. Do NOT split into multiple segments.''' if is_sparse else f'''STRUCTURE RULES (SEGMENT-ALIGNED):
+    STRUCTURE RULES (SEGMENT-ALIGNED):
     The slide has {primary_item_count} animated {animation_unit}s that appear one-by-one.
     You MUST write EXACTLY {primary_item_count} narration segments — one per {animation_unit}.
 
@@ -534,7 +581,7 @@ def generate_narration(
     [Explanation of {animation_unit} 2 — explains why this matters or how it connects]
 
     [Explanation of {animation_unit} 3 — provides deeper understanding]
-    {"..." if primary_item_count > 3 else ""}'''}
+    {"..." if primary_item_count > 3 else ""}
 
     CONTENT RULES:
     1. Write exactly what the teacher would say out loud.
@@ -549,6 +596,7 @@ def generate_narration(
 
     # DEBUG: Show raw narration output
     print("\n--- [DEBUG] NARRATION LLM OUTPUT ---")
+    print(f"Template: {template_name}, Sparse: {is_sparse}, Expected segments: {expected_segments}")
     print(resp.content)
     print("--------------------------------------\n")
 
@@ -568,6 +616,20 @@ def generate_narration(
                 )
             # Truncate if too many
             segments = segments[:primary_item_count]
+            narration = "\n\n".join(segments)
+    else:
+        # For sparse templates, validate segment count too
+        segments = [s.strip() for s in narration.split("\n\n") if s.strip()]
+        if len(segments) != expected_segments:
+            print(
+                f"    ⚠ Sparse template segment mismatch: expected {expected_segments}, got {len(segments)}"
+            )
+            # Adjust if needed
+            if len(segments) < expected_segments:
+                while len(segments) < expected_segments:
+                    segments.append(f"[Additional explanation for {template_name}]")
+            else:
+                segments = segments[:expected_segments]
             narration = "\n\n".join(segments)
 
     return narration
@@ -614,7 +676,8 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
     if not next_subtopic:
         print("✅ [Content Gen] All slides already have content.")
-        return state
+        # Return only modified fields even in early exit
+        return {"slides": state["slides"]}
 
     sub_id = next_subtopic.get("id")
     subtopic_name = next_subtopic.get("name")
@@ -789,6 +852,7 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 **concept,
                 "subtopic_name": subtopic_name,
                 "narration_text": narration,
+                "narration_format": "points",  # Segmented by double-newlines for audio alignment
                 "gyml_content": generated_content,
                 "visual_content": generated_content,
                 "primary_block_index": generated_content.get("primary_block_index", 0),
@@ -800,4 +864,5 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
             }
             state["slides"][sub_id].append(slide_obj)
 
-    return state
+    # Return only modified fields for clean state management
+    return {"slides": state["slides"]}

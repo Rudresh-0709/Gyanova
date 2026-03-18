@@ -297,7 +297,12 @@ async def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 f"✅ [Audio Node] Subtopic {sid} fully processed ({slides_with_audio}/{planned_count} slides)."
             )
 
-    return state
+    # Return only the modified fields to avoid concurrent write conflicts with parallel nodes
+    return {
+        "slides": state["slides"],
+        "audio_output_dir": state["audio_output_dir"],
+        "processed_subtopic_ids": state["processed_subtopic_ids"],
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════════

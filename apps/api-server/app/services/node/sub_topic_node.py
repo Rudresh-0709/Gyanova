@@ -25,9 +25,16 @@ def extract_sub_topic(state: TutorState) -> TutorState:
         ]
     }
 
-    If the topic is too vague, respond with: {"sub_topics": []}
+    If the topic is too vague or invalid (like "No clear topic detected"), respond with: {"sub_topics": []}
     """
     user_prompt = state.get("topic", "")
+    
+    # Guard: if topic extraction failed, skip sub-topic extraction
+    if not user_prompt or user_prompt == "No clear topic detected":
+        print("\n⚠️  [WARNING] Skipping sub-topic extraction - topic is invalid")
+        state["sub_topics"] = []
+        return state
+    
     llm = load_groq()
     topic = llm.invoke(system_prompt + " " + user_prompt)
 
@@ -57,7 +64,9 @@ def extract_sub_topic(state: TutorState) -> TutorState:
         sub["id"] = f"sub_{i}_{uuid.uuid4().hex[:6]}"
 
     state["sub_topics"] = sub_topics
-    return state
+    
+    # Return only modified fields for clean state management
+    return {"sub_topics": state["sub_topics"]}
 
 
 if __name__ == "__main__":

@@ -38,6 +38,14 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     Incremental Rendering Node (Slide-level).
     Renders any slides that have gyml_content but no html_content yet.
     Handles Leonardo AI image resolution in parallel.
+    
+    CRITICAL ARCHITECTURE NOTE:
+    - ComposedSlide objects (from composer.compose()) are TRANSIENT and NOT JSON serializable
+    - These objects are kept ONLY in the local `composed_by_slide` dict
+    - They are NEVER written to state or persisted to tasks.json
+    - Image generation results update the local ComposedSlide objects
+    - Final HTML is serialized from ComposedSlide and written to state as html_content
+    - This ensures tasks_db remains JSON-serializable throughout the workflow
     """
     slides_map = state.get("slides", {})
 
@@ -68,15 +76,15 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
         return state
 
     # 2. Step One: Compose and identify image needs
-    # This part is synchronous and fast
-    composed_objects_list = []  # List of List[ComposedSlide]
+    # Keep composed objects local only. They are not JSON serializable and
+    # must never be written back into the workflow state.
+    composed_by_slide = {}
     for slide in pending_slides:
         try:
             gyml = slide.get("gyml_content")
             if gyml:
                 composed = composer.compose(gyml)
-                slide["_composed_objs"] = composed  # Temporary storage
-                composed_objects_list.append(composed)
+                composed_by_slide[id(slide)] = composed
         except Exception as e:
             print(f"   ❌ Composition failed: {e}")
             slide["html_error"] = str(e)
@@ -89,7 +97,7 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
         if "html_error" in slide:
             continue
 
-        composed_objs = slide["_composed_objs"]
+        composed_objs = composed_by_slide.get(id(slide), [])
         for s_obj in composed_objs:
             # If it has a prompt and no real URL, generate it
             print(
@@ -115,7 +123,7 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     style=s_obj.image_style,
                 )
                 generation_tasks.append(task)
-                task_to_slide.append((s_obj, None))  # (object, optional_item_dict)
+                task_to_slide.append(("accent", s_obj, None))
 
             # Block-level Multi-image (e.g., Process Arrow)
             for section in s_obj.sections:
@@ -146,7 +154,7 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                                     style="simple_drawing",
                                 )
                                 generation_tasks.append(task)
-                                task_to_slide.append((block, item))
+                                task_to_slide.append(("item", block, item))
                     elif block.type == BlockType.IMAGE.value:
                         # Standalone image block
                         prompt = block.content.get("imagePrompt") or block.content.get("prompt") or s_obj.image_prompt
@@ -166,7 +174,7 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                                 style=style_to_use
                             )
                             generation_tasks.append(task)
-                            task_to_slide.append((block, None))
+                            task_to_slide.append(("block_image", block, None))
 
     # Run image generations concurrently with a semaphore to avoid rate limits
     if generation_tasks:
@@ -186,21 +194,19 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
         results = await asyncio.gather(*(sem_task(t) for t in generation_tasks))
 
         # Map results back to ComposedSlide or Item dicts
-        for (target, item), url in zip(task_to_slide, results):
+        for (target_kind, target, item), url in zip(task_to_slide, results):
             if url:
-                if item:
+                if target_kind == "item" and item:
                     # Target is a block, we update the item dict inside it
                     item["image_url"] = url
                     print(f"   ✅ Item image generated for {target.type}")
-                else:
-                    if target.type == BlockType.IMAGE.value:
-                        target.content["url"] = url
-                        print(f"   ✅ Standalone image generated for {target.id}")
-                    else:
-                        # Target is a ComposedSlide (accent image)
-                        target.accent_image_url = url
-                        target.accent_image_alt = f"Generated image for {target.topic}"
-                        print(f"   ✅ Accent image generated for {target.id}")
+                elif target_kind == "block_image":
+                    target.content["url"] = url
+                    print(f"   ✅ Standalone image generated for {target.type}")
+                elif target_kind == "accent":
+                    target.accent_image_url = url
+                    target.accent_image_alt = f"Generated image for {target.topic}"
+                    print(f"   ✅ Accent image generated for {target.id}")
             else:
                 print(
                     f"   ⚠ Image generation failed for a target (possibly timeout or rate limit)"
@@ -213,8 +219,8 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
             continue
 
         try:
-            composed_objs = slide.pop("_composed_objs", None)
-            if composed_objs:
+            composed_objs = composed_by_slide.get(id(slide))
+            if composed_objs and isinstance(composed_objs, list) and len(composed_objs) > 0:
                 # Serialize
                 gyml_sections = serializer.serialize_many(composed_objs)
                 # Render
@@ -223,9 +229,12 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 slide["html_content"] = html_output
                 rendered_count += 1
                 print(f"   ✅ Rendered {slide.get('slide_id', 'unknown')}")
+            elif not composed_objs:
+                print(f"   ⚠️ No composed objects for {slide.get('slide_id', 'unknown')}")
         except Exception as e:
             print(f"   ❌ Serialization/Rendering failed: {e}")
             slide["html_error"] = str(e)
 
     print(f"🎨 [Rendering Node] Completed. Rendered {rendered_count} slide(s).")
-    return state
+    # Return only the modified fields to avoid concurrent write conflicts with parallel nodes
+    return {"slides": slides_map}

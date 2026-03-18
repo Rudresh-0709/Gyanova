@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import Link from "next/link";
 import {
-    ArrowLeft,
     ChevronLeft,
     ChevronRight,
     Play,
@@ -28,6 +27,11 @@ interface SlideEntry {
     html_doc: string;           // single-section HTML document
     narration_segments: NarrationSegment[];
     subtopic_name: string;
+}
+
+interface LessonRenderResult {
+    lesson_intro_narration?: unknown;
+    slides?: Record<string, Array<{ html_content?: string | null }> | undefined>;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────
@@ -55,7 +59,7 @@ function toAudioHttpUrl(fsPath: string | null): string | null {
 /**
  * Generate a simple "Intro" slide HTML for the lesson opening.
  */
-function generateIntroHtml(topic: string, title?: string): string {
+function generateIntroHtml(topic: string): string {
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -232,6 +236,24 @@ function splitDeckIntoSlides(html: string): string[] {
     }
 }
 
+function hasRenderableLessonContent(
+    result: LessonRenderResult | null | undefined
+): boolean {
+    if (result?.lesson_intro_narration) {
+        return true;
+    }
+
+    const slideGroups = Object.values(result?.slides || {});
+    return slideGroups.some((slides) =>
+        Array.isArray(slides) &&
+        slides.some(
+            (slide) =>
+                typeof slide?.html_content === "string" &&
+                slide.html_content.trim().length > 0
+        )
+    );
+}
+
 // ─── Component ──────────────────────────────────────────────────────────
 
 export default function LessonViewPage() {
@@ -286,9 +308,8 @@ export default function LessonViewPage() {
                     setError("This lesson failed to generate.");
                     setLoading(false);
                 } else if (data.status === "processing" || data.status === "pending" || data.status === "planning_completed") {
-                    // Still cooking? If we have SOME slides, we can stop "initial loading" 
-                    // but WE MUST KEEP POLLING.
-                    if (data.result && Object.keys(data.result.slides || {}).length > 0) {
+                    // Only leave the loading state once the browser has actual HTML it can render.
+                    if (hasRenderableLessonContent(data.result)) {
                         setLoading(false);
                     }
                     pollTimer = setTimeout(fetchLesson, 3000);
@@ -332,7 +353,11 @@ export default function LessonViewPage() {
         lessonData.sub_topics?.forEach((sub: any) => {
             const slides = lessonData.slides?.[sub.id] || [];
             slides.forEach((slide: any) => {
-                const docs = splitDeckIntoSlides(slide.html_content || "");
+                if (!slide.html_content?.trim()) {
+                    return;
+                }
+
+                const docs = splitDeckIntoSlides(slide.html_content);
                 docs.forEach((doc, docIdx) => {
                     list.push({
                         slide_id: `${slide.slide_id || "unknown"}_${docIdx}`,
@@ -350,14 +375,20 @@ export default function LessonViewPage() {
             });
         });
 
-        setSlideList(prev => {
-            // Only update if the length changed to avoid unnecessary re-renders
-            if (prev.length !== list.length) {
-                return list;
-            }
-            return prev;
-        });
+        setSlideList(list);
     }, [lessonData]);
+
+    useEffect(() => {
+        if (slideList.length === 0) {
+            setCurrentSlideIdx(0);
+            return;
+        }
+
+        if (currentSlideIdx > slideList.length - 1) {
+            setCurrentSlideIdx(slideList.length - 1);
+            setCurrentSegIdx(-1);
+        }
+    }, [currentSlideIdx, slideList.length]);
 
     // ─── Controls auto-hide ─────────────────────────────────────────────
     const resetControlsTimer = useCallback(() => {
@@ -431,8 +462,9 @@ export default function LessonViewPage() {
             const seg = segments[segIdx];
             setCurrentSegIdx(segIdx);
 
-            // Reveal animation segment in the iframe
-            postToSlide({ type: "revealSegment", index: segIdx });
+            // NOTE: All content is revealed at slide start (revealAll)
+            // No step-by-step animation for now — just play audio segments sequentially
+            // postToSlide({ type: "revealSegment", index: segIdx });
 
             // Play audio
             if (seg.audio_url && audioRef.current) {
@@ -477,17 +509,22 @@ export default function LessonViewPage() {
         setIframeReady(false);
     }, [currentSlideIdx, slideList.length]); // reset if list changes too
 
-    // When iframe signals ready AND we're playing, start from segment 0
+    // When iframe signals ready AND we're playing, reveal all content immediately
+    // (No step-by-step animation for now, just show everything)
     useEffect(() => {
         if (!iframeReady || !isPlaying || slideList.length === 0) return;
 
         // If we are already mid-way through a slide (segIdx >= 0), don't restart from 0
         if (segIdxRef.current >= 0) return;
 
-        // Iframe just signaled ready — start from segment 0
+        // Iframe just signaled ready — reveal all content and start audio from segment 0
         postToSlide({ type: "reset" });
         const t = setTimeout(() => {
-            playSegment(currentSlideIdx, 0);
+            postToSlide({ type: "revealAll" });
+            // Start playing first segment audio after revealing
+            setTimeout(() => {
+                playSegment(currentSlideIdx, 0);
+            }, 100);
         }, 150);
         return () => clearTimeout(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -643,7 +680,17 @@ export default function LessonViewPage() {
         );
     }
 
-    if (!lessonData || slideList.length === 0) return null;
+    if (!lessonData || slideList.length === 0) {
+        return (
+            <div className="min-h-screen w-full bg-[#0a0f1a] flex items-center justify-center relative">
+                <BackgroundBeams className="opacity-40" />
+                <div className="text-white z-10 flex flex-col items-center gap-4 text-center px-6">
+                    <div className="w-8 h-8 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+                    <p className="animate-pulse">Waiting for slide HTML...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div

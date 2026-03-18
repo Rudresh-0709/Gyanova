@@ -5,7 +5,23 @@ Using TypedDict for LangGraph compatibility - allows dictionary-style access
 while maintaining type hints and IDE support.
 """
 
-from typing import TypedDict, Optional, List, Dict, Any
+from typing import TypedDict, Optional, List, Dict, Any, Annotated
+
+
+def merge_dict_updates(left: Dict, right: Dict) -> Dict:
+    """
+    Reducer function for merging concurrent dictionary updates.
+    
+    Used for fields that can be updated by multiple parallel nodes.
+    Right dict's values overwrite left dict's values for matching keys.
+    """
+    if not left:
+        return right if right else {}
+    if not right:
+        return left if left else {}
+    merged = left.copy()
+    merged.update(right)
+    return merged
 
 
 class TutorState(TypedDict, total=False):
@@ -35,9 +51,9 @@ class TutorState(TypedDict, total=False):
     plans: Dict[
         str, List[Dict[str, Any]]
     ]  # subtopic_id -> list of slide concepts (Phase 1)
-    slides: Dict[
-        str, List[Dict[str, Any]]
-    ]  # subtopic_id -> list of full slides (Phase 2)
+    slides: Annotated[
+        Dict[str, List[Dict[str, Any]]], merge_dict_updates
+    ]  # subtopic_id -> list of full slides (Phase 2); uses reducer to merge concurrent updates
 
     # Narration
     intro_text: str

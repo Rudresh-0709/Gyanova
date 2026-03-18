@@ -389,10 +389,7 @@ class GyMLContentGenerator:
             "Title card",
             "Image and text",
             "Text and image",
-            "Rich text",
             "Formula block",
-            "Definition",
-            "Quote",
         ]
         is_sparse = normalized_template in SPARSE_TEMPLATES
 
@@ -742,14 +739,27 @@ class GyMLContentGenerator:
                 if block.get("type") == "smart_layout":
                     block["variant"] = chosen_variant
 
-        # Validate and ensure primary_block_index
-        return self._validate_primary_block(result)
+        # Validate and ensure primary_block_index (pass template for sparse template handling)
+        return self._validate_primary_block(result, template=normalized_template)
 
-    def _validate_primary_block(self, content: Dict[str, Any]) -> Dict[str, Any]:
+    def _validate_primary_block(self, content: Dict[str, Any], template: str = "") -> Dict[str, Any]:
         """
         Ensure primary_block_index is valid and points to a structured teaching block.
+        For sparse templates (Title card, Formula block, etc.), primary_block_index can be None.
         If the LLM didn't provide one or it's invalid, infer it from the content blocks.
         """
+        # Sparse templates don't require a primary teaching block
+        SPARSE_TEMPLATES = [
+            "Title card",
+            "Image and text",
+            "Text and image",
+            "Formula block",
+        ]
+        if template in SPARSE_TEMPLATES:
+            # For sparse templates, primary_block_index is optional
+            content["primary_block_index"] = None
+            return content
+        
         blocks = content.get("contentBlocks", [])
         idx = content.get("primary_block_index")
 

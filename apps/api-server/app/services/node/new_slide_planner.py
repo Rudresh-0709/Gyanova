@@ -400,6 +400,122 @@ CONTENT_ANGLES = [
 ]
 
 
+SAFE_FALLBACK_SEQUENCE = [
+    {
+        "intent": "concept",
+        "purpose": "intuition",
+        "selected_template": "Title card",
+        "role": "Introduce",
+        "goal": "Open the subtopic with relevance and curiosity.",
+        "visual_required": True,
+        "visual_type": "image",
+        "image_role": "accent",
+        "target_density": "sparse",
+        "content_angle": "overview",
+    },
+    {
+        "intent": "definition",
+        "purpose": "definition",
+        "selected_template": "Title with bullets",
+        "role": "Guide",
+        "goal": "Explain the core idea with a few clear points.",
+        "visual_required": False,
+        "visual_type": "none",
+        "image_role": "none",
+        "target_density": "standard",
+        "content_angle": "overview",
+    },
+    {
+        "intent": "process",
+        "purpose": "process",
+        "selected_template": "Process arrow block",
+        "role": "Interpret",
+        "goal": "Show how the idea works step by step.",
+        "visual_required": True,
+        "visual_type": "diagram",
+        "image_role": "content",
+        "target_density": "balanced",
+        "content_angle": "mechanism",
+    },
+    {
+        "intent": "example",
+        "purpose": "reinforcement",
+        "selected_template": "Icons with text",
+        "role": "Connect",
+        "goal": "Ground the concept in examples or applications.",
+        "visual_required": False,
+        "visual_type": "none",
+        "image_role": "none",
+        "target_density": "dense",
+        "content_angle": "application",
+    },
+]
+
+
+def _rebalance_density_targets(slides: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Repair density concentration instead of rejecting the full plan."""
+    if not slides:
+        return slides
+
+    preferred_cycle = ["sparse", "balanced", "standard", "dense"]
+
+    while True:
+        density_counts: Dict[str, int] = {}
+        for slide in slides:
+            density = slide.get("target_density", "standard")
+            density_counts[density] = density_counts.get(density, 0) + 1
+
+        dominant_density = max(density_counts, key=density_counts.get)
+        dominant_count = density_counts[dominant_density]
+        if dominant_count <= len(slides) / 2:
+            break
+
+        for idx, slide in enumerate(slides):
+            if slide.get("target_density") == dominant_density:
+                slide["target_density"] = preferred_cycle[idx % len(preferred_cycle)]
+                dominant_count -= 1
+                if dominant_count <= len(slides) / 2:
+                    break
+
+    return slides
+
+
+def _ensure_sparse_and_dense_mix(slides: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Guarantee at least one sparse slide and one dense slide."""
+    if not slides:
+        return slides
+
+    densities = {slide.get("target_density") for slide in slides}
+
+    if "sparse" not in densities and "ultra_sparse" not in densities:
+        slides[0]["target_density"] = "sparse"
+        slides[0]["selected_template"] = "Title card"
+        slides[0]["image_role"] = "accent"
+        slides[0]["visual_required"] = True
+        slides[0]["visual_type"] = "image"
+        slides[0]["content_angle"] = slides[0].get("content_angle") or "overview"
+
+    densities = {slide.get("target_density") for slide in slides}
+    if "dense" not in densities and "super_dense" not in densities and len(slides) > 1:
+        slides[-1]["target_density"] = "dense"
+
+    return slides
+
+
+def _build_safe_fallback_plan(subtopic: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a small deterministic lesson skeleton instead of a single fallback slide."""
+    subtopic_name = subtopic.get("name", "Untitled")
+    slides: List[Dict[str, Any]] = []
+
+    for idx, base in enumerate(SAFE_FALLBACK_SEQUENCE):
+        slide = dict(base)
+        slide["title"] = subtopic_name if idx == 0 else f"{subtopic_name} ({idx + 1})"
+        slide["reasoning"] = "Auto-generated safe fallback after planning retries failed"
+        slides.append(slide)
+
+    return {"slides": slides}
+
+
 def plan_slides_for_subtopic(
     subtopic: Dict[str, Any], teacher_profile: str = "Expert Teacher"
 ) -> Dict[str, Any]:
@@ -622,16 +738,8 @@ def plan_slides_for_subtopic(
         
                     validated_slides.append(slide)
     
-            # ---- Density Diversity Validation ----
-            if validated_slides:
-                density_counts = {}
-                for s in validated_slides:
-                    d = s["target_density"]
-                    density_counts[d] = density_counts.get(d, 0) + 1
-                
-                max_density_count = max(density_counts.values()) if density_counts else 0
-                if max_density_count > len(validated_slides) / 2:
-                    raise ValueError("Density rejection: >50% of slides target the same density tier.")
+            validated_slides = _rebalance_density_targets(validated_slides)
+            validated_slides = _ensure_sparse_and_dense_mix(validated_slides)
     
             data["slides"] = validated_slides
             # ---- VALIDATION ENDS HERE ----
@@ -705,22 +813,7 @@ def plan_slides_for_subtopic(
 
     # If we exhaust retries, return fallback
     print(f"Failed to generate valid slide plan after {MAX_RETRIES} attempts. Using fallback.")
-    return {
-        "slides": [
-            {
-                "title": subtopic.get("name", "Untitled"),
-                "intent": "concept",
-                "purpose": "definition",
-                "selected_template": "Title with bullets",
-                "role": "Introduce",
-                "goal": "Fallback slide",
-                "reasoning": "Auto-generated fallback due to planning error",
-                "visual_required": False,
-                "visual_type": "none",
-                "target_density": "standard",
-            }
-        ]
-    }
+    return _build_safe_fallback_plan(subtopic)
 
 
 if __name__ == "__main__":

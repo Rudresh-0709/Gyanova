@@ -47,12 +47,23 @@ def extract_topic(state: TutorState) -> TutorState:
         1. Identify the EXACT academic topic or concept from the user's input.
         2. CRITICAL: Do NOT rephrase or "clean" the topic into a different name if it is already specific. 
            - If the user says "Physical and Chemical Reactions", the topic MUST be "Physical and Chemical Reactions".
-           - Do NOT narrow it down to "Types of Chemical Reactions" or "Mechanisms".
+           - If the user says "Assumed Mean", the topic MUST be "Assumed Mean".
+           - Do NOT narrow it down to "Types of Chemical Reactions" or "Mechanisms" - preserve the user's exact phrasing.
            - If there are multiple related parts (e.g., "A and B"), preserve BOTH.
         3. Estimate the topic's granularity:
-            - "Too Broad" (e.g., "Math", "Science")
-            - "Focused" (e.g., "Solving Quadratic Equations", "Physical and Chemical Reactions")
+            - "Too Broad" (e.g., "Math", "Science", "Statistics")
+            - "Focused" (e.g., "Solving Quadratic Equations", "Physical and Chemical Reactions", "Assumed Mean")
             - "Too Narrow" (e.g., "Solving 3x + 2 = 11 using inverse operations")
+
+        IMPORTANT: Accept ANY single topic or concept as valid, even if it's:
+        - Technical/specialized terms (e.g., "Assumed Mean", "Photosynthesis", "Recursion")
+        - Compound topics (e.g., "Limits and Continuity")
+        - Niche subjects (e.g., "Byzantine Fault Tolerance")
+        
+        ONLY return "No clear topic detected" if the input is:
+        - Completely empty or just punctuation
+        - Random gibberish with no semantic meaning
+        - Not a single identifiable topic (e.g., "tell me a story" or "how are you")
 
         Return your response as a JSON object in the following format:
         {
@@ -60,7 +71,6 @@ def extract_topic(state: TutorState) -> TutorState:
             "granularity": "<Too Broad | Focused | Too Narrow>"
         }
 
-        If the input is vague, set topic to "No clear topic detected" and granularity to "N/A".
         Keep the output clean with no extra commentary.
         """
 
@@ -84,12 +94,19 @@ def extract_topic(state: TutorState) -> TutorState:
     try:
         parsed = json.loads(json_string)
     except json.JSONDecodeError:
-        parsed = {"topic": "No clear topic detected", "granularity": "N/A"}
-    except json.JSONDecodeError:
-        parsed = {"topic": "No clear topic detected", "granularity": "N/A"}
+        # If LLM fails to return JSON, treat the input as-is (most likely a valid topic)
+        user_input = state.get("user_input", "").strip()
+        if user_input:
+            parsed = {"topic": user_input, "granularity": "Focused"}
+        else:
+            parsed = {"topic": "No clear topic detected", "granularity": "N/A"}
 
     # ✅ Store clean values in state
     state["topic"] = parsed.get("topic", "No clear topic detected")
     state["granularity"] = parsed.get("granularity", "N/A")
 
-    return state
+    # Return only modified fields for clean state management
+    return {
+        "topic": state["topic"],
+        "granularity": state["granularity"],
+    }
