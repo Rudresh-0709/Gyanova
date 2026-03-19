@@ -1,0 +1,434 @@
+
+
+Here's the comprehensive agent prompt:
+
+---
+
+## Agent Prompt: Fix Sparse Template Pipeline
+
+**Objective:** Fix the slide generation pipeline so that sparse templates ("Title Card", "Image and text", "Text and image") generate correct content, pass validation, and trigger their existing sparse narration code properly.
+
+**Problem Summary:**
+The pipeline has a two-part failure for sparse templates:
+1. The GyML generator doesn't know what blocks to produce for sparse templates, so the LLM falls back to generic paragraphs
+2. The validator requires a primary block, which sparse templates intentionally don't have
+3. This causes validation failure → retry → fallback to hardcoded bullets → the existing sparse narration code in `generate_narration()` never activates on correct content
+
+**The existing sparse narration code in `content_generation_node.py` (around line 500) already handles sparse templates correctly — it just never receives properly generated content.**
+
+---
+
+### Step 1: Create Sparse Template Schema Definition
+
+**File:** `apps/api-server/app/services/node/narration_techniques.py`
+
+Add the following schema dictionary either in this file (since it already contains `NARRATION_TECHNIQUES` and `get_narration_technique`) or in a new shared constants file that both the generator and validator can import:
+
+```python
+SPARSE_TEMPLATE_SCHEMAS = {
+    "Title card": {
+        "required_blocks": ["intro_paragraph"],
+        "optional_blocks": ["annotation_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate ONLY a single intro_paragraph block. "
+            "This is a title card — one powerful engagement hook sentence or short paragraph. "
+            "No lists, no tables, no smart_layout, no structured content. Just the intro."
+        ),
+        "max_blocks": 2,
+    },
+    "Image and text": {
+        "required_blocks": ["image", "rich_text"],
+        "optional_blocks": ["annotation_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table"],
+        "instruction": (
+            "Generate an image block with descriptive alt text and a clear visual description, "
+            "followed by a rich_text block that explains or narrates the visual content. "
+            "No smart_layout, no lists, no tables."
+        ),
+        "max_blocks": 4,
+    },
+    "Text and image": {
+        "required_blocks": ["intro_paragraph", "image"],
+        "optional_blocks": ["rich_text", "annotation_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table"],
+        "instruction": (
+            "Generate an intro_paragraph that explains the concept first, "
+            "then an image block as visual reinforcement with descriptive alt text. "
+            "No smart_layout, no lists, no tables."
+        ),
+        "max_blocks": 4,
+    },
+}
+
+def get_sparse_template_schema(template_name):
+    """
+    Returns the sparse template schema if template_name is a sparse template.
+    Returns None if it's a standard template.
+    Case-insensitive matching.
+    """
+    if not template_name:
+        return None
+    normalized = template_name.strip().lower()
+    for key, schema in SPARSE_TEMPLATE_SCHEMAS.items():
+        if key.lower() == normalized:
+            return schema
+    return None
+
+def is_sparse_template(template_name):
+    """Quick check if a template is sparse."""
+    return get_sparse_template_schema(template_name) is not None
+```
+
+**Important:** This dictionary is the single source of truth. Both the generator and validator import from here. Do NOT duplicate these definitions.
+
+---
+
+### Step 2: Update the GyML Generator Prompt
+
+**File:** `apps/api-server/app/services/node/slides/gyml/generator.py`
+
+Find the section where the prompt is built for the LLM (around line 560 where `is_sparse` is checked and the prompt says "DO NOT use smart_layout").
+
+**Replace the existing sparse template prompt handling with:**
+
+```python
+from app.services.node.narration_techniques import get_sparse_template_schema, is_sparse_template
+
+# ... in the prompt building section:
+
+schema = get_sparse_template_schema(template_name)
+
+if schema:
+    # Sparse template — give the LLM explicit structural guidance
+    sparse_prompt_section = f"""
+
+TEMPLATE STRUCTURE REQUIREMENT (STRICT):
+Template type: {template_name}
+
+{schema['instruction']}
+
+REQUIRED blocks (MUST be present in your output):
+{', '.join(schema['required_blocks'])}
+
+FORBIDDEN blocks (MUST NOT appear in your output):
+{', '.join(schema['forbidden_blocks'])}
+
+Maximum total blocks allowed: {schema['max_blocks']}
+
+DO NOT generate a primary content block (no smart_layout, no bullet_list, no table).
+This is a sparse template — it uses minimal, focused content blocks only.
+"""
+    prompt += sparse_prompt_section
+else:
+    # Standard template — use existing prompt logic
+    # (keep your current code here unchanged)
+    pass
+```
+
+**Also find** the existing `SPARSE_TEMPLATES` list in generator.py and either remove it or replace it:
+
+```python
+# OLD (remove or replace):
+# SPARSE_TEMPLATES = ["Title card", "Image and text", "Text and image"]
+# is_sparse = normalized_template in SPARSE_TEMPLATES
+
+# NEW:
+from app.services.node.narration_techniques import is_sparse_template
+is_sparse = is_sparse_template(template_name)
+```
+
+This ensures the generator and validator use the exact same list of sparse templates.
+
+---
+
+### Step 3: Create Sparse Template Validator
+
+**File:** `apps/api-server/app/services/node/content_generation_node.py`
+
+Add this new validation function. Place it near the existing `_validate_and_ensure_primary_block` function:
+
+```python
+from app.services.node.narration_techniques import get_sparse_template_schema, is_sparse_template
+
+def _validate_sparse_template(raw_content, template_name):
+    """
+    Validates content generated for sparse templates.
+    
+    Sparse templates don't need a primary block. Instead, we verify:
+    1. All required blocks for this template type are present
+    2. No forbidden blocks are present
+    3. Total block count doesn't exceed the maximum
+    
+    Returns:
+        validated content dict if valid, None if validation fails
+    """
+    schema = get_sparse_template_schema(template_name)
+    if not schema:
+        print(f"    ⚠ No sparse schema found for '{template_name}'")
+        return None
+
+    # Extract block types from the generated content
+    # Adapt this to however your content structure works
+    blocks = []
+    if isinstance(raw_content, dict):
+        # If content is a dict with a 'blocks' key
+        content_blocks = raw_content.get('blocks', [])
+        if isinstance(content_blocks, list):
+            blocks = [b.get('type', '') for b in content_blocks if isinstance(b, dict)]
+        # Also check top-level keys that might be block types
+        for key in raw_content.keys():
+            if key not in ('blocks', 'metadata', 'template_name', 'primary_block_index'):
+                blocks.append(key)
+    
+    if not blocks:
+        print(f"    ✗ Sparse validation: No blocks found in content")
+        return None
+
+    print(f"    ℹ Sparse validation for '{template_name}': found blocks = {blocks}")
+
+    # Check required blocks exist
+    missing = []
+    for required in schema['required_blocks']:
+        if required not in blocks:
+            missing.append(required)
+    
+    if missing:
+        print(f"    ✗ Sparse template '{template_name}' missing required blocks: {missing}")
+        return None
+
+    # Check forbidden blocks absent
+    violations = []
+    for forbidden in schema['forbidden_blocks']:
+        if forbidden in blocks:
+            violations.append(forbidden)
+    
+    if violations:
+        print(f"    ✗ Sparse template '{template_name}' contains forbidden blocks: {violations}")
+        return None
+
+    # Check max blocks
+    if len(blocks) > schema['max_blocks']:
+        print(f"    ⚠ Sparse template '{template_name}' has {len(blocks)} blocks (max: {schema['max_blocks']}), trimming...")
+        # Optionally trim excess blocks here instead of failing
+        # For now, still accept it but warn
+
+    print(f"    ✓ Sparse template '{template_name}' validated successfully")
+    return raw_content
+```
+
+---
+
+### Step 4: Update the Main Generation Flow
+
+**File:** `apps/api-server/app/services/node/content_generation_node.py`
+
+Find the main generation flow around line 745 where `_validate_and_ensure_primary_block` is called and the retry/fallback logic lives.
+
+**Replace the validation section with a branching path:**
+
+```python
+# Around line 745 in the generation flow:
+
+# ─── VALIDATION ───
+if is_sparse_template(selected_template):
+    # ═══ SPARSE TEMPLATE PATH ═══
+    print(f"    ℹ Sparse template detected: '{selected_template}'")
+    validated = _validate_sparse_template(raw_content, selected_template)
+    
+    if validated is None:
+        print(f"    🔄 Sparse template validation failed, attempting regeneration...")
+        
+        # Retry once with even more explicit constraints
+        retry_content = _regenerate_with_constraints(
+            selected_template, 
+            topic, 
+            # Pass any other required params
+        )
+        
+        if retry_content is not None:
+            validated = _validate_sparse_template(retry_content, selected_template)
+        
+        if validated is None:
+            # Final fallback: manually construct minimal valid content
+            print(f"    ⚠ Sparse template fallback: constructing minimal '{selected_template}' content")
+            validated = _construct_sparse_fallback(selected_template, topic)
+    
+    # Flag that this is sparse — narration generator needs to know
+    is_sparse_content = True
+
+else:
+    # ═══ STANDARD TEMPLATE PATH ═══
+    validated = _validate_and_ensure_primary_block(raw_content)
+    is_sparse_content = False
+    
+    if validated is None:
+        print("    🔄 Standard template validation failed, regenerating...")
+        # (keep your existing retry/fallback logic here unchanged)
+```
+
+**Also add the sparse fallback constructor:**
+
+```python
+def _construct_sparse_fallback(template_name, topic):
+    """
+    Constructs minimal valid content for a sparse template
+    when generation and retry both fail.
+    """
+    schema = get_sparse_template_schema(template_name)
+    if not schema:
+        return None
+
+    normalized = template_name.strip().lower()
+    
+    if normalized == "title card":
+        return {
+            "blocks": [
+                {
+                    "type": "intro_paragraph",
+                    "content": f"Exploring {topic}"
+                }
+            ],
+            "primary_block_index": None,
+            "template_name": template_name,
+        }
+    elif normalized == "image and text":
+        return {
+            "blocks": [
+                {
+                    "type": "image",
+                    "alt": f"Visual representation of {topic}",
+                    "description": f"An illustration showing key aspects of {topic}"
+                },
+                {
+                    "type": "rich_text",
+                    "content": f"Let's explore {topic} through this visual guide."
+                }
+            ],
+            "primary_block_index": None,
+            "template_name": template_name,
+        }
+    elif normalized == "text and image":
+        return {
+            "blocks": [
+                {
+                    "type": "intro_paragraph",
+                    "content": f"Understanding {topic} starts with the fundamentals."
+                },
+                {
+                    "type": "image",
+                    "alt": f"Visual representation of {topic}",
+                    "description": f"An illustration reinforcing the concept of {topic}"
+                }
+            ],
+            "primary_block_index": None,
+            "template_name": template_name,
+        }
+    
+    return None
+```
+
+---
+
+### Step 5: Ensure Narration Code Receives the Correct Flag
+
+**File:** `apps/api-server/app/services/node/content_generation_node.py`
+
+Find where `generate_narration` is called (around line 787). Make sure the sparse flag is passed through:
+
+```python
+# Around line 787:
+narration = generate_narration(
+    content=validated,
+    template_name=selected_template,
+    topic=topic,
+    # The existing code already does:
+    # technique = get_narration_technique(template_name)
+    # is_sparse = technique is not None
+    # So it should work automatically IF validated content is correct.
+    # No changes needed here — just verify the content flowing in is valid.
+)
+```
+
+The existing `generate_narration` code already checks `get_narration_technique(template_name)` to determine if it's sparse. Since we haven't changed the narration techniques, this should activate correctly now that it receives properly structured content.
+
+---
+
+### Step 6: Update the Slide Planner
+
+**File:** `apps/api-server/app/services/node/new_slide_planner.py`
+
+Find where `selected_template` is set (around line 400-450). Ensure it passes through to the generation node cleanly:
+
+```python
+# Verify this value flows unchanged to content_generation_node
+# The planner should NOT modify or normalize template_name
+# before passing it to the generator.
+# Just verify the pipeline:
+#   planner sets selected_template 
+#   → content_generation_node receives it
+#   → generator.py receives it  
+#   → narration code receives it
+# All should be the same string value.
+```
+
+No code changes needed here unless the template name is being normalized inconsistently (e.g., "Title card" vs "Title Card" vs "title_card"). If it is, standardize to whatever case `SPARSE_TEMPLATE_SCHEMAS` uses.
+
+---
+
+### Testing Checklist
+
+After implementing all changes, verify:
+
+1. **Title Card template:**
+   - [ ] Generator produces only an `intro_paragraph` block
+   - [ ] Validator accepts it without requiring a primary block
+   - [ ] Narration code activates with the "Title Card" technique (1 segment)
+   - [ ] No fallback to hardcoded bullets
+
+2. **Image and Text template:**
+   - [ ] Generator produces `image` + `rich_text` blocks
+   - [ ] Validator accepts it
+   - [ ] Narration code activates with correct technique (3 segments)
+
+3. **Text and Image template:**
+   - [ ] Generator produces `intro_paragraph` + `image` blocks
+   - [ ] Validator accepts it
+   - [ ] Narration code activates with correct technique (3 segments)
+
+4. **Standard templates (regression):**
+   - [ ] Bullet list, table, smart_layout templates still work exactly as before
+   - [ ] Their validation path is unchanged
+   - [ ] No impact on existing narration generation
+
+5. **Fallback paths:**
+   - [ ] If sparse generation fails, retry runs with stronger constraints
+   - [ ] If retry fails, fallback constructs minimal valid content
+   - [ ] Fallback content passes sparse validation
+   - [ ] Narration still generates (even if content is minimal)
+
+6. **Import chain:**
+   - [ ] `narration_techniques.py` exports `SPARSE_TEMPLATE_SCHEMAS`, `get_sparse_template_schema`, `is_sparse_template`
+   - [ ] `generator.py` imports from `narration_techniques.py` (not its own list)
+   - [ ] `content_generation_node.py` imports from `narration_techniques.py`
+   - [ ] No circular imports
+
+---
+
+### Files Modified
+
+| File | Changes |
+|---|---|
+| `narration_techniques.py` | Add `SPARSE_TEMPLATE_SCHEMAS` dict, `get_sparse_template_schema()`, `is_sparse_template()` |
+| `generator.py` | Replace hardcoded `SPARSE_TEMPLATES` list with import; add structured prompt section for sparse templates |
+| `content_generation_node.py` | Add `_validate_sparse_template()`, `_construct_sparse_fallback()`; branch validation logic by template type |
+| `new_slide_planner.py` | Verify only — ensure template name passes through unchanged |
+
+---
+
+### Important Notes
+
+- **Do NOT modify the existing `generate_narration()` sparse handling code.** It already works correctly. The problem is that it never received valid content. Once we fix generation + validation, it will activate automatically.
+- **Do NOT modify `_validate_and_ensure_primary_block()`.** Standard templates should continue using it unchanged. We're adding a parallel path, not changing the existing one.
+- **The `_construct_sparse_fallback()` content is intentionally minimal.** It exists only as a last resort so the pipeline doesn't crash. The LLM-generated content should be used whenever possible.
+- **Adapt the block extraction logic in `_validate_sparse_template()`** to match your actual content structure. I've provided a general implementation — you may need to adjust how blocks are extracted from `raw_content` based on your GyML format.

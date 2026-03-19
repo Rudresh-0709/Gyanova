@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subtopic Introduction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #0a0f1a;
+        }
+
+        .container {
+            display: flex;
+            height: 100%;
+            position: relative;
+            background: #0a0f1a;
+        }
+
+        .image-section {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1f3a 0%, #0f1419 100%);
+        }
+
+        .background-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 15, 26, 0.4);
+            backdrop-filter: blur(1px);
+        }
+
+        .text-section {
+            flex: 0 0 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4rem 3rem;
+            color: white;
+            background: linear-gradient(135deg, rgba(10, 15, 26, 0.95) 0%, rgba(30, 40, 70, 0.85) 100%);
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        .badge {
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: rgba(99, 102, 241, 0.95);
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        h1 {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 800;
+            margin: 0 0 1rem 0;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+        }
+
+        .tagline {
+            font-size: 1.05rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+            font-weight: 400;
+            line-height: 1.7;
+            letter-spacing: 0.005em;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .text-section {
+                flex: 0 0 55%;
+                padding: 3rem 2rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .tagline {
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .image-section {
+                flex: 0 0 40%;
+                min-height: 40vh;
+            }
+
+            .text-section {
+                flex: 1;
+                padding: 2rem;
+                justify-content: flex-start;
+                padding-top: 2.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .tagline {
+                font-size: 0.9rem;
+            }
+
+            .badge {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="image-section">
+            {% if image_url %}
+            <img src="{{ image_url }}" alt="Subtopic introduction background" class="background-image">
+            {% endif %}
+            <div class="image-overlay"></div>
+        </div>
+        <div class="text-section">
+            {% if badge %}
+            <div class="badge">{{ badge }}</div>
+            {% endif %}
+            {% if title %}
+            <h1>{{ title }}</h1>
+            {% endif %}
+            {% if tagline %}
+            <p class="tagline">{{ tagline }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Signal readiness to parent iframe (if embedded)
+        if (window.parent !== window) {
+            window.parent.postMessage({ type: 'iframeReady' }, '*');
+        }
+
+        // Relay user interaction
+        window.addEventListener('mousemove', function() {
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'userInteraction' }, '*');
+            }
+        });
+
+        window.addEventListener('click', function() {
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'userInteraction' }, '*');
+            }
+        });
+    </script>
+</body>
+</html>

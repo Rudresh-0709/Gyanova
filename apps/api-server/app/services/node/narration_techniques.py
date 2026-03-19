@@ -109,8 +109,87 @@ NARRATION_TECHNIQUES: Dict[str, Dict[str, Any]] = {
 }
 
 # =============================================================================
+# SPARSE TEMPLATE SCHEMAS (STRUCTURE REQUIREMENTS)
+# =============================================================================
+# These schemas define what block types sparse templates should produce.
+# This is the single source of truth used by both the generator and validator.
+
+SPARSE_TEMPLATE_SCHEMAS: Dict[str, Dict[str, Any]] = {
+    "Title card": {
+        "required_blocks": ["intro_paragraph"],
+        "optional_blocks": ["annotation_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate ONLY a single intro_paragraph block. "
+            "This is a title card — one powerful engagement hook sentence or short paragraph. "
+            "No lists, no tables, no smart_layout, no structured content. Just the intro."
+        ),
+        "max_blocks": 2,
+    },
+    "Image and text": {
+        "required_blocks": ["image"],
+        "optional_blocks": ["rich_text", "annotation_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate an image block with descriptive alt text and a clear visual description, "
+            "followed by optional rich_text block that explains or narrates the visual content. "
+            "No smart_layout, no lists, no tables."
+        ),
+        "max_blocks": 4,
+    },
+    "Text and image": {
+        "required_blocks": ["intro_paragraph", "image"],
+        "optional_blocks": ["rich_text", "annotation_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate an intro_paragraph that explains the concept first, "
+            "then an image block as visual reinforcement with descriptive alt text. "
+            "No smart_layout, no lists, no tables."
+        ),
+        "max_blocks": 4,
+    },
+    "Formula block": {
+        "required_blocks": ["formula_block"],
+        "optional_blocks": ["intro_paragraph", "annotation_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate a formula_block with clear notation and visual structure. "
+            "Optionally include an intro_paragraph above it to introduce the formula. "
+            "No smart_layout, no lists, no tables. Formula should be visually prominent."
+        ),
+        "max_blocks": 3,
+    },
+}
+
+# =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
+
+
+def get_sparse_template_schema(template_name: str) -> Optional[Dict[str, Any]]:
+    """
+    Returns the sparse template schema if template_name is a sparse template.
+    Returns None if it's a standard template.
+    Case-insensitive matching.
+    
+    Args:
+        template_name: Name of the template
+    
+    Returns:
+        Schema dict or None if not found
+    """
+    if not template_name:
+        return None
+    normalized = template_name.strip().lower()
+    for key, schema in SPARSE_TEMPLATE_SCHEMAS.items():
+        if key.lower() == normalized:
+            return schema
+    return None
+
+
+def is_sparse_template_schema(template_name: str) -> bool:
+    """Quick check if a template is sparse (has a predefined schema)."""
+    return get_sparse_template_schema(template_name) is not None
 
 
 def get_narration_technique(template_name: str) -> Optional[Dict[str, Any]]:

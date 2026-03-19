@@ -516,6 +516,30 @@ def _build_safe_fallback_plan(subtopic: Dict[str, Any]) -> Dict[str, Any]:
     return {"slides": slides}
 
 
+def enforce_no_introduce_first_slide(slides: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Safety check: Ensure the first slide never has role="Introduce".
+    If it does, change it to "Guide".
+    
+    This rule applies because:
+    - Lesson intro narration already welcomes the student at lesson start
+    - Subtopic intro narration already bridges to this subtopic section
+    - First slide should guide/explain content, not introduce it again
+    
+    This is a critical no-redundancy rule for the intro hierarchy.
+    """
+    if not slides or len(slides) == 0:
+        return slides
+    
+    first_slide = slides[0]
+    if first_slide.get("role") == "Introduce":
+        print(f"⚠️  INTRO RULE ENFORCEMENT: First slide had role='Introduce', changing to 'Guide'")
+        first_slide["role"] = "Guide"
+        first_slide["rule_note"] = "Updated: First slide cannot be 'Introduce' (handled by lesson/subtopic intros)"
+    
+    return slides
+
+
 def plan_slides_for_subtopic(
     subtopic: Dict[str, Any], teacher_profile: str = "Expert Teacher"
 ) -> Dict[str, Any]:
@@ -566,7 +590,18 @@ def plan_slides_for_subtopic(
         If yes → "content". If no but it would look nice → "accent". If it would distract → "none".
     11. DENSITY TARGET (CRITICAL):
         Plan a mix of density levels. A lesson MUST include at least one sparse slide (hero/intro) and at least one dense slide (data/comparison). Most slides should be balanced or standard.
-    12. Output ONLY valid JSON.
+    
+    12. CRITICAL INTRO RULE - NO INTRODUCE ON FIRST SLIDE:
+        The FIRST SLIDE in your plan must NEVER have role="Introduce".
+        The first slide represents the opening of this subtopic section. It will be preceded by:
+        - A lesson intro narration (at the very start of the lesson)
+        - A subtopic intro narration (before this subtopic's slides)
+        Therefore, assign the FIRST SLIDE a different role such as:
+        - "Guide" (recommended for first slides: "Here's how we explore this...")
+        - "Interpret" or "Explain" (if showing a key visual first)
+        NEVER use "Introduce" for slide position 0. Use "Introduce" only if truly pedagogically justified for middle slides.
+    
+    13. Output ONLY valid JSON.
 
     OUTPUT FORMAT:
     {{
@@ -803,6 +838,9 @@ def plan_slides_for_subtopic(
             else:
                 data["slides"] = diverse_slides[:7]
             # ---- DIVERSITY ENFORCEMENT ENDS ----
+            
+            # ⭐ INTRO RULE ENFORCEMENT: First slide must not be "Introduce"
+            data["slides"] = enforce_no_introduce_first_slide(data["slides"])
     
             return data
     

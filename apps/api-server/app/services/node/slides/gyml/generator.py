@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 try:
     from ...llm.model_loader import load_openai
+    from ..narration_techniques import get_sparse_template_schema, is_sparse_template_schema
 except ImportError:
     # Fallback for different import paths
     # Need 5 levels up to reach api-server root from gyml/
@@ -16,6 +17,7 @@ except ImportError:
     if root not in sys.path:
         sys.path.append(root)
     from app.services.llm.model_loader import load_openai
+    from app.services.node.narration_techniques import get_sparse_template_schema, is_sparse_template_schema
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -384,14 +386,9 @@ class GyMLContentGenerator:
         # Sanitize template name
         normalized_template = template_name.strip() if template_name else ""
 
-        # These templates prioritize premium visual style over dense content
-        SPARSE_TEMPLATES = [
-            "Title card",
-            "Image and text",
-            "Text and image",
-            "Formula block",
-        ]
-        is_sparse = normalized_template in SPARSE_TEMPLATES
+        # Check if this is a sparse template (prioritizes premium visual style over dense content)
+        # Uses schema definitions from narration_techniques for centralized configuration
+        is_sparse = is_sparse_template_schema(normalized_template)
 
         # ── VISUAL VARIANT & LAYOUT ROTATION ─────────────────────────
         # Templates that use top-level block types (not smart_layout) skip variant rotation
@@ -492,6 +489,25 @@ class GyMLContentGenerator:
            YOU MUST follow this exact block pattern. Do NOT add extra blocks beyond this recipe.
         """
         print(f"    🎨 Composition style: {composition_style} ({style_info['recipe']})")
+
+        # ── SPARSE TEMPLATE GUIDANCE (Schema-based) ──────────────────────
+        sparse_guidance = ""
+        if is_sparse:
+            sparse_schema = get_sparse_template_schema(normalized_template)
+            if sparse_schema:
+                required = ", ".join(sparse_schema.get("required_blocks", []))
+                forbidden = ", ".join(sparse_schema.get("forbidden_blocks", []))
+                max_blocks = sparse_schema.get("max_blocks", 7)
+                instruction = sparse_schema.get("instruction", "")
+                sparse_guidance = f"""
+        ⚡ SPARSE TEMPLATE STRUCTURE ('{normalized_template}'):
+           {instruction}
+
+        REQUIRED blocks: {required}
+        FORBIDDEN blocks: {forbidden}
+        Max total blocks: {max_blocks}
+        Keep this template visually premium with minimal text density.
+        """
 
         prompt = f"""
         You are an expert educational content designer who creates visually rich, cognitively balanced slides.
@@ -667,7 +683,7 @@ class GyMLContentGenerator:
           ✗ Multiple competing smart_layouts (only ONE primary)
           ✗ More than 6 items in the primary block alongside supporting paragraphs
 
-        {"SPARSE VISUAL STYLE: For this '" + template_name + "' slide, keep it minimal. Use only a title and a single intro_paragraph. DO NOT use smart_layout." if is_sparse else ""}
+        {sparse_guidance}
 
         {image_role_directives}
 

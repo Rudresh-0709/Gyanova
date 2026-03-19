@@ -338,7 +338,8 @@ export default function LessonViewPage() {
             list.push({
                 slide_id: "lesson_intro",
                 title: "Introduction",
-                html_doc: generateIntroHtml(lessonData.topic || lessonData.user_input || "Lesson"),
+                // Use rendered html_doc if available, otherwise fallback to generated HTML
+                html_doc: intro.html_doc || generateIntroHtml(lessonData.topic || lessonData.user_input || "Lesson"),
                 narration_segments: [
                     {
                         text: intro.narration_text || "Welcome to the lesson.",
@@ -351,6 +352,26 @@ export default function LessonViewPage() {
         }
 
         lessonData.sub_topics?.forEach((sub: any) => {
+            // 2. Add Subtopic Intro if available (NEW)
+            if (lessonData.subtopic_intro_narrations?.[sub.id]) {
+                const subtopic_intro = lessonData.subtopic_intro_narrations[sub.id];
+                list.push({
+                    slide_id: `subtopic_intro_${sub.id}`,
+                    title: "Section Introduction",
+                    // Use rendered html_doc from backend
+                    html_doc: subtopic_intro.html_doc || "",
+                    narration_segments: [
+                        {
+                            text: subtopic_intro.narration_text || "Next section.",
+                            audio_url: toAudioHttpUrl(subtopic_intro.audio_url),
+                            segment_index: 0,
+                        },
+                    ],
+                    subtopic_name: sub.name || "",
+                });
+            }
+
+            // 3. Add Content Slides
             const slides = lessonData.slides?.[sub.id] || [];
             slides.forEach((slide: any) => {
                 if (!slide.html_content?.trim()) {

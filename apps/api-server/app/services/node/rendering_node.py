@@ -32,11 +32,76 @@ except ImportError:
         from services.node.slides.gyml.image_generator import ImageGenerator
         from services.node.slides.gyml.constants import BlockType
 
+from pathlib import Path
+
+
+def inject_template_variables(template_html: str, variables: Dict[str, Any]) -> str:
+    """
+    Simple template variable injection using Jinja2-like syntax.
+    Replaces {{ variable_name }} with actual values.
+    """
+    result = template_html
+    for key, value in variables.items():
+        if value is None:
+            value = ""
+        # Replace {{ key }} with stringified value
+        placeholder = "{{ " + key + " }}"
+        result = result.replace(placeholder, str(value))
+    return result
+
+
+async def generate_intro_html(intro_data: Dict[str, Any], intro_type: str) -> str:
+    """
+    Generate HTML for intro slides using blueprint templates.
+    
+    Args:
+        intro_data: Dict with title, tagline, badge, image_url, narration_text
+        intro_type: "lesson" or "subtopic"
+    
+    Returns:
+        Rendered HTML string
+    """
+    try:
+        # Determine blueprint path
+        if intro_type == "lesson":
+            blueprint_name = "intro_lesson.html"
+        elif intro_type == "subtopic":
+            blueprint_name = "intro_subtopic.html"
+        else:
+            return ""
+        
+        blueprint_path = Path(__file__).parent / "slides" / "blueprints" / blueprint_name
+        
+        # Load blueprint
+        if not blueprint_path.exists():
+            print(f"⚠️ Blueprint not found: {blueprint_path}")
+            return ""
+        
+        with open(blueprint_path, "r") as f:
+            template_html = f.read()
+        
+        # Extract variables from intro_data
+        variables = {
+            "title": intro_data.get("title", ""),
+            "tagline": intro_data.get("tagline", ""),
+            "badge": intro_data.get("badge", "LESSON" if intro_type == "lesson" else "SECTION"),
+            "image_url": intro_data.get("image_url", ""),
+        }
+        
+        # Inject variables
+        html_output = inject_template_variables(template_html, variables)
+        return html_output
+    
+    except Exception as e:
+        print(f"❌ Error generating intro HTML: {e}")
+        return ""
+
 
 async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """
     Incremental Rendering Node (Slide-level).
     Renders any slides that have gyml_content but no html_content yet.
+    Also generates HTML for intro slides (lesson + subtopic intros).
     Handles Leonardo AI image resolution in parallel.
     
     CRITICAL ARCHITECTURE NOTE:
@@ -53,6 +118,90 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     composer = SlideComposer()
     serializer = GyMLSerializer()
     renderer = GyMLRenderer(theme=get_theme("midnight"), animated=True)
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # PROCESS INTRO SLIDES (NEW)
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    # Collect intro image generation tasks
+    intro_image_tasks = []
+    intro_task_mapping = []
+    
+    # Process Lesson Intro
+    lesson_intro = state.get("lesson_intro_narration")
+    if lesson_intro and not lesson_intro.get("image_url"):
+        print("🎨 [Rendering Node] Generating lesson intro image...")
+        from intro_narration_node import generate_intro_image_prompt
+        prompt = generate_intro_image_prompt("lesson", lesson_intro.get("title", "Lesson"))
+        print(f"   📝 Image prompt: {prompt[:60]}...")
+        task = ImageGenerator.generate_image(
+            prompt=prompt,
+            width=1920,
+            height=1080,
+            style="dynamic"
+        )
+        intro_image_tasks.append(task)
+        intro_task_mapping.append(("lesson", lesson_intro))
+    
+    # Process Subtopic Intros
+    subtopic_intros = state.get("subtopic_intro_narrations", {})
+    for sub_id, intro in subtopic_intros.items():
+        if intro and not intro.get("image_url"):
+            print(f"🎨 [Rendering Node] Generating subtopic intro image for {sub_id}...")
+            from intro_narration_node import generate_intro_image_prompt
+            prompt = generate_intro_image_prompt("subtopic", intro.get("title", "Subtopic"))
+            print(f"   📝 Image prompt: {prompt[:60]}...")
+            task = ImageGenerator.generate_image(
+                prompt=prompt,
+                width=1920,
+                height=1080,
+                style="dynamic"
+            )
+            intro_image_tasks.append(task)
+            intro_task_mapping.append(("subtopic", intro))
+    
+    # Run intro image generation concurrently
+    if intro_image_tasks:
+        print(f"🔥 [Rendering Node] Running {len(intro_image_tasks)} intro image generation(s) SEQUENTIALLY...")
+        sem = asyncio.Semaphore(1)
+        
+        async def sem_task(task_coro):
+            async with sem:
+                await asyncio.sleep(0.5)
+                return await task_coro
+        
+        image_results = await asyncio.gather(*(sem_task(t) for t in intro_image_tasks))
+        
+        # Map results back
+        for (intro_kind, intro_obj), image_url in zip(intro_task_mapping, image_results):
+            if image_url:
+                intro_obj["image_url"] = image_url
+                print(f"✅ {intro_kind.title()} intro image generated")
+            else:
+                print(f"⚠️ {intro_kind.title()} intro image generation failed")
+    
+    # Now generate HTML for intros (with images if available)
+    lesson_intro = state.get("lesson_intro_narration")
+    if lesson_intro and not lesson_intro.get("html_doc"):
+        print("🎬 [Rendering Node] Generating lesson intro HTML...")
+        html = await generate_intro_html(lesson_intro, "lesson")
+        if html:
+            lesson_intro["html_doc"] = html
+            print("✅ Lesson intro HTML generated")
+    
+    # Process Subtopic Intros
+    subtopic_intros = state.get("subtopic_intro_narrations", {})
+    for sub_id, intro in subtopic_intros.items():
+        if intro and not intro.get("html_doc"):
+            print(f"🎬 [Rendering Node] Generating subtopic intro HTML for {sub_id}...")
+            html = await generate_intro_html(intro, "subtopic")
+            if html:
+                intro["html_doc"] = html
+                print(f"✅ Subtopic intro HTML generated for {sub_id}")
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # PROCESS REGULAR CONTENT SLIDES
+    # ═══════════════════════════════════════════════════════════════════════════
 
     # 1. Collect slides that need processing
     pending_slides = []
@@ -236,5 +385,13 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
             slide["html_error"] = str(e)
 
     print(f"🎨 [Rendering Node] Completed. Rendered {rendered_count} slide(s).")
-    # Return only the modified fields to avoid concurrent write conflicts with parallel nodes
-    return {"slides": slides_map}
+    # Return modified fields including intro slides
+    return_dict = {"slides": slides_map}
+    
+    # Include intro data if it was processed
+    if state.get("lesson_intro_narration"):
+        return_dict["lesson_intro_narration"] = state["lesson_intro_narration"]
+    if state.get("subtopic_intro_narrations"):
+        return_dict["subtopic_intro_narrations"] = state["subtopic_intro_narrations"]
+    
+    return return_dict

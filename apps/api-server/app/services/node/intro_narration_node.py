@@ -13,6 +13,40 @@ except ImportError:
     from state import TutorState
 
 
+def generate_intro_image_prompt(intro_type: str, title: str, context: str = "") -> str:
+    """
+    Generate an optimized image prompt for intro slides.
+    
+    Args:
+        intro_type: "lesson" or "subtopic"
+        title: Title of the lesson/subtopic
+        context: Additional context for the image
+    
+    Returns:
+        Image prompt suitable for Leonardo AI FLUX Schnell
+    """
+    if intro_type == "lesson":
+        # Broad, landscape context for lessons
+        return (
+            f"A professional educational illustration of '{title}'. "
+            f"Show a comprehensive overview with visual elements representing the topic. "
+            f"Modern, clean design with academic aesthetic. "
+            f"Wide landscape composition. Studio lighting. "
+            f"Educational, authoritative, inspirational. 4K quality."
+        )
+    elif intro_type == "subtopic":
+        # Focused, detailed for subtopics
+        return (
+            f"A detailed instructional illustration of '{title}'. "
+            f"Focus on core concepts and visual elements. "
+            f"Professional educational design. "
+            f"Clear, precise details. Balanced composition. "
+            f"Technical precision with artistic flair. Studio lighting. 4K quality."
+        )
+    else:
+        return f"Educational illustration of {title}. Professional design."
+
+
 def generate_lesson_opening(topic: str, difficulty: str) -> str:
     """Generates the opening narration for the entire lesson with a standard professional persona."""
     llm = load_groq()
@@ -89,6 +123,36 @@ def generate_subtopic_intro(
     return response.content.strip()
 
 
+def extract_title_and_tagline(narration_text: str, context_name: str) -> tuple:
+    """
+    Extract title and tagline from narration text.
+    
+    For lesson intro: Use the topic/main concept as title, first sentence as tagline.
+    For subtopic intro: Extract key phrase as title, main idea as tagline.
+    """
+    if not narration_text:
+        return context_name, "Explore this section"
+    
+    sentences = [s.strip() for s in narration_text.split('.') if s.strip()]
+    
+    if len(sentences) == 0:
+        return context_name, "Learn more"
+    
+    # First sentence or clause as tagline (max 100 chars)
+    tagline = sentences[0]
+    if len(tagline) > 100:
+        # Truncate to last complete phrase
+        words = tagline.split()[:15]
+        tagline = " ".join(words)
+        if not tagline.endswith('.'):
+            tagline += "..."
+    
+    # Title defaults to context_name but can be enhanced
+    title = context_name
+    
+    return title, tagline
+
+
 def intro_narration_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """LangGraph node to generate unique, style-independent lesson and subtopic intros."""
     topic = state.get("topic", "General Topic")
@@ -98,9 +162,25 @@ def intro_narration_node(state: Dict[str, Any]) -> Dict[str, Any]:
     if "lesson_intro_narration" not in state or state["lesson_intro_narration"] is None:
         print("Generating lesson opening narration...")
         lesson_intro = generate_lesson_opening(topic, difficulty)
-        state["lesson_intro_narration"] = {"narration_text": lesson_intro}
+        title, tagline = extract_title_and_tagline(lesson_intro, topic)
+        state["lesson_intro_narration"] = {
+            "narration_text": lesson_intro,
+            "title": title,
+            "tagline": tagline,
+            "badge": "LESSON",
+            "image_url": None,  # Will be set by image generation node
+            "html_doc": None,   # Will be set by rendering node
+        }
     else:
         lesson_intro = state["lesson_intro_narration"].get("narration_text", "")
+        # Ensure fields exist
+        if "title" not in state["lesson_intro_narration"]:
+            title, tagline = extract_title_and_tagline(lesson_intro, topic)
+            state["lesson_intro_narration"]["title"] = title
+            state["lesson_intro_narration"]["tagline"] = tagline
+            state["lesson_intro_narration"]["badge"] = "LESSON"
+            state["lesson_intro_narration"]["image_url"] = None
+            state["lesson_intro_narration"]["html_doc"] = None
 
     # 2. Generate Subtopic Intros (Transitionary) - Now independent of narration_style
     if (
@@ -128,7 +208,24 @@ def intro_narration_node(state: Dict[str, Any]) -> Dict[str, Any]:
             sub_intro = generate_subtopic_intro(
                 sub_name, topic, difficulty, lesson_opening=lesson_intro
             )
-            state["subtopic_intro_narrations"][sub_id] = {"narration_text": sub_intro}
+            title, tagline = extract_title_and_tagline(sub_intro, sub_name)
+            state["subtopic_intro_narrations"][sub_id] = {
+                "narration_text": sub_intro,
+                "title": title,
+                "tagline": tagline,
+                "badge": "SECTION",
+                "image_url": None,  # Will be set by image generation node
+                "html_doc": None,   # Will be set by rendering node
+            }
+        elif sub_id and "title" not in state["subtopic_intro_narrations"][sub_id]:
+            # Ensure fields exist for existing entries
+            sub_intro = state["subtopic_intro_narrations"][sub_id].get("narration_text", "")
+            title, tagline = extract_title_and_tagline(sub_intro, sub_name)
+            state["subtopic_intro_narrations"][sub_id]["title"] = title
+            state["subtopic_intro_narrations"][sub_id]["tagline"] = tagline
+            state["subtopic_intro_narrations"][sub_id]["badge"] = "SECTION"
+            state["subtopic_intro_narrations"][sub_id]["image_url"] = None
+            state["subtopic_intro_narrations"][sub_id]["html_doc"] = None
 
     # Return only modified fields for clean state management
     return {

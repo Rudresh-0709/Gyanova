@@ -38,6 +38,8 @@ try:
         get_narration_technique,
         build_technique_prompt,
         SPARSE_TEMPLATES,
+        get_sparse_template_schema,
+        is_sparse_template_schema,
     )
 except ImportError:
     try:
@@ -46,6 +48,8 @@ except ImportError:
             get_narration_technique,
             build_technique_prompt,
             SPARSE_TEMPLATES,
+            get_sparse_template_schema,
+            is_sparse_template_schema,
         )
     except ImportError:
         # Fallback if not available
@@ -188,8 +192,15 @@ def _count_primary_items(gyml_content: Optional[Dict[str, Any]]) -> int:
     if gyml_content is None:
         return 0
     blocks = gyml_content.get("contentBlocks", [])
-    primary_idx = gyml_content.get("primary_block_index", 0)
+    primary_idx = gyml_content.get("primary_block_index")
 
+    # ── Handle sparse templates (primary_block_index is None) ──
+    if primary_idx is None:
+        # Sparse templates: count total content blocks as animation units
+        # Most sparse templates have 1-2 blocks anyway
+        return len(blocks) if blocks else 1
+
+    # ── Handle standard templates (primary_block_index is an integer) ──
     if not blocks or primary_idx >= len(blocks):
         return 1
 
@@ -397,6 +408,59 @@ def _validate_and_ensure_primary_block(
     # ── Check 3: No structured blocks at all — signal regeneration ──
     print("    ✗ No valid primary block found. Regeneration needed.")
     return None
+
+
+def _validate_sparse_template(
+    generated_content: Dict[str, Any],
+    template_name: str,
+) -> Optional[Dict[str, Any]]:
+    """
+    Validate that sparse template content meets schema requirements.
+    Sparse templates don't require a primary_block_index (they use fixed narration techniques).
+    
+    Validation checks:
+    1. Has required blocks specified in schema
+    2. Doesn't use forbidden blocks
+    3. Total block count doesn't exceed max
+    
+    Returns:
+        The content dict if valid, or None if schema validation fails.
+    """
+    # Get the schema for this sparse template
+    schema = get_sparse_template_schema(template_name)
+    if not schema:
+        print(f"    ⚠ Sparse template '{template_name}' has no schema defined. Treating as standard.")
+        return generated_content
+    
+    blocks = generated_content.get("contentBlocks", [])
+    block_types = [b.get("type") for b in blocks]
+    
+    # ── Check 1: Has all required blocks ──
+    required_blocks = set(schema.get("required_blocks", []))
+    found_required = set(t for t in block_types if t in required_blocks)
+    missing_blocks = required_blocks - found_required
+    
+    if missing_blocks:
+        print(f"    ✗ Sparse template missing required blocks: {missing_blocks}")
+        return None
+    
+    # ── Check 2: Doesn't use forbidden blocks ──
+    forbidden_blocks = set(schema.get("forbidden_blocks", []))
+    used_forbidden = set(t for t in block_types if t in forbidden_blocks)
+    
+    if used_forbidden:
+        print(f"    ✗ Sparse template uses forbidden blocks: {used_forbidden}")
+        return None
+    
+    # ── Check 3: Within max block count ──
+    max_blocks = schema.get("max_blocks", 7)
+    if len(blocks) > max_blocks:
+        print(f"    ✗ Sparse template has {len(blocks)} blocks, max is {max_blocks}")
+        return None
+    
+    # ── All checks passed ──
+    print(f"    ✓ Sparse template '{template_name}' valid: {block_types}")
+    return generated_content
 
 
 def _classify_density(block_count: int, primary_item_count: int = 0) -> str:
@@ -746,7 +810,12 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 image_role=concept.get("image_role", "accent"),
             )
 
-            validated = _validate_and_ensure_primary_block(raw_content)
+            # Branch validation: sparse templates vs standard templates
+            if is_sparse_template_schema(selected_template):
+                validated = _validate_sparse_template(raw_content, selected_template)
+            else:
+                validated = _validate_and_ensure_primary_block(raw_content)
+            
             if validated is not None:
                 generated_content = validated
                 break
