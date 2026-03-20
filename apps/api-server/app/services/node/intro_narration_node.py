@@ -158,8 +158,14 @@ def intro_narration_node(state: Dict[str, Any]) -> Dict[str, Any]:
     topic = state.get("topic", "General Topic")
     difficulty = state.get("difficulty", "Beginner")
 
-    # 1. Generate Lesson Opening (Once) - Now independent of narration_style
-    if "lesson_intro_narration" not in state or state["lesson_intro_narration"] is None:
+    # 1. Generate Lesson Opening (Once) - regenerate if payload exists but narration is empty
+    lesson_intro_payload = state.get("lesson_intro_narration")
+    needs_lesson_intro = (
+        not lesson_intro_payload
+        or not str(lesson_intro_payload.get("narration_text", "")).strip()
+    )
+
+    if needs_lesson_intro:
         print("Generating lesson opening narration...")
         lesson_intro = generate_lesson_opening(topic, difficulty)
         title, tagline = extract_title_and_tagline(lesson_intro, topic)
@@ -202,7 +208,13 @@ def intro_narration_node(state: Dict[str, Any]) -> Dict[str, Any]:
         sub_id = subtopic.get("id")
         sub_name = subtopic.get("name")
 
-        if sub_id and sub_id not in state["subtopic_intro_narrations"]:
+        existing_sub_intro = state["subtopic_intro_narrations"].get(sub_id) if sub_id else None
+        needs_sub_intro = (
+            not existing_sub_intro
+            or not str(existing_sub_intro.get("narration_text", "")).strip()
+        )
+
+        if sub_id and needs_sub_intro:
             print(f"Generating transition for subtopic: {sub_name}...")
             # Pass lesson_intro to explicitly force uniqueness
             sub_intro = generate_subtopic_intro(

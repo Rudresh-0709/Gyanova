@@ -68,6 +68,7 @@ class GyMLRenderer:
         )
         self.animated = animated
         self._segment_counter = 0  # tracks current segment index per section
+        self._current_accent_image_src: Optional[str] = None
 
     def render(self, section: GyMLSection) -> str:
         """Passively render GyML section to HTML."""
@@ -176,7 +177,14 @@ class GyMLRenderer:
                 )
                 lines.append("</div>")
 
+        previous_accent_src = self._current_accent_image_src
+        self._current_accent_image_src = (
+            section.accent_image.src
+            if section.accent_image and section.accent_image.src != "placeholder"
+            else None
+        )
         lines.append(self._render_body(section.body))
+        self._current_accent_image_src = previous_accent_src
 
         # Render Image late if it's bottom layout
         if section.accent_image and render_image and not render_image_early:
@@ -416,9 +424,19 @@ class GyMLRenderer:
         if not image.src or image.src.lower() == "null":
             return ""
 
+        src = image.src.strip()
+        src_lower = src.lower()
+
+        # Replace known placeholder URLs with the generated accent image when available.
+        if src_lower == "placeholder" or "example.com/" in src_lower:
+            if self._current_accent_image_src:
+                src = self._current_accent_image_src
+            else:
+                return ""
+
         components = [
             f'<figure class="inline-image">',
-            f'<img src="{self._escape(image.src)}" '
+            f'<img src="{self._escape(src)}" '
             f'alt="{self._escape(image.alt or "")}" '
             f'loading="lazy" referrerpolicy="no-referrer" />',
         ]
@@ -2336,36 +2354,78 @@ p {
     font-weight: 500;
     color: var(--text-primary, #1a1a1a);
     margin-bottom: 0.75rem;
+    line-height: 1.55;
+    border-left: 3px solid color-mix(in srgb, var(--accent, #4f46e5) 55%, transparent);
+    padding-left: 0.85rem;
 }
 
 .p-context {
     font-style: italic;
     color: var(--text-tertiary, #666);
-    opacity: 0.9;
+    opacity: 0.95;
+    font-size: calc(var(--p-size) * 0.98);
+    background: color-mix(in srgb, var(--bg-secondary, #f8fafc) 78%, transparent);
+    border: 1px dashed color-mix(in srgb, var(--border-color, #d1d5db) 85%, transparent);
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.95rem;
 }
 
 .p-annotation {
     font-size: calc(var(--p-size) * 1.05);
-    background: var(--callout-bg, #fbfbfb);
+    background: color-mix(in srgb, var(--callout-bg, #fbfbfb) 88%, white);
     color: var(--text-primary, inherit);
-    padding: 1rem;
-    border-left: 4px solid var(--accent, #e5e7eb);
+    padding: 0.95rem 1rem;
+    border-left: 4px solid color-mix(in srgb, var(--accent, #e5e7eb) 55%, #9ca3af);
+    border-radius: 0.5rem;
     margin: 1rem 0;
+}
+
+.p-callout {
+    font-size: calc(var(--p-size) * 1.02);
+    font-weight: 500;
+    color: var(--text-primary, #1f2937);
+    background: color-mix(in srgb, var(--callout-bg, #f5f5f5) 75%, #fff7ed);
+    border: 1px solid color-mix(in srgb, var(--accent, #6b7280) 45%, #fed7aa);
+    border-left: 5px solid color-mix(in srgb, var(--accent, #6b7280) 75%, #f97316);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    padding: 1rem 1.05rem;
+    margin: 0.9rem 0;
+}
+
+.p-takeaway {
+    font-size: calc(var(--p-size) * 1.04);
+    font-weight: 600;
+    color: var(--text-primary, #0f172a);
+    background: linear-gradient(
+        95deg,
+        color-mix(in srgb, var(--accent, #2563eb) 18%, #eff6ff) 0%,
+        color-mix(in srgb, var(--accent, #2563eb) 8%, #ffffff) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--accent, #2563eb) 38%, #bfdbfe);
+    border-left: 6px solid color-mix(in srgb, var(--accent, #2563eb) 80%, #1d4ed8);
+    border-radius: 0.85rem;
+    padding: 1rem 1.1rem;
+    margin: 1rem 0 0.6rem;
 }
 
 .p-outro {
     font-weight: 500;
-    border-top: 1px dashed #ddd;
+    font-size: calc(var(--p-size) * 0.97);
+    color: var(--text-secondary, #4b5563);
+    border-top: 1px dashed color-mix(in srgb, var(--border-color, #d1d5db) 85%, transparent);
     padding-top: 0.75rem;
     margin-top: 1rem;
 }
 
 .p-caption {
     font-size: 0.8125rem;
-    color: var(--text-tertiary, #888);
+    color: color-mix(in srgb, var(--text-tertiary, #888) 92%, #374151);
     text-align: center;
     margin-top: 0.5rem;
     line-height: 1.4;
+    letter-spacing: 0.01em;
+    font-style: italic;
 }
 
 /* ================================================
@@ -2933,6 +2993,88 @@ section[data-density="dense"] .hierarchy-tree-container {
 section[data-density="super_dense"] .hierarchy-tree-container ul,
 section[data-density="dense"] .hierarchy-tree-container ul {
     margin-top: 0.25rem;
+}
+
+/* Dense timeline slides need extra legibility compared to generic dense cards. */
+section[data-density="dense"] .smart-layout[data-variant="timeline"],
+section[data-density="dense"] .smart-layout[data-variant="timelineSequential"],
+section[data-density="dense"] .smart-layout[data-variant="timelineIcon"] {
+    gap: 0.5rem;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timeline"] {
+    padding-left: 2rem;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timelineSequential"],
+section[data-density="dense"] .smart-layout[data-variant="timelineIcon"] {
+    padding-left: 2.2rem;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timeline"] .card,
+section[data-density="dense"] .smart-layout[data-variant="timelineSequential"] .card,
+section[data-density="dense"] .smart-layout[data-variant="timelineIcon"] .card {
+    padding: 0.55rem 0;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timeline"] .card-text,
+section[data-density="dense"] .smart-layout[data-variant="timelineSequential"] .card-text,
+section[data-density="dense"] .smart-layout[data-variant="timelineIcon"] .card-text,
+section[data-density="dense"] .smart-layout[data-variant="timelineHorizontal"] .card-text,
+section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .card-text {
+    font-size: 0.98rem;
+    line-height: 1.55;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timeline"] .card-title,
+section[data-density="dense"] .smart-layout[data-variant="timelineSequential"] .card-title,
+section[data-density="dense"] .smart-layout[data-variant="timelineIcon"] .card-title,
+section[data-density="dense"] .smart-layout[data-variant="timelineHorizontal"] .card-title,
+section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .card-title {
+    font-size: 1.02rem;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timeline"]::before,
+section[data-density="dense"] .smart-layout[data-variant="timelineSequential"]::before,
+section[data-density="dense"] .smart-layout[data-variant="timelineIcon"]::before {
+    width: 3px;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timeline"] .card::before {
+    width: 10px;
+    height: 10px;
+    left: -1.75rem;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timelineSequential"] .card-number {
+    width: 1.65rem;
+    height: 1.65rem;
+    font-size: 0.78rem;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timelineIcon"] .timeline-icon-badge,
+section[data-density="dense"] .smart-layout[data-variant="timelineIcon"] .card-number {
+    width: 1.7rem;
+    height: 1.7rem;
+    font-size: 0.82rem;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timelineHorizontal"] {
+    min-height: 340px;
+    gap: 0 1.25rem;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timelineHorizontal"] .card {
+    padding: 1.2rem;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1.75rem;
+}
+
+section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .card {
+    padding: 1.7rem;
 }
 
 /* ================================================

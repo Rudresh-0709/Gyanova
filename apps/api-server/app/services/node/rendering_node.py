@@ -2,6 +2,7 @@ import asyncio
 from typing import Dict, Any, List
 import os
 import sys
+import re
 
 # Ensure imports work
 try:
@@ -34,6 +35,14 @@ except ImportError:
 
 from pathlib import Path
 
+try:
+    from app.services.node.intro_narration_node import generate_intro_image_prompt
+except ImportError:
+    try:
+        from .intro_narration_node import generate_intro_image_prompt
+    except ImportError:
+        from intro_narration_node import generate_intro_image_prompt
+
 
 def inject_template_variables(template_html: str, variables: Dict[str, Any]) -> str:
     """
@@ -41,12 +50,30 @@ def inject_template_variables(template_html: str, variables: Dict[str, Any]) -> 
     Replaces {{ variable_name }} with actual values.
     """
     result = template_html
+
+    # Handle basic Jinja-style conditional blocks used by intro blueprints.
+    # Example: {% if image_url %}...{% endif %}
+    conditional_pattern = re.compile(
+        r"{%\s*if\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*%}(.*?){%\s*endif\s*%}",
+        re.DOTALL,
+    )
+    while True:
+        match = conditional_pattern.search(result)
+        if not match:
+            break
+        key = match.group(1)
+        body = match.group(2)
+        replacement = body if variables.get(key) else ""
+        result = result[: match.start()] + replacement + result[match.end() :]
+
+    # Replace {{ key }} and {{key}} variants with values
     for key, value in variables.items():
-        if value is None:
-            value = ""
-        # Replace {{ key }} with stringified value
-        placeholder = "{{ " + key + " }}"
-        result = result.replace(placeholder, str(value))
+        rendered_value = "" if value is None else str(value)
+        result = re.sub(r"{{\s*" + re.escape(key) + r"\s*}}", rendered_value, result)
+
+    # Clean up any unreplaced placeholders/conditionals to avoid leaking template syntax.
+    result = re.sub(r"{{\s*[^}]+\s*}}", "", result)
+    result = re.sub(r"{%\s*[^%]+\s*%}", "", result)
     return result
 
 
@@ -131,7 +158,6 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     lesson_intro = state.get("lesson_intro_narration")
     if lesson_intro and not lesson_intro.get("image_url"):
         print("🎨 [Rendering Node] Generating lesson intro image...")
-        from intro_narration_node import generate_intro_image_prompt
         prompt = generate_intro_image_prompt("lesson", lesson_intro.get("title", "Lesson"))
         print(f"   📝 Image prompt: {prompt[:60]}...")
         task = ImageGenerator.generate_image(
@@ -148,7 +174,6 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     for sub_id, intro in subtopic_intros.items():
         if intro and not intro.get("image_url"):
             print(f"🎨 [Rendering Node] Generating subtopic intro image for {sub_id}...")
-            from intro_narration_node import generate_intro_image_prompt
             prompt = generate_intro_image_prompt("subtopic", intro.get("title", "Subtopic"))
             print(f"   📝 Image prompt: {prompt[:60]}...")
             task = ImageGenerator.generate_image(

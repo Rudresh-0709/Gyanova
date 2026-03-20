@@ -226,7 +226,30 @@ function splitDeckIntoSlides(html: string): string[] {
 
         if (sections.length === 0) return [html];
 
-        return sections.map(
+        // Drop redundant summary-only sections that duplicate the previous heading
+        // and add little visual/semantic value (these are the "plain" extra slides).
+        const meaningfulSections = sections.filter((sec, idx) => {
+            if (sections.length <= 1 || idx === 0) return true;
+
+            const heading = sec.querySelector("h1, h2")?.textContent?.trim() || "";
+            const prevHeading =
+                sections[idx - 1].querySelector("h1, h2")?.textContent?.trim() || "";
+            const duplicateHeading = !!heading && heading === prevHeading;
+
+            const hasVisual = !!sec.querySelector(
+                ".accent-image-wrapper, .inline-image img, .smart-layout, .columns, .comparison-table-wrapper, .table-container, .code-block, .hub-and-spoke-container, .cyclic-container"
+            );
+
+            const paragraphCount = sec.querySelectorAll("p").length;
+            const textLength = (sec.textContent || "").replace(/\s+/g, " ").trim().length;
+            const isLowValue = !hasVisual && paragraphCount <= 1 && textLength < 260;
+
+            return !(duplicateHeading && isLowValue);
+        });
+
+        const sectionsToRender = meaningfulSections.length > 0 ? meaningfulSections : sections;
+
+        return sectionsToRender.map(
             (sec) =>
                 `<html><head>${headLinks}${styleTag}${overrideStyles}</head>` +
                 `<body><div class="gyml-deck">${sec.outerHTML}</div>${bodyScripts}${bridgeScript}</body></html>`

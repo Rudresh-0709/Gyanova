@@ -30,7 +30,7 @@ except ImportError:
 INTENT_VARIANTS = {
     # Content Angles — 5-6 options per pool for maximum variety
     "overview":      ["cardGridIcon", "bigBullets", "cardGridSimple", "bulletIcon", "cardGridImage", "bulletCheck"],
-    "mechanism":     ["timelineSequential", "timelineIcon", "processArrow", "processSteps", "processAccordion", "timeline"],
+    "mechanism":     ["timelineSequential", "processArrow", "timelineMilestone", "processSteps", "timeline", "timelineIcon"],
     "example":       ["cardGridImage", "cardGridIcon", "bulletIcon", "bigBullets", "cardGridSimple", "timeline"],
     "comparison":    ["comparisonCards", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "cardGridSimple"],
     "application":   ["cardGridIcon", "bulletIcon", "processSteps", "processArrow", "bigBullets", "cardGridImage"],
@@ -38,7 +38,7 @@ INTENT_VARIANTS = {
     "summary":       ["bigBullets", "bulletCheck", "bulletIcon", "cardGridSimple", "cardGridIcon"],
     # Intent fallbacks (used if content_angle is missing or generic)
     "explain":       ["cardGridIcon", "cardGridSimple", "bigBullets", "bulletIcon", "cardGridImage", "processSteps"],
-    "narrate":       ["timelineSequential", "timelineIcon", "processArrow", "processSteps", "processAccordion", "timeline"],
+    "narrate":       ["timelineSequential", "timelineHorizontal", "timelineMilestone", "processArrow", "timeline", "timelineIcon"],
     "compare":       ["comparisonCards", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "cardGridSimple"],
     "list":          ["bigBullets", "bulletCheck", "processSteps", "bulletIcon", "cardGridSimple", "bulletCross"],
     "prove":         ["stats", "statsComparison", "cardGridSimple", "bigBullets", "cardGridIcon"],
@@ -163,6 +163,10 @@ WIDE_VARIANTS = {
     "hub_and_spoke", "hierarchy_tree"
 }
 
+TIMELINE_VARIANTS = {
+    "timeline", "timelineHorizontal", "timelineSequential", "timelineMilestone", "timelineIcon",
+}
+
 # Category B: Dynamic Grid Content (Flexible height/width)
 WIDE_VARIANTS_MAYBE = {
     "comparison", "comparisonCards", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison"
@@ -215,6 +219,7 @@ def pick_variant(
 
     Goal: achieve visual variety while optimizing layout for spatial constraints.
     - Max 2 uses per variant strictly enforced.
+    - Timeline variants are capped at 1 use each across the lesson.
     - Wide components get full-width vertical layouts (top/bottom) or blank.
     - Tall grids get vertical constraints (left/right) or blank.
     - Self-contained components (diagrams, processes) force 'blank' to avoid clutter.
@@ -224,14 +229,37 @@ def pick_variant(
     key = content_angle if content_angle in INTENT_VARIANTS else intent
     pool = INTENT_VARIANTS.get(key, ["cardGridIcon", "bigBullets", "cardGridSimple"])
 
-    # 2. History Filter (Strict Max 2 Uses)
+    # 2. History Filter (Strict Max 2 Uses; Timeline variants max 1)
     full_history = variant_history or []
     usage_counts = {}
     for v in full_history:
         usage_counts[v] = usage_counts.get(v, 0) + 1
 
-    eligible_variants = [v for v in pool if usage_counts.get(v, 0) < 2]
-    # If all variants in pool have been used twice or more, fallback to those with lowest usage
+    eligible_variants = []
+    for v in pool:
+        max_allowed = 1 if v in TIMELINE_VARIANTS else 2
+        if usage_counts.get(v, 0) < max_allowed:
+            eligible_variants.append(v)
+
+    # If all pool variants are exhausted, prefer non-timeline fallbacks to keep timeline variants unique.
+    if not eligible_variants:
+        non_timeline_pool = [v for v in pool if v not in TIMELINE_VARIANTS]
+        eligible_variants = [v for v in non_timeline_pool if usage_counts.get(v, 0) < 2]
+
+    # Last resort: if the requested pool is timeline-only and exhausted, switch to generic non-timeline options.
+    if not eligible_variants:
+        global_non_timeline_fallback = [
+            "processArrow",
+            "processSteps",
+            "processAccordion",
+            "cardGridSimple",
+            "bigBullets",
+        ]
+        eligible_variants = [
+            v for v in global_non_timeline_fallback if usage_counts.get(v, 0) < 2
+        ]
+
+    # Absolute final fallback: preserve progress even if all constraints are saturated.
     if not eligible_variants:
         min_usage = min([usage_counts.get(v, 0) for v in pool]) if pool else 0
         eligible_variants = [v for v in pool if usage_counts.get(v, 0) == min_usage]
@@ -601,7 +629,7 @@ class GyMLContentGenerator:
            • Comparison / Two columns → smart_layout (comparison, comparisonProsCons, comparisonBeforeAfter, or split_panel)
            • Comparison table → comparison_table (MUST USE `comparison_table` block type)
            • Process/Steps → smart_layout (processArrow or processAccordion)
-           • Timeline → smart_layout (timelineSequential or timelineIcon)
+           • Timeline → smart_layout (timeline, timelineHorizontal, timelineSequential, timelineMilestone, or timelineIcon)
            • Stats/Metrics → smart_layout (stats or statsComparison)
            • Key-Value list → key_value_list (top-level block)
            • Labeled diagram → labeled_diagram (top-level block)

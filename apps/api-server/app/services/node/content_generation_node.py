@@ -309,7 +309,16 @@ def _generate_animation_metadata(gyml_content: Optional[Dict[str, Any]]) -> Dict
             "animated_block_index": 0,
         }
     blocks = gyml_content.get("contentBlocks", [])
-    primary_idx = gyml_content.get("primary_block_index", 0)
+    primary_idx = gyml_content.get("primary_block_index")
+
+    # Sparse templates may intentionally set primary_block_index to None.
+    # Treat them as non-indexed and animate from block 0 fallback metadata.
+    if primary_idx is None:
+        return {
+            "animation_unit": "item",
+            "animation_unit_count": _count_primary_items(gyml_content),
+            "animated_block_index": 0,
+        }
 
     if not blocks or primary_idx >= len(blocks):
         return {
@@ -489,7 +498,11 @@ def _extract_primary_items_detail(gyml_content: Optional[Dict[str, Any]]) -> Lis
     if gyml_content is None:
         return ["Main content"]
     blocks = gyml_content.get("contentBlocks", [])
-    primary_idx = gyml_content.get("primary_block_index", 0)
+    primary_idx = gyml_content.get("primary_block_index")
+
+    # Sparse templates may not define a primary index.
+    if primary_idx is None:
+        primary_idx = 0
 
     if not blocks or primary_idx >= len(blocks):
         return ["Main content"]

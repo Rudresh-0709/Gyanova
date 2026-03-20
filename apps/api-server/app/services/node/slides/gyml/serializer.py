@@ -513,12 +513,13 @@ class GyMLSerializer:
         elif block_type == BlockType.COLUMNS.value:
             return self._serialize_columns(content)
 
-        # Takeaway/Callout → p with emphasis (simplified)
+        # Takeaway/Callout -> preserve semantic paragraph variants for distinct UI treatment
         elif block_type in [BlockType.TAKEAWAY.value, BlockType.CALLOUT.value]:
             text = content.get("text", "")
             label = content.get("label", "")
             full_text = f"{label}: {text}" if label else text
-            return GyMLParagraph(text=full_text)
+            variant = "takeaway" if block_type == BlockType.TAKEAWAY.value else "callout"
+            return GyMLParagraph(text=full_text, variant=variant)
 
         # Code block
         elif block_type == BlockType.CODE.value:

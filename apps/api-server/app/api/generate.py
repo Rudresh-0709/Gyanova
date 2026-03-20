@@ -14,9 +14,11 @@ logger = logging.getLogger(__name__)
 import json
 import os
 from dataclasses import asdict, is_dataclass
+from datetime import datetime
 
 # Simple in-memory task store with file persistence
 TASKS_FILE = "tasks.json"
+TASK_STATE_DIR = "task_states"
 tasks_db: Dict[str, Dict[str, Any]] = {}
 
 
@@ -85,6 +87,31 @@ def save_tasks():
     except Exception as e:
         logger.error(f"Failed to save tasks to {TASKS_FILE}: {e}")
 
+
+def persist_task_state(task_id: str):
+    """
+    Persist a single task state to its own JSON file.
+
+    This provides per-lesson snapshots that can be inspected independently
+    from the global tasks.json store.
+    """
+    task = tasks_db.get(task_id)
+    if not task:
+        return
+
+    try:
+        os.makedirs(TASK_STATE_DIR, exist_ok=True)
+        task_file = os.path.join(TASK_STATE_DIR, f"{task_id}.json")
+        payload = {
+            "task_id": task_id,
+            "updated_at": datetime.utcnow().isoformat() + "Z",
+            **_json_safe(task),
+        }
+        with open(task_file, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        logger.error(f"Failed to persist task {task_id} state: {e}")
+
 # Initial load
 load_tasks()
 
@@ -108,6 +135,7 @@ async def run_planning_task(task_id: str, request: GenerateLessonRequest):
     logger.info(f"Starting planning task {task_id} for topic: {request.topic}")
     tasks_db[task_id]["status"] = "planning"
     save_tasks()
+    persist_task_state(task_id)
 
     try:
         initial_state = {
@@ -115,6 +143,7 @@ async def run_planning_task(task_id: str, request: GenerateLessonRequest):
             "topic": "",
             "difficulty": request.current_level,
             "granularity": request.granularity,
+            "teacher_gender": request.teacher_gender,
             "sub_topics": [],
             "plans": {},
             "slides": {},
@@ -124,6 +153,7 @@ async def run_planning_task(task_id: str, request: GenerateLessonRequest):
 
         # Initialize result in tasks_db
         tasks_db[task_id]["result"] = initial_state
+        persist_task_state(task_id)
 
         # Use streaming to get incremental updates from nodes
         async for chunk in planning_graph.astream(initial_state):
@@ -134,22 +164,26 @@ async def run_planning_task(task_id: str, request: GenerateLessonRequest):
                 # Update the result incrementally
                 tasks_db[task_id]["result"].update(state_update)
                 logger.info(f"  ⚡ Phase 1: Update from {node_name} for task {task_id}")
+                persist_task_state(task_id)
 
         tasks_db[task_id]["status"] = "planning_completed"
         logger.info(f"Planning for {task_id} completed successfully.")
         save_tasks()
+        persist_task_state(task_id)
 
     except Exception as e:
         logger.error(f"Planning task {task_id} failed: {str(e)}", exc_info=True)
         tasks_db[task_id]["status"] = "failed"
         tasks_db[task_id]["error"] = str(e)
         save_tasks()
+        persist_task_state(task_id)
 
 
 async def run_generation_task(task_id: str, request: ConfirmPlanRequest):
     logger.info(f"Starting full generation task {task_id}")
     tasks_db[task_id]["status"] = "processing"
     save_tasks()
+    persist_task_state(task_id)
 
     try:
         # Resume from the previous state but with confirmed/modified plans
@@ -161,6 +195,7 @@ async def run_generation_task(task_id: str, request: ConfirmPlanRequest):
             current_state["sub_topics"] = request.sub_topics
 
         current_state["plans"] = request.plans
+        persist_task_state(task_id)
 
         # Run Phase 2 (Streaming for incremental updates)
         async for chunk in full_graph.astream(current_state):
@@ -175,16 +210,19 @@ async def run_generation_task(task_id: str, request: ConfirmPlanRequest):
                     f"  ⚡ Incremental update from {node_name} for mission {task_id}"
                 )
                 save_tasks()
+                persist_task_state(task_id)
 
         tasks_db[task_id]["status"] = "completed"
         logger.info(f"Generation for {task_id} completed successfully.")
         save_tasks()
+        persist_task_state(task_id)
 
     except Exception as e:
         logger.error(f"Generation task {task_id} failed: {str(e)}", exc_info=True)
         tasks_db[task_id]["status"] = "failed"
         tasks_db[task_id]["error"] = str(e)
         save_tasks()
+        persist_task_state(task_id)
 
 
 @router.post("/")
@@ -194,6 +232,7 @@ async def generate_lesson(
     task_id = str(uuid.uuid4())
     tasks_db[task_id] = {"status": "pending"}
     save_tasks()
+    persist_task_state(task_id)
 
     background_tasks.add_task(run_planning_task, task_id, request)
     return {

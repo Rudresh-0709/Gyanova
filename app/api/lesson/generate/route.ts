@@ -2,6 +2,17 @@ export const maxDuration = 300; // 5 minutes (max for Vercel Hobby is 10s, Pro i
 
 import { NextResponse } from 'next/server';
 
+function safeParseJson(text: string, fallback: unknown = null) {
+    if (!text || !text.trim()) {
+        return fallback;
+    }
+    try {
+        return JSON.parse(text);
+    } catch {
+        return fallback;
+    }
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -22,7 +33,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Failed to generate lesson from backend" }, { status: pythonResponse.status });
         }
 
-        const data = await pythonResponse.json();
+        const raw = await pythonResponse.text();
+        const data = safeParseJson(raw, null);
+        if (!data) {
+            return NextResponse.json(
+                { error: 'Backend returned invalid JSON' },
+                { status: 502 }
+            );
+        }
         return NextResponse.json(data);
 
     } catch (error) {
@@ -48,7 +66,16 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Failed to get task status from backend" }, { status: pythonResponse.status });
         }
 
-        const data = await pythonResponse.json();
+        const raw = await pythonResponse.text();
+        const data = safeParseJson(raw, null);
+        if (!data) {
+            // Keep polling resilient during transient backend write/flush states.
+            return NextResponse.json({
+                task_id: taskId,
+                status: 'planning',
+                warning: 'Transient invalid backend payload',
+            });
+        }
         return NextResponse.json(data);
 
     } catch (error) {

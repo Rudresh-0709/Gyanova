@@ -60,20 +60,35 @@ function hasRenderableSlides(
     );
 }
 
+async function readJsonSafe(response: Response, fallback: any = null) {
+    const raw = await response.text();
+    if (!raw || !raw.trim()) {
+        return fallback;
+    }
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return fallback;
+    }
+}
+
 const LessonPlanPreview = ({
     planData,
     onConfirm,
     onCancel,
-    isFinalizing
+    isFinalizing,
+    planningCompleted,
 }: {
     planData: PlanData;
     onConfirm: (data: { topic: string, sub_topics: any[], plans: Record<string, SlidePlan[]> }) => void;
     onCancel: () => void;
     isFinalizing: boolean;
+    planningCompleted: boolean;
 }) => {
     const [editablePlans, setEditablePlans] = useState(planData?.plans || {});
     const [editableTopic, setEditableTopic] = useState(planData?.topic || "");
     const [editableSubTopics, setEditableSubTopics] = useState(planData?.sub_topics || []);
+    const [revealedSlideCounts, setRevealedSlideCounts] = useState<Record<string, number>>({});
 
     // Ensure state updates if planData changes
     useEffect(() => {
@@ -83,6 +98,53 @@ const LessonPlanPreview = ({
             setEditableSubTopics(planData.sub_topics || []);
         }
     }, [planData]);
+
+    useEffect(() => {
+        setRevealedSlideCounts((prev) => {
+            const next = { ...prev };
+            for (const sub of editableSubTopics) {
+                const subId = sub.id;
+                const total = (editablePlans?.[subId] || []).length;
+                if (next[subId] === undefined) {
+                    next[subId] = 0;
+                }
+                if (next[subId] > total) {
+                    next[subId] = total;
+                }
+            }
+            return next;
+        });
+    }, [editablePlans, editableSubTopics]);
+
+    useEffect(() => {
+        const hasPendingReveal = editableSubTopics.some((sub) => {
+            const total = (editablePlans?.[sub.id] || []).length;
+            const shown = revealedSlideCounts[sub.id] ?? 0;
+            return shown < total;
+        });
+
+        if (!hasPendingReveal) {
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            setRevealedSlideCounts((prev) => {
+                const next = { ...prev };
+                for (const sub of editableSubTopics) {
+                    const subId = sub.id;
+                    const total = (editablePlans?.[subId] || []).length;
+                    const shown = next[subId] ?? 0;
+                    if (shown < total) {
+                        next[subId] = shown + 1;
+                        break;
+                    }
+                }
+                return next;
+            });
+        }, 180);
+
+        return () => clearTimeout(timer);
+    }, [editablePlans, editableSubTopics, revealedSlideCounts]);
 
     const updateSlide = (subId: string, slideIdx: number, field: 'title' | 'goal', value: string) => {
         setEditablePlans(prev => {
@@ -123,23 +185,36 @@ const LessonPlanPreview = ({
                     >
                         Cancel
                     </button>
-                    <ShimmerButton
-                        onClick={() => onConfirm({
-                            topic: editableTopic,
-                            sub_topics: editableSubTopics,
-                            plans: editablePlans
-                        })}
-                        disabled={isFinalizing}
-                        className="h-10 px-6 text-sm"
-                    >
-                        {isFinalizing ? "Confirming..." : "Confirm & Generate"}
-                    </ShimmerButton>
+                    {planningCompleted ? (
+                        <ShimmerButton
+                            onClick={() => onConfirm({
+                                topic: editableTopic,
+                                sub_topics: editableSubTopics,
+                                plans: editablePlans
+                            })}
+                            disabled={isFinalizing}
+                            className="h-10 px-6 text-sm"
+                        >
+                            {isFinalizing ? "Confirming..." : "Confirm & Generate"}
+                        </ShimmerButton>
+                    ) : (
+                        <div className="px-4 py-2 text-xs font-mono uppercase tracking-widest text-indigo-300/70 border border-indigo-400/20 rounded-full bg-indigo-500/10">
+                            Building full curriculum...
+                        </div>
+                    )}
                 </div>
             </div>
 
             <div className="space-y-10 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
                 {editableSubTopics.map((sub: any) => (
                     <div key={sub.id} className="space-y-4">
+                        {(() => {
+                            const allSlides = editablePlans?.[sub.id] || [];
+                            const visibleCount = Math.min(revealedSlideCounts[sub.id] ?? 0, allSlides.length);
+                            const visibleSlides = allSlides.slice(0, visibleCount);
+
+                            return (
+                                <>
                         <div className="flex items-center gap-3 text-indigo-400 font-semibold uppercase text-xs tracking-widest pl-1">
                             <Layers className="w-3.5 h-3.5" />
                             <input
@@ -150,8 +225,9 @@ const LessonPlanPreview = ({
                             />
                         </div>
                         <div className="grid gap-3 pl-2 border-l border-white/5">
-                            {(editablePlans?.[sub.id] || []).length > 0 ? (
-                                (editablePlans?.[sub.id] || []).map((slide, idx) => (
+                            {allSlides.length > 0 ? (
+                                <>
+                                {visibleSlides.map((slide, idx) => (
                                     <div
                                         key={idx}
                                         className="p-4 rounded-xl bg-black/40 border border-white/5 hover:border-white/10 transition-colors group"
@@ -176,7 +252,13 @@ const LessonPlanPreview = ({
                                             </div>
                                         </div>
                                     </div>
-                                ))
+                                ))}
+                                {visibleCount < allSlides.length && (
+                                    <p className="text-[10px] font-mono text-indigo-300/60 uppercase tracking-widest px-1">
+                                        Revealing slide titles... {visibleCount}/{allSlides.length}
+                                    </p>
+                                )}
+                                </>
                             ) : (
                                 <div className="space-y-4 animate-pulse p-4">
                                     <div className="h-4 bg-white/5 rounded w-3/4 mb-2"></div>
@@ -188,6 +270,9 @@ const LessonPlanPreview = ({
                                 </div>
                             )}
                         </div>
+                                </>
+                            );
+                        })()}
                     </div>
                 ))}
             </div>
@@ -316,6 +401,7 @@ export default function LessonInputPage() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [generationStatus, setGenerationStatus] = useState<string>("");
+    const [planningStatus, setPlanningStatus] = useState<"idle" | "pending" | "planning" | "planning_completed" | "failed">("idle");
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -342,6 +428,7 @@ export default function LessonInputPage() {
         setIsGenerating(true);
         setError(null);
         setGenerationStatus("Starting engine...");
+        setPlanningStatus("pending");
 
         try {
             const response = await fetch("/api/lesson/generate", {
@@ -351,7 +438,10 @@ export default function LessonInputPage() {
             });
 
             if (!response.ok) throw new Error("Failed to start planning");
-            const data = await response.json();
+            const data = await readJsonSafe(response, null);
+            if (!data?.task_id) {
+                throw new Error("Backend did not return a valid task id");
+            }
             setTaskId(data.task_id);
 
             // Start Polling for Planning
@@ -361,11 +451,21 @@ export default function LessonInputPage() {
                 const res = await fetch(`/api/lesson/generate?taskId=${data.task_id}`);
 
                 if (!res.ok) {
-                    const errorData = await res.json().catch(() => ({}));
+                    const errorData = await readJsonSafe(res).catch(() => ({}));
                     throw new Error(errorData.error || `Server error (${res.status})`);
                 }
 
-                const statusData = await res.json();
+                const statusData = await readJsonSafe(res, null);
+                if (!statusData || typeof statusData !== "object") {
+                    setGenerationStatus("Syncing planner state...");
+                    continue;
+                }
+                const nextPlanningStatus = statusData.status === "planning_completed"
+                    ? "planning_completed"
+                    : statusData.status === "failed"
+                        ? "failed"
+                        : "planning";
+                setPlanningStatus(nextPlanningStatus);
 
                 // Proactively update planData if we have results, even if not fully complete
                 if (statusData.result && (statusData.result.sub_topics?.length > 0 || Object.keys(statusData.result.plans || {}).length > 0)) {
@@ -380,6 +480,7 @@ export default function LessonInputPage() {
                 if (statusData.status === "planning_completed") {
                     planningComplete = true;
                     setGenerationStatus("Curriculum ready!");
+                    setPlanningStatus("planning_completed");
                 } else if (statusData.status === "failed") {
                     throw new Error(statusData.error || "Planning failed");
                 } else {
@@ -389,6 +490,7 @@ export default function LessonInputPage() {
         } catch (err: any) {
             setError(err.message);
             setIsGenerating(false);
+            setPlanningStatus("failed");
         }
     };
 
@@ -398,6 +500,30 @@ export default function LessonInputPage() {
         plans: Record<string, SlidePlan[]>
     }) => {
         if (!taskId) return;
+        if (planningStatus !== "planning_completed") {
+            setError("Please wait until planning is fully complete before confirming.");
+            return;
+        }
+
+        // Guard against stale task IDs that already failed in backend.
+        // In that case, users should start a fresh lesson run.
+        try {
+            const precheck = await fetch(`/api/lesson/generate?taskId=${taskId}`);
+            if (precheck.ok) {
+                const precheckData = await readJsonSafe(precheck, null);
+                if (precheckData.status === "failed") {
+                    setError("Previous generation task failed. Please start a new lesson run.");
+                    setTaskId(null);
+                    setPlanData(null);
+                    setPlanningStatus("failed");
+                    setStep("form");
+                    return;
+                }
+            }
+        } catch {
+            // If precheck fails, continue with normal confirm flow.
+        }
+
         setIsGenerating(true);
         setStep('generating');
         setError(null);
@@ -421,7 +547,11 @@ export default function LessonInputPage() {
                 if (pollCount > 5) setGenerationStatus("Baking visuals and audio...");
 
                 const res = await fetch(`/api/lesson/generate?taskId=${taskId}`);
-                const statusData = await res.json();
+                const statusData = await readJsonSafe(res, null);
+                if (!statusData || typeof statusData !== "object") {
+                    setGenerationStatus("Syncing generation state...");
+                    continue;
+                }
 
                 if (statusData.status === "completed" || hasRenderableSlides(statusData.result)) {
                     router.push(`/lesson/${taskId}`);
@@ -536,6 +666,7 @@ export default function LessonInputPage() {
                         onConfirm={handleConfirmPlan}
                         onCancel={() => setStep('form')}
                         isFinalizing={isGenerating}
+                        planningCompleted={planningStatus === "planning_completed"}
                     />
                 )}
 

@@ -151,6 +151,13 @@ def get_voice(state: Dict[str, Any]) -> str:
     voice_id = state.get("teacher_voice_id")
     if voice_id is not None and voice_id in VOICE_MAP:
         return VOICE_MAP[voice_id]
+
+    gender = str(state.get("teacher_gender", "")).strip().lower()
+    if gender == "male":
+        return "onyx"
+    if gender == "female":
+        return "nova"
+
     return DEFAULT_VOICE
 
 

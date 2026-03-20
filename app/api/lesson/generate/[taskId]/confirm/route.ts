@@ -1,5 +1,16 @@
 import { NextResponse } from 'next/server';
 
+function safeParseJson(text: string, fallback: unknown = null) {
+    if (!text || !text.trim()) {
+        return fallback;
+    }
+    try {
+        return JSON.parse(text);
+    } catch {
+        return fallback;
+    }
+}
+
 export async function POST(
     req: Request,
     { params }: { params: Promise<{ taskId: string }> }
@@ -23,7 +34,8 @@ export async function POST(
             return NextResponse.json({ error: "Failed to confirm lesson plan" }, { status: pythonResponse.status });
         }
 
-        const data = await pythonResponse.json();
+        const raw = await pythonResponse.text();
+        const data = safeParseJson(raw, { task_id: taskId, status: 'processing' });
         return NextResponse.json(data);
 
     } catch (error) {
