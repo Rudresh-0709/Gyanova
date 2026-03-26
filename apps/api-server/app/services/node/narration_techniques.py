@@ -108,6 +108,266 @@ NARRATION_TECHNIQUES: Dict[str, Dict[str, Any]] = {
     },
 }
 
+# Extended narration techniques for richer style variation.
+# Keep this separate from NARRATION_TECHNIQUES so sparse-template detection
+# remains stable and backward-compatible.
+NARRATION_TECHNIQUE_LIBRARY: Dict[str, Dict[str, Any]] = {
+    **NARRATION_TECHNIQUES,
+    "Title card - question hook": {
+        "segments": 1,
+        "structure": ["question_hook"],
+        "description": "Open with a thought-provoking question and practical relevance",
+        "prompt_directive": """
+        NARRATION GOAL: Open with a direct question that triggers curiosity.
+
+        STRUCTURE (single paragraph):
+        1. Ask one sharp question tied to the topic
+        2. Explain why answering it matters in practical terms
+        3. Preview what the learner will gain
+
+        CONSTRAINTS:
+        - Length: 45-75 words
+        - Conversational, energetic tone
+        - Avoid generic fillers and meta phrases
+        """,
+    },
+    "Title card - scenario hook": {
+        "segments": 1,
+        "structure": ["scenario_hook"],
+        "description": "Open with a concrete scenario before introducing the lesson",
+        "prompt_directive": """
+        NARRATION GOAL: Use a mini real-world scenario as the opening hook.
+
+        STRUCTURE (single paragraph):
+        1. Describe a quick scenario the learner can picture
+        2. Connect that scenario to the lesson topic
+        3. Preview the core skill or insight
+
+        CONSTRAINTS:
+        - Length: 50-80 words
+        - Keep scenario concrete and relatable
+        - No "in this slide" phrasing
+        """,
+    },
+    "Image and text - analytical": {
+        "segments": 3,
+        "structure": ["observe", "analyze", "apply"],
+        "description": "Analytical visual walkthrough with evidence-focused interpretation",
+        "prompt_directive": """
+        NARRATION GOAL: Guide the learner from observation to evidence-based interpretation.
+
+        STRUCTURE (3 segments):
+        Segment 1 [OBSERVE]: Direct attention to key visual elements
+        Segment 2 [ANALYZE]: Explain patterns/relationships shown in the visual
+        Segment 3 [APPLY]: Translate the insight into a practical takeaway
+
+        CONSTRAINTS:
+        - Exactly 3 segments separated by double newlines
+        - Each segment: 30-45 words
+        - Prioritize interpretation over description
+        """,
+    },
+    "Image and text - misconception fix": {
+        "segments": 3,
+        "structure": ["common_mistake", "correction", "transfer"],
+        "description": "Correct a common misunderstanding using the visual as evidence",
+        "prompt_directive": """
+        NARRATION GOAL: Correct a common misconception with visual evidence.
+
+        STRUCTURE (3 segments):
+        Segment 1 [COMMON MISTAKE]: State a likely misunderstanding
+        Segment 2 [CORRECTION]: Use the visual to correct it clearly
+        Segment 3 [TRANSFER]: Show where this corrected understanding applies
+
+        CONSTRAINTS:
+        - Exactly 3 segments separated by double newlines
+        - Each segment: 30-45 words
+        - Keep tone supportive, never judgmental
+        """,
+    },
+    "Text and image - concept ladder": {
+        "segments": 3,
+        "structure": ["core_idea", "worked_visual", "rule_of_thumb"],
+        "description": "Move from concept to visual grounding and end with a rule-of-thumb",
+        "prompt_directive": """
+        NARRATION GOAL: Build a concept ladder from abstract idea to practical rule.
+
+        STRUCTURE (3 segments):
+        Segment 1 [CORE IDEA]: Define the principle in plain language
+        Segment 2 [WORKED VISUAL]: Explain how the image makes the principle concrete
+        Segment 3 [RULE OF THUMB]: Give a short reusable heuristic
+
+        CONSTRAINTS:
+        - Exactly 3 segments separated by double newlines
+        - Each segment: 30-45 words
+        - Favor clarity and transferability
+        """,
+    },
+    "Text and image - case bridge": {
+        "segments": 3,
+        "structure": ["setup", "visual_case", "decision"],
+        "description": "Bridge concept into a mini case and practical decision",
+        "prompt_directive": """
+        NARRATION GOAL: Use a mini case to bridge concept and action.
+
+        STRUCTURE (3 segments):
+        Segment 1 [SETUP]: Introduce the concept and why it matters
+        Segment 2 [VISUAL CASE]: Use the image as a concrete case example
+        Segment 3 [DECISION]: State the decision or action informed by this concept
+
+        CONSTRAINTS:
+        - Exactly 3 segments separated by double newlines
+        - Each segment: 30-45 words
+        - Keep examples practical and concise
+        """,
+    },
+    "Formula block - intuition first": {
+        "segments": 5,
+        "structure": ["intuition", "symbols", "relationship", "example", "boundary"],
+        "description": "Explain formula with intuition-first teaching flow",
+        "prompt_directive": """
+        NARRATION GOAL: Teach the formula through intuition before notation.
+
+        STRUCTURE (5 segments):
+        Segment 1 [INTUITION]: Explain the core idea in plain language
+        Segment 2 [SYMBOLS]: Map variables to real meanings
+        Segment 3 [RELATIONSHIP]: Explain how variables influence each other
+        Segment 4 [EXAMPLE]: Work through one concrete use case
+        Segment 5 [BOUNDARY]: Explain when the formula is less reliable
+
+        CONSTRAINTS:
+        - Exactly 5 segments separated by double newlines
+        - Each segment: 35-50 words
+        - Avoid reading symbols without interpretation
+        """,
+    },
+    "Formula block - compare and choose": {
+        "segments": 5,
+        "structure": ["problem", "formula_choice", "components", "worked_example", "tradeoff"],
+        "description": "Position formula as a decision tool among alternatives",
+        "prompt_directive": """
+        NARRATION GOAL: Present the formula as a choice tool, not just a rule.
+
+        STRUCTURE (5 segments):
+        Segment 1 [PROBLEM]: State the decision/problem context
+        Segment 2 [FORMULA CHOICE]: Explain why this formula fits that context
+        Segment 3 [COMPONENTS]: Clarify each component's role
+        Segment 4 [WORKED EXAMPLE]: Walk a practical numeric/example case
+        Segment 5 [TRADEOFF]: Mention one limitation or tradeoff
+
+        CONSTRAINTS:
+        - Exactly 5 segments separated by double newlines
+        - Each segment: 35-50 words
+        - Keep decision framing practical
+        """,
+    },
+    "Comparison table": {
+        "segments": 4,
+        "structure": ["comparison_goal", "criteria_walkthrough", "pattern", "decision"],
+        "description": "Criteria-by-criteria comparison ending with decision guidance",
+        "prompt_directive": """
+        NARRATION GOAL: Explain a comparison table without reading every cell.
+
+        STRUCTURE (4 segments):
+        Segment 1 [COMPARISON GOAL]: What are we comparing and why?
+        Segment 2 [CRITERIA WALKTHROUGH]: Explain 2-3 most important criteria
+        Segment 3 [PATTERN]: Highlight the main pattern/tradeoff in the table
+        Segment 4 [DECISION]: Recommend when to choose each option
+
+        CONSTRAINTS:
+        - Exactly 4 segments separated by double newlines
+        - Each segment: 30-45 words
+        - Do not read full rows verbatim
+        """,
+    },
+    "Process flow": {
+        "segments": 4,
+        "structure": ["entry", "step_logic", "failure_point", "execution_tip"],
+        "description": "Walk through process logic with bottleneck awareness",
+        "prompt_directive": """
+        NARRATION GOAL: Teach process flow with causality and execution tips.
+
+        STRUCTURE (4 segments):
+        Segment 1 [ENTRY]: Where the process starts and trigger conditions
+        Segment 2 [STEP LOGIC]: Why the sequence is ordered this way
+        Segment 3 [FAILURE POINT]: Typical bottleneck or mistake and prevention
+        Segment 4 [EXECUTION TIP]: Practical tip for smoother execution
+
+        CONSTRAINTS:
+        - Exactly 4 segments separated by double newlines
+        - Each segment: 30-45 words
+        - Emphasize cause-and-effect transitions
+        """,
+    },
+    "Data insight": {
+        "segments": 4,
+        "structure": ["signal", "evidence", "implication", "action"],
+        "description": "Narration optimized for stats and comparative evidence",
+        "prompt_directive": """
+        NARRATION GOAL: Turn data into insight and action.
+
+        STRUCTURE (4 segments):
+        Segment 1 [SIGNAL]: State the key metric shift or pattern
+        Segment 2 [EVIDENCE]: Explain the evidence behind that signal
+        Segment 3 [IMPLICATION]: What this means in practical terms
+        Segment 4 [ACTION]: What a learner/practitioner should do next
+
+        CONSTRAINTS:
+        - Exactly 4 segments separated by double newlines
+        - Each segment: 30-45 words
+        - Avoid metric dumping; focus on meaning
+        """,
+    },
+    "Structural overview": {
+        "segments": 4,
+        "structure": ["map", "major_nodes", "links", "navigation_tip"],
+        "description": "Narration for hierarchy and hub-and-spoke style structures",
+        "prompt_directive": """
+        NARRATION GOAL: Help learners navigate a structure map efficiently.
+
+        STRUCTURE (4 segments):
+        Segment 1 [MAP]: Big-picture structure and purpose
+        Segment 2 [MAJOR NODES]: Explain the key nodes/components
+        Segment 3 [LINKS]: Explain critical relationships between nodes
+        Segment 4 [NAVIGATION TIP]: How to use this structure for problem-solving
+
+        CONSTRAINTS:
+        - Exactly 4 segments separated by double newlines
+        - Each segment: 30-45 words
+        - Emphasize relationships over isolated definitions
+        """,
+    },
+}
+
+# Variant options by template. Selection is deterministic per slide context
+# to keep outputs stable and low-latency while increasing style diversity.
+NARRATION_TECHNIQUE_VARIANTS: Dict[str, List[str]] = {
+    "Title card": [
+        "Title card",
+        "Title card - question hook",
+        "Title card - scenario hook",
+    ],
+    "Image and text": [
+        "Image and text",
+        "Image and text - analytical",
+        "Image and text - misconception fix",
+    ],
+    "Text and image": [
+        "Text and image",
+        "Text and image - concept ladder",
+        "Text and image - case bridge",
+    ],
+    "Formula block": [
+        "Formula block",
+        "Formula block - intuition first",
+        "Formula block - compare and choose",
+    ],
+    "Comparison table": ["Comparison table"],
+    "Process flow": ["Process flow"],
+    "Data insight": ["Data insight"],
+    "Structural overview": ["Structural overview"],
+}
+
 # =============================================================================
 # SPARSE TEMPLATE SCHEMAS (STRUCTURE REQUIREMENTS)
 # =============================================================================
@@ -192,7 +452,38 @@ def is_sparse_template_schema(template_name: str) -> bool:
     return get_sparse_template_schema(template_name) is not None
 
 
-def get_narration_technique(template_name: str) -> Optional[Dict[str, Any]]:
+def _stable_variant_index(seed_text: str, n: int) -> int:
+    """Deterministic low-cost index used for technique variation."""
+    if n <= 1:
+        return 0
+    return sum(ord(ch) for ch in seed_text) % n
+
+
+def _resolve_technique_key(
+    template_name: str,
+    title: str = "",
+    goal: str = "",
+    subtopic: str = "",
+) -> Optional[str]:
+    """Resolve the concrete technique key for a template with deterministic variation."""
+    if not template_name:
+        return None
+
+    options = NARRATION_TECHNIQUE_VARIANTS.get(template_name)
+    if not options:
+        return template_name if template_name in NARRATION_TECHNIQUE_LIBRARY else None
+
+    seed = f"{template_name}|{title}|{goal}|{subtopic}"
+    idx = _stable_variant_index(seed, len(options))
+    return options[idx]
+
+
+def get_narration_technique(
+    template_name: str,
+    title: str = "",
+    goal: str = "",
+    subtopic: str = "",
+) -> Optional[Dict[str, Any]]:
     """
     Get the narration technique for a specific template.
     
@@ -202,7 +493,10 @@ def get_narration_technique(template_name: str) -> Optional[Dict[str, Any]]:
     Returns:
         Dictionary with technique metadata or None if not found
     """
-    return NARRATION_TECHNIQUES.get(template_name)
+    technique_key = _resolve_technique_key(template_name, title, goal, subtopic)
+    if not technique_key:
+        return None
+    return NARRATION_TECHNIQUE_LIBRARY.get(technique_key)
 
 
 def is_sparse_template(template_name: str) -> bool:
@@ -248,7 +542,8 @@ def build_technique_prompt(
     Returns:
         Formatted prompt directive for the LLM
     """
-    technique = get_narration_technique(template_name)
+    technique_key = _resolve_technique_key(template_name, title, goal, subtopic)
+    technique = get_narration_technique(template_name, title, goal, subtopic)
     if not technique:
         return ""
     
@@ -261,6 +556,7 @@ def build_technique_prompt(
     Slide Goal: {goal}
     Subtopic: {subtopic}
     Template: {template_name}
+    Technique Variant: {technique_key or template_name}
     {f"Research Context: {context}" if context else ""}
     {segment_info}
     """

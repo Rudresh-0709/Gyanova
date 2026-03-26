@@ -21,7 +21,13 @@ app.include_router(qna.router, prefix="/api/qna", tags=["qna"])
 app.include_router(tts.router, prefix="/api/tts", tags=["tts"])
 
 # Serve audio files so the frontend player can fetch narration segments
-audio_dir = os.path.join(os.getcwd(), "audio_output")
+# Placed in .persistent_data to avoid triggering Next.js reloads when new audio is generated
+from pathlib import Path
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
+DATA_ROOT = ROOT_DIR / ".persistent_data"
+audio_dir = DATA_ROOT / "audio_output"
+os.makedirs(audio_dir, exist_ok=True)
+
 if os.path.isdir(audio_dir):
     app.mount("/audio", StaticFiles(directory=audio_dir), name="audio")
 

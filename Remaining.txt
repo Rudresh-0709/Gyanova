@@ -1,0 +1,8 @@
+1. Accent images are not decided as top or bottom, only left and right are considered as of now.
+
+2. No proper handling of normal images
+
+3. Timeline are not varied, only a vertical timeline is used for now, also include rules for horizontal timeline.
+
+4. Fix blank layout for normal slides which has a full image
+

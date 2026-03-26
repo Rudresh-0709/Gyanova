@@ -28,24 +28,65 @@ except ImportError:
 # Each angle has 2-3 variants that rotate based on slide index, item count,
 # and layout history to prevent visual monotony.
 INTENT_VARIANTS = {
-    # Content Angles — 5-6 options per pool for maximum variety
-    "overview":      ["cardGridIcon", "bigBullets", "cardGridSimple", "bulletIcon", "cardGridImage", "bulletCheck"],
-    "mechanism":     ["timelineSequential", "processArrow", "timelineMilestone", "processSteps", "timeline", "timelineIcon"],
-    "example":       ["cardGridImage", "cardGridIcon", "bulletIcon", "bigBullets", "cardGridSimple", "timeline"],
-    "comparison":    ["comparisonCards", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "cardGridSimple"],
-    "application":   ["cardGridIcon", "bulletIcon", "processSteps", "processArrow", "bigBullets", "cardGridImage"],
-    "visualization": ["stats", "statsComparison", "cardGridSimple", "cardGridIcon", "bigBullets"],
-    "summary":       ["bigBullets", "bulletCheck", "bulletIcon", "cardGridSimple", "cardGridIcon"],
+    # Content Angles — tuned for uniqueness with minimal runtime overhead.
+    # Goal: reduce pool overlap while keeping deterministic, fast selection.
+    "overview":      ["cardGridSimple", "cardGridIcon", "cardGridImage", "bigBullets", "bulletCheck", "comparisonCards"],
+    "mechanism":     ["timelineSequential", "timelineHorizontal", "timelineMilestone", "processArrow", "processSteps", "timelineIcon"],
+    "example":       ["cardGridImage", "comparisonBeforeAfter", "processAccordion", "bulletIcon", "timeline", "cardGridSimple"],
+    "comparison":    ["comparisonCards", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "stats"],
+    "application":   ["processSteps", "processArrow", "cardGridIcon", "bulletIcon", "comparisonCards", "stats"],
+    "visualization": ["stats", "statsComparison", "comparisonBeforeAfter", "timelineHorizontal", "cardGridImage"],
+    "summary":       ["bulletCheck", "bigBullets", "stats", "cardGridSimple", "comparisonProsCons"],
     # Intent fallbacks (used if content_angle is missing or generic)
-    "explain":       ["cardGridIcon", "cardGridSimple", "bigBullets", "bulletIcon", "cardGridImage", "processSteps"],
-    "narrate":       ["timelineSequential", "timelineHorizontal", "timelineMilestone", "processArrow", "timeline", "timelineIcon"],
-    "compare":       ["comparisonCards", "comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "cardGridSimple"],
-    "list":          ["bigBullets", "bulletCheck", "processSteps", "bulletIcon", "cardGridSimple", "bulletCross"],
-    "prove":         ["stats", "statsComparison", "cardGridSimple", "bigBullets", "cardGridIcon"],
-    "teach":         ["cardGridIcon", "processSteps", "bulletIcon", "bigBullets", "cardGridSimple", "processArrow"],
-    "summarize":     ["bigBullets", "bulletCheck", "bulletIcon", "cardGridSimple", "cardGridIcon"],
-    "introduce":     ["cardGridSimple", "bigBullets", "cardGridIcon", "bulletIcon", "cardGridImage"],
-    "demo":          ["processArrow", "processSteps", "processAccordion", "timelineSequential", "bulletIcon", "timeline"],
+    "explain":       ["cardGridSimple", "cardGridIcon", "processSteps", "timelineMilestone", "bulletIcon", "stats"],
+    "narrate":       ["timelineHorizontal", "timelineSequential", "timelineMilestone", "timeline", "timelineIcon", "processArrow"],
+    "compare":       ["comparisonProsCons", "comparisonCards", "comparisonBeforeAfter", "statsComparison", "stats"],
+    "list":          ["bigBullets", "bulletCheck", "bulletIcon", "bulletCross", "processSteps", "cardGridSimple"],
+    "prove":         ["stats", "statsComparison", "comparisonBeforeAfter", "comparisonCards", "cardGridSimple"],
+    "teach":         ["processSteps", "processAccordion", "cardGridIcon", "timelineSequential", "bulletIcon", "stats"],
+    "summarize":     ["bulletCheck", "bigBullets", "stats", "cardGridSimple", "comparisonProsCons"],
+    "introduce":     ["cardGridImage", "cardGridSimple", "cardGridIcon", "bigBullets", "timelineHorizontal"],
+    "demo":          ["processAccordion", "processArrow", "processSteps", "timelineHorizontal", "comparisonBeforeAfter", "bulletIcon"],
+}
+
+# Lightweight per-angle variant bias to reduce overlap without adding complex selection state.
+# This keeps runtime near-identical to current logic: a simple dict lookup per candidate.
+INTENT_VARIANT_BIAS: Dict[str, Dict[str, float]] = {
+    "overview": {
+        "cardGridSimple": 1.2,
+        "cardGridImage": 1.15,
+        "comparisonCards": 1.1,
+    },
+    "mechanism": {
+        "timelineHorizontal": 1.25,
+        "timelineSequential": 1.15,
+        "processArrow": 1.1,
+    },
+    "example": {
+        "comparisonBeforeAfter": 1.2,
+        "processAccordion": 1.2,
+        "cardGridImage": 1.1,
+    },
+    "comparison": {
+        "comparisonProsCons": 1.25,
+        "comparisonBeforeAfter": 1.2,
+        "statsComparison": 1.1,
+    },
+    "application": {
+        "processSteps": 1.2,
+        "processArrow": 1.15,
+        "comparisonCards": 1.1,
+    },
+    "visualization": {
+        "stats": 1.2,
+        "statsComparison": 1.2,
+        "timelineHorizontal": 1.1,
+    },
+    "summary": {
+        "bulletCheck": 1.2,
+        "stats": 1.1,
+        "comparisonProsCons": 1.1,
+    },
 }
 
 
@@ -229,15 +270,18 @@ def pick_variant(
     key = content_angle if content_angle in INTENT_VARIANTS else intent
     pool = INTENT_VARIANTS.get(key, ["cardGridIcon", "bigBullets", "cardGridSimple"])
 
-    # 2. History Filter (Strict Max 2 Uses; Timeline variants max 1)
+    # 2. History Filter (Strict Max 2 Uses; timeline variants can be 2 when pool has diversity)
     full_history = variant_history or []
     usage_counts = {}
     for v in full_history:
         usage_counts[v] = usage_counts.get(v, 0) + 1
 
+    timeline_in_pool = [v for v in pool if v in TIMELINE_VARIANTS]
+    timeline_max_allowed = 2 if len(set(timeline_in_pool)) >= 2 else 1
+
     eligible_variants = []
     for v in pool:
-        max_allowed = 1 if v in TIMELINE_VARIANTS else 2
+        max_allowed = timeline_max_allowed if v in TIMELINE_VARIANTS else 2
         if usage_counts.get(v, 0) < max_allowed:
             eligible_variants.append(v)
 
@@ -269,13 +313,17 @@ def pick_variant(
     fresh = [v for v in eligible_variants if v != last_v] or eligible_variants
 
     # 3. Weighted Selection
+    # Keep this lightweight: static per-angle bias + existing usage weights.
+    angle_bias = INTENT_VARIANT_BIAS.get(key, {})
     weights = []
     for v in fresh:
         count = usage_counts.get(v, 0)
         if count == 0:
-            weights.append(3.0)   # Never used — strongly preferred
+            base_weight = 3.0   # Never used — strongly preferred
         else:
-            weights.append(1.0)   # Used once
+            base_weight = 1.0   # Used once
+
+        weights.append(base_weight * angle_bias.get(v, 1.0))
 
     # Selection
     total = sum(weights)

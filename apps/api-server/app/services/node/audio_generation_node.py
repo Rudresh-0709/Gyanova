@@ -203,7 +203,11 @@ async def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     voice = get_voice(state)
 
     # Resolve output directory
-    base_dir = state.get("audio_output_dir", os.path.join(os.getcwd(), "audio_output"))
+    # Updated to use the hidden .persistent_data folder in the root to avoid triggering Next.js reloads
+    ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent
+    fallback_dir = str(ROOT_DIR / ".persistent_data" / "audio_output")
+    
+    base_dir = state.get("audio_output_dir", fallback_dir)
     output_dir = Path(base_dir)
     ensure_dir(output_dir)
     state["audio_output_dir"] = str(output_dir)

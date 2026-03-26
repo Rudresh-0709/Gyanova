@@ -101,12 +101,9 @@ def should_continue(state: TutorState):
 full_builder.set_entry_point("content_generation_node")
 full_builder.add_edge("content_generation_node", "intro_narration_node")
 
-# Fork: Run Rendering and Audio in parallel
+# Sequential flow for better stability and state consistency
 full_builder.add_edge("intro_narration_node", "rendering_node")
-full_builder.add_edge("intro_narration_node", "audio_generation_node")
-
-# Join: Both must complete before continuing
-full_builder.add_edge("rendering_node", "join_node")
+full_builder.add_edge("rendering_node", "audio_generation_node")
 full_builder.add_edge("audio_generation_node", "join_node")
 
 # Routing logic after joining

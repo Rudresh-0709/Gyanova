@@ -17,8 +17,15 @@ from dataclasses import asdict, is_dataclass
 from datetime import datetime
 
 # Simple in-memory task store with file persistence
-TASKS_FILE = "tasks.json"
-TASK_STATE_DIR = "task_states"
+# We place these in a hidden folder in the root to avoid triggering Next.js dev reloads
+import sys
+from pathlib import Path
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent
+DATA_ROOT = ROOT_DIR / ".persistent_data"
+os.makedirs(DATA_ROOT, exist_ok=True)
+
+TASKS_FILE = os.path.join(DATA_ROOT, "tasks.json")
+TASK_STATE_DIR = os.path.join(DATA_ROOT, "task_states")
 tasks_db: Dict[str, Dict[str, Any]] = {}
 
 
@@ -204,8 +211,20 @@ async def run_generation_task(task_id: str, request: ConfirmPlanRequest):
                 if "messages" in state_update:
                     del state_update["messages"]
 
-                # Update the result incrementally
-                tasks_db[task_id]["result"].update(state_update)
+                # Update the result incrementally with a "smart merge" for slides
+                new_state = _json_safe(state_update)
+                current_result = tasks_db[task_id]["result"]
+                
+                # Special case: Merge 'slides' dict instead of overwriting it
+                if "slides" in new_state and "slides" in current_result:
+                    for sub_id, slide_list in new_state["slides"].items():
+                        current_result["slides"][sub_id] = slide_list
+                    # Remove it from new_state so the generic update doesn't overwrite the work
+                    del new_state["slides"]
+                
+                # Generic update for everything else
+                current_result.update(new_state)
+                
                 logger.info(
                     f"  ⚡ Incremental update from {node_name} for mission {task_id}"
                 )

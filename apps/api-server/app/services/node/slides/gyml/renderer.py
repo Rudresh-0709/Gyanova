@@ -562,8 +562,15 @@ class GyMLRenderer:
             )
 
         # Auto-Icon Selection for specific variants (if icon absent or needs override)
-        # SKIP for timeline/timelineSequential/comparison — they use dot markers / numbers / no icons
-        ICON_SKIP_VARIANTS = {"timeline", "timelineSequential", "comparison"}
+        # Skip timeline families (except timelineIcon) and comparison base variant.
+        # These use dedicated dot/axis/number treatments.
+        ICON_SKIP_VARIANTS = {
+            "timeline",
+            "timelineHorizontal",
+            "timelineSequential",
+            "timelineMilestone",
+            "comparison",
+        }
         icon_class = None
         if variant not in ICON_SKIP_VARIANTS:
             if item.icon:

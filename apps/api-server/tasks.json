@@ -4053,5 +4053,109 @@
         "sub_1_44e980"
       ]
     }
+  },
+  "06efc05c-28de-49a8-85d7-772dfc0d7b20": {
+    "status": "planning_completed",
+    "result": {
+      "user_input": "Step Deviation Method",
+      "topic": "Step Deviation Method",
+      "difficulty": "Intermediate",
+      "granularity": "Focused",
+      "teacher_gender": "Female",
+      "sub_topics": [
+        {
+          "name": "Introduction to Step Deviation Method & Its Applications",
+          "difficulty": "Beginner",
+          "id": "sub_1_071302"
+        }
+      ],
+      "plans": {
+        "sub_1_071302": [
+          {
+            "title": "Understanding Step Deviation Method",
+            "content_angle": "overview",
+            "intent": "concept",
+            "purpose": "definition",
+            "selected_template": "Title with bullets and image",
+            "role": "Guide",
+            "goal": "Introduce students to the Step Deviation Method and its basic concept.",
+            "reasoning": "Provide a high-level overview to set the context for deeper exploration.",
+            "visual_required": true,
+            "visual_type": "illustration",
+            "image_role": "accent",
+            "target_density": "sparse",
+            "slide_id": "sub_1_071302_s1",
+            "sequence_index": 0
+          },
+          {
+            "title": "Mechanism of Step Deviation Method",
+            "content_angle": "mechanism",
+            "intent": "process",
+            "purpose": "process",
+            "selected_template": "Diagram",
+            "role": "Interpret",
+            "goal": "Explain the process involved in the Step Deviation Method.",
+            "reasoning": "Visual representation of the process aids understanding of sequential steps.",
+            "visual_required": true,
+            "visual_type": "diagram",
+            "image_role": "content",
+            "target_density": "balanced",
+            "slide_id": "sub_1_071302_s2",
+            "sequence_index": 1
+          },
+          {
+            "title": "Example: Step Deviation in Action",
+            "content_angle": "example",
+            "intent": "example",
+            "purpose": "reinforcement",
+            "selected_template": "Three columns",
+            "role": "Emphasize",
+            "goal": "Show a practical example to reinforce the understanding of the method.",
+            "reasoning": "Illustrating with a practical example solidifies theoretical knowledge.",
+            "visual_required": true,
+            "visual_type": "image",
+            "image_role": "content",
+            "target_density": "standard",
+            "slide_id": "sub_1_071302_s3",
+            "sequence_index": 2
+          },
+          {
+            "title": "Applications of Step Deviation Method",
+            "content_angle": "application",
+            "intent": "data",
+            "purpose": "visualization",
+            "selected_template": "Icons with text",
+            "role": "Connect",
+            "goal": "Highlight various applications where the Step Deviation Method is used.",
+            "reasoning": "Connecting theory to real-world applications enhances relevance.",
+            "visual_required": true,
+            "visual_type": "illustration",
+            "image_role": "accent",
+            "target_density": "standard",
+            "slide_id": "sub_1_071302_s4",
+            "sequence_index": 3
+          },
+          {
+            "title": "Summary of Key Points",
+            "content_angle": "summary",
+            "intent": "summary",
+            "purpose": "reinforcement",
+            "selected_template": "Large bullet list",
+            "role": "Reinforce",
+            "goal": "Summarize the key points discussed about the Step Deviation Method.",
+            "reasoning": "A concise summary helps reinforce learning and aids retention.",
+            "visual_required": false,
+            "visual_type": "none",
+            "image_role": "none",
+            "target_density": "dense",
+            "slide_id": "sub_1_071302_s5",
+            "sequence_index": 4
+          }
+        ]
+      },
+      "slides": {},
+      "intro_text": "",
+      "messages": []
+    }
   }
 }

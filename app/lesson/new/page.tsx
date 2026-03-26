@@ -404,10 +404,12 @@ export default function LessonInputPage() {
     const [planningStatus, setPlanningStatus] = useState<"idle" | "pending" | "planning" | "planning_completed" | "failed">("idle");
 
     useEffect(() => {
-        if (status === "unauthenticated") {
+        // Prevents mysterious redirects to home if the dev server reloads/session transiently fails.
+        // We only redirect if strictly unauthenticated AND we aren't in the middle of a generation.
+        if (status === "unauthenticated" && !isGenerating && step === 'form') {
             router.push("/");
         }
-    }, [status, router]);
+    }, [status, router, isGenerating, step]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;

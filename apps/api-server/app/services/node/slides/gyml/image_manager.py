@@ -50,10 +50,9 @@ class ImageManager:
         # 2. Density / Complexity Overrides
         # If density is very high (> 1.0) or has wide content, side layouts look cramped.
         if (slide_density > 1.0) or has_wide_block:
-            if has_user_image:
-                # Wide blocks (HubSpoke, etc.) need full width, so image moves to top/bottom
-                return "top" if slide_index % 2 == 0 else "bottom"
-            return "blank"
+            # For dense/complex slides, use top/bottom layouts to preserve horizontal space
+            # This allows image generation for dense slides instead of skipping entirely
+            return "top" if slide_index % 2 == 0 else "bottom"
 
         # 3. Variety Logic
         # For lower densities, we want to ensure an image is present for visual balance.
