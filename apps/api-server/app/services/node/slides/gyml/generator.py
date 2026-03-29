@@ -465,6 +465,10 @@ class GyMLContentGenerator:
         # Check if this is a sparse template (prioritizes premium visual style over dense content)
         # Uses schema definitions from narration_techniques for centralized configuration
         is_sparse = is_sparse_template_schema(normalized_template)
+        sparse_schema = get_sparse_template_schema(normalized_template) if is_sparse else None
+        sparse_top_bottom_only = bool(
+            sparse_schema and sparse_schema.get("allowed_layouts") == ["top", "bottom"]
+        )
 
         # ── VISUAL VARIANT & LAYOUT ROTATION ─────────────────────────
         # Templates that use top-level block types (not smart_layout) skip variant rotation
@@ -487,10 +491,13 @@ class GyMLContentGenerator:
 
         chosen_variant, chosen_layout = None, None
         rotation_directives = ""
+
+        if sparse_top_bottom_only and image_role != "none":
+            chosen_layout = "top" if slide_index % 2 == 0 else "bottom"
         
         # ── COMPREHENSIVE LAYOUT ROTATION ────────────────────────────
         # Even if not using smart variant, we should rotate the image layout
-        if can_rotate_layout:
+        if can_rotate_layout and not sparse_top_bottom_only:
             estimated_items = 4
             # If it uses a smart layout variant pool, pick both. Otherwise just pick layout.
             if uses_smart_layout:
@@ -511,18 +518,22 @@ class GyMLContentGenerator:
                     layout_history=layout_history or [],
                 )
 
+        if chosen_layout:
             rotation_directives = f"⚡ MANDATORY LAYOUT: Use '{chosen_layout}' as the slide-level image_layout."
             if chosen_variant:
                 rotation_directives += f"\n        ⚡ MANDATORY VARIANT: Use '{chosen_variant}' for the primary smart_layout block."
-            
+
             print(f"    🎨 Rotation: variant='{chosen_variant}', layout='{chosen_layout}' for index={slide_index}")
 
         # ── IMAGE ROLE ROUTING ──────────────────────────
         image_role_directives = ""
         if image_role == "content":
-            # Override layout to sidebars for inline content images
-            if chosen_layout not in ["left", "right"]:
-                chosen_layout = "right" if (slide_index % 2 == 1) else "left"
+            if sparse_top_bottom_only:
+                chosen_layout = "top" if slide_index % 2 == 0 else "bottom"
+            else:
+                # Override layout to sidebars for inline content images
+                if chosen_layout not in ["left", "right"]:
+                    chosen_layout = "right" if (slide_index % 2 == 1) else "left"
             
             image_role_directives = f"""
         ⚡ IMAGE ROLE: CONTENT (MANDATORY)
@@ -539,6 +550,8 @@ class GyMLContentGenerator:
             """
         else:
             # Default accent behavior
+            if sparse_top_bottom_only:
+                chosen_layout = "top" if slide_index % 2 == 0 else "bottom"
             image_role_directives = f"""
         ⚡ IMAGE ROLE: ACCENT
            The image on this slide is decorative (in the sidebar or background).
@@ -841,13 +854,7 @@ class GyMLContentGenerator:
         If the LLM didn't provide one or it's invalid, infer it from the content blocks.
         """
         # Sparse templates don't require a primary teaching block
-        SPARSE_TEMPLATES = [
-            "Title card",
-            "Image and text",
-            "Text and image",
-            "Formula block",
-        ]
-        if template in SPARSE_TEMPLATES:
+        if is_sparse_template_schema(template):
             # For sparse templates, primary_block_index is optional
             content["primary_block_index"] = None
             return content

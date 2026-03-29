@@ -330,7 +330,12 @@ export default function LessonViewPage() {
                 } else if (data.status === "failed") {
                     setError("This lesson failed to generate.");
                     setLoading(false);
-                } else if (data.status === "processing" || data.status === "pending" || data.status === "planning_completed") {
+                } else if (
+                    data.status === "processing" ||
+                    data.status === "preview_ready" ||
+                    data.status === "pending" ||
+                    data.status === "planning_completed"
+                ) {
                     // Only leave the loading state once the browser has actual HTML it can render.
                     if (hasRenderableLessonContent(data.result)) {
                         setLoading(false);

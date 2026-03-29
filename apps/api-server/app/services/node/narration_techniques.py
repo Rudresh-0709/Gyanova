@@ -410,14 +410,120 @@ SPARSE_TEMPLATE_SCHEMAS: Dict[str, Dict[str, Any]] = {
     },
     "Formula block": {
         "required_blocks": ["formula_block"],
-        "optional_blocks": ["intro_paragraph", "annotation_paragraph"],
+        "optional_blocks": ["intro_paragraph"],
         "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
         "instruction": (
             "Generate a formula_block with clear notation and visual structure. "
             "Optionally include an intro_paragraph above it to introduce the formula. "
             "No smart_layout, no lists, no tables. Formula should be visually prominent."
         ),
-        "max_blocks": 3,
+        "max_blocks": 2,
+        "requires_wide_block": True,
+        "allowed_layouts": ["top", "bottom"],
+    },
+    "Comparison table": {
+        "required_blocks": ["comparison_table"],
+        "optional_blocks": ["intro_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate a comparison_table as the primary wide block. "
+            "Optionally include one intro_paragraph above it for context. "
+            "Keep total content blocks to at most 2."
+        ),
+        "max_blocks": 2,
+        "requires_wide_block": True,
+        "allowed_layouts": ["top", "bottom"],
+    },
+    "Split panel": {
+        "required_blocks": ["split_panel"],
+        "optional_blocks": ["intro_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate a split_panel as the primary wide block. "
+            "Optionally include one intro_paragraph above it for context. "
+            "Keep total content blocks to at most 2."
+        ),
+        "max_blocks": 2,
+        "requires_wide_block": True,
+        "allowed_layouts": ["top", "bottom"],
+    },
+    "Hierarchy tree": {
+        "required_blocks": ["hierarchy_tree"],
+        "optional_blocks": ["intro_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate a hierarchy_tree as the primary wide block. "
+            "Optionally include one intro_paragraph above it for context. "
+            "Keep total content blocks to at most 2."
+        ),
+        "max_blocks": 2,
+        "requires_wide_block": True,
+        "allowed_layouts": ["top", "bottom"],
+    },
+    "Hub and spoke": {
+        "required_blocks": ["hub_and_spoke"],
+        "optional_blocks": ["intro_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate a hub_and_spoke as the primary wide block. "
+            "Optionally include one intro_paragraph above it for context. "
+            "Keep total content blocks to at most 2."
+        ),
+        "max_blocks": 2,
+        "requires_wide_block": True,
+        "allowed_layouts": ["top", "bottom"],
+    },
+    "Process arrow block": {
+        "required_blocks": ["process_arrow_block"],
+        "optional_blocks": ["intro_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate a process_arrow_block as the primary wide block. "
+            "Optionally include one intro_paragraph above it for context. "
+            "Keep total content blocks to at most 2."
+        ),
+        "max_blocks": 2,
+        "requires_wide_block": True,
+        "allowed_layouts": ["top", "bottom"],
+    },
+    "Cyclic process block": {
+        "required_blocks": ["cyclic_process_block"],
+        "optional_blocks": ["intro_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate a cyclic_process_block as the primary wide block. "
+            "Optionally include one intro_paragraph above it for context. "
+            "Keep total content blocks to at most 2."
+        ),
+        "max_blocks": 2,
+        "requires_wide_block": True,
+        "allowed_layouts": ["top", "bottom"],
+    },
+    "Feature showcase block": {
+        "required_blocks": ["feature_showcase_block"],
+        "optional_blocks": ["intro_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate a feature_showcase_block as the primary wide block. "
+            "Optionally include one intro_paragraph above it for context. "
+            "Keep total content blocks to at most 2."
+        ),
+        "max_blocks": 2,
+        "requires_wide_block": True,
+        "allowed_layouts": ["top", "bottom"],
+    },
+    "Code": {
+        "required_blocks": ["code"],
+        "optional_blocks": ["intro_paragraph"],
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "instruction": (
+            "Generate a code block as the primary wide block. "
+            "Optionally include one intro_paragraph above it for context. "
+            "Keep total content blocks to at most 2."
+        ),
+        "max_blocks": 2,
+        "requires_wide_block": True,
+        "allowed_layouts": ["top", "bottom"],
     },
 }
 

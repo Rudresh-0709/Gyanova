@@ -466,6 +466,25 @@ def _validate_sparse_template(
     if len(blocks) > max_blocks:
         print(f"    ✗ Sparse template has {len(blocks)} blocks, max is {max_blocks}")
         return None
+
+    # ── Check 4: Require at least one wide block for wide sparse templates ──
+    if schema.get("requires_wide_block", False):
+        wide_block_types = {
+            "table",
+            "comparison_table",
+            "split_panel",
+            "formula_block",
+            "hierarchy_tree",
+            "hub_and_spoke",
+            "process_arrow_block",
+            "cyclic_process_block",
+            "feature_showcase_block",
+            "code",
+        }
+        has_wide_block = any(t in wide_block_types for t in block_types)
+        if not has_wide_block:
+            print("    ✗ Sparse wide template requires at least one wide block")
+            return None
     
     # ── All checks passed ──
     print(f"    ✓ Sparse template '{template_name}' valid: {block_types}")
@@ -852,7 +871,17 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     {
                         "type": "smart_layout",
                         "variant": "bigBullets",
-                        "items": [{"heading": "Key Point", "description": goal}],
+                        "items": [
+                            {"heading": "Core Idea", "description": goal},
+                            {
+                                "heading": "How It Works",
+                                "description": f"Break down {title} into clear, sequential steps.",
+                            },
+                            {
+                                "heading": "Why It Matters",
+                                "description": "Connect the method to practical problem-solving and interpretation.",
+                            },
+                        ],
                     },
                 ],
                 "primary_block_index": 1,

@@ -502,14 +502,171 @@ def _ensure_sparse_and_dense_mix(slides: List[Dict[str, Any]]) -> List[Dict[str,
     return slides
 
 
+def _get_domain_specific_guidance(domain: str) -> str:
+    """Return domain-specific template guidance."""
+    guidance_map = {
+        "math": """
+    DOMAIN-SPECIFIC GUIDANCE (MATHEMATICS):
+    - REQUIREMENT: Include at least ONE slide using 'Formula block' template to display key equations.
+    - Math slides should emphasize: equations/formulas, variable definitions, step-by-step derivations.
+    - Use 'Formula block' for core equations. Use 'Process arrow block' or 'Arrows' for multi-step proofs/derivations.
+    - Include 'Key-Value list' for variable definitions (e.g., "e = 2.718...", "π = 3.14159...").
+    - Example angles: "mechanism" (how to solve), "comparison" (different formula forms), "example" (application).
+    - When selecting templates, prioritize Formula block, Process arrow, Key-Value list over generic bullet templates.
+""",
+        "science": """
+    DOMAIN-SPECIFIC GUIDANCE (SCIENCE):
+    - Feature diagrams heavily (use 'Diagram', 'Labeled diagram', 'Process arrow block' for processes).
+    - Include at least ONE slide with a visual that shows structure (cell, molecule, system, apparatus).
+    - Use 'Comparison table' or 'Two columns' to contrast concepts (reactants vs products, structure vs function).
+    - Example angles: "mechanism" (how biological/chemical process works), "comparison" (similar/different systems).
+""",
+        "history": """
+    DOMAIN-SPECIFIC GUIDANCE (HISTORY/SOCIAL STUDIES):
+    - Use 'Timeline' to show chronological sequence (events, eras, movements).
+    - Use 'Comparison table' or 'Split panel' to contrast historical periods, figures, or ideologies.
+    - Include map/diagram visuals when discussing geography or territorial changes.
+    - Example angles: "mechanism" (cause and effect), "comparison" (different periods or perspectives), "application" (modern relevance).
+""",
+        "language": """
+    DOMAIN-SPECIFIC GUIDANCE (LANGUAGE/LITERATURE):
+    - Use 'Arrows' or 'Process arrow block' to show narrative flow or argument structure.
+    - Use 'Icons with text' for contrasting literary devices (metaphor, simile, personification).
+    - Use 'Key-Value list' for vocabulary, grammar rules, or character traits.
+    - Example angles: "overview" (genre intro), "comparison" (stylistic choices), "example" (textual analysis).
+""",
+    }
+    return guidance_map.get(domain, "")
+
+
+def _ensure_domain_specific_templates(slides: List[Dict[str, Any]], domain: str) -> List[Dict[str, Any]]:
+    """Enforce domain-specific template requirements."""
+    if not slides or domain == "general":
+        return slides
+    
+    # Math: must include at least one Formula block
+    if domain == "math":
+        has_formula = any(s.get("selected_template") == "Formula block" for s in slides)
+        if not has_formula and len(slides) > 1:
+            # Insert Formula block as a middle slide
+            insert_idx = len(slides) // 2
+            formula_slide = {
+                "title": f"{slides[0].get('title', 'Math Concept')} - Key Equation",
+                "content_angle": "mechanism",
+                "intent": "definition",
+                "purpose": "definition",
+                "selected_template": "Formula block",
+                "role": "Emphasize",
+                "goal": "Display and explain core equation(s).",
+                "reasoning": "Domain-enforced: math topics require Formula block slide.",
+                "visual_required": False,
+                "visual_type": "none",
+                "image_role": "none",
+                "target_density": "standard",
+            }
+            slides.insert(insert_idx, formula_slide)
+    
+    # Science: must include at least one Diagram or process
+    if domain == "science":
+        has_diagram = any(
+            s.get("selected_template") in {"Diagram", "Labeled diagram", "Process arrow block"}
+            for s in slides
+        )
+        if not has_diagram and len(slides) > 1:
+            insert_idx = len(slides) // 2
+            diagram_slide = {
+                "title": f"{slides[0].get('title', 'Science Concept')} - System/Structure",
+                "content_angle": "visualization",
+                "intent": "process",
+                "purpose": "visualization",
+                "selected_template": "Labeled diagram",
+                "role": "Interpret",
+                "goal": "Show key system structure or anatomical relationships.",
+                "reasoning": "Domain-enforced: science topics require visual diagram.",
+                "visual_required": True,
+                "visual_type": "diagram",
+                "image_role": "content",
+                "target_density": "balanced",
+            }
+            slides.insert(insert_idx, diagram_slide)
+    
+    # History: use Timeline if chronological content
+    if domain == "history":
+        has_timeline = any(s.get("selected_template") == "Timeline" for s in slides)
+        if not has_timeline and len(slides) > 1:
+            # Try to add a timeline slide if not already present
+            insert_idx = min(1, len(slides) - 1)  # Often after intro
+            timeline_slide = {
+                "title": f"{slides[0].get('title', 'Historical Period')} - Timeline",
+                "content_angle": "mechanism",
+                "intent": "process",
+                "purpose": "process",
+                "selected_template": "Timeline",
+                "role": "Guide",
+                "goal": "Show chronological progression of events.",
+                "reasoning": "Domain-enforced: history topics should include Timeline.",
+                "visual_required": False,
+                "visual_type": "none",
+                "image_role": "accent",
+                "target_density": "standard",
+            }
+            slides.insert(insert_idx, timeline_slide)
+    
+    return slides
+    """Keep sparse/title-card slides visually alive unless template is explicitly no-image."""
+    if not slides:
+        return slides
+
+    no_image_templates = {
+        "Comparison table",
+        "Formula block",
+        "Key-Value list",
+        "Split panel",
+        "Code",
+        "Hub and spoke",
+    }
+
+    for slide in slides:
+        template = (slide.get("selected_template") or "").strip()
+        density = (slide.get("target_density") or "standard").lower()
+        image_role = (slide.get("image_role") or "").lower()
+
+        # Title cards should always carry an accent visual to avoid blank hero slides.
+        if template == "Title card" and image_role != "accent":
+            slide["image_role"] = "accent"
+            if slide.get("visual_type") in (None, "", "none"):
+                slide["visual_type"] = "image"
+            slide["visual_required"] = True
+            continue
+
+        # Sparse/ultra-sparse slides should not suppress visuals unless template is no-image by design.
+        if density in {"sparse", "ultra_sparse"} and image_role == "none" and template not in no_image_templates:
+            slide["image_role"] = "accent"
+            if slide.get("visual_type") in (None, "", "none"):
+                slide["visual_type"] = "image"
+            slide["visual_required"] = True
+
+    return slides
+
+
 def _build_safe_fallback_plan(subtopic: Dict[str, Any]) -> Dict[str, Any]:
     """Return a small deterministic lesson skeleton instead of a single fallback slide."""
     subtopic_name = subtopic.get("name", "Untitled")
     slides: List[Dict[str, Any]] = []
 
+    fallback_title_templates = [
+        f"{subtopic_name}: Big Picture",
+        f"{subtopic_name}: Core Concepts",
+        f"{subtopic_name}: How It Works",
+        f"{subtopic_name}: Examples and Uses",
+    ]
+
     for idx, base in enumerate(SAFE_FALLBACK_SEQUENCE):
         slide = dict(base)
-        slide["title"] = subtopic_name if idx == 0 else f"{subtopic_name} ({idx + 1})"
+        if idx < len(fallback_title_templates):
+            slide["title"] = fallback_title_templates[idx]
+        else:
+            slide["title"] = f"{subtopic_name}: Deep Dive {idx + 1}"
         slide["reasoning"] = "Auto-generated safe fallback after planning retries failed"
         slides.append(slide)
 
@@ -540,10 +697,88 @@ def enforce_no_introduce_first_slide(slides: List[Dict[str, Any]]) -> List[Dict[
     return slides
 
 
+def _detect_domain(subtopic: Dict[str, Any]) -> str:
+    """Detect the domain/subject from subtopic name and metadata."""
+    topic_name = (subtopic.get("name") or "").lower()
+    topic_subject = (subtopic.get("subject") or "").lower()
+    
+    # Combine name and subject for detection
+    combined = f"{topic_name} {topic_subject}"
+    
+    # Math detection
+    math_keywords = {"math", "maths", "algebra", "geometry", "calculus", "trigonometry", "equation", 
+                     "formula", "derivative", "integral", "polynomial", "function", "theorem", 
+                     "proof", "number theory", "linear", "quadratic", "matrix", "vector",
+                     "probability", "statistics", "exponential", "logarithm"}
+    if any(keyword in combined for keyword in math_keywords):
+        return "math"
+    
+    # Science detection
+    science_keywords = {"science", "physics", "chemistry", "biology", "anatomy", "physiology", 
+                        "reaction", "element", "atom", "molecule", "cell", "organism", "system"}
+    if any(keyword in combined for keyword in science_keywords):
+        return "science"
+    
+    # History/Social Studies detection
+    history_keywords = {"history", "social", "government", "civics", "culture", "society", 
+                        "war", "revolution", "political", "economic"}
+    if any(keyword in combined for keyword in history_keywords):
+        return "history"
+    
+    # Literature/Language detection
+    language_keywords = {"english", "literature", "grammar", "composition", "syntax", "vocabulary",
+                         "writing", "analysis", "author", "character", "plot", "theme"}
+    if any(keyword in combined for keyword in language_keywords):
+        return "language"
+    
+    return "general"
+
+
+def _get_domain_specific_guidance(domain: str) -> str:
+    """Return domain-specific template guidance."""
+    guidance_map = {
+        "math": """
+    DOMAIN-SPECIFIC GUIDANCE (MATHEMATICS):
+    - REQUIREMENT: Include at least ONE slide using 'Formula block' template to display key equations.
+    - Math slides should emphasize: equations/formulas, variable definitions, step-by-step derivations.
+    - Use 'Formula block' for core equations. Use 'Process arrow block' or 'Arrows' for multi-step proofs/derivations.
+    - Include 'Key-Value list' for variable definitions (e.g., "e = 2.718...", "π = 3.14159...").
+    - Example angles: "mechanism" (how to solve), "comparison" (different formula forms), "example" (application).
+    - When selecting templates, prioritize Formula block, Process arrow, Key-Value list over generic bullet templates.
+""",
+        "science": """
+    DOMAIN-SPECIFIC GUIDANCE (SCIENCE):
+    - Feature diagrams heavily (use 'Diagram', 'Labeled diagram', 'Process arrow block' for processes).
+    - Include at least ONE slide with a visual that shows structure (cell, molecule, system, apparatus).
+    - Use 'Comparison table' or 'Two columns' to contrast concepts (reactants vs products, structure vs function).
+    - Example angles: "mechanism" (how biological/chemical process works), "comparison" (similar/different systems).
+""",
+        "history": """
+    DOMAIN-SPECIFIC GUIDANCE (HISTORY/SOCIAL STUDIES):
+    - Use 'Timeline' to show chronological sequence (events, eras, movements).
+    - Use 'Comparison table' or 'Split panel' to contrast historical periods, figures, or ideologies.
+    - Include map/diagram visuals when discussing geography or territorial changes.
+    - Example angles: "mechanism" (cause and effect), "comparison" (different periods or perspectives), "application" (modern relevance).
+""",
+        "language": """
+    DOMAIN-SPECIFIC GUIDANCE (LANGUAGE/LITERATURE):
+    - Use 'Arrows' or 'Process arrow block' to show narrative flow or argument structure.
+    - Use 'Icons with text' for contrasting literary devices (metaphor, simile, personification).
+    - Use 'Key-Value list' for vocabulary, grammar rules, or character traits.
+    - Example angles: "overview" (genre intro), "comparison" (stylistic choices), "example" (textual analysis).
+""",
+    }
+    return guidance_map.get(domain, "")
+
+
 def plan_slides_for_subtopic(
     subtopic: Dict[str, Any], teacher_profile: str = "Expert Teacher"
 ) -> Dict[str, Any]:
     """Calls LLM to plan slides for a single subtopic."""
+    # Detect domain for domain-specific guidance
+    domain = _detect_domain(subtopic)
+    domain_guidance = _get_domain_specific_guidance(domain)
+    
     SYSTEM_PROMPT = f"""
     ROLE: AI Curriculum Architect & Visual Pedagogy Expert.
 
@@ -601,6 +836,8 @@ def plan_slides_for_subtopic(
         - "Interpret" or "Explain" (if showing a key visual first)
         NEVER use "Introduce" for slide position 0. Use "Introduce" only if truly pedagogically justified for middle slides.
     
+{domain_guidance}
+
     13. Output ONLY valid JSON.
 
     OUTPUT FORMAT:
@@ -838,6 +1075,11 @@ def plan_slides_for_subtopic(
             else:
                 data["slides"] = diverse_slides[:7]
             # ---- DIVERSITY ENFORCEMENT ENDS ----
+
+            data["slides"] = _normalize_sparse_image_policy(data["slides"])
+            
+            # ⭐ DOMAIN-SPECIFIC TEMPLATE ENFORCEMENT
+            data["slides"] = _ensure_domain_specific_templates(data["slides"], domain)
             
             # ⭐ INTRO RULE ENFORCEMENT: First slide must not be "Introduce"
             data["slides"] = enforce_no_introduce_first_slide(data["slides"])

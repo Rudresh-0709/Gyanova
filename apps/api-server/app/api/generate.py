@@ -29,6 +29,106 @@ TASK_STATE_DIR = os.path.join(DATA_ROOT, "task_states")
 tasks_db: Dict[str, Dict[str, Any]] = {}
 
 
+def _merge_slide_lists(existing: Any, incoming: Any) -> List[Dict[str, Any]]:
+    """Merge slide updates by slide_id to avoid overwriting concurrent fields."""
+    existing_list = existing if isinstance(existing, list) else []
+    incoming_list = incoming if isinstance(incoming, list) else []
+
+    merged: List[Dict[str, Any]] = []
+    existing_by_id: Dict[str, Dict[str, Any]] = {}
+
+    for item in existing_list:
+        if not isinstance(item, dict):
+            continue
+        cloned = dict(item)
+        slide_id = cloned.get("slide_id")
+        if isinstance(slide_id, str) and slide_id:
+            existing_by_id[slide_id] = cloned
+        merged.append(cloned)
+
+    for item in incoming_list:
+        if not isinstance(item, dict):
+            continue
+        incoming_slide = dict(item)
+        slide_id = incoming_slide.get("slide_id")
+        if isinstance(slide_id, str) and slide_id and slide_id in existing_by_id:
+            existing_by_id[slide_id].update(incoming_slide)
+        else:
+            merged.append(incoming_slide)
+            if isinstance(slide_id, str) and slide_id:
+                existing_by_id[slide_id] = incoming_slide
+
+    return merged
+
+
+def _has_preview_content(result: Dict[str, Any]) -> bool:
+    """Preview is ready when at least one intro or slide HTML document is renderable."""
+    lesson_intro = result.get("lesson_intro_narration") or {}
+    if isinstance(lesson_intro, dict) and isinstance(lesson_intro.get("html_doc"), str):
+        if lesson_intro["html_doc"].strip():
+            return True
+
+    subtopic_intros = result.get("subtopic_intro_narrations") or {}
+    if isinstance(subtopic_intros, dict):
+        for intro in subtopic_intros.values():
+            if isinstance(intro, dict) and isinstance(intro.get("html_doc"), str):
+                if intro["html_doc"].strip():
+                    return True
+
+    slides = result.get("slides") or {}
+    if isinstance(slides, dict):
+        for slide_list in slides.values():
+            if not isinstance(slide_list, list):
+                continue
+            for slide in slide_list:
+                if not isinstance(slide, dict):
+                    continue
+                html = slide.get("html_content")
+                if isinstance(html, str) and html.strip():
+                    return True
+
+    return False
+
+
+def _merge_generation_state(current_result: Dict[str, Any], state_update: Dict[str, Any]) -> None:
+    """
+    Reducer-style merge: merge nested structures deterministically so parallel
+    workers can update isolated fields without clobbering sibling updates.
+    """
+    new_state = _json_safe(state_update)
+
+    incoming_slides = new_state.pop("slides", None)
+    if isinstance(incoming_slides, dict):
+        current_slides = current_result.setdefault("slides", {})
+        if not isinstance(current_slides, dict):
+            current_slides = {}
+            current_result["slides"] = current_slides
+        for sub_id, slide_list in incoming_slides.items():
+            current_slides[sub_id] = _merge_slide_lists(current_slides.get(sub_id), slide_list)
+
+    incoming_subtopic_intros = new_state.pop("subtopic_intro_narrations", None)
+    if isinstance(incoming_subtopic_intros, dict):
+        current_intros = current_result.setdefault("subtopic_intro_narrations", {})
+        if not isinstance(current_intros, dict):
+            current_intros = {}
+            current_result["subtopic_intro_narrations"] = current_intros
+        for sub_id, intro_payload in incoming_subtopic_intros.items():
+            if isinstance(intro_payload, dict) and isinstance(current_intros.get(sub_id), dict):
+                current_intros[sub_id].update(intro_payload)
+            else:
+                current_intros[sub_id] = intro_payload
+
+    incoming_lesson_intro = new_state.pop("lesson_intro_narration", None)
+    if isinstance(incoming_lesson_intro, dict):
+        current_lesson_intro = current_result.get("lesson_intro_narration")
+        if isinstance(current_lesson_intro, dict):
+            current_lesson_intro.update(incoming_lesson_intro)
+        else:
+            current_result["lesson_intro_narration"] = incoming_lesson_intro
+
+    current_result.update(new_state)
+
+
 def _json_safe(value: Any) -> Any:
     """
     Recursively convert any value to a JSON-serializable form.
@@ -210,20 +310,12 @@ async def run_generation_task(task_id: str, request: ConfirmPlanRequest):
             for node_name, state_update in chunk.items():
                 if "messages" in state_update:
                     del state_update["messages"]
-
-                # Update the result incrementally with a "smart merge" for slides
-                new_state = _json_safe(state_update)
                 current_result = tasks_db[task_id]["result"]
-                
-                # Special case: Merge 'slides' dict instead of overwriting it
-                if "slides" in new_state and "slides" in current_result:
-                    for sub_id, slide_list in new_state["slides"].items():
-                        current_result["slides"][sub_id] = slide_list
-                    # Remove it from new_state so the generic update doesn't overwrite the work
-                    del new_state["slides"]
-                
-                # Generic update for everything else
-                current_result.update(new_state)
+
+                _merge_generation_state(current_result, state_update)
+
+                if tasks_db[task_id]["status"] == "processing" and _has_preview_content(current_result):
+                    tasks_db[task_id]["status"] = "preview_ready"
                 
                 logger.info(
                     f"  ⚡ Incremental update from {node_name} for mission {task_id}"

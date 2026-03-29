@@ -140,6 +140,7 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     - This ensures tasks_db remains JSON-serializable throughout the workflow
     """
     slides_map = state.get("slides", {})
+    image_concurrency = max(1, int(os.getenv("IMAGE_GEN_CONCURRENCY", "3")))
 
     # Initialize pipeline once
     composer = SlideComposer()
@@ -187,12 +188,13 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     
     # Run intro image generation concurrently
     if intro_image_tasks:
-        print(f"🔥 [Rendering Node] Running {len(intro_image_tasks)} intro image generation(s) SEQUENTIALLY...")
-        sem = asyncio.Semaphore(1)
+        print(
+            f"🔥 [Rendering Node] Running {len(intro_image_tasks)} intro image generation(s) with concurrency={image_concurrency}..."
+        )
+        sem = asyncio.Semaphore(image_concurrency)
         
         async def sem_task(task_coro):
             async with sem:
-                await asyncio.sleep(0.5)
                 return await task_coro
         
         image_results = await asyncio.gather(*(sem_task(t) for t in intro_image_tasks))
@@ -353,16 +355,14 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     # Run image generations concurrently with a semaphore to avoid rate limits
     if generation_tasks:
         print(
-            f"   🔥 [Rendering Node] Running {len(generation_tasks)} image generations SEQUENTIALLY..."
+            f"   🔥 [Rendering Node] Running {len(generation_tasks)} image generations with concurrency={image_concurrency}..."
         )
 
-        # Semaphore to limit concurrent requests (conservative to avoid Leonardo API issues)
-        sem = asyncio.Semaphore(1)
+        # Semaphore to limit concurrent requests and avoid provider rate limits.
+        sem = asyncio.Semaphore(image_concurrency)
 
         async def sem_task(task_coro):
             async with sem:
-                # Add a tiny stagger
-                await asyncio.sleep(0.5)
                 return await task_coro
 
         results = await asyncio.gather(*(sem_task(t) for t in generation_tasks))

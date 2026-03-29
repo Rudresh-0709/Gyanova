@@ -56,7 +56,10 @@ class ConstraintRules:
             max_words_per_item=15,
         ),
         "processSteps": LayoutLimits(min_items=3, max_items=12, max_words_per_item=50),
-        "bigBullets": LayoutLimits(min_items=1, max_items=8, max_words_per_item=30),
+        "bigBullets": LayoutLimits(min_items=3, max_items=8, max_words_per_item=30),
+        "bulletIcon": LayoutLimits(min_items=3, max_items=8, max_words_per_item=30),
+        "bulletCheck": LayoutLimits(min_items=3, max_items=8, max_words_per_item=30),
+        "bulletCross": LayoutLimits(min_items=3, max_items=8, max_words_per_item=30),
         "cardGrid": LayoutLimits(min_items=2, max_items=12, max_words_per_item=25),
         "solidBoxesWithIconsInside": LayoutLimits(
             min_items=2, max_items=4, max_words_per_item=20

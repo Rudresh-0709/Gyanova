@@ -202,12 +202,16 @@ async def audio_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
     client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     voice = get_voice(state)
 
-    # Resolve output directory
-    # Updated to use the hidden .persistent_data folder in the root to avoid triggering Next.js reloads
-    ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent
-    fallback_dir = str(ROOT_DIR / ".persistent_data" / "audio_output")
-    
+    # Resolve output directory at repository root, matching app.main static mount.
+    # audio_generation_node.py -> node -> services -> app -> api-server -> apps -> repo_root
+    repo_root = Path(__file__).resolve().parents[5]
+    fallback_dir = str(repo_root / ".persistent_data" / "audio_output")
+
     base_dir = state.get("audio_output_dir", fallback_dir)
+    # Backward-compat: older runs may persist the incorrect apps/.persistent_data path.
+    legacy_fragment = f"{os.sep}apps{os.sep}.persistent_data{os.sep}audio_output"
+    if isinstance(base_dir, str) and legacy_fragment in base_dir:
+        base_dir = fallback_dir
     output_dir = Path(base_dir)
     ensure_dir(output_dir)
     state["audio_output_dir"] = str(output_dir)
