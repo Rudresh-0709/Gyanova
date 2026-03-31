@@ -13,12 +13,14 @@ class ImageLayout(Enum):
     """
     Image layout positions for accent images.
     From gyanova_markup_language.md §3.
+    Note: "behind" (full-screen) layout has been removed in favor of 
+    top/bottom/left/right layouts only.
     """
 
     RIGHT = "right"
     LEFT = "left"
     TOP = "top"
-    BEHIND = "behind"
+    BOTTOM = "bottom"
     BLANK = "blank"  # No accent image
 
 

@@ -85,6 +85,11 @@ class TutorState(TypedDict, total=False):
     # Error Handling
     error: str
 
+    # Unsupported topic handling
+    unsupported_topic: bool
+    unsupported_subject: str
+    unsupported_message: str
+
     # Flags
     is_paused: bool
     timestamp: str

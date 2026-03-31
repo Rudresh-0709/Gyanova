@@ -28,6 +28,18 @@ def extract_sub_topic(state: TutorState) -> TutorState:
     If the topic is too vague or invalid (like "No clear topic detected"), respond with: {"sub_topics": []}
     """
     user_prompt = state.get("topic", "")
+
+    if state.get("unsupported_topic"):
+        print("\n⚠️  [WARNING] Skipping sub-topic extraction - topic is currently unsupported")
+        return {
+            "sub_topics": [],
+            "unsupported_topic": True,
+            "unsupported_subject": state.get("unsupported_subject", "math"),
+            "unsupported_message": state.get(
+                "unsupported_message",
+                "Math-related slides are currently under working. Please try a non-math topic for now.",
+            ),
+        }
     
     # Guard: if topic extraction failed, skip sub-topic extraction
     if not user_prompt or user_prompt == "No clear topic detected":

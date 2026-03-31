@@ -379,6 +379,7 @@ VALID_PRIMARY_BLOCK_TYPES = {
     "cyclic_process_block",
     "feature_showcase_block",
     "code",
+    "image",
 }
 
 
@@ -425,12 +426,14 @@ def _validate_sparse_template(
 ) -> Optional[Dict[str, Any]]:
     """
     Validate that sparse template content meets schema requirements.
-    Sparse templates don't require a primary_block_index (they use fixed narration techniques).
+    Sparse templates must define exactly one designated primary block via
+    primary_block_index (single integer index).
     
     Validation checks:
     1. Has required blocks specified in schema
     2. Doesn't use forbidden blocks
     3. Total block count doesn't exceed max
+    4. Has one valid primary_block_index
     
     Returns:
         The content dict if valid, or None if schema validation fails.
@@ -467,7 +470,33 @@ def _validate_sparse_template(
         print(f"    ✗ Sparse template has {len(blocks)} blocks, max is {max_blocks}")
         return None
 
-    # ── Check 4: Require at least one wide block for wide sparse templates ──
+    # ── Check 4: Sparse templates must have one valid primary block index ──
+    idx = generated_content.get("primary_block_index")
+    if (
+        idx is not None
+        and isinstance(idx, int)
+        and 0 <= idx < len(blocks)
+        and blocks[idx].get("type") in VALID_PRIMARY_BLOCK_TYPES
+    ):
+        pass
+    else:
+        # Attempt inference for resilience
+        inferred_idx = None
+        for i, block in enumerate(blocks):
+            if block.get("type") in VALID_PRIMARY_BLOCK_TYPES:
+                inferred_idx = i
+                break
+
+        if inferred_idx is None:
+            print("    ✗ Sparse template has no valid primary block")
+            return None
+
+        generated_content["primary_block_index"] = inferred_idx
+        print(
+            f"    ⚠ Sparse primary block inferred: [{inferred_idx}] {blocks[inferred_idx].get('type')} (was idx={idx})"
+        )
+
+    # ── Check 5: Require at least one wide block for wide sparse templates ──
     if schema.get("requires_wide_block", False):
         wide_block_types = {
             "table",

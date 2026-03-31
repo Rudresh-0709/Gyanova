@@ -1,6 +1,44 @@
 from ..llm.model_loader import load_groq, load_groq_fast, load_openai
 from ..state import TutorState
 import json
+import re
+
+
+MATH_UNSUPPORTED_MESSAGE = (
+    "Math-related slides are currently under working. "
+    "Please try a non-math topic for now."
+)
+
+
+def _is_math_topic(text: str) -> bool:
+    if not text:
+        return False
+
+    normalized = text.lower()
+    math_patterns = [
+        r"\bmath(?:s|ematics)?\b",
+        r"\balgebra\b",
+        r"\bgeometry\b",
+        r"\btrigonometry\b",
+        r"\bcalculus\b",
+        r"\bderivative(?:s)?\b",
+        r"\bintegral(?:s)?\b",
+        r"\bprobability\b",
+        r"\bstatistic(?:s)?\b",
+        r"\bmean\b",
+        r"\bmedian\b",
+        r"\bmode\b",
+        r"\bvariance\b",
+        r"\bstandard deviation\b",
+        r"\bstep deviation\b",
+        r"\bquadratic\b",
+        r"\bequation(?:s)?\b",
+        r"\bmatrix|matrices\b",
+        r"\barithmetic\b",
+        r"\bnumber theory\b",
+    ]
+
+    return any(re.search(pattern, normalized) for pattern in math_patterns)
 
 
 def extract_topic():
@@ -83,8 +121,6 @@ def extract_topic(state: TutorState) -> TutorState:
     print(topic.content)
     print("--------------------------------------------\n")
 
-    import re
-
     json_match = re.search(r"```json\s*([\s\S]*?)\s*```", topic.content)
     if json_match:
         json_string = json_match.group(1).strip()
@@ -105,8 +141,21 @@ def extract_topic(state: TutorState) -> TutorState:
     state["topic"] = parsed.get("topic", "No clear topic detected")
     state["granularity"] = parsed.get("granularity", "N/A")
 
+    topic_text = state.get("topic", "") or state.get("user_input", "")
+    if _is_math_topic(topic_text):
+        return {
+            "topic": state["topic"],
+            "granularity": state["granularity"],
+            "unsupported_topic": True,
+            "unsupported_subject": "math",
+            "unsupported_message": MATH_UNSUPPORTED_MESSAGE,
+        }
+
     # Return only modified fields for clean state management
     return {
         "topic": state["topic"],
         "granularity": state["granularity"],
+        "unsupported_topic": False,
+        "unsupported_subject": "",
+        "unsupported_message": "",
     }

@@ -469,6 +469,18 @@ export default function LessonInputPage() {
                         : "planning";
                 setPlanningStatus(nextPlanningStatus);
 
+                if (statusData?.result?.unsupported_topic) {
+                    const message =
+                        statusData?.result?.unsupported_message ||
+                        "Math-related slides are currently under working. Please try a non-math topic for now.";
+                    setError(message);
+                    setIsGenerating(false);
+                    setStep("form");
+                    setPlanningStatus("failed");
+                    planningComplete = true;
+                    continue;
+                }
+
                 // Proactively update planData if we have results, even if not fully complete
                 if (statusData.result && (statusData.result.sub_topics?.length > 0 || Object.keys(statusData.result.plans || {}).length > 0)) {
                     setPlanData(statusData.result);
@@ -483,6 +495,7 @@ export default function LessonInputPage() {
                     planningComplete = true;
                     setGenerationStatus("Curriculum ready!");
                     setPlanningStatus("planning_completed");
+                    setIsGenerating(false);
                 } else if (statusData.status === "failed") {
                     throw new Error(statusData.error || "Planning failed");
                 } else {

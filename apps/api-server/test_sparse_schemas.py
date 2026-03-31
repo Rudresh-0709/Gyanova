@@ -5,8 +5,8 @@ Test script to verify sparse template schemas are correctly defined.
 
 from app.services.node.narration_techniques import get_sparse_template_schema, is_sparse_template_schema
 
-# Test all 4 sparse templates
-templates = ['Title card', 'Image and text', 'Text and image', 'Formula block']
+# Test sparse templates registered in SPARSE_TEMPLATE_SCHEMAS
+templates = ['Image and text', 'Text and image', 'Formula block']
 print('Testing Sparse Template Schemas:')
 print('=' * 60)
 

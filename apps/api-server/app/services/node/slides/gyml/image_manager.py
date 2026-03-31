@@ -10,7 +10,8 @@ from typing import Optional, Literal
 from .definitions import ComposedSlide, GyMLImage
 
 # Placement Types
-ImagePlacementValue = Literal["right", "left", "top", "bottom", "behind", "blank"]
+# Note: "behind" (full-screen) layout removed; accent images now use top/bottom/left/right only
+ImagePlacementValue = Literal["right", "left", "top", "bottom", "blank"]
 
 
 class ImageManager:
@@ -40,7 +41,7 @@ class ImageManager:
         """
         if explicit_layout is not None:
             # OVERRIDE: Even if LLM/User asked for side-layout, if we have a wide block,
-            # we MUST move to top/bottom/behind or blank to avoid squeezing it.
+            # we MUST move to top/bottom or blank to avoid squeezing it.
             if has_wide_block and explicit_layout in ["left", "right"]:
                 if has_user_image:
                     return "top" if slide_index % 2 == 0 else "bottom"

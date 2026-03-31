@@ -13,6 +13,18 @@ def lesson_planning_node(state: TutorState) -> TutorState:
     sub_topics = state.get("sub_topics", [])
     difficulty = state.get("difficulty", "Beginner")
 
+    if state.get("unsupported_topic"):
+        return {
+            "plans": {},
+            "sub_topics": [],
+            "unsupported_topic": True,
+            "unsupported_subject": state.get("unsupported_subject", "math"),
+            "unsupported_message": state.get(
+                "unsupported_message",
+                "Math-related slides are currently under working. Please try a non-math topic for now.",
+            ),
+        }
+
     if "plans" not in state:
         state["plans"] = {}
 

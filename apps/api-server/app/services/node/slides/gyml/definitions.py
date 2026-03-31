@@ -430,7 +430,7 @@ class GyMLSection:
     """
 
     id: str
-    image_layout: Literal["right", "left", "top", "bottom", "behind", "blank"] = "blank"
+    image_layout: Literal["right", "left", "top", "bottom", "blank"] = "blank"
     accent_image: Optional[GyMLImage] = None
     image_style: Optional[str] = None
     slide_density: Optional[str] = None

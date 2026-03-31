@@ -54,6 +54,45 @@ htmlcov/
 
 # local downloaded skill bundle
 claude-skills-main/
+awesome-copilot-main/
 
-# local workspace Copilot skills
+# local workspace Copilot skills and imported agents
 .github/skills/
+.github/agents/
+
+# local test and debug outputs
+test_*.html
+test_*.py
+test_*.json
+debug*.txt
+repro_error*.py
+*_output.html
+*_output.json
+density_preview.html
+output*.html
+output.txt
+terminaloutput.txt
+simple_layer_test.py
+cyclic_process_test.html
+
+# generated lesson audio artifacts
+.persistent_data/audio_output/
+audio_output/
+apps/api-server/app/audio_output/
+*.mp3
+*.wav
+
+# reference and analysis documents (local workspace docs, not for tracking)
+.github/agents-reference.md
+.github/layout-limitations-analysis.md
+.github/sparse-template-implementation.md
+.github/fixes-summary.md
+.github/architectural-review-note.md
+.github/layout-fixes-proposal.md
+
+# project documentation (analysis/exploration files)
+LAYOUT_LIMITATIONS_ANALYSIS.md
+SPARSE_TEMPLATE_IMPLEMENTATION_COMPLETE.md
+FIXES_SUMMARY.md
+ARCHITECTURAL_REVIEW_NOTE.md
+LAYOUT_FIXES_PROPOSAL.md

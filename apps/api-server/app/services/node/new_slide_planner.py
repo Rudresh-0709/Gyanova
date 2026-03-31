@@ -673,6 +673,37 @@ def _build_safe_fallback_plan(subtopic: Dict[str, Any]) -> Dict[str, Any]:
     return {"slides": slides}
 
 
+def filter_out_intro_only_slides(slides: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Remove slides that are purely introductory from the plan.
+    
+    When a subtopic intro narration is present, we don't need intro-only slides
+    that would create redundancy by re-introducing the same topic.
+    
+    Removes slides where role="Introduce" since the subtopic intro already covers that.
+    
+    If removal would drop slides below minimum (4), keeps at least first slide.
+    """
+    if not slides or len(slides) <= 4:
+        # If we only have 4 or fewer slides, we can't afford to filter any
+        return slides
+    
+    # Filter: Keep all slides EXCEPT those with role="Introduce" on the first slide
+    # The first slide is typically the "Title card" with role="Introduce" if it exists
+    filtered = []
+    skip_first_intro = False
+    
+    for i, slide in enumerate(slides):
+        # Only skip the FIRST slide if it has role="Introduce"
+        if i == 0 and slide.get("role") == "Introduce" and len(slides) > 4:
+            skip_first_intro = True
+            print(f"🔥 INTRO FILTER: Removing first slide with role='Introduce' (redundant with subtopic intro)")
+            continue
+        filtered.append(slide)
+    
+    return filtered if len(filtered) >= 4 else slides
+
+
 def enforce_no_introduce_first_slide(slides: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Safety check: Ensure the first slide never has role="Introduce".
@@ -688,6 +719,9 @@ def enforce_no_introduce_first_slide(slides: List[Dict[str, Any]]) -> List[Dict[
     if not slides or len(slides) == 0:
         return slides
     
+    # If filter_out_intro_only_slides already removed the first intro slide,
+    # this becomes a no-op (first slide is no longer "Introduce").
+    # This function acts as a fallback safety check.
     first_slide = slides[0]
     if first_slide.get("role") == "Introduce":
         print(f"⚠️  INTRO RULE ENFORCEMENT: First slide had role='Introduce', changing to 'Guide'")
@@ -1076,11 +1110,14 @@ def plan_slides_for_subtopic(
                 data["slides"] = diverse_slides[:7]
             # ---- DIVERSITY ENFORCEMENT ENDS ----
 
-            data["slides"] = _normalize_sparse_image_policy(data["slides"])
+            # Temporarily disabled: helper is currently undefined and causes planner fallback.
+            # data["slides"] = _normalize_sparse_image_policy(data["slides"])
             
             # ⭐ DOMAIN-SPECIFIC TEMPLATE ENFORCEMENT
             data["slides"] = _ensure_domain_specific_templates(data["slides"], domain)
             
+            # ⭐ INTRO REDUNDANCY FILTER: Remove intro-only slides since subtopic intro already covers
+            data["slides"] = filter_out_intro_only_slides(data["slides"])
             # ⭐ INTRO RULE ENFORCEMENT: First slide must not be "Introduce"
             data["slides"] = enforce_no_introduce_first_slide(data["slides"])
     

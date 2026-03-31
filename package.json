@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:web": "next dev",
+    "dev:api": "cd apps/api-server && set PYTHONIOENCODING=utf-8&& set PYTHONUTF8=1&& .venv\\Scripts\\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
+    "dev:all": "concurrently -k -n WEB,API -c cyan,green \"npm run dev:web\" \"npm run dev:api\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -24,6 +27,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "tailwindcss": "^4",

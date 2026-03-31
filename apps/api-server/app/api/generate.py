@@ -15,6 +15,9 @@ import json
 import os
 from dataclasses import asdict, is_dataclass
 from datetime import datetime
+import shutil
+import time
+from urllib.parse import urlparse
 
 # Simple in-memory task store with file persistence
 # We place these in a hidden folder in the root to avoid triggering Next.js dev reloads
@@ -27,6 +30,9 @@ os.makedirs(DATA_ROOT, exist_ok=True)
 TASKS_FILE = os.path.join(DATA_ROOT, "tasks.json")
 TASK_STATE_DIR = os.path.join(DATA_ROOT, "task_states")
 tasks_db: Dict[str, Dict[str, Any]] = {}
+
+AUDIO_TTL_SECONDS = int(os.getenv("AUDIO_TTL_SECONDS", "3600"))
+ACTIVE_TASK_STATUSES = {"pending", "planning", "planning_completed", "processing"}
 
 
 def _merge_slide_lists(existing: Any, incoming: Any) -> List[Dict[str, Any]]:
@@ -219,6 +225,163 @@ def persist_task_state(task_id: str):
     except Exception as e:
         logger.error(f"Failed to persist task {task_id} state: {e}")
 
+
+def _task_state_file(task_id: str) -> str:
+    return os.path.join(TASK_STATE_DIR, f"{task_id}.json")
+
+
+def _collect_audio_paths_from_result(result: Dict[str, Any]) -> List[Path]:
+    """Collect absolute audio file paths referenced in a task result payload."""
+    if not isinstance(result, dict):
+        return []
+
+    paths: List[Path] = []
+
+    def add_audio_path(value: Any):
+        if not isinstance(value, str) or not value:
+            return
+
+        # Only delete local files; ignore HTTP(S) and unresolved URLs.
+        if value.startswith("http://") or value.startswith("https://"):
+            return
+        if value.startswith("/audio/"):
+            rel = value.replace("/audio/", "", 1)
+            candidate = DATA_ROOT / "audio_output" / rel
+            paths.append(candidate)
+            return
+
+        parsed = urlparse(value)
+        if parsed.scheme in {"http", "https"}:
+            return
+
+        candidate = Path(value)
+        if not candidate.is_absolute():
+            candidate = ROOT_DIR / candidate
+        paths.append(candidate)
+
+    lesson_intro = result.get("lesson_intro_narration") or {}
+    if isinstance(lesson_intro, dict):
+        add_audio_path(lesson_intro.get("audio_url"))
+        for seg in lesson_intro.get("narration_segments", []) or []:
+            if isinstance(seg, dict):
+                add_audio_path(seg.get("audio_url"))
+
+    subtopic_intros = result.get("subtopic_intro_narrations") or {}
+    if isinstance(subtopic_intros, dict):
+        for intro in subtopic_intros.values():
+            if not isinstance(intro, dict):
+                continue
+            add_audio_path(intro.get("audio_url"))
+            for seg in intro.get("narration_segments", []) or []:
+                if isinstance(seg, dict):
+                    add_audio_path(seg.get("audio_url"))
+
+    slides = result.get("slides") or {}
+    if isinstance(slides, dict):
+        for slide_list in slides.values():
+            if not isinstance(slide_list, list):
+                continue
+            for slide in slide_list:
+                if not isinstance(slide, dict):
+                    continue
+                add_audio_path(slide.get("audio_url"))
+                for seg in slide.get("narration_segments", []) or []:
+                    if isinstance(seg, dict):
+                        add_audio_path(seg.get("audio_url"))
+
+    # Deduplicate while preserving order
+    seen = set()
+    deduped: List[Path] = []
+    for p in paths:
+        key = str(p)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(p)
+    return deduped
+
+
+def _delete_audio_paths(paths: List[Path]) -> int:
+    """Delete files and prune empty parent directories under .persistent_data/audio_output."""
+    deleted = 0
+    audio_root = (DATA_ROOT / "audio_output").resolve()
+
+    for path in paths:
+        try:
+            if not path.exists() or not path.is_file():
+                continue
+            path.unlink()
+            deleted += 1
+
+            # Prune empty directories up to audio root.
+            current = path.parent
+            while current != audio_root and current.exists():
+                if any(current.iterdir()):
+                    break
+                current.rmdir()
+                current = current.parent
+        except Exception as e:
+            logger.warning(f"Failed deleting audio path {path}: {e}")
+
+    return deleted
+
+
+def cleanup_task_audio(task_id: str, force: bool = False) -> Dict[str, Any]:
+    """
+    Delete task audio when either:
+    - force=True (lesson explicitly closed), or
+    - task is non-active and task-state file age >= AUDIO_TTL_SECONDS.
+    """
+    task = tasks_db.get(task_id)
+    if not task:
+        return {"task_id": task_id, "deleted": 0, "eligible": False, "reason": "task_not_found"}
+
+    status = str(task.get("status", "")).lower()
+    task_file = _task_state_file(task_id)
+    now = time.time()
+    last_update_ts = os.path.getmtime(task_file) if os.path.exists(task_file) else now
+    age_seconds = max(0, int(now - last_update_ts))
+
+    eligible = force or (status not in ACTIVE_TASK_STATUSES and age_seconds >= AUDIO_TTL_SECONDS)
+    if not eligible:
+        return {
+            "task_id": task_id,
+            "deleted": 0,
+            "eligible": False,
+            "reason": "not_due",
+            "age_seconds": age_seconds,
+            "status": status,
+        }
+
+    result = task.get("result") or {}
+    paths = _collect_audio_paths_from_result(result)
+    deleted = _delete_audio_paths(paths)
+    return {
+        "task_id": task_id,
+        "deleted": deleted,
+        "eligible": True,
+        "force": force,
+        "age_seconds": age_seconds,
+        "status": status,
+    }
+
+
+def cleanup_expired_task_audio() -> Dict[str, Any]:
+    """Sweep all tasks and delete audio for closed or TTL-expired lessons."""
+    total_deleted = 0
+    cleaned_tasks = 0
+    for task_id in list(tasks_db.keys()):
+        info = cleanup_task_audio(task_id, force=False)
+        if info.get("eligible"):
+            cleaned_tasks += 1
+            total_deleted += int(info.get("deleted", 0))
+
+    return {
+        "cleaned_tasks": cleaned_tasks,
+        "deleted_files": total_deleted,
+        "ttl_seconds": AUDIO_TTL_SECONDS,
+    }
+
 # Initial load
 load_tasks()
 
@@ -255,6 +418,9 @@ async def run_planning_task(task_id: str, request: GenerateLessonRequest):
             "plans": {},
             "slides": {},
             "intro_text": "",
+            "unsupported_topic": False,
+            "unsupported_subject": "",
+            "unsupported_message": "",
             "messages": [],
         }
 
@@ -295,6 +461,16 @@ async def run_generation_task(task_id: str, request: ConfirmPlanRequest):
     try:
         # Resume from the previous state but with confirmed/modified plans
         current_state = tasks_db[task_id]["result"]
+
+        if current_state.get("unsupported_topic"):
+            tasks_db[task_id]["status"] = "failed"
+            tasks_db[task_id]["error"] = current_state.get(
+                "unsupported_message",
+                "Math-related slides are currently under working. Please try a non-math topic for now.",
+            )
+            save_tasks()
+            persist_task_state(task_id)
+            return
 
         if request.topic:
             current_state["topic"] = request.topic
@@ -370,6 +546,16 @@ async def confirm_plan(
             detail=f"Can only confirm a completed plan. Current status: {task['status']}",
         )
 
+    result = task.get("result") or {}
+    if isinstance(result, dict) and result.get("unsupported_topic"):
+        raise HTTPException(
+            status_code=400,
+            detail=result.get(
+                "unsupported_message",
+                "Math-related slides are currently under working. Please try a non-math topic for now.",
+            ),
+        )
+
     background_tasks.add_task(run_generation_task, task_id, request)
     return {
         "task_id": task_id,
@@ -397,3 +583,34 @@ async def get_task_status(task_id: str):
             "status": task.get("status"),
             "error": "Serialization error",
         }
+
+
+@router.post("/{task_id}/close")
+async def close_lesson(task_id: str):
+    """
+    Mark a lesson as closed and delete its audio files immediately.
+    """
+    task = tasks_db.get(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    previous_status = task.get("status")
+    task["status"] = "closed"
+
+    cleanup_info = cleanup_task_audio(task_id, force=True)
+    task.setdefault("meta", {})
+    if isinstance(task.get("meta"), dict):
+        task["meta"]["audio_cleanup"] = {
+            "deleted_files": cleanup_info.get("deleted", 0),
+            "closed_at": datetime.utcnow().isoformat() + "Z",
+        }
+
+    save_tasks()
+    persist_task_state(task_id)
+
+    return {
+        "task_id": task_id,
+        "previous_status": previous_status,
+        "status": "closed",
+        "audio_deleted_files": cleanup_info.get("deleted", 0),
+    }

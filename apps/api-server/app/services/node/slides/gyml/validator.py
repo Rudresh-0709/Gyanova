@@ -137,7 +137,8 @@ class GyMLValidator:
             result.add_error("Section must have exactly one body")
 
         # Check: valid image layout
-        valid_layouts = ["right", "left", "top", "behind", "blank"]
+        # Note: "behind" (full-screen) layout removed in favor of top/bottom/left/right only
+        valid_layouts = ["right", "left", "top", "bottom", "blank"]
         if section.image_layout not in valid_layouts:
             result.add_error(
                 f"Invalid image-layout '{section.image_layout}', "

@@ -352,8 +352,9 @@ def pick_layout(
     layout_history: List[str],
 ) -> str:
     """Shared logic for picking an image_layout based on rotation and compatibility."""
+    # Removed full-screen "behind" layout; use top/bottom/left/right only for accent images
     if slide_index == 0:
-        return "behind"
+        return "left"  # First slide gets left sidebar instead of full-screen background
 
     if variant in FORCED_BLANK_VARIANTS:
         return "blank"

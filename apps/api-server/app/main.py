@@ -1,4 +1,5 @@
 import os
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -30,6 +31,49 @@ os.makedirs(audio_dir, exist_ok=True)
 
 if os.path.isdir(audio_dir):
     app.mount("/audio", StaticFiles(directory=audio_dir), name="audio")
+
+
+cleanup_loop_task = None
+
+
+async def _audio_cleanup_loop():
+    """Periodically clean up expired audio files from completed/closed lessons."""
+    while True:
+        try:
+            summary = generate.cleanup_expired_task_audio()
+            if summary.get("deleted_files", 0) > 0:
+                print(
+                    f"🧹 Audio cleanup: deleted {summary['deleted_files']} files "
+                    f"across {summary['cleaned_tasks']} task(s)."
+                )
+        except Exception as e:
+            print(f"⚠️ Audio cleanup loop error: {e}")
+
+        # Sweep every 5 minutes
+        await asyncio.sleep(300)
+
+
+@app.on_event("startup")
+async def _startup_audio_cleanup_loop():
+    global cleanup_loop_task
+    # Initial sweep on boot
+    try:
+        generate.cleanup_expired_task_audio()
+    except Exception as e:
+        print(f"⚠️ Initial audio cleanup failed: {e}")
+
+    cleanup_loop_task = asyncio.create_task(_audio_cleanup_loop())
+
+
+@app.on_event("shutdown")
+async def _shutdown_audio_cleanup_loop():
+    global cleanup_loop_task
+    if cleanup_loop_task:
+        cleanup_loop_task.cancel()
+        try:
+            await cleanup_loop_task
+        except asyncio.CancelledError:
+            pass
 
 
 @app.get("/")

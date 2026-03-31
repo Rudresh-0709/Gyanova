@@ -2,7 +2,7 @@
 Narration Techniques for Different Slide Templates
 
 This module defines specialized narration generation strategies for sparse templates
-that don't have primary teaching blocks (structure data like lists, tables, etc.).
+that use compact visual structures and custom narration pacing.
 
 Each template gets a custom prompt directive and segment structure to optimize
 the spoken explanation of visual content.
@@ -375,17 +375,6 @@ NARRATION_TECHNIQUE_VARIANTS: Dict[str, List[str]] = {
 # This is the single source of truth used by both the generator and validator.
 
 SPARSE_TEMPLATE_SCHEMAS: Dict[str, Dict[str, Any]] = {
-    "Title card": {
-        "required_blocks": ["intro_paragraph"],
-        "optional_blocks": ["annotation_paragraph"],
-        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
-        "instruction": (
-            "Generate ONLY a single intro_paragraph block. "
-            "This is a title card — one powerful engagement hook sentence or short paragraph. "
-            "No lists, no tables, no smart_layout, no structured content. Just the intro."
-        ),
-        "max_blocks": 2,
-    },
     "Image and text": {
         "required_blocks": ["image"],
         "optional_blocks": ["rich_text", "annotation_paragraph"],
@@ -607,7 +596,7 @@ def get_narration_technique(
 
 def is_sparse_template(template_name: str) -> bool:
     """
-    Check if a template is sparse (doesn't have a primary teaching block).
+    Check if a template uses sparse narration techniques.
     
     Args:
         template_name: Name of the slide template

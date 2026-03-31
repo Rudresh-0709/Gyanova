@@ -13,6 +13,22 @@ function safeParseJson(text: string, fallback: unknown = null) {
     }
 }
 
+function extractErrorMessage(payload: any, fallback: string): string {
+    if (!payload || typeof payload !== 'object') {
+        return fallback;
+    }
+
+    if (typeof payload.error === 'string' && payload.error.trim()) {
+        return payload.error;
+    }
+
+    if (typeof payload.detail === 'string' && payload.detail.trim()) {
+        return payload.detail;
+    }
+
+    return fallback;
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -29,8 +45,12 @@ export async function POST(req: Request) {
 
         if (!pythonResponse.ok) {
             const errorText = await pythonResponse.text();
+            const errorData = safeParseJson(errorText, null);
             console.error("Python API Error:", pythonResponse.status, errorText);
-            return NextResponse.json({ error: "Failed to generate lesson from backend" }, { status: pythonResponse.status });
+            return NextResponse.json(
+                { error: extractErrorMessage(errorData, "Failed to generate lesson from backend") },
+                { status: pythonResponse.status }
+            );
         }
 
         const raw = await pythonResponse.text();
@@ -62,8 +82,12 @@ export async function GET(req: Request) {
 
         if (!pythonResponse.ok) {
             const errorText = await pythonResponse.text();
+            const errorData = safeParseJson(errorText, null);
             console.error("Python API Error:", pythonResponse.status, errorText);
-            return NextResponse.json({ error: "Failed to get task status from backend" }, { status: pythonResponse.status });
+            return NextResponse.json(
+                { error: extractErrorMessage(errorData, "Failed to get task status from backend") },
+                { status: pythonResponse.status }
+            );
         }
 
         const raw = await pythonResponse.text();
