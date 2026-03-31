@@ -138,14 +138,8 @@ def extract_title_and_tagline(narration_text: str, context_name: str) -> tuple:
     if len(sentences) == 0:
         return context_name, "Learn more"
     
-    # First sentence or clause as tagline (max 100 chars)
+    # Preserve the full first sentence so intro slides do not look clipped.
     tagline = sentences[0]
-    if len(tagline) > 100:
-        # Truncate to last complete phrase
-        words = tagline.split()[:15]
-        tagline = " ".join(words)
-        if not tagline.endswith('.'):
-            tagline += "..."
     
     # Title defaults to context_name but can be enhanced
     title = context_name

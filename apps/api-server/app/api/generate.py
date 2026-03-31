@@ -386,6 +386,33 @@ def cleanup_expired_task_audio() -> Dict[str, Any]:
 load_tasks()
 
 
+def cleanup_orphaned_tasks():
+    """
+    Mark any tasks left in 'processing' or 'planning' status as 'cancelled'.
+    
+    These are incomplete tasks from previous server sessions that should not auto-resume.
+    Prevents the issue where restarting the server causes old generation tasks to resume.
+    """
+    global tasks_db
+    cleaned = []
+    for task_id, task in list(tasks_db.items()):
+        if task.get("status") in ("processing", "planning"):
+            task["status"] = "cancelled"
+            task.setdefault("meta", {})
+            if isinstance(task.get("meta"), dict):
+                task["meta"]["auto_cancelled_at_startup"] = datetime.utcnow().isoformat() + "Z"
+            cleaned.append(task_id)
+    
+    if cleaned:
+        save_tasks()
+        logger.info(f"[Startup Cleanup] Marked {len(cleaned)} orphaned tasks as cancelled: {cleaned}")
+    
+    return cleaned
+
+
+cleanup_orphaned_tasks()
+
+
 class GenerateLessonRequest(BaseModel):
     topic: str
     current_level: str = "Intermediate"
@@ -430,6 +457,13 @@ async def run_planning_task(task_id: str, request: GenerateLessonRequest):
 
         # Use streaming to get incremental updates from nodes
         async for chunk in planning_graph.astream(initial_state):
+            # Check for cancellation before processing chunk
+            if tasks_db[task_id]["status"] == "cancelled":
+                logger.info(f"Planning task {task_id} cancelled by user")
+                save_tasks()
+                persist_task_state(task_id)
+                return
+            
             for node_name, state_update in chunk.items():
                 if "messages" in state_update:
                     del state_update["messages"]
@@ -482,6 +516,13 @@ async def run_generation_task(task_id: str, request: ConfirmPlanRequest):
 
         # Run Phase 2 (Streaming for incremental updates)
         async for chunk in full_graph.astream(current_state):
+            # Check for cancellation before processing chunk
+            if tasks_db[task_id]["status"] == "cancelled":
+                logger.info(f"Generation task {task_id} cancelled by user")
+                save_tasks()
+                persist_task_state(task_id)
+                return
+            
             # chunk is {node_name: state_update}
             for node_name, state_update in chunk.items():
                 if "messages" in state_update:
@@ -583,6 +624,46 @@ async def get_task_status(task_id: str):
             "status": task.get("status"),
             "error": "Serialization error",
         }
+
+
+@router.delete("/{task_id}")
+async def cancel_generation(task_id: str):
+    """
+    Cancel an ongoing lesson generation task.
+    Sets status to 'cancelled' which stops the workflow at the next checkpoint.
+    Can be called during planning or generation phases.
+    """
+    task = tasks_db.get(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    previous_status = task.get("status")
+    
+    # Only allow cancellation if we're in an active state
+    if previous_status not in {"pending", "planning", "planning_completed", "processing", "preview_ready"}:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot cancel task in status '{previous_status}'. Can only cancel pending, planning, or processing tasks."
+        )
+    
+    # Set status to cancelled
+    task["status"] = "cancelled"
+    task.setdefault("meta", {})
+    if isinstance(task.get("meta"), dict):
+        task["meta"]["cancelled_at"] = datetime.utcnow().isoformat() + "Z"
+        task["meta"]["cancelled_from_status"] = previous_status
+
+    save_tasks()
+    persist_task_state(task_id)
+    
+    logger.info(f"Task {task_id} cancelled (was in status: {previous_status})")
+
+    return {
+        "task_id": task_id,
+        "previous_status": previous_status,
+        "status": "cancelled",
+        "message": "Generation cancelled successfully."
+    }
 
 
 @router.post("/{task_id}/close")

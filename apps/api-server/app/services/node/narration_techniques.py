@@ -62,23 +62,33 @@ NARRATION_TECHNIQUES: Dict[str, Dict[str, Any]] = {
     # ─────────────────────────────────────────────────────────────────────
     # TEXT AND IMAGE
     # ─────────────────────────────────────────────────────────────────────
+    # REDESIGN: Side-by-side layout with rich text (60%) and image (40%)
     "Text and image": {
-        "segments": 3,
-        "structure": ["concept_intro", "visual_explanation", "synthesis"],
-        "description": "Introduce concept first, then explain visual representation",
+        "segments": 2,
+        "structure": ["concept_explanation", "visual_context"],
+        "description": "Side-by-side layout: rich text explanation with content image (40% width, left/right positioned)",
         "prompt_directive": """
-        NARRATION GOAL: Build understanding through concept first, visual second.
+        NARRATION GOAL: Explain concept while image sits visually beside the text.
+        Design principle: Rich text is primary. Image reinforces. Side-by-side layout. Single image only.
         
-        STRUCTURE (3 segments):
-        Segment 1 [CONCEPT INTRO]: Introduce the main idea or principle
-        Segment 2 [VISUAL EXPLANATION]: Explain how the visual demonstrates the concept
-        Segment 3 [SYNTHESIS]: Connect both elements and show significance
+        STRUCTURE (2 segments):
+        Segment 1 [CONCEPT EXPLANATION] (40-60 words): Full explanation of the concept, principle, or process.
+                 This is the main narrative. Sentence structure should match how the visual shows it.
+        Segment 2 [VISUAL CONTEXT] (25-35 words): Describe what the image shows and how it demonstrates
+                 the concept. Direct attention: "On the right/left, you see...", "This image shows..."
         
-        CONSTRAINTS:
-        - Exactly 3 segments separated by double newlines
-        - Each segment: 30-45 words
-        - Layer information: Abstract → Concrete → Integrated
-        - Create coherence between text and image
+        LAYOUT EXPECTATIONS:
+        - Rich text occupies 60% of slide width (left or right)
+        - Content image occupies 40% of slide width (opposite side)
+        - Image positioned adjacent to text (NOT above/below)
+        - NO accent image: only ONE visual element per slide total
+        - Whitespace between text and image for clarity
+        - Image and text baseline-aligned for clean visual balance
+        
+        TONE:
+        - Instructional, clear, direct
+        - Text tells the story; image echoes and reinforces
+        - Conversation between text and visual proof
         """,
     },
     # ─────────────────────────────────────────────────────────────────────
@@ -387,15 +397,32 @@ SPARSE_TEMPLATE_SCHEMAS: Dict[str, Dict[str, Any]] = {
         "max_blocks": 4,
     },
     "Text and image": {
-        "required_blocks": ["intro_paragraph", "image"],
-        "optional_blocks": ["rich_text", "annotation_paragraph"],
-        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list"],
+        "required_blocks": ["rich_text", "image"],
+        "optional_blocks": [],  # NO optional blocks for clean layout
+        "forbidden_blocks": ["smart_layout", "bullet_list", "table", "numbered_list", "intro_paragraph", "annotation_paragraph", "callout_box"],
         "instruction": (
-            "Generate an intro_paragraph that explains the concept first, "
-            "then an image block as visual reinforcement with descriptive alt text. "
-            "No smart_layout, no lists, no tables."
+            "SIDE-BY-SIDE LAYOUT - Text (60%) on one side, Image (40%) on the other:\n"
+            "1. Generate rich_text block as PRIMARY content (full explanation, 40-60 words)\n"
+            "2. Generate SINGLE image block (40% width, positioned left or right of text)\n\n"
+            "LAYOUT & SIZING:\n"
+            "- Rich text occupies 60% of slide width\n"
+            "- Content image occupies 40% of slide width (proportions matter for visual balance)\n"
+            "- Image positioned on LEFT or RIGHT (user prefers left/right positional variety)\n"
+            "- Vertical centering: image baseline should align with text baseline\n\n"
+            "CONTENT CONSTRAINTS:\n"
+            "- NO intro_paragraph, NO annotation_paragraph, NO lists, NO tables, NO smart_layout\n"
+            "- Image MUST have descriptive alt text explaining visual\n"
+            "- ENFORCE: Only ONE visual element per slide (NEVER accent image + content image)\n"
+            "- Rich text is the narrative driver; image validates and demonstrates\n"
+            "- Maximum 2 blocks only: rich_text + image (nothing more)"
         ),
-        "max_blocks": 4,
+        "max_blocks": 2,
+        "layout_style": "side_by_side",
+        "image_width_percent": 40,
+        "text_width_percent": 60,
+        "allowed_image_layouts": ["left", "right"],
+        "visual_hierarchy": "rich_text_primary (60%) ← side_by_side → content_image (40%)",
+        "content_image_only": True,  # ENFORCE: no accent images when content has image
     },
     "Formula block": {
         "required_blocks": ["formula_block"],

@@ -1,6 +1,7 @@
 import os
 import asyncio
 import httpx
+import urllib.parse
 from typing import Optional, Tuple
 from dotenv import load_dotenv
 
@@ -38,6 +39,33 @@ class ImageGenerator:
         "stock photo": "5bdc3f2a-1be6-4d1c-8e77-992a30824a2c",
         "watercolor": "1db308ce-c7ad-4d10-96fd-592fa6b75cc4",
     }
+
+    @staticmethod
+    def build_svg_fallback_data_url(title: str, subtitle: str = "") -> str:
+        """
+        Build a deterministic SVG data URL fallback for environments where remote
+        image generation fails. This keeps slide layouts stable and visually useful.
+        """
+        safe_title = (title or "Educational Slide").replace("&", "and")[:72]
+        safe_subtitle = (subtitle or "Generated fallback visual").replace("&", "and")[:96]
+        svg = (
+            f"<svg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080' viewBox='0 0 1920 1080'>"
+            "<defs><linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'>"
+            "<stop offset='0%' stop-color='#0a0f1a'/>"
+            "<stop offset='55%' stop-color='#111f3f'/>"
+            "<stop offset='100%' stop-color='#1c2f5f'/>"
+            "</linearGradient></defs>"
+            "<rect width='1920' height='1080' fill='url(#bg)'/>"
+            "<circle cx='340' cy='320' r='210' fill='rgba(99,102,241,0.18)'/>"
+            "<circle cx='1540' cy='780' r='280' fill='rgba(56,189,248,0.12)'/>"
+            "<g font-family='Inter,Segoe UI,Arial,sans-serif' fill='#ffffff'>"
+            f"<text x='130' y='540' font-size='68' font-weight='800'>{safe_title}</text>"
+            f"<text x='130' y='620' font-size='34' opacity='0.82'>{safe_subtitle}</text>"
+            "<text x='130' y='940' font-size='24' opacity='0.55'>Image fallback rendered locally</text>"
+            "</g></svg>"
+        )
+        encoded = urllib.parse.quote(svg)
+        return f"data:image/svg+xml;charset=UTF-8,{encoded}"
 
     @classmethod
     async def generate_image(

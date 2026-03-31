@@ -399,6 +399,7 @@ export default function LessonInputPage() {
     const [taskId, setTaskId] = useState<string | null>(null);
     const [planData, setPlanData] = useState<PlanData | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isCancelRequested, setIsCancelRequested] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [generationStatus, setGenerationStatus] = useState<string>("");
     const [planningStatus, setPlanningStatus] = useState<"idle" | "pending" | "planning" | "planning_completed" | "failed">("idle");
@@ -418,6 +419,34 @@ export default function LessonInputPage() {
 
     const handleSelectChange = (name: string, value: string) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleCancelGeneration = async () => {
+        if (!taskId) return;
+        
+        setIsCancelRequested(true);
+        setGenerationStatus("Cancelling generation...");
+        
+        try {
+            const response = await fetch(`/api/lesson/generate/${taskId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to cancel generation");
+            }
+
+            setIsGenerating(false);
+            setStep('form');
+            setGenerationStatus("");
+            setError("Generation cancelled by user");
+            setIsCancelRequested(false);
+            setTaskId(null);
+        } catch (err: any) {
+            setError(err.message || "Failed to cancel generation");
+            setIsCancelRequested(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -448,7 +477,7 @@ export default function LessonInputPage() {
 
             // Start Polling for Planning
             let planningComplete = false;
-            while (!planningComplete) {
+            while (!planningComplete && !isCancelRequested) {
                 await new Promise(r => setTimeout(r, 1500)); // Slightly faster polling
                 const res = await fetch(`/api/lesson/generate?taskId=${data.task_id}`);
 
@@ -466,7 +495,9 @@ export default function LessonInputPage() {
                     ? "planning_completed"
                     : statusData.status === "failed"
                         ? "failed"
-                        : "planning";
+                        : statusData.status === "cancelled"
+                            ? "failed"
+                            : "planning";
                 setPlanningStatus(nextPlanningStatus);
 
                 if (statusData?.result?.unsupported_topic) {
@@ -495,9 +526,36 @@ export default function LessonInputPage() {
                     planningComplete = true;
                     setGenerationStatus("Curriculum ready!");
                     setPlanningStatus("planning_completed");
+
+                    // In some runs, planning status flips before the final result payload
+                    // is fully available. Do one quick follow-up fetch before deciding UI state.
+                    let finalResult = statusData.result;
+                    if (!finalResult) {
+                        await new Promise((r) => setTimeout(r, 300));
+                        const finalRes = await fetch(`/api/lesson/generate?taskId=${data.task_id}`);
+                        if (finalRes.ok) {
+                            const finalData = await readJsonSafe(finalRes, null);
+                            if (finalData && typeof finalData === "object") {
+                                finalResult = finalData.result;
+                            }
+                        }
+                    }
+
+                    if (finalResult) {
+                        setPlanData(finalResult);
+                        setStep("review");
+                        setError(null);
+                    } else {
+                        setError("Planning completed but no curriculum data was returned. Please try again.");
+                        setStep("form");
+                        setPlanningStatus("failed");
+                    }
+
                     setIsGenerating(false);
                 } else if (statusData.status === "failed") {
                     throw new Error(statusData.error || "Planning failed");
+                } else if (statusData.status === "cancelled") {
+                    throw new Error("Planning was cancelled");
                 } else {
                     setGenerationStatus("Expanding your personal curriculum...");
                 }
@@ -554,7 +612,7 @@ export default function LessonInputPage() {
 
             // Poll for Final Completion (Incremental)
             let pollCount = 0;
-            while (true) {
+            while (true && !isCancelRequested) {
                 await new Promise(resolve => setTimeout(resolve, 3000));
                 pollCount++;
 
@@ -568,7 +626,9 @@ export default function LessonInputPage() {
                     continue;
                 }
 
-                if (statusData.status === "completed" || hasRenderableSlides(statusData.result)) {
+                if (statusData.status === "cancelled") {
+                    throw new Error("Generation was cancelled");
+                } else if (statusData.status === "completed" || hasRenderableSlides(statusData.result)) {
                     router.push(`/lesson/${taskId}`);
                     break;
                 } else if (statusData.status === "failed") {
@@ -698,6 +758,20 @@ export default function LessonInputPage() {
                             <p className="text-indigo-400 font-mono text-sm animate-pulse tracking-wide">{generationStatus}</p>
                             <p className="text-gray-500 text-xs max-w-xs mx-auto">This may take a minute as we synthesize narrations and build custom visuals.</p>
                         </div>
+                        
+                        {/* Cancel Button */}
+                        <button
+                            onClick={handleCancelGeneration}
+                            disabled={isCancelRequested}
+                            className={cn(
+                                "mt-6 px-6 py-2.5 rounded-lg font-medium transition-all duration-200",
+                                isCancelRequested 
+                                    ? "bg-gray-600/50 text-gray-400 cursor-not-allowed" 
+                                    : "bg-red-600/20 border border-red-500/30 text-red-300 hover:bg-red-600/30 hover:border-red-500/50"
+                            )}
+                        >
+                            {isCancelRequested ? "Cancelling..." : "Cancel Generation"}
+                        </button>
                     </div>
                 )}
             </div>

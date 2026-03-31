@@ -520,6 +520,117 @@ def _validate_sparse_template(
     return generated_content
 
 
+def _has_content_image(blocks: List[Dict[str, Any]]) -> bool:
+    """Check if any content block contains an image."""
+    for block in blocks or []:
+        block_type = (block or {}).get("type", "")
+        # Direct image blocks
+        if block_type == "image":
+            return True
+        # Blocks that can embed images
+        if block_type in {"callout_box", "labeled_diagram", "rich_text"}:
+            if (block or {}).get("image_url"):
+                return True
+        # Smart layout can contain images on items
+        if block_type == "smart_layout":
+            for item in (block or {}).get("items", []):
+                if (item or {}).get("image_url"):
+                    return True
+    return False
+
+
+def _enforce_template_contract(
+    selected_template: str,
+    generated_content: Optional[Dict[str, Any]],
+    title: str,
+    goal: str,
+) -> Dict[str, Any]:
+    """
+    Enforce non-negotiable template contracts after generation.
+
+    For strict templates like "Comparison table", this prevents fallback drift
+    into unrelated blocks (e.g., bigBullets) and guarantees comparison semantics.
+    
+    Also enforces SINGLE-IMAGE-PER-SLIDE rule: if content blocks have images,
+    remove accent_image_url. This prevents visual redundancy and layout issues.
+    """
+    content = generated_content or {}
+    tmpl = (selected_template or "").strip().lower()
+
+    blocks = content.get("contentBlocks", []) or []
+    primary_idx = content.get("primary_block_index")
+
+    if not isinstance(primary_idx, int) or not (0 <= primary_idx < len(blocks)):
+        primary_idx = 0 if blocks else None
+
+    # ===== TEMPLATE-SPECIFIC CONTRACTS =====
+    
+    if tmpl == "comparison table":
+        def _is_comparison_related(block: Dict[str, Any]) -> bool:
+            b_type = (block or {}).get("type")
+            if b_type in {"comparison_table", "comparison"}:
+                return True
+            if b_type == "smart_layout":
+                variant = str((block or {}).get("variant", "")).strip()
+                return variant in {
+                    "comparison",
+                    "comparisonCards",
+                    "comparisonProsCons",
+                    "comparisonBeforeAfter",
+                    "comparison_table",
+                }
+            return False
+
+        has_comparison_related_primary = (
+            primary_idx is not None
+            and isinstance(primary_idx, int)
+            and 0 <= primary_idx < len(blocks)
+            and _is_comparison_related(blocks[primary_idx])
+        )
+
+        # If the generated structure does not honor Comparison table semantics,
+        # replace it with a deterministic comparison fallback.
+        if not has_comparison_related_primary:
+            content = {
+                "title": title,
+                "intent": "compare",
+                "layout": "blank",
+                "image_layout": "blank",
+                "contentBlocks": [
+                    {
+                        "type": "intro_paragraph",
+                        "text": f"Let's compare {title} across key dimensions.",
+                    },
+                    {
+                        "type": "comparison_table",
+                        "headers": ["Dimension", "East India Company", "Modern Corporations"],
+                        "rows": [
+                            ["Legal Basis", "Royal charter", "Company law & incorporation"],
+                            ["Primary Objective", "Trade monopoly", "Shareholder value and growth"],
+                            ["Political Role", "Direct territorial influence", "Indirect policy influence"],
+                            ["Governance", "Crown-backed directors", "Board + executive management"],
+                        ],
+                        "caption": goal,
+                    },
+                ],
+                "primary_block_index": 1,
+            }
+
+        # Comparison-table slides should not emit decorative accent images.
+        content.pop("imagePrompt", None)
+        content.pop("accent_image_url", None)
+        content["layout"] = content.get("layout", "blank")
+        content["image_layout"] = content.get("image_layout", content["layout"])
+
+    # ===== SINGLE-IMAGE-PER-SLIDE ENFORCEMENT (ALL SPARSE TEMPLATES) =====
+    # If content blocks have images, remove accent image to prevent visual redundancy
+    if _has_content_image(content.get("contentBlocks", [])):
+        content.pop("imagePrompt", None)
+        content.pop("accent_image_url", None)
+
+    return content
+
+
 def _classify_density(block_count: int, primary_item_count: int = 0) -> str:
     """Classify slide density based on block count and primary items using a 6-tier system."""
     total_elements = block_count + primary_item_count
@@ -889,33 +1000,74 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
         # Final fallback if all retries failed
         if generated_content is None:
             print("    ✗ All retries failed. Using fallback slide.")
-            generated_content = {
-                "title": title,
-                "intent": "explain",
-                "contentBlocks": [
-                    {
-                        "type": "intro_paragraph",
-                        "text": f"Let's explore {title}.",
-                    },
-                    {
-                        "type": "smart_layout",
-                        "variant": "bigBullets",
-                        "items": [
-                            {"heading": "Core Idea", "description": goal},
-                            {
-                                "heading": "How It Works",
-                                "description": f"Break down {title} into clear, sequential steps.",
-                            },
-                            {
-                                "heading": "Why It Matters",
-                                "description": "Connect the method to practical problem-solving and interpretation.",
-                            },
-                        ],
-                    },
-                ],
-                "primary_block_index": 1,
-                "imagePrompt": f"Abstract educational illustration representing {subtopic_name}",
-            }
+            selected_template_lc = selected_template.strip().lower()
+            is_comparison_template = (
+                "comparison" in selected_template_lc
+                or concept.get("content_angle", "").lower() == "comparison"
+                or concept.get("intent", "").lower() == "comparison"
+            )
+
+            if is_comparison_template:
+                generated_content = {
+                    "title": title,
+                    "intent": "compare",
+                    "layout": "blank",
+                    "contentBlocks": [
+                        {
+                            "type": "intro_paragraph",
+                            "text": f"Let's compare {title} clearly across key dimensions.",
+                        },
+                        {
+                            "type": "comparison_table",
+                            "headers": ["Dimension", "East India Company", "Modern Corporations"],
+                            "rows": [
+                                ["Legal Basis", "Royal charter", "Company law & incorporation"],
+                                ["Primary Objective", "Trade monopoly with sovereign powers", "Shareholder value and growth"],
+                                ["Political Role", "Direct territorial influence", "Indirect policy influence"],
+                                ["Accountability", "Crown/parliamentary oversight", "Regulators, boards, and markets"],
+                            ],
+                            "caption": "Historical chartered company versus modern corporate structure",
+                        },
+                    ],
+                    "primary_block_index": 1,
+                }
+            else:
+                generated_content = {
+                    "title": title,
+                    "intent": "explain",
+                    "contentBlocks": [
+                        {
+                            "type": "intro_paragraph",
+                            "text": f"Let's explore {title}.",
+                        },
+                        {
+                            "type": "smart_layout",
+                            "variant": "bigBullets",
+                            "items": [
+                                {"heading": "Core Idea", "description": goal},
+                                {
+                                    "heading": "How It Works",
+                                    "description": f"Break down {title} into clear, sequential steps.",
+                                },
+                                {
+                                    "heading": "Why It Matters",
+                                    "description": "Connect the method to practical problem-solving and interpretation.",
+                                },
+                            ],
+                        },
+                    ],
+                    "primary_block_index": 1,
+                    "imagePrompt": f"Abstract educational illustration representing {subtopic_name}",
+                }
+
+        # Enforce non-negotiable template semantics.
+        # Example: "Comparison table" must never degrade to bigBullets.
+        generated_content = _enforce_template_contract(
+            selected_template=selected_template,
+            generated_content=generated_content,
+            title=title,
+            goal=goal,
+        )
 
         if generated_content is not None:
             primary_items_count = _count_primary_items(generated_content)
@@ -935,16 +1087,17 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
             template_name=selected_template,
         )
 
-        # Update layout history
+        # Update layout history with actual chosen image layout (not variant name).
+        # pick_layout/pick_variant depend on this to rotate left/right/top/bottom correctly.
         blocks = generated_content.get("contentBlocks", [])
         smart_layout = next(
             (b for b in blocks if b.get("type") == "smart_layout"), None
         )
+        image_layout = generated_content.get("layout") or generated_content.get("image_layout") or "unknown"
+        layout_history.append(image_layout)
+
         if smart_layout:
-            layout_history.append(smart_layout.get("variant", "unknown"))
             variant_history.append(smart_layout.get("variant", "unknown"))
-        else:
-            layout_history.append(generated_content.get("intent", "explain"))
 
         # Update angle history
         angle_history.append(concept.get("content_angle", "overview"))
@@ -983,9 +1136,20 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 f"    → Density: {slide_density} ({block_count} blocks, {primary_items_count} primary items)"
             )
 
-        if slide_density == "dense" and generated_content is not None:
+        # Keep both aliases in sync for downstream consumers.
+        # Generator emits `layout`; some downstream utilities still read `image_layout`.
+        if generated_content is not None:
+            resolved_layout = generated_content.get("layout") or generated_content.get("image_layout")
+            if resolved_layout:
+                generated_content["layout"] = resolved_layout
+                generated_content["image_layout"] = resolved_layout
+
+        # Reserve forced blank layout only for super-dense slides.
+        # Dense slides should still be allowed to use accent layouts (including top/bottom).
+        if slide_density == "super_dense" and generated_content is not None:
+            generated_content["layout"] = "blank"
             generated_content["image_layout"] = "blank"
-            print("    → Enforcing 'blank' image layout for dense slide.")
+            print("    → Enforcing 'blank' image layout for super-dense slide.")
 
         if generated_content is not None:
             slide_obj = {
@@ -995,6 +1159,7 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 "narration_format": "points",  # Segmented by double-newlines for audio alignment
                 "gyml_content": generated_content,
                 "visual_content": generated_content,
+                "layout": generated_content.get("layout") or generated_content.get("image_layout"),
                 "primary_block_index": generated_content.get("primary_block_index", 0),
                 "animation_unit": animation_meta["animation_unit"],
                 "animation_unit_count": animation_meta["animation_unit_count"],

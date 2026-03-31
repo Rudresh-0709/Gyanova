@@ -108,6 +108,91 @@ function generateIntroHtml(topic: string): string {
     </html>`;
 }
 
+function generateSubtopicIntroHtml(
+    title: string,
+    tagline: string,
+    badge: string = "SECTION"
+): string {
+    return `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Subtopic Introduction</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: 'Inter', sans-serif;
+                height: 100vh;
+                overflow: hidden;
+                background: #0a0f1a;
+                color: white;
+            }
+            .container {
+                display: flex;
+                height: 100%;
+                background: linear-gradient(135deg, #0a0f1a 0%, #131b34 100%);
+            }
+            .left {
+                flex: 1;
+                background: radial-gradient(circle at 30% 40%, rgba(99,102,241,0.20) 0%, rgba(99,102,241,0.02) 55%, transparent 80%);
+            }
+            .right {
+                flex: 0 0 52%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding: 3.5rem 3rem;
+            }
+            .badge {
+                text-transform: uppercase;
+                letter-spacing: 0.25em;
+                font-size: 0.75rem;
+                font-weight: 800;
+                color: rgba(99, 102, 241, 0.95);
+                margin-bottom: 1.25rem;
+            }
+            h1 {
+                font-size: clamp(1.75rem, 4vw, 2.5rem);
+                line-height: 1.2;
+                margin-bottom: 1rem;
+            }
+            p {
+                font-size: 1.05rem;
+                line-height: 1.7;
+                color: rgba(255,255,255,0.85);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="left"></div>
+            <div class="right">
+                <div class="badge">${badge}</div>
+                <h1>${title}</h1>
+                <p>${tagline}</p>
+            </div>
+        </div>
+        <script>
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'iframeReady' }, '*');
+            }
+            window.addEventListener('mousemove', function() {
+                if (window.parent !== window) {
+                    window.parent.postMessage({ type: 'userInteraction' }, '*');
+                }
+            });
+            window.addEventListener('click', function() {
+                if (window.parent !== window) {
+                    window.parent.postMessage({ type: 'userInteraction' }, '*');
+                }
+            });
+        </script>
+    </body>
+    </html>`;
+}
+
 /**
  * Take a full HTML deck (potentially many <section>s) and return an
  * array of single-section HTML documents.  Each keeps the original
@@ -302,10 +387,19 @@ export default function LessonViewPage() {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const playbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const hasAutoStartedRef = useRef(false);
     const slideIdxRef = useRef(0);
     const segIdxRef = useRef(-1);
     const isPlayingRef = useRef(false);
     const playSegmentRef = useRef<(slideIdx: number, segIdx: number) => void>(() => { });
+
+    const clearPlaybackTimer = useCallback(() => {
+        if (playbackTimerRef.current) {
+            clearTimeout(playbackTimerRef.current);
+            playbackTimerRef.current = null;
+        }
+    }, []);
 
     // ─── Fetch lesson data (Polling) ──────────────────────────────────
     useEffect(() => {
@@ -386,8 +480,14 @@ export default function LessonViewPage() {
                 list.push({
                     slide_id: `subtopic_intro_${sub.id}`,
                     title: "Section Introduction",
-                    // Use rendered html_doc from backend
-                    html_doc: subtopic_intro.html_doc || "",
+                    // Use rendered html_doc from backend, fallback to local HTML while backend catches up.
+                    html_doc:
+                        subtopic_intro.html_doc ||
+                        generateSubtopicIntroHtml(
+                            subtopic_intro.title || sub.name || "Section Introduction",
+                            subtopic_intro.narration_text || subtopic_intro.tagline || "Next section.",
+                            subtopic_intro.badge || "SECTION"
+                        ),
                     narration_segments: [
                         {
                             text: subtopic_intro.narration_text || "Next section.",
@@ -454,8 +554,9 @@ export default function LessonViewPage() {
         return () => {
             if (controlsTimerRef.current)
                 clearTimeout(controlsTimerRef.current);
+            clearPlaybackTimer();
         };
-    }, [resetControlsTimer]);
+    }, [resetControlsTimer, clearPlaybackTimer]);
 
     // ─── Keep refs in sync with state ─────────────────────────────────────
     useEffect(() => { slideIdxRef.current = currentSlideIdx; }, [currentSlideIdx]);
@@ -487,6 +588,7 @@ export default function LessonViewPage() {
     // ─── Audio playback engine ──────────────────────────────────────────
     const playSegment = useCallback(
         (slideIdx: number, segIdx: number) => {
+            if (!isPlayingRef.current) return;
             if (slideIdx >= slideList.length) return;
             const slide = slideList[slideIdx];
             const segments = slide.narration_segments;
@@ -497,7 +599,9 @@ export default function LessonViewPage() {
                 postToSlide({ type: "revealAll" });
 
                 // Small pause before advancing
-                setTimeout(() => {
+                clearPlaybackTimer();
+                playbackTimerRef.current = setTimeout(() => {
+                    if (!isPlayingRef.current) return;
                     if (slideIdx < slideList.length - 1) {
                         setCurrentSlideIdx(slideIdx + 1);
                         setCurrentSegIdx(-1);
@@ -523,17 +627,22 @@ export default function LessonViewPage() {
                     .play()
                     .catch(() => {
                         // Autoplay blocked — advance anyway after a delay
-                        setTimeout(
-                            () => playSegment(slideIdx, segIdx + 1),
-                            2000
-                        );
+                        clearPlaybackTimer();
+                        playbackTimerRef.current = setTimeout(() => {
+                            if (!isPlayingRef.current) return;
+                            playSegmentRef.current(slideIdx, segIdx + 1);
+                        }, 2000);
                     });
             } else {
                 // No audio for this segment — advance after brief delay
-                setTimeout(() => playSegment(slideIdx, segIdx + 1), 1500);
+                clearPlaybackTimer();
+                playbackTimerRef.current = setTimeout(() => {
+                    if (!isPlayingRef.current) return;
+                    playSegmentRef.current(slideIdx, segIdx + 1);
+                }, 1500);
             }
         },
-        [slideList, isMuted, postToSlide]
+        [slideList, isMuted, postToSlide, clearPlaybackTimer]
     );
 
     // Keep playSegmentRef up to date
@@ -595,6 +704,12 @@ export default function LessonViewPage() {
 
     // ─── Auto-start on first load ───────────────────────────────────────
     useEffect(() => {
+        if (!iframeReady || slideList.length === 0 || isPlaying || hasAutoStartedRef.current) {
+            return;
+        }
+
+        hasAutoStartedRef.current = true;
+
         if (iframeReady && slideList.length > 0 && !isPlaying) {
             // Iframe is ready, start playing
             const t = setTimeout(() => setIsPlaying(true), 150);
@@ -650,6 +765,7 @@ export default function LessonViewPage() {
 
     // ─── Navigation handlers ────────────────────────────────────────────
     const goNext = () => {
+        clearPlaybackTimer();
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
@@ -661,6 +777,7 @@ export default function LessonViewPage() {
     };
 
     const goPrev = () => {
+        clearPlaybackTimer();
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
@@ -673,6 +790,7 @@ export default function LessonViewPage() {
 
     const togglePlayPause = () => {
         if (isPlaying) {
+            clearPlaybackTimer();
             audioRef.current?.pause();
             setIsPlaying(false);
         } else {

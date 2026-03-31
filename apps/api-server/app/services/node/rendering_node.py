@@ -139,6 +139,14 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     - Final HTML is serialized from ComposedSlide and written to state as html_content
     - This ensures tasks_db remains JSON-serializable throughout the workflow
     """
+    # ═══════════════════════════════════════════════════════════════════════════
+    # CANCELLATION CHECK: Exit early if task has been cancelled
+    # ═══════════════════════════════════════════════════════════════════════════
+    task_status = state.get("_task_status", "processing")
+    if task_status == "cancelled":
+        print("⚠️ [Rendering Node] Task marked as cancelled, skipping slide rendering")
+        return {}
+    
     slides_map = state.get("slides", {})
     image_concurrency = max(1, int(os.getenv("IMAGE_GEN_CONCURRENCY", "3")))
 
@@ -163,8 +171,8 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
         print(f"   📝 Image prompt: {prompt[:60]}...")
         task = ImageGenerator.generate_image(
             prompt=prompt,
-            width=1920,
-            height=1080,
+            width=1024,
+            height=576,
             style="dynamic"
         )
         intro_image_tasks.append(task)
@@ -179,8 +187,8 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
             print(f"   📝 Image prompt: {prompt[:60]}...")
             task = ImageGenerator.generate_image(
                 prompt=prompt,
-                width=1920,
-                height=1080,
+                width=1024,
+                height=576,
                 style="dynamic"
             )
             intro_image_tasks.append(task)
@@ -205,11 +213,29 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 intro_obj["image_url"] = image_url
                 print(f"✅ {intro_kind.title()} intro image generated")
             else:
-                print(f"⚠️ {intro_kind.title()} intro image generation failed")
+                # Use a local SVG fallback so intro slides always keep visual structure.
+                intro_title = intro_obj.get("title") or ("Lesson" if intro_kind == "lesson" else "Section")
+                intro_tagline = intro_obj.get("tagline") or ""
+                intro_obj["image_url"] = ImageGenerator.build_svg_fallback_data_url(
+                    title=intro_title,
+                    subtitle=intro_tagline,
+                )
+                print(f"⚠️ {intro_kind.title()} intro image generation failed; using local SVG fallback")
     
     # Now generate HTML for intros (with images if available)
     lesson_intro = state.get("lesson_intro_narration")
-    if lesson_intro and not lesson_intro.get("html_doc"):
+    lesson_html = (lesson_intro or {}).get("html_doc", "") or ""
+    lesson_needs_refresh = (
+        lesson_intro
+        and (
+            not lesson_html
+            or (
+                lesson_intro.get("image_url")
+                and "class=\"background-image\"" not in lesson_html
+            )
+        )
+    )
+    if lesson_needs_refresh:
         print("🎬 [Rendering Node] Generating lesson intro HTML...")
         html = await generate_intro_html(lesson_intro, "lesson")
         if html:
@@ -219,7 +245,18 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     # Process Subtopic Intros
     subtopic_intros = state.get("subtopic_intro_narrations", {})
     for sub_id, intro in subtopic_intros.items():
-        if intro and not intro.get("html_doc"):
+        sub_html = (intro or {}).get("html_doc", "") or ""
+        sub_needs_refresh = (
+            intro
+            and (
+                not sub_html
+                or (
+                    intro.get("image_url")
+                    and "class=\"background-image\"" not in sub_html
+                )
+            )
+        )
+        if sub_needs_refresh:
             print(f"🎬 [Rendering Node] Generating subtopic intro HTML for {sub_id}...")
             html = await generate_intro_html(intro, "subtopic")
             if html:
@@ -385,6 +422,34 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 print(
                     f"   ⚠ Image generation failed for a target (possibly timeout or rate limit)"
                 )
+
+    # Persist generated accent images back to state-backed slide dicts.
+    # Without this, only temporary composed objects carry the URL and later graph
+    # iterations think the slide still has no real image, causing re-generation.
+    for slide in pending_slides:
+        if "html_error" in slide:
+            continue
+
+        composed_objs = composed_by_slide.get(id(slide), [])
+        if not composed_objs:
+            continue
+
+        first_real_image = next(
+            (
+                s_obj.accent_image_url
+                for s_obj in composed_objs
+                if getattr(s_obj, "accent_image_url", None)
+                and getattr(s_obj, "accent_image_url", None) != "placeholder"
+            ),
+            None,
+        )
+
+        if first_real_image:
+            slide["accent_image_url"] = first_real_image
+            if isinstance(slide.get("gyml_content"), dict):
+                slide["gyml_content"]["accent_image_url"] = first_real_image
+            if isinstance(slide.get("visual_content"), dict):
+                slide["visual_content"]["accent_image_url"] = first_real_image
 
     # 4. Step Three: Final Serialization and Rendering
     rendered_count: int = 0
