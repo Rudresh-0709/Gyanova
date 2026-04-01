@@ -138,14 +138,18 @@ def extract_topic(state: TutorState) -> TutorState:
             parsed = {"topic": "No clear topic detected", "granularity": "N/A"}
 
     # ✅ Store clean values in state
-    state["topic"] = parsed.get("topic", "No clear topic detected")
-    state["granularity"] = parsed.get("granularity", "N/A")
+    extracted_topic = parsed.get("topic", "No clear topic detected")
+    extracted_granularity = parsed.get("granularity", "N/A")
+    state["topic"] = extracted_topic
+    state["granularity"] = extracted_granularity
+    state["topic_granularity"] = extracted_granularity
 
     topic_text = state.get("topic", "") or state.get("user_input", "")
     if _is_math_topic(topic_text):
         return {
             "topic": state["topic"],
             "granularity": state["granularity"],
+            "topic_granularity": state["topic_granularity"],
             "unsupported_topic": True,
             "unsupported_subject": "math",
             "unsupported_message": MATH_UNSUPPORTED_MESSAGE,
@@ -155,6 +159,7 @@ def extract_topic(state: TutorState) -> TutorState:
     return {
         "topic": state["topic"],
         "granularity": state["granularity"],
+        "topic_granularity": state["topic_granularity"],
         "unsupported_topic": False,
         "unsupported_subject": "",
         "unsupported_message": "",

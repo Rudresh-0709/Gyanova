@@ -806,13 +806,39 @@ def _get_domain_specific_guidance(domain: str) -> str:
 
 
 def plan_slides_for_subtopic(
-    subtopic: Dict[str, Any], teacher_profile: str = "Expert Teacher"
+    subtopic: Dict[str, Any],
+    teacher_profile: str = "Expert Teacher",
+    learning_depth: str = "Normal",
 ) -> Dict[str, Any]:
     """Calls LLM to plan slides for a single subtopic."""
     # Detect domain for domain-specific guidance
     domain = _detect_domain(subtopic)
     domain_guidance = _get_domain_specific_guidance(domain)
     
+    depth_key = (learning_depth or "Normal").strip().lower()
+    difficulty_key = str(subtopic.get("difficulty", "Beginner")).strip().lower()
+
+    slide_ranges_by_depth = {
+        "summary": "3-4",
+        "overview": "5-6",
+        "normal": {
+            "beginner": "6-7",
+            "intermediate": "7-8",
+            "advanced": "8-9",
+        },
+        "detailed": {
+            "beginner": "8-10",
+            "intermediate": "10-12",
+            "advanced": "11-13",
+        },
+    }
+
+    depth_config = slide_ranges_by_depth.get(depth_key, slide_ranges_by_depth["normal"])
+    if isinstance(depth_config, dict):
+        target_slide_range = depth_config.get(difficulty_key, depth_config.get("intermediate", "7-8"))
+    else:
+        target_slide_range = depth_config
+
     SYSTEM_PROMPT = f"""
     ROLE: AI Curriculum Architect & Visual Pedagogy Expert.
 
@@ -830,7 +856,7 @@ def plan_slides_for_subtopic(
     VISUAL TYPES: {json.dumps(VISUAL_TYPES)}
 
     PLANNING RULES:
-    1. Plan 4-7 slides. Each slide should represent a key learning moment.
+    1. Plan {target_slide_range} slides. Each slide should represent a key learning moment.
     2. ARCHITECT BY ANGLE: Ensure a diverse progression of learning perspectives:
        overview → mechanism → example → application → summary.
     3. Determine slide intent and content angle first, then select the best template.

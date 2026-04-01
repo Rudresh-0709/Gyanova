@@ -1,8 +1,8 @@
 import logging
 import uuid
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from pydantic import BaseModel
-from typing import Optional, Dict, Any, List
+from pydantic import BaseModel, model_validator
+from typing import Optional, Dict, Any, List, Literal
 from enum import Enum
 
 # Import the LangGraph workflow
@@ -417,9 +417,30 @@ class GenerateLessonRequest(BaseModel):
     topic: str
     current_level: str = "Intermediate"
     learning_goal: str = "Understand Core Concepts"
-    granularity: str = "Detailed"
+    learning_depth: Literal["Summary", "Overview", "Normal", "Detailed"] = "Normal"
+    granularity: Optional[str] = None
     preferred_method: str = "Socratic"
     teacher_gender: str = "Female"
+
+    @model_validator(mode="after")
+    def normalize_learning_depth(self):
+        """Backwards-compatible normalization for older clients still sending granularity."""
+        if self.granularity:
+            legacy_depth_map = {
+                "concise": "Summary",
+                "summary": "Summary",
+                "overview": "Overview",
+                "detailed": "Normal",
+                "normal": "Normal",
+                "deep dive": "Detailed",
+                "deepdive": "Detailed",
+            }
+
+            normalized = legacy_depth_map.get(self.granularity.strip().lower())
+            if normalized and self.learning_depth == "Normal":
+                self.learning_depth = normalized
+
+        return self
 
 
 class ConfirmPlanRequest(BaseModel):
@@ -439,7 +460,9 @@ async def run_planning_task(task_id: str, request: GenerateLessonRequest):
             "user_input": request.topic,
             "topic": "",
             "difficulty": request.current_level,
-            "granularity": request.granularity,
+            "learning_depth": request.learning_depth,
+            "granularity": "N/A",
+            "topic_granularity": "N/A",
             "teacher_gender": request.teacher_gender,
             "sub_topics": [],
             "plans": {},

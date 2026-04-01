@@ -12,6 +12,7 @@ def lesson_planning_node(state: TutorState) -> TutorState:
     """
     sub_topics = state.get("sub_topics", [])
     difficulty = state.get("difficulty", "Beginner")
+    learning_depth = state.get("learning_depth", "Normal")
 
     if state.get("unsupported_topic"):
         return {
@@ -41,7 +42,10 @@ def lesson_planning_node(state: TutorState) -> TutorState:
         subtopic_name = next_subtopic.get("name")
         print(f"\n🧠 Planning subtopic: {subtopic_name}")
 
-        plan_data = plan_slides_for_subtopic(next_subtopic)
+        plan_data = plan_slides_for_subtopic(
+            next_subtopic,
+            learning_depth=learning_depth,
+        )
         slide_plans = plan_data.get("slides", [])
 
         # Assign unique slide_id and sequence

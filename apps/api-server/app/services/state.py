@@ -42,9 +42,13 @@ class TutorState(TypedDict, total=False):
     # Topic Extraction
     topic: str
     granularity: str
+    topic_granularity: str
+    learning_depth: str
 
     # Subtopics
     sub_topics: List[Dict[str, Any]]
+    subtopic_target_count: int
+    subtopic_available_count: int
 
     # Slide Planning & Content
     slide_plan: Dict[str, Any]
@@ -70,7 +74,6 @@ class TutorState(TypedDict, total=False):
 
     # Preferences
     preferred_method: str
-    topic_granularity: str
 
     # State Management
     current_slide: int

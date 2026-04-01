@@ -6,6 +6,66 @@ import ast
 import re
 
 
+def _clamp(value: int, minimum: int, maximum: int) -> int:
+    return max(minimum, min(value, maximum))
+
+
+def _dedupe_subtopics(subtopics):
+    seen = set()
+    unique = []
+    for sub in subtopics:
+        if not isinstance(sub, dict):
+            continue
+        name = str(sub.get("name", "")).strip().lower()
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        unique.append(sub)
+    return unique
+
+
+def _compute_target_subtopic_count(
+    learning_depth: str, analyzer_granularity: str, available_count: int
+) -> int:
+    """
+    Compute final subtopic count from user depth + analyzer granularity.
+
+    Summary and Overview are fixed expectations.
+    Normal and Detailed adapt to available coverage while staying within safe bounds.
+    """
+    if available_count <= 0:
+        return 0
+
+    depth_key = (learning_depth or "Normal").strip().lower()
+    granularity_key = (analyzer_granularity or "Focused").strip().lower()
+
+    if depth_key == "summary":
+        base_target = 1
+        min_count, max_count = 1, 1
+    elif depth_key == "overview":
+        base_target = 3
+        min_count, max_count = 2, 4
+    elif depth_key == "detailed":
+        # Adaptive upper baseline: maximize coverage without forcing unnecessary repetition.
+        base_target = round(available_count * 0.85)
+        min_count, max_count = 5, 8
+    else:
+        # Normal mode: adaptive middle baseline.
+        base_target = round(available_count * 0.65)
+        min_count, max_count = 3, 6
+
+    adjustment_by_granularity = {
+        "too broad": 1,
+        "focused": 0,
+        "too narrow": -1,
+    }
+    adjusted_target = base_target + adjustment_by_granularity.get(granularity_key, 0)
+    bounded_target = _clamp(adjusted_target, min_count, max_count)
+
+    # Never request more subtopics than we actually have.
+    return _clamp(bounded_target, 1, available_count)
+
+
 def extract_sub_topic(state: TutorState) -> TutorState:
     system_prompt = """You are an AI-powered educational assistant that helps design structured learning content. 
     Your goal is to break down a topic into logical, technical sub-topics.
@@ -69,16 +129,35 @@ def extract_sub_topic(state: TutorState) -> TutorState:
         state["sub_topics"] = []
         return state
 
-    # Limit to 1 subtopic for faster testing (as requested)
-    sub_topics = data.get("sub_topics", [])[:1]
+    raw_sub_topics = data.get("sub_topics", [])
+    unique_sub_topics = _dedupe_subtopics(raw_sub_topics)
+
+    learning_depth = state.get("learning_depth", "Normal")
+    analyzer_granularity = state.get("topic_granularity") or state.get("granularity", "Focused")
+    available_count = len(unique_sub_topics)
+    target_count = _compute_target_subtopic_count(
+        learning_depth=learning_depth,
+        analyzer_granularity=analyzer_granularity,
+        available_count=available_count,
+    )
+
+    sub_topics = unique_sub_topics[:target_count]
 
     for i, sub in enumerate(sub_topics, start=1):
         sub["id"] = f"sub_{i}_{uuid.uuid4().hex[:6]}"
 
     state["sub_topics"] = sub_topics
+    state["subtopic_target_count"] = target_count
+    state["subtopic_available_count"] = available_count
+    state["topic_granularity"] = analyzer_granularity
     
     # Return only modified fields for clean state management
-    return {"sub_topics": state["sub_topics"]}
+    return {
+        "sub_topics": state["sub_topics"],
+        "subtopic_target_count": state["subtopic_target_count"],
+        "subtopic_available_count": state["subtopic_available_count"],
+        "topic_granularity": state["topic_granularity"],
+    }
 
 
 if __name__ == "__main__":

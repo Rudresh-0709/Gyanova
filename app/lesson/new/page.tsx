@@ -386,7 +386,7 @@ export default function LessonInputPage() {
         topic: "",
         current_level: "Intermediate",
         learning_goal: "Understand Core Concepts",
-        granularity: "Detailed",
+        learning_depth: "Normal",
         preferred_method: "Socratic",
         teacher_gender: "Female",
     });
@@ -654,9 +654,10 @@ export default function LessonInputPage() {
         { value: "Exam Preparation", label: "Exam Preparation", subLabel: "Focus on key facts" },
     ];
     const granularityOptions = [
-        { value: "Overview", label: "Overview", subLabel: "High-level summary" },
-        { value: "Detailed", label: "Detailed", subLabel: "Standard curriculum" },
-        { value: "Deep Dive", label: "Deep Dive", subLabel: "Comprehensive study" },
+        { value: "Summary", label: "Summary", subLabel: "1 subtopic, key takeaways only" },
+        { value: "Overview", label: "Overview", subLabel: "3 subtopics, broad understanding" },
+        { value: "Normal", label: "Normal", subLabel: "Adaptive subtopics, standard learning" },
+        { value: "Detailed", label: "Detailed", subLabel: "Adaptive max subtopics, deep learning" },
     ];
     const methodOptions = [
         { value: "Socratic", label: "Socratic", subLabel: "Learn through questions" },
@@ -718,7 +719,7 @@ export default function LessonInputPage() {
                                     </div>
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <CustomSelect label="Mental Model" icon={Mic2} value={formData.preferred_method} options={methodOptions} onChange={(v) => handleSelectChange("preferred_method", v)} />
-                                        <CustomSelect label="Curriculum Depth" icon={BookOpen} value={formData.granularity} options={granularityOptions} onChange={(v) => handleSelectChange("granularity", v)} />
+                                        <CustomSelect label="Curriculum Depth" icon={BookOpen} value={formData.learning_depth} options={granularityOptions} onChange={(v) => handleSelectChange("learning_depth", v)} />
                                     </div>
                                 </div>
 
