@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Tuple
 
 try:
     from app.services.llm.model_loader import load_openai
@@ -67,44 +67,11 @@ def _detect_subject_domain(topic: str, subtopic_name: str) -> str:
     return "general"
 
 
-def _collect_prior_coverage(plans: Dict[str, Any], current_sub_id: str) -> List[str]:
-    prior: List[str] = []
-    for sub_id, entry in plans.items():
-        if sub_id == current_sub_id:
-            continue
-        if not isinstance(entry, list):
-            continue
-
-        for slide in entry:
-            if not isinstance(slide, dict):
-                continue
-
-            if "_teacher_blueprint" in slide and isinstance(slide.get("_teacher_blueprint"), list):
-                for ts in slide["_teacher_blueprint"]:
-                    if not isinstance(ts, dict):
-                        continue
-                    title = str(ts.get("title", "")).strip()
-                    objective = str(ts.get("objective", "")).strip()
-                    must_cover = _to_list(ts.get("must_cover"))
-                    chunks = [x for x in [title, objective, ", ".join(must_cover[:3])] if x]
-                    if chunks:
-                        prior.append(" | ".join(chunks))
-            else:
-                title = str(slide.get("title", "")).strip()
-                goal = str(slide.get("goal", "")).strip()
-                chunks = [x for x in [title, goal] if x]
-                if chunks:
-                    prior.append(" | ".join(chunks))
-
-    return prior[:18]
-
-
 def _should_research(
     subtopic_name: str,
     domain: str,
     learning_depth: str,
     difficulty: str,
-    prior_coverage: List[str],
     state: Dict[str, Any],
 ) -> bool:
     if _to_bool(state.get("force_teacher_research"), default=False):
@@ -112,13 +79,11 @@ def _should_research(
 
     ld = str(learning_depth).strip().lower()
     diff = str(difficulty).strip().lower()
-    has_overlap_risk = len(prior_coverage) > 0
-
     if domain in {"math", "science", "history"}:
         return True
     if diff in {"intermediate", "advanced"}:
         return True
-    if ld in {"detailed", "normal"} and has_overlap_risk:
+    if ld in {"detailed", "normal"}:
         return True
 
     tokens = len(subtopic_name.split())
@@ -135,20 +100,16 @@ def _build_research_query(
     difficulty: str,
     learning_depth: str,
 ) -> str:
-    domain_hint_map = {
-        "math": "definitions, prerequisite concepts, formulas, worked examples, common mistakes",
-        "science": "definitions, mechanism/process, scientific laws, examples, common misconceptions",
-        "history": "timeline anchors, causes/effects, key events, evidence-backed facts, misconceptions",
-        "language": "definitions, rules, examples, exceptions, common mistakes",
-        "general": "core concepts, mechanisms, practical examples, common misconceptions",
+    search_focus_map = {
+        "math": ["definition", "formula", "worked problem", "step by step"],
+        "science": ["definition", "process", "mechanism", "key facts"],
+        "history": ["timeline", "causes", "effects", "key events"],
+        "language": ["definition", "rules", "structure", "core usage"],
+        "general": ["definition", "core concept", "key facts", "overview"],
     }
-    hint = domain_hint_map.get(domain, domain_hint_map["general"])
-
-    return (
-        f"Create curriculum-ready notes for subtopic '{subtopic_name}' within topic '{topic}'. "
-        f"Difficulty: {difficulty}. Learning depth: {learning_depth}. "
-        f"Need: {hint}. Include what is essential vs optional and avoid overlap with adjacent subtopics."
-    )
+    focus = search_focus_map.get(domain, search_focus_map["general"])
+    search_terms = [topic, subtopic_name, domain, difficulty, learning_depth] + focus
+    return " ".join(part for part in search_terms if part)
 
 
 def _compact_research_for_prompt(result: Any) -> Tuple[str, List[str], str]:
@@ -211,12 +172,10 @@ def _enforce_domain_requirements(slides: List[Dict[str, Any]], domain: str) -> L
     if not slides:
         return slides
 
-    has_example = any(_to_bool(s.get("example_slide_candidate"), default=False) for s in slides)
-    if not has_example:
+    has_example_candidate = any(_to_bool(s.get("example_slide_candidate"), default=False) for s in slides)
+    if not has_example_candidate:
         target = next((s for s in slides if s.get("coverage_scope") == "application"), slides[min(1, len(slides) - 1)])
         target["example_slide_candidate"] = True
-        if "examples" not in target or not target["examples"]:
-            target["examples"] = ["One practical student-friendly example."]
 
     if domain in {"math", "science"}:
         has_formula = any(_to_bool(s.get("formula_slide_candidate"), default=False) for s in slides)
@@ -255,8 +214,6 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
             "must_cover": ["definition", "key term"],
             "key_facts": ["Introduce one foundational fact."],
             "formulas": [],
-            "examples": ["One relatable real-world example."],
-            "misconceptions": ["Common confusion and correction."],
             "assessment_prompt": "In one sentence, explain the core idea.",
             "coverage_scope": "foundation",
             "slide_density": "balanced",
@@ -272,8 +229,6 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
             "must_cover": ["mechanism", "step order"],
             "key_facts": ["Important causal relationship."],
             "formulas": [],
-            "examples": ["A simple worked example."],
-            "misconceptions": ["Order-of-steps confusion."],
             "assessment_prompt": "What happens first and why?",
             "coverage_scope": "mechanism",
             "slide_density": "standard",
@@ -289,8 +244,6 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
             "must_cover": ["application", "decision rule"],
             "key_facts": ["Practical condition or rule of thumb."],
             "formulas": [],
-            "examples": ["A contextual scenario from daily life."],
-            "misconceptions": ["Overgeneralization in application."],
             "assessment_prompt": "How would you apply this in a new context?",
             "coverage_scope": "application",
             "slide_density": "dense",
@@ -306,8 +259,6 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
             "must_cover": ["summary", "retention"],
             "key_facts": ["One high-value takeaway."],
             "formulas": [],
-            "examples": [],
-            "misconceptions": [],
             "assessment_prompt": "Name the most important takeaway and why.",
             "coverage_scope": "reinforcement",
             "slide_density": "sparse",
@@ -341,14 +292,15 @@ def teacher_slide_planning_node(state: Dict[str, Any]) -> Dict[str, Any]:
     sub_id = next_subtopic.get("id")
     subtopic_name = next_subtopic.get("name", "Subtopic")
     subject_domain = _detect_subject_domain(topic, subtopic_name)
+    refactor_instructions_map = state.get("coverage_regeneration_instructions", {})
+    subtopic_refactor_instructions = refactor_instructions_map.get(sub_id, []) if isinstance(refactor_instructions_map, dict) else []
+    is_refactor_mode = bool(subtopic_refactor_instructions)
 
-    prior_coverage = _collect_prior_coverage(plans, current_sub_id=sub_id)
     should_research = _should_research(
         subtopic_name=subtopic_name,
         domain=subject_domain,
         learning_depth=str(learning_depth),
         difficulty=str(difficulty),
-        prior_coverage=prior_coverage,
         state=state,
     )
 
@@ -385,9 +337,9 @@ def teacher_slide_planning_node(state: Dict[str, Any]) -> Dict[str, Any]:
             factual_confidence = "low"
             retrieval_layer = "none"
 
-    prior_coverage_text = "\n".join(f"- {item}" for item in prior_coverage[:12])
-    if not prior_coverage_text:
-        prior_coverage_text = "- No prior planned subtopic slides available."
+    refactor_text = "\n".join(f"- {item}" for item in subtopic_refactor_instructions[:12])
+    if not refactor_text:
+        refactor_text = "- No regeneration instructions provided."
 
     prompt = f"""
 ROLE
@@ -402,37 +354,43 @@ Learning Depth: {learning_depth}
 Research Enabled: {str(should_research).lower()}
 Research Layer Used: {retrieval_layer}
 
-PRIOR COVERAGE (avoid overlap with these prior planned slides)
-{prior_coverage_text}
+REFACTOR INSTRUCTIONS (only when regenerating overlap-marked slides)
+{refactor_text}
 
 RESEARCH CONTEXT (if provided, ground decisions in this)
 {research_context_for_prompt or 'No external research context used for this subtopic.'}
 
+SEARCH INTERPRETATION NOTE
+The retrieval layer returns raw source snippets and summaries. Do not assume it provides structured curriculum output.
+Use it only as factual evidence to decide slide scope, depth, and examples.
+
+MODE
+Refactor Mode: {str(is_refactor_mode).lower()}
+
 MISSION
-Design a 4-8 slide teaching sequence that is pedagogically coherent, non-overlapping with prior subtopics, and curriculum-aligned.
-Focus on instructional logic, depth, and student understanding; do not choose visual templates.
+Design a 4-8 slide teaching sequence that is pedagogically coherent and curriculum-aligned for this subtopic only.
+If Refactor Mode is true, regenerate the slide intent/coverage based on refactor instructions while still focusing only on this subtopic.
+Do not choose visual templates.
+
+DOMAIN CLASSIFICATION
+- If the heuristic domain above is general or uncertain, infer the most likely domain inside this same response and set `subject_domain` to one of: math, science, history, language, general.
+- Use that classified domain to decide when formulas, worked examples, diagrams, timelines, or rule-based explanation slides are needed.
 
 REASONING CHECKLIST
 1. Identify the most important concepts, terms, mechanisms, and formulas for THIS subtopic.
 2. Build progression: foundation -> mechanism -> example/application -> reinforcement.
-3. Avoid overlap with prior subtopics; prioritize subtopic-specific depth and delta learning.
-4. Include misconceptions where students typically get confused.
-5. Keep facts accurate and concise.
+3. Keep facts accurate and concise.
+4. In refactor mode, re-angle scope/objectives according to instructions.
 
 QUALITY REQUIREMENTS
 1. Each slide objective must be measurable and specific.
 2. must_cover must list key concepts/fields for that slide.
 3. key_facts must provide concrete factual statements.
 4. formulas only when pedagogically necessary.
-5. examples should be practical and student-friendly.
-6. assessment_prompt must test that slide's objective.
-7. Include at least one application-oriented slide and one misconception-oriented slide.
-8. For math/science, decide if a formula-focused slide is needed and if a worked-example slide is needed.
-9. Decide slide_density per slide and whether high-end dedicated image support is required.
-
-ANTI-OVERLAP REQUIREMENT
-- For each slide, explicitly set non_overlap_focus to explain what this slide contributes that prior subtopics did not.
-- Do not repeat an already-covered objective unless this subtopic adds a different mechanism, constraint, or application context.
+5. assessment_prompt must test that slide's objective.
+6. Include at least one application-oriented slide.
+7. For math/science, decide if a formula-focused slide is needed.
+8. Decide slide_density per slide and whether high-end dedicated image support is required.
 
 OUTPUT RULES
 - Return JSON only (no prose, no markdown).
@@ -441,6 +399,7 @@ OUTPUT RULES
 
 Output JSON schema:
 {{
+    "subject_domain": "math|science|history|language|general",
     "slides": [
         {{
             "title": "...",
@@ -449,8 +408,6 @@ Output JSON schema:
             "must_cover": ["..."],
             "key_facts": ["..."],
             "formulas": ["..."],
-            "examples": ["..."],
-            "misconceptions": ["..."],
             "assessment_prompt": "...",
             "coverage_scope": "foundation|mechanism|comparison|application|reinforcement",
             "slide_density": "ultra_sparse|sparse|balanced|standard|dense|super_dense",
@@ -458,7 +415,6 @@ Output JSON schema:
             "image_requirement_reason": "short reason",
             "formula_slide_candidate": false,
             "example_slide_candidate": true,
-            "non_overlap_focus": "what this slide uniquely adds",
             "research_evidence": ["optional source title or url"],
             "factual_confidence": "high|medium|low"
         }}
@@ -467,10 +423,12 @@ Output JSON schema:
 """
 
     slides = []
+    generated_subject_domain = subject_domain
     try:
         llm = load_openai()
         resp = llm.invoke([{"role": "user", "content": prompt}])
         data = json.loads(_clean_json(resp.content))
+        generated_subject_domain = str(data.get("subject_domain", subject_domain)).strip().lower()
         slides = data.get("slides", [])
     except Exception:
         slides = _fallback_teacher_slides(subtopic_name)
@@ -490,7 +448,6 @@ Output JSON schema:
             slide_density = "standard"
 
         formulas = _to_list(slide.get("formulas"))
-        examples = _to_list(slide.get("examples"))
         high_end_required = _to_bool(
             slide.get("high_end_image_required"),
             default=_infer_high_end_image_required(subject_domain, coverage_scope, teaching_intent),
@@ -501,7 +458,7 @@ Output JSON schema:
         )
         example_candidate = _to_bool(
             slide.get("example_slide_candidate"),
-            default=bool(examples) or coverage_scope == "application",
+            default=coverage_scope == "application",
         )
 
         evidence = _to_list(slide.get("research_evidence"))
@@ -522,8 +479,6 @@ Output JSON schema:
                 "must_cover": _to_list(slide.get("must_cover")),
                 "key_facts": _to_list(slide.get("key_facts")),
                 "formulas": formulas,
-                "examples": examples,
-                "misconceptions": _to_list(slide.get("misconceptions")),
                 "assessment_prompt": str(slide.get("assessment_prompt", "")).strip(),
                 "coverage_scope": coverage_scope,
                 "subject_domain": subject_domain,
@@ -534,9 +489,6 @@ Output JSON schema:
                 ).strip(),
                 "formula_slide_candidate": formula_candidate,
                 "example_slide_candidate": example_candidate,
-                "non_overlap_focus": str(
-                    slide.get("non_overlap_focus", "Adds new depth without repeating previous subtopics.")
-                ).strip(),
                 "research_evidence": evidence,
                 "factual_confidence": confidence,
             }
@@ -550,17 +502,22 @@ Output JSON schema:
 
     normalized = _enforce_domain_requirements(normalized, subject_domain)
 
+    prompt_domain = generated_subject_domain or subject_domain
+    if prompt_domain not in {"math", "science", "history", "language", "general"}:
+        prompt_domain = "general"
+
     # Store temporary teacher draft in existing `plans` field so state keys remain unchanged.
     plans[sub_id] = [
         {
             "_teacher_blueprint": normalized,
             "_teacher_subtopic_name": subtopic_name,
-            "_teacher_subject_domain": subject_domain,
+            "_teacher_subject_domain": prompt_domain,
             "_teacher_research_used": should_research,
             "_teacher_research_query": research_query,
             "_teacher_research_layer": retrieval_layer,
             "_teacher_research_confidence": factual_confidence,
-            "_teacher_prior_coverage_hints": prior_coverage[:12],
+            "_teacher_refactor_mode": is_refactor_mode,
+            "_teacher_refactor_instruction_count": len(subtopic_refactor_instructions),
         }
     ]
     return {"plans": plans}
