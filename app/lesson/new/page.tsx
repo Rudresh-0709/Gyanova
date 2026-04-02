@@ -8,6 +8,7 @@ import { ArrowLeft, Sparkles, BookOpen, Mic2, ChevronDown, Check, Target, Layers
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { KnowledgeGraphLoader } from "@/components/knowledge-graph-loader";
 
 interface Option {
     value: string;
@@ -298,7 +299,7 @@ const CustomSelect = ({ label, icon: Icon, value, options, onChange }: CustomSel
 
     return (
         <div className="space-y-2 relative" ref={containerRef}>
-            <label className="block text-sm font-medium text-gray-400 ml-1 flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-400 ml-1">
                 <Icon className="w-4 h-4" /> {label}
             </label>
             <div className="relative">
@@ -747,19 +748,14 @@ export default function LessonInputPage() {
                 )}
 
                 {step === 'generating' && (
-                    <div className="flex flex-col items-center justify-center space-y-8 py-20">
-                        <div className="relative">
-                            <div className="w-24 h-24 border-4 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin" />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <Sparkles className="w-8 h-8 text-indigo-400 animate-pulse" />
-                            </div>
-                        </div>
-                        <div className="text-center space-y-3">
+                    <div className="flex flex-col items-center justify-center space-y-6 py-8">
+                        <KnowledgeGraphLoader status={generationStatus} className="w-full max-w-3xl" />
+
+                        <div className="text-center space-y-2 px-4">
                             <h2 className="text-2xl font-bold text-white">Full Generation in Progress</h2>
-                            <p className="text-indigo-400 font-mono text-sm animate-pulse tracking-wide">{generationStatus}</p>
-                            <p className="text-gray-500 text-xs max-w-xs mx-auto">This may take a minute as we synthesize narrations and build custom visuals.</p>
+                            <p className="text-gray-400 text-xs max-w-xs mx-auto">This may take a minute as we synthesize narrations and build custom visuals.</p>
                         </div>
-                        
+
                         {/* Cancel Button */}
                         <button
                             onClick={handleCancelGeneration}

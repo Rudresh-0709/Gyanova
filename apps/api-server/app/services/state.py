@@ -58,6 +58,12 @@ class TutorState(TypedDict, total=False):
     slides: Annotated[
         Dict[str, List[Dict[str, Any]]], merge_dict_updates
     ]  # subtopic_id -> list of full slides (Phase 2); uses reducer to merge concurrent updates
+    layout_history: List[str]
+    angle_history: List[str]
+    composition_history: List[str]
+    variant_history: List[str]
+    fact_retriever: str
+    teacher_research_raw_text: str
 
     # Narration
     intro_text: str

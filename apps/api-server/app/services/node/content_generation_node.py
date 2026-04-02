@@ -194,11 +194,13 @@ def _count_primary_items(gyml_content: Optional[Dict[str, Any]]) -> int:
     blocks = gyml_content.get("contentBlocks", [])
     primary_idx = gyml_content.get("primary_block_index")
 
-    # ── Handle sparse templates (primary_block_index is None) ──
-    if primary_idx is None:
-        # Sparse templates: count total content blocks as animation units
-        # Most sparse templates have 1-2 blocks anyway
-        return len(blocks) if blocks else 1
+    # ── Infer primary block index if None ──
+    # Rule: Always use an integer primary_block_index when blocks exist
+    if primary_idx is None and blocks:
+        for i, block in enumerate(blocks):
+            if block.get("type") in VALID_PRIMARY_BLOCK_TYPES:
+                primary_idx = i
+                break
 
     # ── Handle standard templates (primary_block_index is an integer) ──
     if not blocks or primary_idx >= len(blocks):
@@ -311,12 +313,18 @@ def _generate_animation_metadata(gyml_content: Optional[Dict[str, Any]]) -> Dict
     blocks = gyml_content.get("contentBlocks", [])
     primary_idx = gyml_content.get("primary_block_index")
 
-    # Sparse templates may intentionally set primary_block_index to None.
-    # Treat them as non-indexed and animate from block 0 fallback metadata.
+    # ── Infer primary block index if None ──
+    # Rule: Always use an integer primary_block_index when blocks exist
+    if primary_idx is None and blocks:
+        for i, block in enumerate(blocks):
+            if block.get("type") in VALID_PRIMARY_BLOCK_TYPES:
+                primary_idx = i
+                break
+    # Fallback: if still None after inference, use 0 (no valid primary block)
     if primary_idx is None:
         return {
             "animation_unit": "item",
-            "animation_unit_count": _count_primary_items(gyml_content),
+            "animation_unit_count": _count_primary_items(gyml_content) if blocks else 0,
             "animated_block_index": 0,
         }
 
@@ -426,14 +434,14 @@ def _validate_sparse_template(
 ) -> Optional[Dict[str, Any]]:
     """
     Validate that sparse template content meets schema requirements.
-    Sparse templates must define exactly one designated primary block via
-    primary_block_index (single integer index).
+    Sparse templates must have a designated primary block with an integer index.
+    (RULE: primary_block_index is always an integer when blocks exist)
     
     Validation checks:
     1. Has required blocks specified in schema
     2. Doesn't use forbidden blocks
     3. Total block count doesn't exceed max
-    4. Has one valid primary_block_index
+    4. Has a valid integer primary_block_index (inferred if necessary)
     
     Returns:
         The content dict if valid, or None if schema validation fails.
@@ -493,7 +501,7 @@ def _validate_sparse_template(
 
         generated_content["primary_block_index"] = inferred_idx
         print(
-            f"    ⚠ Sparse primary block inferred: [{inferred_idx}] {blocks[inferred_idx].get('type')} (was idx={idx})"
+            f"    ⚠ Sparse primary_block_index inferred: [{inferred_idx}] {blocks[inferred_idx].get('type')} (was {idx})"
         )
 
     # ── Check 5: Require at least one wide block for wide sparse templates ──
@@ -659,7 +667,14 @@ def _extract_primary_items_detail(gyml_content: Optional[Dict[str, Any]]) -> Lis
     blocks = gyml_content.get("contentBlocks", [])
     primary_idx = gyml_content.get("primary_block_index")
 
-    # Sparse templates may not define a primary index.
+    # ── Infer primary block index if None ──
+    # Rule: Always use an integer primary_block_index when blocks exist
+    if primary_idx is None and blocks:
+        for i, block in enumerate(blocks):
+            if block.get("type") in VALID_PRIMARY_BLOCK_TYPES:
+                primary_idx = i
+                break
+    # Fallback: if still None after inference, use 0 (no valid primary block)
     if primary_idx is None:
         primary_idx = 0
 
@@ -912,8 +927,13 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
     if not next_subtopic:
         print("✅ [Content Gen] All slides already have content.")
-        # Return only modified fields even in early exit
-        return {"slides": state["slides"]}
+        return {
+            "slides": state["slides"],
+            "layout_history": state.get("layout_history", []),
+            "angle_history": state.get("angle_history", []),
+            "composition_history": state.get("composition_history", []),
+            "variant_history": state.get("variant_history", []),
+        }
 
     sub_id = next_subtopic.get("id")
     subtopic_name = next_subtopic.get("name")
@@ -1169,5 +1189,10 @@ def content_generation_node(state: Dict[str, Any]) -> Dict[str, Any]:
             }
             state["slides"][sub_id].append(slide_obj)
 
-    # Return only modified fields for clean state management
-    return {"slides": state["slides"]}
+    return {
+        "slides": state["slides"],
+        "layout_history": state["layout_history"],
+        "angle_history": state["angle_history"],
+        "composition_history": state["composition_history"],
+        "variant_history": state["variant_history"],
+    }

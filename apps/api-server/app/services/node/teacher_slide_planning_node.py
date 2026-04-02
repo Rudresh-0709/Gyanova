@@ -7,11 +7,20 @@ except ImportError:
     from ..llm.model_loader import load_openai
 
 try:
-    from app.services.fact_retrieval import format_for_llm, retrieve_facts
+    from app.services.llm.model_loader import load_groq
 except ImportError:
     try:
-        from ..fact_retrieval import format_for_llm, retrieve_facts
+        from ..llm.model_loader import load_groq
     except ImportError:
+        load_groq = None
+
+try:
+    from app.services.fact_retrieval import RetrievalLayer, format_for_llm, retrieve_facts
+except ImportError:
+    try:
+        from ..fact_retrieval import RetrievalLayer, format_for_llm, retrieve_facts
+    except ImportError:
+        RetrievalLayer = None
         format_for_llm = None
         retrieve_facts = None
 
@@ -19,6 +28,7 @@ except ImportError:
 VALID_INTENTS = {"introduce", "explain", "teach", "compare", "demo", "prove", "summarize"}
 VALID_SCOPES = {"foundation", "mechanism", "comparison", "application", "reinforcement"}
 VALID_DENSITIES = {"ultra_sparse", "sparse", "balanced", "standard", "dense", "super_dense"}
+VALID_FACT_RETRIEVERS = {"wiki", "tavily", "none"}
 
 
 def _to_bool(value: Any, default: bool = False) -> bool:
@@ -34,6 +44,173 @@ def _to_bool(value: Any, default: bool = False) -> bool:
     if text in {"false", "no", "0", "n"}:
         return False
     return default
+
+
+def _normalize_fact_retriever(value: Any) -> str:
+    text = str(value or "none").strip().lower()
+    if text in {"wikipedia", "wiki"}:
+        return "wiki"
+    if text in {"tavily"}:
+        return "tavily"
+    return "none"
+
+
+def _confidence_rank(value: str) -> int:
+    key = str(value or "low").strip().lower()
+    if key == "high":
+        return 3
+    if key == "medium":
+        return 2
+    return 1
+
+
+def _pick_best_confidence(values: List[str]) -> str:
+    if not values:
+        return "low"
+    best = max(values, key=_confidence_rank)
+    return best if best in {"high", "medium", "low"} else "low"
+
+
+def _normalize_retrieval_plan(raw: Any) -> Dict[str, Any]:
+    """Normalize retrieval-plan JSON from Groq planner LLM."""
+    fallback = {
+        "fact_check": "none",
+        "queries": [],
+        "reason": "No retrieval plan generated.",
+    }
+    if not isinstance(raw, dict):
+        return fallback
+
+    fact_check = _normalize_fact_retriever(raw.get("fact_check", "none"))
+    reason = str(raw.get("reason", "")).strip() or "No reason provided."
+
+    normalized_queries: List[Dict[str, str]] = []
+    queries = raw.get("queries", [])
+    if isinstance(queries, list):
+        for q in queries[:2]:
+            if not isinstance(q, dict):
+                continue
+            text = str(q.get("query", "")).strip()
+            source = _normalize_fact_retriever(q.get("source", "none"))
+            if text and source in {"wiki", "tavily"}:
+                normalized_queries.append({"query": text, "source": source})
+
+    if fact_check == "none":
+        normalized_queries = []
+
+    if fact_check in {"wiki", "tavily"} and not normalized_queries:
+        normalized_queries = [{"query": "", "source": fact_check}]
+
+    return {
+        "fact_check": fact_check,
+        "queries": normalized_queries,
+        "reason": reason,
+    }
+
+
+def _plan_fact_retrieval_with_groq(
+    topic: str,
+    subtopic_name: str,
+    domain: str,
+    difficulty: str,
+    learning_depth: str,
+    should_research: bool,
+) -> Dict[str, Any]:
+    """
+    Groq planner decides whether to retrieve and generates up to 2 short source-specific queries.
+    Output schema:
+    {
+      fact_check: "none|wiki|tavily",
+      queries: [{query: "...", source: "wiki|tavily"}],
+      reason: "..."
+    }
+    """
+    if not should_research:
+        return {
+            "fact_check": "none",
+            "queries": [],
+            "reason": "Research skipped by heuristic.",
+        }
+
+    if not load_groq:
+        return {
+            "fact_check": "wiki" if domain in {"history", "language", "general"} else "tavily",
+            "queries": [
+                {
+                    "query": _build_research_query(topic, subtopic_name, domain, difficulty, learning_depth),
+                    "source": "wiki" if domain in {"history", "language", "general"} else "tavily",
+                }
+            ],
+            "reason": "Groq unavailable; fallback retrieval plan used.",
+        }
+
+    prompt = f"""
+ROLE
+You are a retrieval strategist for an educational slide planner.
+
+GOAL
+Given one subtopic, decide if factual retrieval is needed and produce at most two short search queries.
+
+INPUT
+Topic: {topic}
+Subtopic: {subtopic_name}
+Detected Domain: {domain}
+Difficulty: {difficulty}
+Learning Depth: {learning_depth}
+
+RULES
+1. If the subtopic is very generic and common-sense, set fact_check to "none".
+2. Else choose one of: "wiki" or "tavily" as primary fact_check.
+3. Generate 1-2 concise queries (max ~14 words each).
+4. Each query must include a source field: wiki or tavily.
+5. Prefer wiki for stable factual/historical/definition lookups.
+6. Prefer tavily for multi-source synthesis or nuanced modern topics.
+
+OUTPUT
+Return JSON only:
+{{
+  "fact_check": "none|wiki|tavily",
+  "queries": [
+    {{"query": "...", "source": "wiki|tavily"}}
+  ],
+  "reason": "short reason"
+}}
+"""
+
+    try:
+        llm = load_groq()
+        resp = llm.invoke([{"role": "user", "content": prompt}])
+        raw = str(resp.content or "").replace("```json", "").replace("```", "").strip()
+        plan = json.loads(raw)
+        normalized = _normalize_retrieval_plan(plan)
+        if normalized["fact_check"] in {"wiki", "tavily"} and normalized["queries"]:
+            for q in normalized["queries"]:
+                if not q.get("query"):
+                    q["query"] = _build_research_query(topic, subtopic_name, domain, difficulty, learning_depth)
+        return normalized
+    except Exception:
+        default_source = "wiki" if domain in {"history", "language", "general"} else "tavily"
+        return {
+            "fact_check": default_source,
+            "queries": [
+                {
+                    "query": _build_research_query(topic, subtopic_name, domain, difficulty, learning_depth),
+                    "source": default_source,
+                }
+            ],
+            "reason": "Groq planning failed; fallback retrieval plan used.",
+        }
+
+
+def _retrieval_layer_from_source(source: str):
+    if not RetrievalLayer:
+        return None
+    src = _normalize_fact_retriever(source)
+    if src == "wiki":
+        return RetrievalLayer.WIKIPEDIA
+    if src == "tavily":
+        return RetrievalLayer.TAVILY
+    return None
 
 
 def _detect_subject_domain(topic: str, subtopic_name: str) -> str:
@@ -112,9 +289,9 @@ def _build_research_query(
     return " ".join(part for part in search_terms if part)
 
 
-def _compact_research_for_prompt(result: Any) -> Tuple[str, List[str], str]:
+def _compact_research_for_prompt(result: Any) -> Tuple[str, List[str], str, str]:
     if not result or not getattr(result, "success", False):
-        return "", [], "low"
+        return "", [], "low", ""
 
     confidence = str(getattr(result, "confidence", "medium") or "medium").strip().lower()
     data = getattr(result, "data", {}) or {}
@@ -157,7 +334,8 @@ def _compact_research_for_prompt(result: Any) -> Tuple[str, List[str], str]:
             formatted = ""
 
     compact = "\n".join([line for line in formatted.splitlines() if line.strip()][:18]).strip()
-    return compact, evidence[:8], confidence
+    raw_text = formatted.strip()
+    return compact, evidence[:8], confidence, raw_text
 
 
 def _infer_high_end_image_required(domain: str, coverage_scope: str, teaching_intent: str) -> bool:
@@ -305,37 +483,100 @@ def teacher_slide_planning_node(state: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     research_query = ""
+    research_plan_reason = ""
     research_context_for_prompt = ""
     research_evidence: List[str] = []
+    research_raw_text = ""
     factual_confidence = "low"
     retrieval_layer = "none"
+    fact_retriever = "none"
 
-    if should_research and retrieve_facts is not None:
-        research_query = _build_research_query(
-            topic=topic,
-            subtopic_name=subtopic_name,
-            domain=subject_domain,
-            difficulty=str(difficulty),
-            learning_depth=str(learning_depth),
-        )
-        try:
-            result = retrieve_facts(
-                query=research_query,
-                context={
-                    "topic": topic,
-                    "subtopic": subtopic_name,
-                    "subject_domain": subject_domain,
-                    "difficulty": difficulty,
-                    "learning_depth": learning_depth,
-                },
-            )
-            retrieval_layer = getattr(getattr(result, "layer_used", None), "value", "none")
-            research_context_for_prompt, research_evidence, factual_confidence = _compact_research_for_prompt(result)
-        except Exception:
-            research_context_for_prompt = ""
-            research_evidence = []
-            factual_confidence = "low"
-            retrieval_layer = "none"
+    retrieval_plan = _plan_fact_retrieval_with_groq(
+        topic=topic,
+        subtopic_name=subtopic_name,
+        domain=subject_domain,
+        difficulty=str(difficulty),
+        learning_depth=str(learning_depth),
+        should_research=should_research,
+    )
+    research_plan_reason = str(retrieval_plan.get("reason", "")).strip()
+
+    confidence_values: List[str] = []
+    layer_values: List[str] = []
+    context_chunks: List[str] = []
+    combined_evidence: List[str] = []
+    raw_text_chunks: List[str] = []
+    query_values: List[str] = []
+
+    if retrieve_facts is not None:
+        for q in retrieval_plan.get("queries", []):
+            if not isinstance(q, dict):
+                continue
+            q_text = str(q.get("query", "")).strip()
+            source = _normalize_fact_retriever(q.get("source", "none"))
+            if not q_text or source == "none":
+                continue
+
+            query_values.append(f"[{source}] {q_text}")
+            force_layer = _retrieval_layer_from_source(source)
+            try:
+                result = retrieve_facts(
+                    query=q_text,
+                    context={
+                        "topic": topic,
+                        "subtopic": subtopic_name,
+                        "subject_domain": subject_domain,
+                        "difficulty": difficulty,
+                        "learning_depth": learning_depth,
+                        "source": source,
+                    },
+                    force_layer=force_layer,
+                )
+
+                layer = getattr(getattr(result, "layer_used", None), "value", source)
+                layer_values.append(str(layer))
+
+                chunk, evidence, conf, raw_text = _compact_research_for_prompt(result)
+                if chunk:
+                    context_chunks.append(chunk)
+                if evidence:
+                    combined_evidence.extend(evidence)
+                if raw_text:
+                    raw_text_chunks.append(raw_text)
+                confidence_values.append(conf)
+            except Exception:
+                continue
+
+    if query_values:
+        research_query = " || ".join(query_values)
+
+    if context_chunks:
+        research_context_for_prompt = "\n\n".join(context_chunks[:2]).strip()
+    if combined_evidence:
+        # de-duplicate while preserving order
+        deduped: List[str] = []
+        seen = set()
+        for e in combined_evidence:
+            if e not in seen:
+                seen.add(e)
+                deduped.append(e)
+        research_evidence = deduped[:8]
+
+    if raw_text_chunks:
+        research_raw_text = "\n\n".join(raw_text_chunks).strip()
+
+    factual_confidence = _pick_best_confidence(confidence_values)
+
+    normalized_layers = [_normalize_fact_retriever(x) for x in layer_values]
+    if "tavily" in normalized_layers:
+        fact_retriever = "tavily"
+        retrieval_layer = "tavily"
+    elif "wiki" in normalized_layers:
+        fact_retriever = "wiki"
+        retrieval_layer = "wikipedia"
+    else:
+        fact_retriever = "none"
+        retrieval_layer = "none"
 
     refactor_text = "\n".join(f"- {item}" for item in subtopic_refactor_instructions[:12])
     if not refactor_text:
@@ -353,6 +594,7 @@ Difficulty: {difficulty}
 Learning Depth: {learning_depth}
 Research Enabled: {str(should_research).lower()}
 Research Layer Used: {retrieval_layer}
+Retriever Plan Reason: {research_plan_reason or 'n/a'}
 
 REFACTOR INSTRUCTIONS (only when regenerating overlap-marked slides)
 {refactor_text}
@@ -465,6 +707,8 @@ Output JSON schema:
         if not evidence and research_evidence:
             evidence = research_evidence[:3]
 
+        slide_raw_text = str(slide.get("research_raw_text", research_raw_text or "")).strip()
+
         confidence = str(slide.get("factual_confidence", factual_confidence or "medium")).strip().lower()
         if confidence not in {"high", "medium", "low"}:
             confidence = "medium"
@@ -490,6 +734,7 @@ Output JSON schema:
                 "formula_slide_candidate": formula_candidate,
                 "example_slide_candidate": example_candidate,
                 "research_evidence": evidence,
+                "research_raw_text": slide_raw_text,
                 "factual_confidence": confidence,
             }
         )
@@ -506,6 +751,9 @@ Output JSON schema:
     if prompt_domain not in {"math", "science", "history", "language", "general"}:
         prompt_domain = "general"
 
+    if fact_retriever not in VALID_FACT_RETRIEVERS:
+        fact_retriever = "none"
+
     # Store temporary teacher draft in existing `plans` field so state keys remain unchanged.
     plans[sub_id] = [
         {
@@ -515,9 +763,11 @@ Output JSON schema:
             "_teacher_research_used": should_research,
             "_teacher_research_query": research_query,
             "_teacher_research_layer": retrieval_layer,
+            "_teacher_fact_retriever": fact_retriever,
+            "_teacher_research_raw_text": research_raw_text,
             "_teacher_research_confidence": factual_confidence,
             "_teacher_refactor_mode": is_refactor_mode,
             "_teacher_refactor_instruction_count": len(subtopic_refactor_instructions),
         }
     ]
-    return {"plans": plans}
+    return {"plans": plans, "fact_retriever": fact_retriever, "teacher_research_raw_text": research_raw_text}

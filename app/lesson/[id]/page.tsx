@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { BackgroundBeams } from "@/components/ui/background-beams";
+import { KnowledgeGraphLoader } from "@/components/knowledge-graph-loader";
 import Link from "next/link";
 import {
     ChevronLeft,
@@ -362,6 +363,20 @@ function hasRenderableLessonContent(
     );
 }
 
+function hasRenderableSlideHtml(
+    result: LessonRenderResult | null | undefined
+): boolean {
+    const slideGroups = Object.values(result?.slides || {});
+    return slideGroups.some((slides) =>
+        Array.isArray(slides) &&
+        slides.some(
+            (slide) =>
+                typeof slide?.html_content === "string" &&
+                slide.html_content.trim().length > 0
+        )
+    );
+}
+
 // ─── Component ──────────────────────────────────────────────────────────
 
 export default function LessonViewPage() {
@@ -372,6 +387,7 @@ export default function LessonViewPage() {
     // Data
     const [lessonData, setLessonData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [loaderStatus, setLoaderStatus] = useState("pending");
     const [error, setError] = useState<string | null>(null);
     const [slideList, setSlideList] = useState<SlideEntry[]>([]);
 
@@ -412,6 +428,8 @@ export default function LessonViewPage() {
                 );
                 if (!response.ok) throw new Error("Failed to load lesson");
                 const data = await response.json();
+                const nextStatus = typeof data.status === "string" ? data.status : "pending";
+                setLoaderStatus(nextStatus);
 
                 // Always update result if present (could have more slides)
                 if (data.result) {
@@ -419,8 +437,10 @@ export default function LessonViewPage() {
                 }
 
                 if (data.status === "completed") {
-                    setLoading(false);
-                    // stop polling
+                    if (!hasRenderableLessonContent(data.result)) {
+                        setError("Lesson generated but no renderable slides were returned.");
+                        setLoading(false);
+                    }
                 } else if (data.status === "failed") {
                     setError("This lesson failed to generate.");
                     setLoading(false);
@@ -430,10 +450,6 @@ export default function LessonViewPage() {
                     data.status === "pending" ||
                     data.status === "planning_completed"
                 ) {
-                    // Only leave the loading state once the browser has actual HTML it can render.
-                    if (hasRenderableLessonContent(data.result)) {
-                        setLoading(false);
-                    }
                     pollTimer = setTimeout(fetchLesson, 3000);
                 } else {
                     setError("Lesson not found.");
@@ -817,12 +833,21 @@ export default function LessonViewPage() {
 
     // Loading state
     if (loading) {
+        const previewReady = hasRenderableSlideHtml(lessonData);
+        const loaderUiStatus = previewReady
+            ? "preview_ready"
+            : loaderStatus === "completed"
+                ? "processing"
+                : loaderStatus;
+
         return (
             <div className="min-h-screen w-full bg-[#0a0f1a] flex items-center justify-center relative">
                 <BackgroundBeams className="opacity-40" />
-                <div className="text-white z-10 flex flex-col items-center gap-4">
-                    <div className="w-8 h-8 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
-                    <p className="animate-pulse">Loading Lesson...</p>
+                <div className="z-10 w-full max-w-4xl px-4 sm:px-6">
+                    <KnowledgeGraphLoader
+                        status={loaderUiStatus}
+                        onReady={() => setLoading(false)}
+                    />
                 </div>
             </div>
         );
