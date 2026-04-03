@@ -420,6 +420,9 @@ _STRUCTURED_PRIMARY_TYPES = {
 # Block types that are only acceptable as *supporting* blocks (never primary)
 _SUPPORTING_ONLY_TYPES = {"heading", "paragraph", "intro_paragraph", "context_paragraph", "annotation_paragraph", "outro_paragraph", "caption", "image"}
 
+# Maximum characters for a smart_layout item heading (keeps cards readable at typical font sizes)
+_MAX_ITEM_HEADING_LENGTH = 60
+
 
 def _has_structured_primary(blocks: List[Dict[str, Any]]) -> bool:
     """Return True if any block in the list qualifies as a structured primary block."""
@@ -456,7 +459,7 @@ def _enforce_structured_primary(payload: Dict[str, Any], plan_item: Dict[str, An
     items = []
     # Use must_cover points as items
     for point in (must_cover + key_facts)[:6]:
-        items.append({"heading": point[:60], "description": point})
+        items.append({"heading": point[:_MAX_ITEM_HEADING_LENGTH], "description": point})
     # Ensure at least 2 items
     if len(items) < 2:
         items = [

@@ -24,8 +24,13 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # ── Allow running from repo root or from within v2/ ────────────────────────
-_HERE = Path(__file__).parent
-_API_ROOT = _HERE.parent.parent.parent.parent.parent  # apps/api-server
+_HERE = Path(__file__).resolve().parent
+# Walk upward to find the api-server root (the directory that contains "app/")
+_API_ROOT = _HERE
+for _ancestor in [_HERE, *_HERE.parents]:
+    if (_ancestor / "app" / "services").is_dir():
+        _API_ROOT = _ancestor
+        break
 sys.path.insert(0, str(_API_ROOT))
 
 try:

@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 try:
     from app.services.node.v2.block_catalog_v2 import (
         block_to_blueprint,
+        get_block_spec,
         get_smart_layout_variant,
         select_primary_block,
         select_supporting_blocks,
@@ -24,6 +25,7 @@ try:
 except ImportError:
     from .block_catalog_v2 import (  # type: ignore
         block_to_blueprint,
+        get_block_spec,
         get_smart_layout_variant,
         select_primary_block,
         select_supporting_blocks,
@@ -293,7 +295,6 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
         # For formula slides, use formula block regardless
         if primary_family == "formula":
-            from app.services.node.v2.block_catalog_v2 import get_block_spec  # noqa: PLC0415
             primary_spec = get_block_spec("formula", "normal")
 
         # Determine final primary_variant and smart_layout_variant from the chosen spec
