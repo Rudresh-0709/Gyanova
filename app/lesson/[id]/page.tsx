@@ -32,6 +32,7 @@ interface SlideEntry {
 
 interface LessonRenderResult {
     lesson_intro_narration?: unknown;
+    subtopic_intro_narrations?: Record<string, unknown>;
     slides?: Record<string, Array<{ html_content?: string | null }> | undefined>;
 }
 
@@ -348,7 +349,16 @@ function splitDeckIntoSlides(html: string): string[] {
 function hasRenderableLessonContent(
     result: LessonRenderResult | null | undefined
 ): boolean {
-    if (result?.lesson_intro_narration) {
+    const lessonIntro = result?.lesson_intro_narration as { html_doc?: string | null } | undefined;
+    if (typeof lessonIntro?.html_doc === "string" && lessonIntro.html_doc.trim().length > 0) {
+        return true;
+    }
+
+    const subtopicIntros = Object.values(result?.subtopic_intro_narrations || {});
+    if (subtopicIntros.some((intro) => {
+        const htmlDoc = (intro as { html_doc?: string | null } | null | undefined)?.html_doc;
+        return typeof htmlDoc === "string" && htmlDoc.trim().length > 0;
+    })) {
         return true;
     }
 
@@ -357,22 +367,14 @@ function hasRenderableLessonContent(
         Array.isArray(slides) &&
         slides.some(
             (slide) =>
-                typeof slide?.html_content === "string" &&
-                slide.html_content.trim().length > 0
-        )
-    );
-}
-
-function hasRenderableSlideHtml(
-    result: LessonRenderResult | null | undefined
-): boolean {
-    const slideGroups = Object.values(result?.slides || {});
-    return slideGroups.some((slides) =>
-        Array.isArray(slides) &&
-        slides.some(
-            (slide) =>
-                typeof slide?.html_content === "string" &&
-                slide.html_content.trim().length > 0
+                (
+                    typeof slide?.html_content === "string" &&
+                    slide.html_content.trim().length > 0
+                ) ||
+                (
+                    typeof (slide as { html_doc?: string | null } | undefined)?.html_doc === "string" &&
+                    (slide as { html_doc?: string | null } | undefined)?.html_doc?.trim().length > 0
+                )
         )
     );
 }
@@ -836,7 +838,7 @@ export default function LessonViewPage() {
 
     // Loading state
     if (loading) {
-        const previewReady = hasRenderableSlideHtml(lessonData);
+        const previewReady = hasRenderableLessonContent(lessonData);
         const loaderUiStatus = previewReady
             ? "preview_ready"
             : loaderStatus;
