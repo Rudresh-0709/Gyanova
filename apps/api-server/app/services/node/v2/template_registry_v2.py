@@ -17,9 +17,12 @@ class TemplateSpec:
     allowed_layouts: Tuple[str, ...] = ("top", "bottom", "left", "right", "blank")
     supports_high_end_image: bool = False
     density_ok: Tuple[str, ...] = ()
+    # Which smart_layout variants this template is designed for (empty = any)
+    preferred_smart_layout_variants: Tuple[str, ...] = ()
 
 
 TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
+    # ── Hero / Title ──────────────────────────────────────────────────────────
     "Title card": TemplateSpec(
         name="Title card",
         is_sparse=True,
@@ -27,22 +30,24 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         image_mode_required="hero",
         max_blocks=2,
         max_supporting_blocks=1,
-        allowed_primary_families=("title", "overview"),
+        allowed_primary_families=("title", "overview", "smart_layout"),
         allowed_accent_placements=("top", "bottom", "left", "right"),
         allowed_layouts=("top", "bottom", "left", "right", "blank"),
         supports_high_end_image=True,
         density_ok=("ultra_sparse", "sparse", "balanced"),
     ),
+    # ── Bullets / Overview ────────────────────────────────────────────────────
     "Title with bullets": TemplateSpec(
         name="Title with bullets",
         is_sparse=False,
         image_mode_capability="accent",
         max_blocks=3,
         max_supporting_blocks=2,
-        allowed_primary_families=("overview", "recap", "definition"),
+        allowed_primary_families=("overview", "recap", "definition", "smart_layout"),
         allowed_accent_placements=("right", "left", "top", "bottom"),
         allowed_layouts=("right", "left", "top", "bottom", "blank"),
         density_ok=("ultra_sparse", "sparse", "balanced", "standard"),
+        preferred_smart_layout_variants=("bigBullets", "bulletIcon", "bulletCheck"),
     ),
     "Title with bullets and image": TemplateSpec(
         name="Title with bullets and image",
@@ -50,21 +55,24 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         image_mode_capability="content",
         max_blocks=4,
         max_supporting_blocks=2,
-        allowed_primary_families=("overview", "example", "diagram"),
+        allowed_primary_families=("overview", "example", "diagram", "smart_layout"),
         allowed_accent_placements=("right", "left"),
         allowed_layouts=("right", "left", "top", "bottom", "blank"),
         density_ok=("ultra_sparse", "sparse", "balanced"),
+        preferred_smart_layout_variants=("bigBullets", "cardGridSimple"),
     ),
+    # ── Image + Text ──────────────────────────────────────────────────────────
     "Image and text": TemplateSpec(
         name="Image and text",
         is_sparse=False,
         image_mode_capability="content",
         max_blocks=4,
         max_supporting_blocks=2,
-        allowed_primary_families=("example", "diagram", "overview"),
+        allowed_primary_families=("example", "diagram", "overview", "smart_layout"),
         allowed_accent_placements=("right", "left"),
         allowed_layouts=("right", "left", "top", "bottom"),
         density_ok=("ultra_sparse", "sparse", "balanced"),
+        preferred_smart_layout_variants=("bigBullets", "cardGridSimple", "cardGridImage"),
     ),
     "Text and image": TemplateSpec(
         name="Text and image",
@@ -72,54 +80,24 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         image_mode_capability="content",
         max_blocks=4,
         max_supporting_blocks=2,
-        allowed_primary_families=("example", "definition", "overview"),
+        allowed_primary_families=("example", "definition", "overview", "smart_layout"),
         allowed_accent_placements=("right", "left"),
         allowed_layouts=("right", "left", "top", "bottom"),
         density_ok=("ultra_sparse", "sparse", "balanced"),
+        preferred_smart_layout_variants=("bigBullets", "cardGridSimple"),
     ),
+    # ── Two-Column / Comparison ───────────────────────────────────────────────
     "Two columns": TemplateSpec(
         name="Two columns",
         is_sparse=False,
         image_mode_capability="none",
         max_blocks=3,
         max_supporting_blocks=2,
-        allowed_primary_families=("comparison", "contrast"),
+        allowed_primary_families=("comparison", "contrast", "smart_layout"),
         allowed_accent_placements=(),
         allowed_layouts=("blank", "left", "right"),
         density_ok=("sparse", "balanced", "standard"),
-    ),
-    "Timeline": TemplateSpec(
-        name="Timeline",
-        is_sparse=False,
-        image_mode_capability="accent",
-        max_blocks=4,
-        max_supporting_blocks=2,
-        allowed_primary_families=("process", "sequence"),
-        allowed_accent_placements=("top", "bottom"),
-        allowed_layouts=("top", "bottom", "blank"),
-        density_ok=("sparse", "balanced", "standard"),
-    ),
-    "Icons with text": TemplateSpec(
-        name="Icons with text",
-        is_sparse=False,
-        image_mode_capability="accent",
-        max_blocks=4,
-        max_supporting_blocks=3,
-        allowed_primary_families=("overview", "recap", "process"),
-        allowed_accent_placements=("right", "left", "top", "bottom"),
-        allowed_layouts=("right", "left", "top", "bottom", "blank"),
-        density_ok=("ultra_sparse", "sparse", "balanced", "standard"),
-    ),
-    "Large bullet list": TemplateSpec(
-        name="Large bullet list",
-        is_sparse=True,
-        image_mode_capability="none",
-        max_blocks=2,
-        max_supporting_blocks=1,
-        allowed_primary_families=("recap", "overview"),
-        allowed_accent_placements=(),
-        allowed_layouts=("blank",),
-        density_ok=("ultra_sparse", "sparse"),
+        preferred_smart_layout_variants=("comparisonProsCons", "comparisonBeforeAfter"),
     ),
     "Comparison table": TemplateSpec(
         name="Comparison table",
@@ -127,11 +105,113 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         image_mode_capability="none",
         max_blocks=2,
         max_supporting_blocks=1,
-        allowed_primary_families=("comparison",),
+        allowed_primary_families=("comparison", "smart_layout"),
         allowed_accent_placements=(),
         allowed_layouts=("blank", "left", "right"),
         density_ok=("balanced", "standard", "dense"),
+        preferred_smart_layout_variants=("comparisonProsCons", "comparisonBeforeAfter", "statsComparison"),
     ),
+    # ── Timeline ──────────────────────────────────────────────────────────────
+    "Timeline": TemplateSpec(
+        name="Timeline",
+        is_sparse=False,
+        image_mode_capability="accent",
+        max_blocks=4,
+        max_supporting_blocks=2,
+        allowed_primary_families=("process", "sequence", "smart_layout"),
+        allowed_accent_placements=("top", "bottom"),
+        allowed_layouts=("top", "bottom", "blank"),
+        density_ok=("sparse", "balanced", "standard"),
+        preferred_smart_layout_variants=("timeline", "timelineIcon", "timelineHorizontal", "timelineSequential"),
+    ),
+    # ── Icon / Card layouts ───────────────────────────────────────────────────
+    "Icons with text": TemplateSpec(
+        name="Icons with text",
+        is_sparse=False,
+        image_mode_capability="accent",
+        max_blocks=4,
+        max_supporting_blocks=3,
+        allowed_primary_families=("overview", "recap", "process", "smart_layout"),
+        allowed_accent_placements=("right", "left", "top", "bottom"),
+        allowed_layouts=("right", "left", "top", "bottom", "blank"),
+        density_ok=("ultra_sparse", "sparse", "balanced", "standard"),
+        preferred_smart_layout_variants=("cardGridIcon", "bulletIcon", "processSteps"),
+    ),
+    "Card grid": TemplateSpec(
+        name="Card grid",
+        is_sparse=False,
+        image_mode_capability="accent",
+        max_blocks=4,
+        max_supporting_blocks=2,
+        allowed_primary_families=("overview", "example", "smart_layout"),
+        allowed_accent_placements=("top", "bottom"),
+        allowed_layouts=("top", "bottom", "blank"),
+        density_ok=("sparse", "balanced", "standard"),
+        preferred_smart_layout_variants=("cardGrid", "cardGridIcon", "cardGridSimple"),
+    ),
+    "Card grid with image": TemplateSpec(
+        name="Card grid with image",
+        is_sparse=False,
+        image_mode_capability="content",
+        max_blocks=4,
+        max_supporting_blocks=2,
+        allowed_primary_families=("overview", "example", "smart_layout"),
+        allowed_accent_placements=("top", "bottom"),
+        allowed_layouts=("top", "bottom", "blank"),
+        density_ok=("ultra_sparse", "sparse", "balanced"),
+        preferred_smart_layout_variants=("cardGridImage", "cardGridIcon"),
+    ),
+    # ── Process ───────────────────────────────────────────────────────────────
+    "Process arrow block": TemplateSpec(
+        name="Process arrow block",
+        is_sparse=False,
+        image_mode_capability="accent",
+        max_blocks=4,
+        max_supporting_blocks=2,
+        allowed_primary_families=("process", "smart_layout"),
+        allowed_accent_placements=("top", "bottom"),
+        allowed_layouts=("top", "bottom", "blank"),
+        density_ok=("sparse", "balanced", "standard"),
+        preferred_smart_layout_variants=("processArrow", "processSteps"),
+    ),
+    "Process steps": TemplateSpec(
+        name="Process steps",
+        is_sparse=False,
+        image_mode_capability="accent",
+        max_blocks=4,
+        max_supporting_blocks=2,
+        allowed_primary_families=("process", "smart_layout"),
+        allowed_accent_placements=("top", "bottom"),
+        allowed_layouts=("top", "bottom", "blank"),
+        density_ok=("sparse", "balanced", "standard", "dense"),
+        preferred_smart_layout_variants=("processSteps", "processArrow", "processAccordion"),
+    ),
+    "Cyclic process block": TemplateSpec(
+        name="Cyclic process block",
+        is_sparse=False,
+        image_mode_capability="accent",
+        max_blocks=4,
+        max_supporting_blocks=2,
+        allowed_primary_families=("process", "smart_layout"),
+        allowed_accent_placements=("top", "bottom"),
+        allowed_layouts=("top", "bottom", "blank"),
+        density_ok=("balanced", "standard", "dense"),
+        preferred_smart_layout_variants=("processSteps",),
+    ),
+    # ── Lists ─────────────────────────────────────────────────────────────────
+    "Large bullet list": TemplateSpec(
+        name="Large bullet list",
+        is_sparse=True,
+        image_mode_capability="none",
+        max_blocks=2,
+        max_supporting_blocks=1,
+        allowed_primary_families=("recap", "overview", "smart_layout"),
+        allowed_accent_placements=(),
+        allowed_layouts=("blank",),
+        density_ok=("ultra_sparse", "sparse"),
+        preferred_smart_layout_variants=("bigBullets", "bulletCheck", "bulletIcon"),
+    ),
+    # ── Formula ───────────────────────────────────────────────────────────────
     "Formula block": TemplateSpec(
         name="Formula block",
         is_sparse=True,
@@ -143,28 +223,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_layouts=("blank",),
         density_ok=("sparse", "balanced", "standard"),
     ),
-    "Process arrow block": TemplateSpec(
-        name="Process arrow block",
-        is_sparse=False,
-        image_mode_capability="accent",
-        max_blocks=4,
-        max_supporting_blocks=2,
-        allowed_primary_families=("process",),
-        allowed_accent_placements=("top", "bottom"),
-        allowed_layouts=("top", "bottom", "blank"),
-        density_ok=("sparse", "balanced", "standard"),
-    ),
-    "Cyclic process block": TemplateSpec(
-        name="Cyclic process block",
-        is_sparse=False,
-        image_mode_capability="accent",
-        max_blocks=4,
-        max_supporting_blocks=2,
-        allowed_primary_families=("process",),
-        allowed_accent_placements=("top", "bottom"),
-        allowed_layouts=("top", "bottom", "blank"),
-        density_ok=("balanced", "standard", "dense"),
-    ),
+    # ── Feature Showcase ──────────────────────────────────────────────────────
     "Feature showcase block": TemplateSpec(
         name="Feature showcase block",
         is_sparse=False,
@@ -172,11 +231,25 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         image_mode_required="hero",
         max_blocks=4,
         max_supporting_blocks=2,
-        allowed_primary_families=("overview", "example", "process"),
+        allowed_primary_families=("overview", "example", "process", "smart_layout"),
         allowed_accent_placements=("right", "left", "top", "bottom"),
         allowed_layouts=("right", "left", "top", "bottom", "blank"),
         supports_high_end_image=True,
         density_ok=("balanced", "standard", "dense"),
+        preferred_smart_layout_variants=("cardGridIcon", "processSteps", "bigBullets"),
+    ),
+    # ── Stats / Data ──────────────────────────────────────────────────────────
+    "Stats block": TemplateSpec(
+        name="Stats block",
+        is_sparse=False,
+        image_mode_capability="accent",
+        max_blocks=3,
+        max_supporting_blocks=2,
+        allowed_primary_families=("smart_layout",),
+        allowed_accent_placements=("top", "bottom"),
+        allowed_layouts=("top", "bottom", "blank"),
+        density_ok=("sparse", "balanced", "standard"),
+        preferred_smart_layout_variants=("stats", "statsComparison"),
     ),
 }
 
@@ -194,18 +267,24 @@ def candidate_templates(
     image_need: str,
     image_tier: str,
     density: str,
+    variant_history: Optional[List[str]] = None,
+    smart_layout_variant: str = "",
 ) -> List[TemplateSpec]:
-    family = str(primary_family or "overview").strip().lower()
+    family = str(primary_family or "smart_layout").strip().lower()
     need = str(image_need or "optional").strip().lower()
     tier = str(image_tier or "accent").strip().lower()
     density_key = str(density or "balanced").strip().lower()
+    recent_templates = set((variant_history or [])[-4:])
+    preferred_slv = str(smart_layout_variant or "").strip()
 
     scored: List[Tuple[int, TemplateSpec]] = []
     for template in TEMPLATE_REGISTRY.values():
         if template.density_ok and density_key not in template.density_ok:
             continue
-        if template.allowed_primary_families and family not in template.allowed_primary_families:
-            continue
+        # Family filter: accept templates that allow the requested family OR smart_layout
+        if template.allowed_primary_families:
+            if family not in template.allowed_primary_families and "smart_layout" not in template.allowed_primary_families:
+                continue
 
         score = 0
         if need == "required" and template.image_mode_capability == tier:
@@ -227,6 +306,21 @@ def candidate_templates(
             score += 8
         if template.supports_high_end_image and tier == "hero":
             score += 20
+
+        # Bonus: template is specifically designed for the requested smart_layout variant
+        if preferred_slv and template.preferred_smart_layout_variants and preferred_slv in template.preferred_smart_layout_variants:
+            score += 30
+        elif preferred_slv and template.preferred_smart_layout_variants and preferred_slv not in template.preferred_smart_layout_variants:
+            # Penalty: template has a specific variant list but requested variant isn't in it
+            score -= 25
+
+        # Bonus: family explicitly listed (not just via smart_layout catch-all)
+        if family in template.allowed_primary_families:
+            score += 10
+
+        # Penalty: template was recently used (variety)
+        if template.name in recent_templates:
+            score -= 20
 
         scored.append((score, template))
 

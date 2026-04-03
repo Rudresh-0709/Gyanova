@@ -5,12 +5,8 @@ from typing import Any, Dict, List
 
 try:
     from app.services.node.v2.gyml_generator_v2 import generate_gyml_v2
-    from app.services.media.enrichment_service_sync import enrich_slide_media_sync
-    from app.services.node.v2.narration_v2 import generate_narration_v2
 except ImportError:
     from .gyml_generator_v2 import generate_gyml_v2
-    from ..media.enrichment_service_sync import enrich_slide_media_sync
-    from .narration_v2 import generate_narration_v2
 
 
 def _build_narration_text(plan_item: Dict[str, Any], slide: Dict[str, Any]) -> str:
@@ -41,20 +37,6 @@ def _animation_metadata(slide: Dict[str, Any]) -> Dict[str, Any]:
         "animation_unit_count": max(1, len(blocks)),
         "animated_block_index": primary_index,
     }
-
-
-def _smart_layout_variant_tokens(slide: Dict[str, Any]) -> List[str]:
-    blocks = slide.get("contentBlocks", []) if isinstance(slide.get("contentBlocks"), list) else []
-    tokens: List[str] = []
-    for block in blocks:
-        if not isinstance(block, dict):
-            continue
-        if str(block.get("type") or "").strip().lower() != "smart_layout":
-            continue
-        variant = str(block.get("variant") or "").strip()
-        if variant:
-            tokens.append(f"smart_layout:{variant}")
-    return tokens
 
 
 def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -99,13 +81,14 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
             continue
 
         slide_payload = generate_gyml_v2(concept)
+        narration_text = _build_narration_text(concept, slide_payload)
         animation_meta = _animation_metadata(slide_payload)
 
         layout = slide_payload.get("layout") or slide_payload.get("image_layout") or "blank"
         slide_obj = {
             **concept,
             "subtopic_name": subtopic_name,
-            "narration_text": "",  # Will be populated after enrichment
+            "narration_text": narration_text,
             "narration_format": "points",
             "gyml_content": slide_payload,
             "visual_content": slide_payload,
@@ -117,31 +100,18 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
             "animation_unit_count": animation_meta["animation_unit_count"],
             "animated_block_index": animation_meta["animated_block_index"],
         }
-
-        # Step 1: Enrich slide with media assets (images, diagrams, icons) BEFORE narration
-        topic = state.get("topic", "")
-        image_layout = slide_obj.get("image_layout", layout)
-        enrich_slide_media_sync(slide_obj, topic=topic, image_layout=image_layout)
-
-        # Step 2: Generate narration AFTER enrichment (narration sees populated visuals)
-        intent = str(concept.get("teaching_intent", "explain")).strip()
-        narration_text = generate_narration_v2(slide_obj, topic=topic, intent=intent)
-        slide_obj["narration_text"] = narration_text
-
-        # Step 3: Append enriched slide with narration to state
         slides_state[sub_id].append(slide_obj)
 
-        template_name = str(concept.get("selected_template") or slide_payload.get("selected_template") or "Title with bullets").strip()
-        image_layout = str(slide_payload.get("image_layout") or layout).strip().lower()
-        layout_history.append(f"{template_name}|{image_layout}")
+        layout_history.append(str(layout))
         angle_history.append(str(concept.get("teaching_intent", "explain")))
+        template_name = str(concept.get("selected_template") or slide_payload.get("selected_template") or "Title with bullets")
         composition_history.append(template_name)
+        variant_history.append(template_name)
+        # Also track the smart_layout variant for fine-grained variety enforcement
+        slv = str(concept.get("smart_layout_variant") or "")
+        if slv:
+            variant_history.append(slv)
 
-        primary_block = concept.get("designer_blueprint", {}).get("primary_block", {}) if isinstance(concept.get("designer_blueprint"), dict) else {}
-        family = str(primary_block.get("family") or "overview").strip()
-        variant = str(primary_block.get("variant") or "normal").strip()
-        variant_history.append(f"{family}:{variant}")
-        variant_history.extend(_smart_layout_variant_tokens(slide_payload))
 
     return {
         "slides": slides_state,
