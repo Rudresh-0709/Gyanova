@@ -20,9 +20,9 @@ from .node.sub_topic_node import extract_sub_topic
 from .node.lesson_planning_node import lesson_planning_node
 from .node.content_generation_node import content_generation_node
 from .node.teacher_slide_planning_node import teacher_slide_planning_node
-from .node.designer_slide_planning_node import designer_slide_planning_node
+from .node.v2.designer_slide_planning_v2_node import designer_slide_planning_v2_node
 from .node.coverage_checker_node import coverage_checker_node
-from .node.content_generation_v2_node import content_generation_v2_node
+from .node.v2.content_generation_v2_node import content_generation_v2_node
 from .node.intro_narration_node import intro_narration_node
 from .node.rendering_node import rendering_node
 from .node.audio_generation_node import audio_generation_node
@@ -132,14 +132,14 @@ planning_builder_v2 = StateGraph(TutorState)
 planning_builder_v2.add_node("topic_node", extract_topic)
 planning_builder_v2.add_node("sub_topic_node", extract_sub_topic)
 planning_builder_v2.add_node("teacher_planning_node", teacher_slide_planning_node)
-planning_builder_v2.add_node("designer_planning_node", designer_slide_planning_node)
+planning_builder_v2.add_node("designer_planning_v2_node", designer_slide_planning_v2_node)
 planning_builder_v2.add_node("coverage_checker_node", coverage_checker_node)
 
 planning_builder_v2.set_entry_point("topic_node")
 planning_builder_v2.add_edge("topic_node", "sub_topic_node")
 planning_builder_v2.add_edge("sub_topic_node", "teacher_planning_node")
-planning_builder_v2.add_edge("teacher_planning_node", "designer_planning_node")
-planning_builder_v2.add_edge("designer_planning_node", "coverage_checker_node")
+planning_builder_v2.add_edge("teacher_planning_node", "designer_planning_v2_node")
+planning_builder_v2.add_edge("designer_planning_v2_node", "coverage_checker_node")
 planning_builder_v2.add_conditional_edges(
     "coverage_checker_node",
     should_continue_planning,
@@ -153,7 +153,7 @@ full_builder_v2 = StateGraph(TutorState)
 full_builder_v2.add_node("topic_node", extract_topic)
 full_builder_v2.add_node("sub_topic_node", extract_sub_topic)
 full_builder_v2.add_node("teacher_planning_node", teacher_slide_planning_node)
-full_builder_v2.add_node("designer_planning_node", designer_slide_planning_node)
+full_builder_v2.add_node("designer_planning_v2_node", designer_slide_planning_v2_node)
 full_builder_v2.add_node("content_generation_v2_node", content_generation_v2_node)
 full_builder_v2.add_node("intro_narration_node", intro_narration_node)
 full_builder_v2.add_node("rendering_node", rendering_node)
