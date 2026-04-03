@@ -183,6 +183,10 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
     variant_history: List[str] = list(state.get("variant_history", []))
     layout_history: List[str] = list(state.get("layout_history", []))
 
+    # Global research text from Tavily/Wiki retrieval — used as a fallback when
+    # individual teacher slides don't carry their own research_raw_text.
+    global_research_raw_text: str = str(state.get("teacher_research_raw_text") or "").strip()
+
     target_sub_id = None
     wrapper = None
     for sub in sub_topics:
@@ -328,10 +332,15 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
         teacher_slide_ref = str(teacher_slide.get("slide_id") or f"{target_sub_id}_t{index + 1}")
 
-        # Build research context string for soft-grounding in generator
+        # Build research context string for soft-grounding in generator.
+        # Priority: per-slide research_raw_text → per-slide research_evidence → global retrieval.
         research_evidence = _to_list(teacher_slide.get("research_evidence"))
         research_raw_text = str(teacher_slide.get("research_raw_text") or "").strip()
-        research_context = research_raw_text or "; ".join(research_evidence[:3])
+        research_context = (
+            research_raw_text
+            or "; ".join(research_evidence[:3])
+            or global_research_raw_text
+        )
 
         normalized_plans.append(
             {
