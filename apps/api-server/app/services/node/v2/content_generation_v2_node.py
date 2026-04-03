@@ -5,8 +5,12 @@ from typing import Any, Dict, List
 
 try:
     from app.services.node.v2.gyml_generator_v2 import generate_gyml_v2
+    from app.services.node.v2.research_context_v2 import build_research_context
+    from app.services.node.v2.hallucination_guard_v2 import check_slide
 except ImportError:
     from .gyml_generator_v2 import generate_gyml_v2
+    from .research_context_v2 import build_research_context
+    from .hallucination_guard_v2 import check_slide
 
 
 def _build_narration_text(plan_item: Dict[str, Any], slide: Dict[str, Any]) -> str:
@@ -49,6 +53,10 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
     composition_history = list(state.get("composition_history", []))
     variant_history = list(state.get("variant_history", []))
 
+    # Build global research context once per node invocation (bounded to 8,000 chars).
+    global_research_context = build_research_context(state)
+    global_grounding_mode = "soft_grounded" if global_research_context else "general_knowledge"
+
     next_subtopic = None
     start_offset = 0
     for sub in sub_topics:
@@ -80,7 +88,20 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         if not isinstance(concept, dict):
             continue
 
+        # Inject global research context when the per-slide planner did not provide one.
+        # Shallow copy is safe here: research_context is always a string (immutable).
+        concept = dict(concept)  # avoid mutating shared plan dicts
+        if not concept.get("research_context"):
+            concept["research_context"] = global_research_context
+        slide_grounding_mode = "soft_grounded" if concept.get("research_context") else global_grounding_mode
+        concept["grounding_mode"] = slide_grounding_mode
+
         slide_payload = generate_gyml_v2(concept)
+
+        # Apply hallucination guard in general_knowledge mode (non-destructive flag scan).
+        if slide_grounding_mode == "general_knowledge":
+            slide_payload = check_slide(slide_payload, redact=False)
+
         narration_text = _build_narration_text(concept, slide_payload)
         animation_meta = _animation_metadata(slide_payload)
 
@@ -99,6 +120,10 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
             "animation_unit": animation_meta["animation_unit"],
             "animation_unit_count": animation_meta["animation_unit_count"],
             "animated_block_index": animation_meta["animated_block_index"],
+            # Grounding / research debug fields
+            "grounding_mode": slide_grounding_mode,
+            "had_research_context": bool(concept.get("research_context")),
+            "hallucination_risk_score": slide_payload.get("hallucination_risk_score", 0),
         }
         slides_state[sub_id].append(slide_obj)
 
