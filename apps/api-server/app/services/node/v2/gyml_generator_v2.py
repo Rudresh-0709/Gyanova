@@ -175,6 +175,15 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
                 "caption": str(plan_item.get("objective") or "Comparison of key dimensions").strip(),
             }
         )
+    elif family in {"concept_image", "supporting_image"}:
+        content_blocks.append(
+            {
+                "type": "image",
+                "imagePrompt": _build_image_prompt(plan_item) or f"Concept image for {title}",
+                "alt": title,
+                "is_accent": image_need != "forbidden",
+            }
+        )
     elif family == "formula":
         formula_text = _join_limited(plan_item.get("formulas", []), max_items=2) or "y = f(x)"
         content_blocks.append(
@@ -222,15 +231,21 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
             }
         )
     else:
+        _fallback_items = [
+            {"heading": "Core idea", "description": str(plan_item.get("objective") or "Teach the concept clearly.")},
+            {"heading": "Must cover", "description": _join_limited(plan_item.get("must_cover", []), max_items=3) or "Key supporting points."},
+            {"heading": "Why it matters", "description": str(plan_item.get("assessment_prompt") or "Ask the learner to apply the idea.")},
+        ]
+        _use_icons = bool(plan_item.get("primary_supports_icons"))
+        if _use_icons:
+            _icon_defaults = ["ri-lightbulb-line", "ri-list-check-2", "ri-focus-3-line"]
+            for _i, _item in enumerate(_fallback_items):
+                _item["icon_name"] = _icon_defaults[_i % len(_icon_defaults)]
         content_blocks.append(
             {
                 "type": "smart_layout",
-                "variant": "bigBullets",
-                "items": [
-                    {"heading": "Core idea", "description": str(plan_item.get("objective") or "Teach the concept clearly.")},
-                    {"heading": "Must cover", "description": _join_limited(plan_item.get("must_cover", []), max_items=3) or "Key supporting points."},
-                    {"heading": "Why it matters", "description": str(plan_item.get("assessment_prompt") or "Ask the learner to apply the idea.")},
-                ],
+                "variant": "cardGridIcon" if _use_icons else "bigBullets",
+                "items": _fallback_items,
             }
         )
 
@@ -358,10 +373,37 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
                     variables.append({"name": str(var.get("name") or "x"), "meaning": str(var.get("meaning") or "")})
             body_children.append(GyMLFormulaBlock(expression=str(block.get("expression") or ""), variables=variables, example=str(block.get("example") or "")))
         elif block_type == "process_arrow_block":
-            items = [GyMLProcessArrowItem(label=str(item.get("label") or "Step"), description=str(item.get("description") or ""), imagePrompt=str(item.get("imagePrompt") or ""), color=item.get("color")) for item in block.get("items", []) if isinstance(item, dict)]
+            items = [
+                GyMLProcessArrowItem(
+                    label=str(item.get("label") or "Step"),
+                    description=str(item.get("description") or ""),
+                    image_url=str(
+                        item.get("image_url")
+                        or item.get("imageUrl")
+                        or item.get("imagePrompt")
+                        or ""
+                    ),
+                    color=item.get("color"),
+                )
+                for item in block.get("items", [])
+                if isinstance(item, dict)
+            ]
             body_children.append(GyMLProcessArrowBlock(items=items))
         elif block_type == "cyclic_process_block":
-            items = [GyMLCyclicProcessItem(label=str(item.get("label") or "Step"), description=str(item.get("description") or ""), imagePrompt=str(item.get("imagePrompt") or ""), icon_name=str(item.get("icon_name") or "ri-repeat-line")) for item in block.get("items", []) if isinstance(item, dict)]
+            items = [
+                GyMLCyclicProcessItem(
+                    label=str(item.get("label") or "Step"),
+                    description=str(item.get("description") or ""),
+                    image_url=str(
+                        item.get("image_url")
+                        or item.get("imageUrl")
+                        or item.get("imagePrompt")
+                        or ""
+                    ),
+                )
+                for item in block.get("items", [])
+                if isinstance(item, dict)
+            ]
             body_children.append(GyMLCyclicProcessBlock(items=items))
         elif block_type == "smart_layout":
             items = [GyMLSmartLayoutItem(**{k: v for k, v in item.items() if k in {"heading", "title", "description", "imagePrompt", "icon_name", "color"}}) for item in block.get("items", []) if isinstance(item, dict)]
@@ -401,6 +443,8 @@ Rules:
 - Keep content grounded in the teacher data.
 - Do not include both accent image and block-embedded content image.
 - Respect the selected template and image policy.
+- If primary block supports icons, include "icon_name" (ri-* Remix Icons, e.g. ri-lightbulb-line) for each item in smart_layout / cyclic_process_block.
+- If "concept_image" is in primary tags, include a content block of type "image" with a descriptive imagePrompt and is_accent=false.
 
 Teacher objective: {plan_item.get('objective', '')}
 Teaching intent: {plan_item.get('teaching_intent', '')}
@@ -418,6 +462,8 @@ Designer blueprint:
 Selected template: {selected_template}
 Image need: {image_need}
 Image tier: {image_tier}
+Primary supports icons: {plan_item.get('primary_supports_icons', False)}
+Primary tags: {json.dumps(plan_item.get('primary_tags', []), ensure_ascii=True)}
 
 Output schema:
 {{

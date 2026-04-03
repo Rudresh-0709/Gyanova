@@ -440,6 +440,9 @@ export default function LessonViewPage() {
                     if (!hasRenderableLessonContent(data.result)) {
                         setError("Lesson generated but no renderable slides were returned.");
                         setLoading(false);
+                    } else {
+                        // Backend is done and we have content: stop loader immediately.
+                        setLoading(false);
                     }
                 } else if (data.status === "failed") {
                     setError("This lesson failed to generate.");
@@ -836,9 +839,7 @@ export default function LessonViewPage() {
         const previewReady = hasRenderableSlideHtml(lessonData);
         const loaderUiStatus = previewReady
             ? "preview_ready"
-            : loaderStatus === "completed"
-                ? "processing"
-                : loaderStatus;
+            : loaderStatus;
 
         return (
             <div className="min-h-screen w-full bg-[#0a0f1a] flex items-center justify-center relative">

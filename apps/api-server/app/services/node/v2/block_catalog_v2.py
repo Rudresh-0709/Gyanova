@@ -109,6 +109,15 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         density_ok=("ultra_sparse", "sparse", "balanced"),
         is_primary_candidate=False,
     ),
+    ("concept_image", "normal"): BlockSpec(
+        family="concept_image",
+        variant="normal",
+        width_class="normal",
+        has_content_image=True,
+        implies_content_image=True,
+        density_ok=("ultra_sparse", "sparse", "balanced"),
+        is_primary_candidate=True,
+    ),
 }
 
 

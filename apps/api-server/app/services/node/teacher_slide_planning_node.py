@@ -24,10 +24,17 @@ except ImportError:
         format_for_llm = None
         retrieve_facts = None
 
+try:
+    from app.services.node.v2.density_mapping_v2 import map_brief_density_to_engine
+except ImportError:
+    from .v2.density_mapping_v2 import map_brief_density_to_engine
+
 
 VALID_INTENTS = {"introduce", "explain", "teach", "compare", "demo", "prove", "summarize"}
 VALID_SCOPES = {"foundation", "mechanism", "comparison", "application", "reinforcement"}
-VALID_DENSITIES = {"ultra_sparse", "sparse", "balanced", "standard", "dense", "super_dense"}
+VALID_BRIEF_DENSITIES = {"low", "medium", "high"}
+VALID_ENGINE_DENSITIES = {"ultra_sparse", "sparse", "balanced", "standard", "dense", "super_dense"}
+VALID_DENSITIES = VALID_BRIEF_DENSITIES | VALID_ENGINE_DENSITIES
 VALID_FACT_RETRIEVERS = {"wiki", "tavily", "none"}
 
 
@@ -394,7 +401,7 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
             "formulas": [],
             "assessment_prompt": "In one sentence, explain the core idea.",
             "coverage_scope": "foundation",
-            "slide_density": "balanced",
+            "slide_density": "medium",
             "high_end_image_required": False,
             "image_requirement_reason": "Concept-first foundation slide.",
             "formula_slide_candidate": False,
@@ -409,7 +416,7 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
             "formulas": [],
             "assessment_prompt": "What happens first and why?",
             "coverage_scope": "mechanism",
-            "slide_density": "standard",
+            "slide_density": "medium",
             "high_end_image_required": True,
             "image_requirement_reason": "Mechanism understanding benefits from strong visual support.",
             "formula_slide_candidate": False,
@@ -424,7 +431,7 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
             "formulas": [],
             "assessment_prompt": "How would you apply this in a new context?",
             "coverage_scope": "application",
-            "slide_density": "dense",
+            "slide_density": "high",
             "high_end_image_required": True,
             "image_requirement_reason": "Application slides benefit from realistic, high-quality visuals.",
             "formula_slide_candidate": False,
@@ -439,7 +446,7 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
             "formulas": [],
             "assessment_prompt": "Name the most important takeaway and why.",
             "coverage_scope": "reinforcement",
-            "slide_density": "sparse",
+            "slide_density": "low",
             "high_end_image_required": False,
             "image_requirement_reason": "Recap should stay focused and uncluttered.",
             "formula_slide_candidate": False,
@@ -652,7 +659,7 @@ Output JSON schema:
             "formulas": ["..."],
             "assessment_prompt": "...",
             "coverage_scope": "foundation|mechanism|comparison|application|reinforcement",
-            "slide_density": "ultra_sparse|sparse|balanced|standard|dense|super_dense",
+            "slide_density": "low|medium|high",
             "high_end_image_required": true,
             "image_requirement_reason": "short reason",
             "formula_slide_candidate": false,
@@ -685,9 +692,10 @@ Output JSON schema:
         if coverage_scope not in VALID_SCOPES:
             coverage_scope = "foundation"
 
-        slide_density = str(slide.get("slide_density", "standard")).strip().lower()
-        if slide_density not in VALID_DENSITIES:
-            slide_density = "standard"
+        slide_density_raw = str(slide.get("slide_density", "medium")).strip().lower()
+        if slide_density_raw not in VALID_DENSITIES:
+            slide_density_raw = "medium"
+        slide_density_engine = map_brief_density_to_engine(slide_density_raw, slide_index=i)
 
         formulas = _to_list(slide.get("formulas"))
         high_end_required = _to_bool(
@@ -726,7 +734,8 @@ Output JSON schema:
                 "assessment_prompt": str(slide.get("assessment_prompt", "")).strip(),
                 "coverage_scope": coverage_scope,
                 "subject_domain": subject_domain,
-                "slide_density": slide_density,
+                "slide_density": slide_density_raw if slide_density_raw in VALID_BRIEF_DENSITIES else "medium",
+                "slide_density_engine": slide_density_engine,
                 "high_end_image_required": high_end_required,
                 "image_requirement_reason": str(
                     slide.get("image_requirement_reason", "Visual support selected based on pedagogy and complexity.")
