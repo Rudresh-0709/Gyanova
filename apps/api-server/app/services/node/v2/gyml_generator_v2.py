@@ -153,6 +153,13 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     image_tier = str(plan_item.get("image_tier") or "accent").strip().lower()
     layout = _normalize_layout(plan_item.get("selected_layout") or designer_blueprint.get("layout") or "blank")
 
+    # Resolve the intended smart_layout variant from plan
+    smart_layout_variant = (
+        str(plan_item.get("smart_layout_variant") or "")
+        or str(designer_blueprint.get("smart_layout_variant") or "")
+        or "bigBullets"
+    ).strip()
+
     content_blocks: List[Dict[str, Any]] = [
         {
             "type": "heading",
@@ -161,7 +168,13 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
         }
     ]
 
-    family = str(primary.get("family") or "overview").strip().lower()
+    family = str(primary.get("family") or plan_item.get("primary_family") or "smart_layout").strip().lower()
+
+    # Build content-rich primary block based on planned family
+    must_cover = [str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()]
+    key_facts = [str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()]
+    objective = str(plan_item.get("objective") or "").strip()
+
     if family == "comparison":
         content_blocks.append(
             {
@@ -192,45 +205,50 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
         items = [
             {
                 "label": "Step 1",
-                "description": "Start with the core idea.",
+                "description": must_cover[0] if must_cover else "Start with the core idea.",
                 "imagePrompt": _build_image_prompt(plan_item) or f"Instructional process image for {title}",
                 "color": "#4B5563",
             },
             {
                 "label": "Step 2",
-                "description": "Show how the idea develops.",
+                "description": must_cover[1] if len(must_cover) > 1 else "Show how the idea develops.",
                 "imagePrompt": _build_image_prompt(plan_item) or f"Instructional process image for {title}",
                 "color": "#2563EB",
             },
             {
                 "label": "Step 3",
-                "description": "Close with the outcome.",
+                "description": must_cover[2] if len(must_cover) > 2 else "Close with the outcome.",
                 "imagePrompt": _build_image_prompt(plan_item) or f"Instructional process image for {title}",
                 "color": "#10B981",
             },
         ]
         content_blocks.append({"type": "process_arrow_block", "items": items})
     elif family == "recap":
-        content_blocks.append(
-            {
-                "type": "numbered_list",
-                "items": [
-                    {"title": "Key idea", "description": str(plan_item.get("must_cover", [title])[0])},
-                    {"title": "Key fact", "description": str(plan_item.get("key_facts", ["Remember the main idea."])[0])},
-                    {"title": "Check", "description": str(plan_item.get("assessment_prompt") or "Explain it back in your own words.")},
-                ],
-            }
-        )
+        items_recap = []
+        if must_cover:
+            items_recap.append({"title": "Key idea", "description": must_cover[0]})
+        if key_facts:
+            items_recap.append({"title": "Key fact", "description": key_facts[0]})
+        items_recap.append({"title": "Check", "description": str(plan_item.get("assessment_prompt") or "Explain it back in your own words.")})
+        content_blocks.append({"type": "numbered_list", "items": items_recap})
     else:
+        # Default: rich smart_layout with the planned variant
+        sl_items = []
+        all_points = must_cover[:4] + key_facts[:2]
+        if all_points:
+            for i, point in enumerate(all_points[:4]):
+                sl_items.append({"heading": f"Point {i + 1}", "description": point})
+        else:
+            sl_items = [
+                {"heading": "Core idea", "description": objective or "Teach the concept clearly."},
+                {"heading": "Must cover", "description": _join_limited(must_cover, max_items=3) or "Key supporting points."},
+                {"heading": "Why it matters", "description": str(plan_item.get("assessment_prompt") or "Ask the learner to apply the idea.")},
+            ]
         content_blocks.append(
             {
                 "type": "smart_layout",
-                "variant": "bigBullets",
-                "items": [
-                    {"heading": "Core idea", "description": str(plan_item.get("objective") or "Teach the concept clearly.")},
-                    {"heading": "Must cover", "description": _join_limited(plan_item.get("must_cover", []), max_items=3) or "Key supporting points."},
-                    {"heading": "Why it matters", "description": str(plan_item.get("assessment_prompt") or "Ask the learner to apply the idea.")},
-                ],
+                "variant": smart_layout_variant,
+                "items": sl_items,
             }
         )
 
@@ -386,6 +404,88 @@ def _validate_with_existing_validator(payload: Dict[str, Any]) -> Tuple[bool, Li
     return result.is_valid, list(result.errors), list(result.warnings)
 
 
+# Block types that count as structured primary blocks (non-trivial teaching content)
+_STRUCTURED_PRIMARY_TYPES = {
+    "smart_layout",
+    "comparison_table",
+    "key_value_list",
+    "numbered_list",
+    "formula_block",
+    "process_arrow_block",
+    "cyclic_process_block",
+    "step_list",
+    "rich_text",
+}
+
+# Block types that are only acceptable as *supporting* blocks (never primary)
+_SUPPORTING_ONLY_TYPES = {"heading", "paragraph", "intro_paragraph", "context_paragraph", "annotation_paragraph", "outro_paragraph", "caption", "image"}
+
+# Maximum characters for a smart_layout item heading (keeps cards readable at typical font sizes)
+_MAX_ITEM_HEADING_LENGTH = 60
+
+
+def _has_structured_primary(blocks: List[Dict[str, Any]]) -> bool:
+    """Return True if any block in the list qualifies as a structured primary block."""
+    return any(str(b.get("type") or "").strip().lower() in _STRUCTURED_PRIMARY_TYPES for b in blocks if isinstance(b, dict))
+
+
+def _enforce_structured_primary(payload: Dict[str, Any], plan_item: Dict[str, Any], smart_layout_variant: str) -> None:
+    """
+    Mutates ``payload`` in-place: if the slide has no structured primary block,
+    inject a smart_layout block built from plan_item data as a fallback.
+
+    This satisfies the hard requirement that non-title slides always include
+    a structured primary block.
+    """
+    blocks = payload.get("contentBlocks", [])
+    if not isinstance(blocks, list):
+        return
+
+    # Check if a template is explicitly title/sparse – those may skip primary block.
+    selected_template = str(payload.get("selected_template") or plan_item.get("selected_template") or "").strip()
+    sparse_templates = {"Title card", "Formula block", "Large bullet list"}
+    if selected_template in sparse_templates:
+        return
+
+    if _has_structured_primary(blocks):
+        return
+
+    # Build a minimal smart_layout block from plan_item content
+    title = str(plan_item.get("title") or "The Topic").strip()
+    objective = str(plan_item.get("objective") or "").strip()
+    must_cover = [str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()]
+    key_facts = [str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()]
+
+    items = []
+    # Use must_cover points as items
+    for point in (must_cover + key_facts)[:6]:
+        items.append({"heading": point[:_MAX_ITEM_HEADING_LENGTH], "description": point})
+    # Ensure at least 2 items
+    if len(items) < 2:
+        items = [
+            {"heading": "Key Concept", "description": objective or title},
+            {"heading": "Why It Matters", "description": str(plan_item.get("assessment_prompt") or "Reflect on what you learned.")},
+        ]
+
+    fallback_block: Dict[str, Any] = {
+        "type": "smart_layout",
+        "variant": smart_layout_variant or "bigBullets",
+        "items": items[:6],
+    }
+
+    # Insert after the first heading/paragraph block (or at position 1)
+    insert_at = 1
+    for i, block in enumerate(blocks):
+        if isinstance(block, dict) and str(block.get("type") or "").strip().lower() not in _SUPPORTING_ONLY_TYPES:
+            break
+        insert_at = i + 1
+
+    blocks.insert(insert_at, fallback_block)
+    payload["contentBlocks"] = blocks
+    # Update primary_block_index to point to the injected block
+    payload["primary_block_index"] = insert_at
+
+
 def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     title = str(plan_item.get("title") or "Untitled Slide").strip()
     selected_template = str(plan_item.get("selected_template") or "Title with bullets").strip()
@@ -393,15 +493,84 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     image_need = str(plan_item.get("image_need") or "optional").strip().lower()
     image_tier = str(plan_item.get("image_tier") or "accent").strip().lower()
 
-    prompt = f"""
-You are generating a single GyML slide JSON object.
+    # ── Planned primary block info ───────────────────────────────────────────
+    primary_family = str(plan_item.get("primary_family") or designer_blueprint.get("primary_family") or "smart_layout").strip().lower()
+    primary_variant = str(plan_item.get("primary_variant") or designer_blueprint.get("primary_variant") or "bigBullets").strip()
+    smart_layout_variant = str(plan_item.get("smart_layout_variant") or designer_blueprint.get("smart_layout_variant") or "bigBullets").strip()
+    slide_density = str(plan_item.get("slide_density") or "balanced").strip().lower()
 
-Rules:
-- Return JSON only.
-- Keep content grounded in the teacher data.
-- Do not include both accent image and block-embedded content image.
-- Respect the selected template and image policy.
+    # Derive expected item count from density
+    density_item_counts = {
+        "ultra_sparse": "2–3",
+        "sparse": "2–3",
+        "balanced": "3–4",
+        "standard": "4–5",
+        "dense": "5–6",
+        "super_dense": "5–6",
+    }
+    expected_items = density_item_counts.get(slide_density, "3–4")
 
+    # ── Research / grounding context ────────────────────────────────────────
+    research_context = str(plan_item.get("research_context") or plan_item.get("research_raw_text") or "").strip()
+    factual_confidence = str(plan_item.get("factual_confidence") or "low").strip().lower()
+
+    if research_context:
+        grounding_instruction = (
+            f"RESEARCH CONTEXT (use this as primary source for facts, dates, and names):\n{research_context[:800]}\n"
+            "When research context is provided: use only the facts, dates, entities, and relationships "
+            "stated above. Do NOT invent additional statistics, quotes, or historical claims."
+        )
+    else:
+        grounding_instruction = (
+            "No verified research context is available for this slide. "
+            "You may use general, well-established knowledge about the topic. "
+            "STRICTLY FORBIDDEN: invented statistics, made-up dates, fabricated quotes, "
+            "fake source attributions, or hallucinated specifics."
+        )
+
+    # ── Determine the primary block type string for the prompt ───────────────
+    if primary_family == "smart_layout":
+        primary_block_instruction = (
+            f'You MUST include exactly ONE `"type": "smart_layout"` block with `"variant": "{smart_layout_variant}"`'
+            f" as the PRIMARY teaching block (primary_block_index)."
+            f" It MUST contain {expected_items} items."
+        )
+    elif primary_family == "formula":
+        primary_block_instruction = (
+            'You MUST include exactly ONE `"type": "formula_block"` block as the PRIMARY teaching block.'
+        )
+    elif primary_family == "comparison":
+        primary_block_instruction = (
+            'You MUST include exactly ONE `"type": "comparison_table"` OR a `"type": "smart_layout"` '
+            f'block with variant "comparisonProsCons" as the PRIMARY teaching block. It MUST contain {expected_items} items/rows.'
+        )
+    elif primary_family == "process":
+        primary_block_instruction = (
+            'You MUST include exactly ONE `"type": "process_arrow_block"` OR a `"type": "smart_layout"` '
+            f'block with variant "processSteps" as the PRIMARY teaching block. It MUST contain {expected_items} items.'
+        )
+    else:
+        primary_block_instruction = (
+            f'You MUST include exactly ONE structured primary teaching block '
+            f'(smart_layout variant "{smart_layout_variant}" is strongly preferred). '
+            f"It MUST contain {expected_items} items."
+        )
+
+    prompt = f"""You are generating a single GyML slide JSON object for an educational presentation.
+
+HARD RULES (violations will cause rejection):
+1. Return ONLY a valid JSON object. No markdown, no explanation.
+2. {primary_block_instruction}
+3. DO NOT include two smart_layout blocks on the same slide.
+4. Max 7 content blocks per slide. Primary block carries 70% of visual weight.
+5. Content ordering: [optional intro_paragraph] → PRIMARY BLOCK → [optional callout/annotation_paragraph].
+6. Do not include both an accentImagePrompt and block-embedded image prompts.
+7. Respect selected_template and image policy (image_need: {image_need}, image_tier: {image_tier}).
+
+{grounding_instruction}
+
+SLIDE CONTENT:
+Title: {title}
 Teacher objective: {plan_item.get('objective', '')}
 Teaching intent: {plan_item.get('teaching_intent', '')}
 Coverage scope: {plan_item.get('coverage_scope', '')}
@@ -409,28 +578,44 @@ Must cover: {json.dumps(plan_item.get('must_cover', []), ensure_ascii=True)}
 Key facts: {json.dumps(plan_item.get('key_facts', []), ensure_ascii=True)}
 Formulas: {json.dumps(plan_item.get('formulas', []), ensure_ascii=True)}
 Assessment prompt: {plan_item.get('assessment_prompt', '')}
-Research raw text: {plan_item.get('research_raw_text', '')}
-Factual confidence: {plan_item.get('factual_confidence', '')}
 
-Designer blueprint:
+DESIGN PLAN:
+Selected template: {selected_template}
+Primary block family: {primary_family}
+Primary smart_layout variant: {smart_layout_variant}
+Slide density: {slide_density}
+Expected items in primary block: {expected_items}
+
+Designer blueprint (additional context):
 {json.dumps(designer_blueprint, ensure_ascii=True)}
 
-Selected template: {selected_template}
-Image need: {image_need}
-Image tier: {image_tier}
+SMART LAYOUT VARIANT REFERENCE:
+  TIMELINES: timeline, timelineHorizontal, timelineSequential, timelineMilestone, timelineIcon
+  CARD GRIDS: cardGrid, cardGridIcon, cardGridSimple, cardGridImage
+  STATS: stats, statsComparison, statsPercentage
+  BULLETS: bigBullets, bulletIcon, bulletCheck, bulletCross
+  PROCESS STEPS: processSteps, processArrow, processAccordion
+  COMPARISONS: comparison, comparisonProsCons, comparisonBeforeAfter
 
-Output schema:
+OUTPUT SCHEMA (JSON only):
 {{
   "title": "string",
-  "subtitle": "string",
+  "subtitle": "string or null",
   "intent": "introduce|explain|teach|compare|demo|prove|summarize|narrate|list",
   "layout": "right|left|top|bottom|blank",
   "image_layout": "right|left|top|bottom|blank",
-  "contentBlocks": [{{"type": "..."}}],
+  "contentBlocks": [
+    {{
+      "type": "smart_layout",
+      "variant": "{smart_layout_variant}",
+      "items": [
+        {{"heading": "...", "description": "...", "icon_name": "ri-...(optional)"}}
+      ]
+    }}
+  ],
   "primary_block_index": 0,
-  "imagePrompt": "optional",
-  "accentImagePrompt": "optional",
-  "heroImagePrompt": "optional"
+  "accentImagePrompt": "optional string (only if image_tier=accent)",
+  "heroImagePrompt": "optional string (only if image_tier=hero)"
 }}
 """
 
@@ -463,6 +648,10 @@ Output schema:
         payload.pop("heroImagePrompt", None)
         payload.pop("imagePrompt", None)
 
+    # Enforce: non-title slides must have a structured primary block.
+    # If the LLM only produced paragraphs/headings, inject a fallback smart_layout.
+    _enforce_structured_primary(payload, plan_item, smart_layout_variant)
+
     is_valid, errors, warnings = _validate_with_existing_validator(payload)
     if not is_valid:
         fallback = _build_fallback_slide(plan_item)
@@ -477,4 +666,5 @@ Output schema:
     payload["image_need"] = image_need
     payload["image_tier"] = image_tier
     payload["designer_blueprint"] = designer_blueprint
+    payload["slide_density"] = slide_density
     return payload
