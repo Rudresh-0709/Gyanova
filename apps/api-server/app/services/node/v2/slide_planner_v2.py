@@ -18,6 +18,14 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple
 
+
+_COMPOSITION_STYLES: Tuple[str, ...] = (
+    "primary_only",
+    "context_then_primary",
+    "primary_then_callout",
+    "intro_then_primary",
+)
+
 try:
     from app.services.node.v2.density_mapping_v2 import map_brief_density_to_engine
     from app.services.node.v2.block_catalog_v2 import (
@@ -98,6 +106,41 @@ def _to_list(value: Any) -> List[str]:
         return [str(v).strip() for v in value if str(v).strip()]
     text = str(value).strip()
     return [text] if text else []
+
+
+def _pick_composition_style(
+    *,
+    slide_index: int,
+    template_spec: TemplateSpec,
+    image_need: str,
+    composition_history: List[str],
+) -> str:
+    """Pick a composition style with rotation and light recency balancing."""
+    allowed_styles = list(_COMPOSITION_STYLES)
+
+    if template_spec.is_sparse or image_need == "required":
+        allowed_styles = [
+            style
+            for style in allowed_styles
+            if style in {"primary_only", "context_then_primary", "intro_then_primary"}
+        ]
+
+    if not allowed_styles:
+        return "primary_only"
+
+    recent_window = composition_history[-4:]
+    previous_style = composition_history[-1] if composition_history else ""
+
+    scored: List[Tuple[int, int, int, str]] = []
+    for style in allowed_styles:
+        recent_count = sum(1 for token in recent_window if token == style)
+        immediate_repeat = 1 if style == previous_style else 0
+        # Deterministic tie-break that still rotates by slide position.
+        order_offset = (allowed_styles.index(style) - (slide_index % len(allowed_styles))) % len(allowed_styles)
+        scored.append((recent_count, immediate_repeat, order_offset, style))
+
+    scored.sort(key=lambda item: (item[0], item[1], item[2]))
+    return scored[0][3]
 
 
 def _derive_image_policy(
@@ -379,6 +422,7 @@ def plan_slide_v2(
     # Extract histories from state
     layout_history = list(state.get("layout_history", []))
     variant_history = list(state.get("variant_history", []))
+    composition_history = list(state.get("composition_history", []))
     hard_rule_no_consecutive = _to_bool(
         state.get("v2_no_consecutive_template", True), default=True
     )
@@ -439,6 +483,14 @@ def plan_slide_v2(
         hard_rule_family_cap=hard_rule_family_cap,
     )
 
+    # ===== Step 5.5: Select composition style =====
+    composition_style = _pick_composition_style(
+        slide_index=slide_index,
+        template_spec=template_spec,
+        image_need=image_need,
+        composition_history=composition_history,
+    )
+
     # ===== Step 6: Compose primary and supporting blocks =====
     primary_spec, supporting_specs, has_wide_block = _compose_planned_blocks(
         template_spec=template_spec,
@@ -488,6 +540,7 @@ def plan_slide_v2(
         "image_tier": image_tier,
         "layout": image_layout,
         "primary_family": primary_family,
+        "composition_style": composition_style,
     }
 
     # ===== Step 9: Compose content blocks hints =====
@@ -523,6 +576,7 @@ def plan_slide_v2(
         "image_layout": image_layout,
         "intent": teaching_intent,
         "designer_blueprint": designer_blueprint,
+        "composition_style": composition_style,
         "image_need": image_need,
         "image_tier": image_tier,
         "primary_supports_icons": primary_supports_icons,

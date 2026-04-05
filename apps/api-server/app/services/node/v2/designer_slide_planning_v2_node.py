@@ -54,6 +54,13 @@ _DENSITY_ALIAS: Dict[str, str] = {
     "max": "super_dense",
 }
 
+_COMPOSITION_STYLE_ORDER: Tuple[str, ...] = (
+    "primary_only",
+    "context_then_primary",
+    "primary_then_callout",
+    "intro_then_primary",
+)
+
 
 def _to_bool(value: Any, default: bool = False) -> bool:
     if isinstance(value, bool):
@@ -131,6 +138,48 @@ def _choose_layout(
     )
 
 
+def _pick_composition_style(
+    *,
+    style_history: List[str],
+    template: TemplateSpec,
+    image_need: str,
+) -> str:
+    """
+    Pick a composition style with recency-aware rotation.
+
+    Rules:
+      - Rotate across style families to avoid repetitive 3-block patterns.
+      - Sparse/image-heavy slides bias toward lighter compositions.
+      - Never force intro+callout on the same slide (handled in generator too).
+    """
+    allowed_styles = list(_COMPOSITION_STYLE_ORDER)
+
+    # Sparse or hero/content-image-focused slides should stay compact.
+    if template.is_sparse or image_need == "required":
+        allowed_styles = [
+            style
+            for style in allowed_styles
+            if style in {"primary_only", "context_then_primary", "intro_then_primary"}
+        ]
+
+    if not allowed_styles:
+        return "primary_only"
+
+    recent_window = style_history[-4:]
+    recent_set = set(recent_window)
+    previous_style = style_history[-1] if style_history else ""
+
+    scored: List[Tuple[int, int, int, str]] = []
+    for order_idx, style in enumerate(allowed_styles):
+        recent_count = sum(1 for token in recent_window if token == style)
+        immediate_repeat = 1 if style == previous_style else 0
+        not_recent_bonus = 0 if style in recent_set else -1
+        scored.append((recent_count, immediate_repeat, not_recent_bonus, style))
+
+    scored.sort(key=lambda item: (item[0], item[1], item[2], allowed_styles.index(item[3])))
+    return scored[0][3]
+
+
 def _build_designer_blueprint(
     *,
     teacher_slide: Dict[str, Any],
@@ -140,6 +189,7 @@ def _build_designer_blueprint(
     smart_layout_variant: str,
     primary_block: Dict[str, Any],
     supporting_blocks: List[Dict[str, Any]],
+    composition_style: str,
     image_need: str,
     image_tier: str,
     layout: str,
@@ -164,6 +214,7 @@ def _build_designer_blueprint(
         "primary_variant": primary_variant,
         "smart_layout_variant": smart_layout_variant,
         "supporting_blocks": supporting_blocks,
+        "composition_style": composition_style,
         "image_need": image_need,
         "image_tier": image_tier,
         "layout": layout,
@@ -171,6 +222,7 @@ def _build_designer_blueprint(
             f"Teacher intent: {teacher_slide.get('teaching_intent', 'explain')}",
             f"Coverage scope: {teacher_slide.get('coverage_scope', 'foundation')}",
             f"Planned smart_layout variant: {smart_layout_variant or 'none'}",
+            f"Composition style: {composition_style}",
         ],
     }
 
@@ -218,6 +270,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
     # Local copies of histories so we can track intra-subtopic variety too.
     local_variant_history = list(variant_history)
     local_layout_history = list(layout_history)
+    local_composition_history: List[str] = []
 
     for index, teacher_slide in enumerate(teacher_slides):
         if not isinstance(teacher_slide, dict):
@@ -322,6 +375,11 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
             supporting_specs = [spec for spec in supporting_specs if not spec.implies_content_image]
 
         layout = _choose_layout(selected_template, image_need, image_tier, density, local_layout_history)
+        composition_style = _pick_composition_style(
+            style_history=local_composition_history,
+            template=template_spec,
+            image_need=image_need,
+        )
 
         # Update local variety histories so subsequent slides in the same subtopic
         # benefit from intra-subtopic variety enforcement.
@@ -329,6 +387,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         local_layout_history.append(layout)
         if actual_slv:
             local_variant_history.append(actual_slv)
+        local_composition_history.append(composition_style)
 
         teacher_slide_ref = str(teacher_slide.get("slide_id") or f"{target_sub_id}_t{index + 1}")
 
@@ -368,6 +427,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 "primary_family": primary_spec.family,
                 "primary_variant": primary_spec.variant,
                 "smart_layout_variant": actual_slv,
+                "composition_style": composition_style,
                 "designer_blueprint": _build_designer_blueprint(
                     teacher_slide=teacher_slide,
                     selected_template=selected_template,
@@ -376,6 +436,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     smart_layout_variant=actual_slv,
                     primary_block=block_to_blueprint(primary_spec),
                     supporting_blocks=[block_to_blueprint(spec) for spec in supporting_specs],
+                    composition_style=composition_style,
                     image_need=image_need,
                     image_tier=image_tier,
                     layout=layout,

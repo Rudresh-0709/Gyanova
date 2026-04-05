@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GyML v2 Content Block Gallery</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #121a2f;
+      --text: #e6edf7;
+      --muted: #9eb0d0;
+      --border: #243257;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Segoe UI, system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, #182447 0%, var(--bg) 45%);
+      color: var(--text);
+      padding: 24px;
+    }
+    h1 { margin: 0 0 0.35rem; font-size: 1.75rem; }
+    .lead { margin: 0 0 1.25rem; color: var(--muted); }
+    .grid { display: grid; gap: 18px; }
+    .card {
+      background: color-mix(in srgb, var(--panel) 88%, #0a0f1f);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .card header { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .card h2 { margin: 0 0 0.3rem; font-size: 1.05rem; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    iframe { width: 100%; height: 720px; border: 0; background: #020612; }
+    @media (max-width: 900px) {
+      body { padding: 12px; }
+      iframe { height: 620px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>GyML v2 Demo Gallery</h1>
+  <p class="lead">Hard-coded slides rendered through composer → serializer → renderer for visual verification of new variants.</p>
+  <div class="grid">
+    
+            <section class="card">
+              <header>
+                <h2>1. AI Tutor Workflow Overview</h2>
+                <p><strong>intent:</strong> explain | <strong>variant:</strong> solidBoxesWithIconsInside</p>
+              </header>
+              <iframe src="slide_01.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="card">
+              <header>
+                <h2>2. Foundational Concepts</h2>
+                <p><strong>intent:</strong> introduce | <strong>variant:</strong> solidBoxesWithIconsInside</p>
+              </header>
+              <iframe src="slide_02.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="card">
+              <header>
+                <h2>3. Supporting Side Strip Demo</h2>
+                <p><strong>intent:</strong> explain | <strong>variant:</strong> solidBoxesWithIconsInside</p>
+              </header>
+              <iframe src="slide_03.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="card">
+              <header>
+                <h2>4. No-Image Blank Layout</h2>
+                <p><strong>intent:</strong> list | <strong>variant:</strong> solidBoxesWithIconsInside</p>
+              </header>
+              <iframe src="slide_04.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="card">
+              <header>
+                <h2>5. Summary & Reinforcement</h2>
+                <p><strong>intent:</strong> summarize | <strong>variant:</strong> solidBoxesWithIconsInside</p>
+              </header>
+              <iframe src="slide_05.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="card">
+              <header>
+                <h2>6. Process Mapping Control Slide</h2>
+                <p><strong>intent:</strong> teach | <strong>variant:</strong> processSteps</p>
+              </header>
+              <iframe src="slide_06.html" loading="lazy"></iframe>
+            </section>
+            
+  </div>
+</body>
+</html>

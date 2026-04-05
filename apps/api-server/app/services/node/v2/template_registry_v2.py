@@ -109,7 +109,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_accent_placements=(),
         allowed_layouts=("blank", "left", "right"),
         density_ok=("balanced", "standard", "dense"),
-        preferred_smart_layout_variants=("comparisonProsCons", "comparisonBeforeAfter", "statsComparison"),
+        preferred_smart_layout_variants=("comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "relationshipMap", "statsBadgeGrid", "diamondRibbon"),
     ),
     # ── Timeline ──────────────────────────────────────────────────────────────
     "Timeline": TemplateSpec(
@@ -135,7 +135,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_accent_placements=("right", "left", "top", "bottom"),
         allowed_layouts=("right", "left", "top", "bottom", "blank"),
         density_ok=("ultra_sparse", "sparse", "balanced", "standard"),
-        preferred_smart_layout_variants=("cardGridIcon", "bulletIcon", "processSteps"),
+        preferred_smart_layout_variants=("cardGridIcon", "bulletIcon", "processSteps", "ribbonFold"),
     ),
     "Card grid": TemplateSpec(
         name="Card grid",
@@ -184,7 +184,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_accent_placements=("top", "bottom"),
         allowed_layouts=("top", "bottom", "blank"),
         density_ok=("sparse", "balanced", "standard", "dense"),
-        preferred_smart_layout_variants=("processSteps", "processArrow", "processAccordion"),
+        preferred_smart_layout_variants=("processSteps", "processArrow", "processAccordion", "relationshipMap", "diamondRibbon"),
     ),
     "Cyclic process block": TemplateSpec(
         name="Cyclic process block",
@@ -236,7 +236,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_layouts=("right", "left", "top", "bottom", "blank"),
         supports_high_end_image=True,
         density_ok=("balanced", "standard", "dense"),
-        preferred_smart_layout_variants=("cardGridIcon", "processSteps", "bigBullets"),
+        preferred_smart_layout_variants=("cardGridIcon", "processSteps", "bigBullets", "relationshipMap", "ribbonFold", "diamondRibbon"),
     ),
     # ── Stats / Data ──────────────────────────────────────────────────────────
     "Stats block": TemplateSpec(
@@ -249,7 +249,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_accent_placements=("top", "bottom"),
         allowed_layouts=("top", "bottom", "blank"),
         density_ok=("sparse", "balanced", "standard"),
-        preferred_smart_layout_variants=("stats", "statsComparison"),
+        preferred_smart_layout_variants=("stats", "statsComparison", "statsBadgeGrid"),
     ),
 }
 

@@ -142,6 +142,131 @@ def _normalize_layout(layout: str) -> str:
     return value
 
 
+_COMPOSITION_STYLES = (
+    "primary_only",
+    "context_then_primary",
+    "primary_then_callout",
+    "intro_then_primary",
+)
+
+
+def _resolve_composition_style(plan_item: Dict[str, Any], designer_blueprint: Dict[str, Any]) -> str:
+    raw_style = str(
+        plan_item.get("composition_style")
+        or designer_blueprint.get("composition_style")
+        or ""
+    ).strip().lower()
+    if raw_style in _COMPOSITION_STYLES:
+        return raw_style
+
+    # Deterministic fallback for legacy plan items that do not set composition_style.
+    seq_idx = plan_item.get("sequence_index")
+    try:
+        seq_num = int(seq_idx)
+    except Exception:
+        seq_num = 0
+    return _COMPOSITION_STYLES[seq_num % len(_COMPOSITION_STYLES)]
+
+
+def _find_primary_block_index(blocks: List[Dict[str, Any]]) -> int:
+    for i, block in enumerate(blocks):
+        if not isinstance(block, dict):
+            continue
+        block_type = str(block.get("type") or "").strip().lower()
+        if block_type in _STRUCTURED_PRIMARY_TYPES:
+            return i
+    return -1
+
+
+def _build_intro_text(plan_item: Dict[str, Any]) -> str:
+    objective = str(plan_item.get("objective") or "").strip()
+    if objective:
+        return objective
+    title = str(plan_item.get("title") or "this topic").strip()
+    return f"Let's frame {title} before diving into the core structure."
+
+
+def _build_context_text(plan_item: Dict[str, Any]) -> str:
+    must_cover = [str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()]
+    key_facts = [str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()]
+    if must_cover:
+        return f"Context: {must_cover[0]}"
+    if key_facts:
+        return f"Context: {key_facts[0]}"
+    return "Context: anchor the core idea in a concrete teaching scenario."
+
+
+def _build_callout_text(plan_item: Dict[str, Any]) -> str:
+    assessment = str(plan_item.get("assessment_prompt") or "").strip()
+    if assessment:
+        return assessment
+    key_facts = [str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()]
+    if key_facts:
+        return f"Takeaway: {key_facts[0]}"
+    return "Takeaway: summarize the most actionable insight from this slide."
+
+
+def _apply_composition_style(payload: Dict[str, Any], plan_item: Dict[str, Any], composition_style: str) -> None:
+    blocks = payload.get("contentBlocks", [])
+    if not isinstance(blocks, list):
+        return
+
+    paragraph_like = {
+        "paragraph",
+        "intro_paragraph",
+        "context_paragraph",
+        "annotation_paragraph",
+        "outro_paragraph",
+    }
+
+    # Keep non-paragraph-like blocks intact, then layer style-specific supporting text.
+    filtered_blocks = []
+    for block in blocks:
+        if not isinstance(block, dict):
+            continue
+        block_type = str(block.get("type") or "").strip().lower()
+        if block_type in paragraph_like:
+            continue
+        filtered_blocks.append(block)
+
+    primary_idx = _find_primary_block_index(filtered_blocks)
+    if primary_idx < 0:
+        payload["contentBlocks"] = filtered_blocks
+        return
+
+    before_primary: List[Dict[str, Any]] = []
+    after_primary: List[Dict[str, Any]] = []
+
+    if composition_style == "context_then_primary":
+        before_primary.append({"type": "context_paragraph", "text": _build_context_text(plan_item)})
+    elif composition_style == "primary_then_callout":
+        after_primary.append({"type": "annotation_paragraph", "text": _build_callout_text(plan_item)})
+    elif composition_style == "intro_then_primary":
+        before_primary.append({"type": "intro_paragraph", "text": _build_intro_text(plan_item)})
+
+    rebuilt: List[Dict[str, Any]] = []
+    rebuilt.extend(filtered_blocks[:primary_idx])
+    rebuilt.extend(before_primary)
+    rebuilt.append(filtered_blocks[primary_idx])
+    rebuilt.extend(after_primary)
+    rebuilt.extend(filtered_blocks[primary_idx + 1 :])
+
+    # Hard rule: never allow intro + annotation/outro on the same slide.
+    has_intro = any(str(block.get("type") or "").strip().lower() == "intro_paragraph" for block in rebuilt if isinstance(block, dict))
+    if has_intro:
+        rebuilt = [
+            block
+            for block in rebuilt
+            if not (
+                isinstance(block, dict)
+                and str(block.get("type") or "").strip().lower() in {"annotation_paragraph", "outro_paragraph"}
+            )
+        ]
+
+    payload["contentBlocks"] = rebuilt
+    payload["primary_block_index"] = _find_primary_block_index(rebuilt)
+
+
 def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     title = str(plan_item.get("title") or "Untitled Slide").strip()
     intent = _intent_for_teacher(plan_item.get("teaching_intent", "explain"))
@@ -490,6 +615,7 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     title = str(plan_item.get("title") or "Untitled Slide").strip()
     selected_template = str(plan_item.get("selected_template") or "Title with bullets").strip()
     designer_blueprint = plan_item.get("designer_blueprint", {}) if isinstance(plan_item.get("designer_blueprint"), dict) else {}
+    composition_style = _resolve_composition_style(plan_item, designer_blueprint)
     image_need = str(plan_item.get("image_need") or "optional").strip().lower()
     image_tier = str(plan_item.get("image_tier") or "accent").strip().lower()
 
@@ -511,6 +637,13 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     expected_items = density_item_counts.get(slide_density, "3–4")
 
     # ── Research / grounding context ────────────────────────────────────────
+    if smart_layout_variant == "relationshipMap":
+        expected_items = "3"
+    if smart_layout_variant == "ribbonFold":
+        expected_items = "4"
+    if smart_layout_variant == "statsBadgeGrid":
+        expected_items = "4"
+
     research_context = str(plan_item.get("research_context") or plan_item.get("research_raw_text") or "").strip()
     factual_confidence = str(plan_item.get("factual_confidence") or "low").strip().lower()
 
@@ -535,6 +668,23 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
             f" as the PRIMARY teaching block (primary_block_index)."
             f" It MUST contain {expected_items} items."
         )
+        if smart_layout_variant == "relationshipMap":
+            primary_block_instruction += (
+                ' Use exactly 3 items arranged as left circle, center circle, and right circle.'
+                ' The first two items MUST include `icon_name` values so the renderer can place'
+                " connector icons between the circles."
+            )
+        if smart_layout_variant == "ribbonFold":
+            primary_block_instruction += (
+                " Use exactly 4 items as folded vertical ribbons."
+                " Each item SHOULD include an `icon_name` so every ribbon shows an icon badge."
+            )
+        if smart_layout_variant == "statsBadgeGrid":
+            primary_block_instruction += (
+                " Use exactly 4 compact stat tiles in a 2x2 grid."
+                " Each item's heading SHOULD be the headline metric such as a percentage,"
+                " and the description should be a short supporting line."
+            )
     elif primary_family == "formula":
         primary_block_instruction = (
             'You MUST include exactly ONE `"type": "formula_block"` block as the PRIMARY teaching block.'
@@ -563,7 +713,12 @@ HARD RULES (violations will cause rejection):
 2. {primary_block_instruction}
 3. DO NOT include two smart_layout blocks on the same slide.
 4. Max 7 content blocks per slide. Primary block carries 70% of visual weight.
-5. Content ordering: [optional intro_paragraph] → PRIMARY BLOCK → [optional callout/annotation_paragraph].
+5. Enforce composition_style exactly: {composition_style}.
+    - primary_only: PRIMARY BLOCK only (no intro/context/annotation/outro blocks)
+    - context_then_primary: context_paragraph → PRIMARY BLOCK
+    - primary_then_callout: PRIMARY BLOCK → annotation_paragraph
+    - intro_then_primary: intro_paragraph → PRIMARY BLOCK (no annotation/outro/takeaway block)
+    NEVER place intro_paragraph and annotation_paragraph/outro_paragraph together on the same slide.
 6. Do not include both an accentImagePrompt and block-embedded image prompts.
 7. Respect selected_template and image policy (image_need: {image_need}, image_tier: {image_tier}).
 
@@ -583,6 +738,7 @@ DESIGN PLAN:
 Selected template: {selected_template}
 Primary block family: {primary_family}
 Primary smart_layout variant: {smart_layout_variant}
+Composition style: {composition_style}
 Slide density: {slide_density}
 Expected items in primary block: {expected_items}
 
@@ -592,6 +748,9 @@ Designer blueprint (additional context):
 SMART LAYOUT VARIANT REFERENCE:
   TIMELINES: timeline, timelineHorizontal, timelineSequential, timelineMilestone, timelineIcon
   CARD GRIDS: cardGrid, cardGridIcon, cardGridSimple, cardGridImage
+  RELATIONSHIPS: relationshipMap
+  RIBBONS: ribbonFold
+  STAT TILES: statsBadgeGrid
   STATS: stats, statsComparison, statsPercentage
   BULLETS: bigBullets, bulletIcon, bulletCheck, bulletCross
   PROCESS STEPS: processSteps, processArrow, processAccordion
@@ -652,6 +811,9 @@ OUTPUT SCHEMA (JSON only):
     # If the LLM only produced paragraphs/headings, inject a fallback smart_layout.
     _enforce_structured_primary(payload, plan_item, smart_layout_variant)
 
+    # Enforce composition style and hard exclusion rule for intro+callout coexistence.
+    _apply_composition_style(payload, plan_item, composition_style)
+
     is_valid, errors, warnings = _validate_with_existing_validator(payload)
     if not is_valid:
         fallback = _build_fallback_slide(plan_item)
@@ -667,4 +829,5 @@ OUTPUT SCHEMA (JSON only):
     payload["image_tier"] = image_tier
     payload["designer_blueprint"] = designer_blueprint
     payload["slide_density"] = slide_density
+    payload["composition_style"] = composition_style
     return payload

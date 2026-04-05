@@ -217,7 +217,14 @@ class GyMLSerializer:
         # Paragraphs → p (with variants)
         elif block_type == BlockType.PARAGRAPH.value:
             text = content.get("text", "")
+            variant = content.get("variant")
+            if variant:
+                return GyMLParagraph(text=text, variant=str(variant))
             return GyMLParagraph(text=text)
+
+        elif block_type == "side_strip_paragraph":
+            text = content.get("text", "")
+            return GyMLParagraph(text=text, variant="side-strip")
 
         elif block_type == BlockType.INTRO_PARAGRAPH.value:
             text = content.get("text", "")

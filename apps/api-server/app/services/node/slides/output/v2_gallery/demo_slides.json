@@ -1,0 +1,222 @@
+[
+  {
+    "title": "AI Tutor Workflow Overview",
+    "subtitle": "Large-box primary variant baseline",
+    "intent": "explain",
+    "layout": "right",
+    "image_layout": "right",
+    "slide_density": "balanced",
+    "contentBlocks": [
+      {
+        "type": "intro_paragraph",
+        "text": "This slide verifies that the new large-box primary layout is rendered correctly in the v2 pipeline."
+      },
+      {
+        "type": "smart_layout",
+        "variant": "solidBoxesWithIconsInside",
+        "items": [
+          {
+            "heading": "Input",
+            "description": "Collect learner context, level, and objectives.",
+            "icon_name": "ri-file-list-3-line"
+          },
+          {
+            "heading": "Reason",
+            "description": "Assemble a concise explanation strategy for the concept.",
+            "icon_name": "ri-brain-line"
+          },
+          {
+            "heading": "Deliver",
+            "description": "Render visually clear teaching blocks with consistent hierarchy.",
+            "icon_name": "ri-slideshow-3-line"
+          }
+        ]
+      },
+      {
+        "type": "annotation_paragraph",
+        "text": "Takeaway: large boxes should remain the visual primary with supporting text secondary."
+      }
+    ],
+    "accentImagePrompt": "Simple abstract tutoring workflow illustration with clean geometry."
+  },
+  {
+    "title": "Foundational Concepts",
+    "subtitle": "General intent/foundation case",
+    "intent": "introduce",
+    "layout": "left",
+    "image_layout": "left",
+    "slide_density": "sparse",
+    "contentBlocks": [
+      {
+        "type": "context_paragraph",
+        "text": "Use this slide to validate default foundation/overview behavior for general intents."
+      },
+      {
+        "type": "smart_layout",
+        "variant": "solidBoxesWithIconsInside",
+        "items": [
+          {
+            "heading": "Scope",
+            "description": "Define what is included and what is intentionally out of scope.",
+            "icon_name": "ri-focus-2-line"
+          },
+          {
+            "heading": "Language",
+            "description": "Align wording with learner vocabulary and prior knowledge.",
+            "icon_name": "ri-chat-3-line"
+          },
+          {
+            "heading": "Outcome",
+            "description": "Set a practical objective that can be checked quickly.",
+            "icon_name": "ri-flag-2-line"
+          }
+        ]
+      }
+    ],
+    "accentImagePrompt": "Minimal educational icon collage showing scope, language, and outcome."
+  },
+  {
+    "title": "Supporting Side Strip Demo",
+    "subtitle": "Thin right-strip supporting text",
+    "intent": "explain",
+    "layout": "right",
+    "image_layout": "right",
+    "slide_density": "balanced",
+    "contentBlocks": [
+      {
+        "type": "smart_layout",
+        "variant": "solidBoxesWithIconsInside",
+        "items": [
+          {
+            "heading": "Concept",
+            "description": "Introduce one core idea per card to reduce split attention.",
+            "icon_name": "ri-lightbulb-line"
+          },
+          {
+            "heading": "Example",
+            "description": "Attach one concrete real-world case to each concept.",
+            "icon_name": "ri-shapes-line"
+          },
+          {
+            "heading": "Check",
+            "description": "Ask one quick question to verify understanding.",
+            "icon_name": "ri-questionnaire-line"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "variant": "side-strip",
+        "text": "Supporting note: this paragraph uses the side-strip variant with a thin right accent line for quick contextual guidance."
+      }
+    ],
+    "accentImagePrompt": "Teaching notes sidebar style illustration with neutral tones."
+  },
+  {
+    "title": "No-Image Blank Layout",
+    "subtitle": "image_tier none equivalent",
+    "intent": "list",
+    "layout": "blank",
+    "image_layout": "blank",
+    "slide_density": "standard",
+    "contentBlocks": [
+      {
+        "type": "intro_paragraph",
+        "text": "This slide intentionally has no image prompt and blank image layout."
+      },
+      {
+        "type": "smart_layout",
+        "variant": "solidBoxesWithIconsInside",
+        "items": [
+          {
+            "heading": "Rule 1",
+            "description": "Do not emit accentImagePrompt when image tier is none.",
+            "icon_name": "ri-image-line"
+          },
+          {
+            "heading": "Rule 2",
+            "description": "Keep image_layout as blank to disable all image regions.",
+            "icon_name": "ri-layout-line"
+          },
+          {
+            "heading": "Rule 3",
+            "description": "Use structure and typography to maintain clarity.",
+            "icon_name": "ri-font-size-2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Summary & Reinforcement",
+    "subtitle": "General summarize mapping behavior",
+    "intent": "summarize",
+    "layout": "bottom",
+    "image_layout": "bottom",
+    "slide_density": "balanced",
+    "contentBlocks": [
+      {
+        "type": "smart_layout",
+        "variant": "solidBoxesWithIconsInside",
+        "items": [
+          {
+            "heading": "Remember",
+            "description": "Keep one primary structured block per non-title slide.",
+            "icon_name": "ri-bookmark-3-line"
+          },
+          {
+            "heading": "Avoid",
+            "description": "Do not combine intro and takeaway/callout on the same slide.",
+            "icon_name": "ri-forbid-2-line"
+          },
+          {
+            "heading": "Rotate",
+            "description": "Vary composition styles to avoid repetitive 3-block patterns.",
+            "icon_name": "ri-refresh-line"
+          }
+        ]
+      },
+      {
+        "type": "outro_paragraph",
+        "text": "Final takeaway: this gallery should let you visually inspect new v2 block behavior quickly."
+      }
+    ],
+    "accentImagePrompt": "Subtle summary-themed illustration with checkmarks and arrows."
+  },
+  {
+    "title": "Process Mapping Control Slide",
+    "subtitle": "Specialized variants still available",
+    "intent": "teach",
+    "layout": "top",
+    "image_layout": "top",
+    "slide_density": "balanced",
+    "contentBlocks": [
+      {
+        "type": "smart_layout",
+        "variant": "processSteps",
+        "items": [
+          {
+            "heading": "Plan",
+            "description": "Define objective and constraints before generation.",
+            "icon_name": "ri-map-pin-time-line"
+          },
+          {
+            "heading": "Generate",
+            "description": "Produce structured slide content blocks.",
+            "icon_name": "ri-magic-line"
+          },
+          {
+            "heading": "Validate",
+            "description": "Run compose, serialize, and render checks end-to-end.",
+            "icon_name": "ri-checkbox-circle-line"
+          }
+        ]
+      },
+      {
+        "type": "annotation_paragraph",
+        "text": "Control slide: processSteps is intentionally included to verify specialized mappings still render."
+      }
+    ],
+    "accentImagePrompt": "Clean process flow diagram with three stages."
+  }
+]
