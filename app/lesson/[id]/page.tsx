@@ -39,6 +39,7 @@ interface LessonRenderResult {
 // ─── Helpers ────────────────────────────────────────────────────────────
 
 const BACKEND_URL = "http://localhost:8000";
+const MIN_SLIDES_TO_RENDER_EARLY = 2;
 
 /**
  * Convert a filesystem audio_url from the backend into an HTTP URL
@@ -379,6 +380,31 @@ function hasRenderableLessonContent(
     );
 }
 
+function countRenderableGeneratedSlides(
+    result: LessonRenderResult | null | undefined
+): number {
+    const slideGroups = Object.values(result?.slides || {});
+    let count = 0;
+
+    for (const slides of slideGroups) {
+        if (!Array.isArray(slides)) continue;
+
+        for (const slide of slides) {
+            const hasHtmlContent =
+                typeof slide?.html_content === "string" &&
+                slide.html_content.trim().length > 0;
+            const htmlDoc = (slide as { html_doc?: string | null } | undefined)?.html_doc;
+            const hasHtmlDoc = typeof htmlDoc === "string" && htmlDoc.trim().length > 0;
+
+            if (hasHtmlContent || hasHtmlDoc) {
+                count += 1;
+            }
+        }
+    }
+
+    return count;
+}
+
 // ─── Component ──────────────────────────────────────────────────────────
 
 export default function LessonViewPage() {
@@ -438,6 +464,10 @@ export default function LessonViewPage() {
                     setLessonData(data.result);
                 }
 
+                const renderableGeneratedSlideCount = countRenderableGeneratedSlides(data.result);
+                const earlyPreviewReady =
+                    renderableGeneratedSlideCount >= MIN_SLIDES_TO_RENDER_EARLY;
+
                 if (data.status === "completed") {
                     if (!hasRenderableLessonContent(data.result)) {
                         setError("Lesson generated but no renderable slides were returned.");
@@ -455,6 +485,10 @@ export default function LessonViewPage() {
                     data.status === "pending" ||
                     data.status === "planning_completed"
                 ) {
+                    if (earlyPreviewReady) {
+                        // Show the deck as soon as enough generated slides are ready.
+                        setLoading(false);
+                    }
                     pollTimer = setTimeout(fetchLesson, 3000);
                 } else {
                     setError("Lesson not found.");
@@ -838,7 +872,8 @@ export default function LessonViewPage() {
 
     // Loading state
     if (loading) {
-        const previewReady = hasRenderableLessonContent(lessonData);
+        const previewReady =
+            countRenderableGeneratedSlides(lessonData) >= MIN_SLIDES_TO_RENDER_EARLY;
         const loaderUiStatus = previewReady
             ? "preview_ready"
             : loaderStatus;

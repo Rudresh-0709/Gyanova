@@ -7,10 +7,12 @@ try:
     from app.services.node.v2.gyml_generator_v2 import generate_gyml_v2
     from app.services.node.v2.research_context_v2 import build_research_context
     from app.services.node.v2.hallucination_guard_v2 import check_slide
+    from app.services.node.v2.media_enricher_v2 import enrich_slide_media_sync
 except ImportError:
     from .gyml_generator_v2 import generate_gyml_v2
     from .research_context_v2 import build_research_context
     from .hallucination_guard_v2 import check_slide
+    from .media_enricher_v2 import enrich_slide_media_sync
 
 
 def _build_narration_text(plan_item: Dict[str, Any], slide: Dict[str, Any]) -> str:
@@ -102,14 +104,11 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         if slide_grounding_mode == "general_knowledge":
             slide_payload = check_slide(slide_payload, redact=False)
 
-        narration_text = _build_narration_text(concept, slide_payload)
-        animation_meta = _animation_metadata(slide_payload)
-
         layout = slide_payload.get("layout") or slide_payload.get("image_layout") or "blank"
         slide_obj = {
             **concept,
             "subtopic_name": subtopic_name,
-            "narration_text": narration_text,
+            "narration_text": "",
             "narration_format": "points",
             "gyml_content": slide_payload,
             "visual_content": slide_payload,
@@ -117,14 +116,34 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
             "image_layout": slide_payload.get("image_layout") or layout,
             "primary_block_index": slide_payload.get("primary_block_index", 0),
             "slide_density": concept.get("slide_density", "balanced"),
-            "animation_unit": animation_meta["animation_unit"],
-            "animation_unit_count": animation_meta["animation_unit_count"],
-            "animated_block_index": animation_meta["animated_block_index"],
+            "animation_unit": "block",
+            "animation_unit_count": 1,
+            "animated_block_index": 0,
             # Grounding / research debug fields
             "grounding_mode": slide_grounding_mode,
             "had_research_context": bool(concept.get("research_context")),
             "hallucination_risk_score": slide_payload.get("hallucination_risk_score", 0),
         }
+
+        # Mirror v1-style icon robustness by enriching media/icons after generation.
+        # This fills missing icon_name values and keeps GyML/visual payloads synchronized.
+        try:
+            slide_obj = enrich_slide_media_sync(
+                slide_obj,
+                topic=str(state.get("topic") or state.get("user_input") or subtopic_name),
+                image_layout=str(slide_obj.get("image_layout") or layout),
+            )
+        except Exception:
+            # Never block slide generation on enrichment errors.
+            pass
+
+        enriched_payload = slide_obj.get("gyml_content", slide_payload)
+        narration_text = _build_narration_text(concept, enriched_payload)
+        animation_meta = _animation_metadata(enriched_payload)
+        slide_obj["narration_text"] = narration_text
+        slide_obj["animation_unit"] = animation_meta["animation_unit"]
+        slide_obj["animation_unit_count"] = animation_meta["animation_unit_count"]
+        slide_obj["animated_block_index"] = animation_meta["animated_block_index"]
         slides_state[sub_id].append(slide_obj)
 
         layout_history.append(str(layout))

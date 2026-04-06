@@ -1,0 +1,243 @@
+[
+  {
+    "title": "Diamond Ribbon Layout",
+    "subtitle": "Testing diamondRibbon smart layout variant",
+    "intent": "explain",
+    "layout": "blank",
+    "image_layout": "blank",
+    "slide_density": "standard",
+    "contentBlocks": [
+      {
+        "type": "smart_layout",
+        "variant": "diamondRibbon",
+        "items": [
+          {
+            "heading": "Analysis",
+            "description": "Gather all requirements and define the scope by collaborating with stakeholders and identifying the most critical features required for the MVP launch.",
+            "icon_name": "ri-search-line"
+          },
+          {
+            "heading": "Design",
+            "description": "Create high-fidelity wireframes and mockups for the feature layout, ensuring that accessibility standards are met and the design system is strictly followed.",
+            "icon_name": "ri-pencil-ruler-2-line"
+          },
+          {
+            "heading": "Development",
+            "description": "Write clean, modular code to implement the necessary logic, using Test-Driven Development (TDD) to prevent regressions over time.",
+            "icon_name": "ri-code-s-slash-line"
+          },
+          {
+            "heading": "Testing",
+            "description": "Verify the functionality through automated UI tests and user acceptance testing (UAT) to guarantee stable behavior in production edge cases.",
+            "icon_name": "ri-test-tube-line"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Diamond Grid: Vertical Stack (3 items)",
+    "subtitle": "Testing diamondGrid smart layout variant",
+    "intent": "explain",
+    "layout": "blank",
+    "image_layout": "blank",
+    "slide_density": "standard",
+    "contentBlocks": [
+      {
+        "type": "smart_layout",
+        "variant": "diamondGrid",
+        "items": [
+          {
+            "heading": "Phase 1: Foundation",
+            "description": "Set up the repository, configure linters and formatters, and establish the CI/CD pipelines to ensure swift future deployments.",
+            "icon_name": "ri-settings-4-line"
+          },
+          {
+            "heading": "Phase 2: Database",
+            "description": "Draft the initial database schemas, generate Prisma migrations, and seed the development environments with realistic, high volume mock data.",
+            "icon_name": "ri-database-2-line"
+          },
+          {
+            "heading": "Phase 3: Logic",
+            "description": "Construct RESTful API routes, validation schemas using Zod, and robust error handlers that provide actionable feedback to front-end clients.",
+            "icon_name": "ri-route-line"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Diamond Grid: 2x2 Grid (4 items)",
+    "subtitle": "Testing diamondGrid smart layout variant",
+    "intent": "explain",
+    "layout": "blank",
+    "image_layout": "blank",
+    "slide_density": "standard",
+    "contentBlocks": [
+      {
+        "type": "smart_layout",
+        "variant": "diamondGrid",
+        "items": [
+          {
+            "heading": "Frontend",
+            "description": "React and TailwindCSS implementation.",
+            "icon_name": "ri-reactjs-line"
+          },
+          {
+            "heading": "Backend",
+            "description": "NodeJS and Express server.",
+            "icon_name": "ri-server-line"
+          },
+          {
+            "heading": "Database",
+            "description": "PostgreSQL with Prisma ORM.",
+            "icon_name": "ri-database-2-line"
+          },
+          {
+            "heading": "DevOps",
+            "description": "Docker and GitHub Actions deployment.",
+            "icon_name": "ri-git-merge-line"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Diamond Grid: Horizontal Row (4 items)",
+    "subtitle": "Testing diamondGrid smart layout variant",
+    "intent": "explain",
+    "layout": "blank",
+    "image_layout": "blank",
+    "slide_density": "standard",
+    "contentBlocks": [
+      {
+        "type": "smart_layout",
+        "variant": "diamondGrid",
+        "items": [
+          {
+            "heading": "Step 1",
+            "description": "Identify the core problem.",
+            "icon_name": "ri-search-eye-line"
+          },
+          {
+            "heading": "Step 2",
+            "description": "Brainstorm potential solutions.",
+            "icon_name": "ri-lightbulb-line"
+          },
+          {
+            "heading": "Step 3",
+            "description": "Select the best approach.",
+            "icon_name": "ri-check-double-line"
+          },
+          {
+            "heading": "Step 4",
+            "description": "Execute the chosen plan.",
+            "icon_name": "ri-rocket-line"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Diamond Grid: Diagonal Flow (3 items)",
+    "subtitle": "Testing diamondGrid smart layout variant",
+    "intent": "explain",
+    "layout": "blank",
+    "image_layout": "blank",
+    "slide_density": "standard",
+    "contentBlocks": [
+      {
+        "type": "smart_layout",
+        "variant": "diamondGrid",
+        "items": [
+          {
+            "heading": "Start",
+            "description": "Begin the journey by establishing a strong foundation and aligning all team members on the core objectives. A solid start prevents future bottlenecks.",
+            "icon_name": "ri-arrow-right-circle-line"
+          },
+          {
+            "heading": "Middle",
+            "description": "Overcome the challenges through iterative development and constant feedback loops. This is where the bulk of the engineering and design work occurs, requiring high collaboration.",
+            "icon_name": "ri-water-flash-line"
+          },
+          {
+            "heading": "End",
+            "description": "Achieve the final goal with a rigorous QA cycle and staged rollout. Celebrate the milestones while preparing precise documentation for future handoffs.",
+            "icon_name": "ri-trophy-line"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Diamond Hub",
+    "subtitle": "Testing diamondHub smart layout variant",
+    "intent": "explain",
+    "layout": "blank",
+    "image_layout": "blank",
+    "slide_density": "standard",
+    "contentBlocks": [
+      {
+        "type": "smart_layout",
+        "variant": "diamondHub",
+        "items": [
+          {
+            "heading": "Title"
+          },
+          {
+            "description": "Please add your text description in the top-left area.",
+            "icon_name": "ri-settings-4-line"
+          },
+          {
+            "description": "Please add your text description in the top-right area.",
+            "icon_name": "ri-send-plane-fill"
+          },
+          {
+            "description": "Please add your text description in the bottom-left area.",
+            "icon_name": "ri-computer-line"
+          },
+          {
+            "description": "Please add your text description in the bottom-right area.",
+            "icon_name": "ri-global-line"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Diamond Row Bottom",
+    "subtitle": "Testing cardGridDiamond smart layout variant",
+    "intent": "list",
+    "layout": "blank",
+    "image_layout": "blank",
+    "slide_density": "standard",
+    "contentBlocks": [
+      {
+        "type": "smart_layout",
+        "variant": "cardGridDiamond",
+        "items": [
+          {
+            "heading": "Click to Replace",
+            "description": "Please add your text description to the flying impression plane. Please add your text description.",
+            "icon_name": "ri-send-plane-fill"
+          },
+          {
+            "heading": "Click to Replace",
+            "description": "Please add your text description to the flying impression plane. Please add your text description.",
+            "icon_name": "ri-store-2-line"
+          },
+          {
+            "heading": "Click to Replace",
+            "description": "Please add your text description to the flying impression plane. Please add your text description.",
+            "icon_name": "ri-truck-line"
+          },
+          {
+            "heading": "Click to Replace",
+            "description": "Please add your text description to the flying impression plane. Please add your text description.",
+            "icon_name": "ri-global-line"
+          }
+        ]
+      }
+    ]
+  }
+]

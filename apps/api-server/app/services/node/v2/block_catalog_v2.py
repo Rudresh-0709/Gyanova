@@ -185,6 +185,15 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         smart_layout_variant="cardGridImage",
         intent_fit=("introduce", "explain"),
     ),
+    ("smart_layout", "cardGridDiamond"): BlockSpec(
+        family="smart_layout",
+        variant="cardGridDiamond",
+        width_class="wide",
+        density_ok=("sparse", "balanced", "standard"),
+        is_primary_candidate=True,
+        smart_layout_variant="cardGridDiamond",
+        intent_fit=("explain", "list", "introduce"),
+    ),
     # ── smart_layout: Process / Steps variants ───────────────────────────────
     ("smart_layout", "processSteps"): BlockSpec(
         family="smart_layout",
@@ -287,6 +296,24 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         smart_layout_variant="diamondRibbon",
         intent_fit=("explain", "list", "compare"),
     ),
+    ("smart_layout", "diamondGrid"): BlockSpec(
+        family="smart_layout",
+        variant="diamondGrid",
+        width_class="wide",
+        density_ok=("ultra_sparse", "sparse", "balanced", "standard"),
+        is_primary_candidate=True,
+        smart_layout_variant="diamondGrid",
+        intent_fit=("introduce", "explain", "list"),
+    ),
+    ("smart_layout", "diamondHub"): BlockSpec(
+        family="smart_layout",
+        variant="diamondHub",
+        width_class="wide",
+        density_ok=("sparse", "balanced", "standard"),
+        is_primary_candidate=True,
+        smart_layout_variant="diamondHub",
+        intent_fit=("introduce", "explain", "summarize"),
+    ),
     # ── Legacy family aliases (map to smart_layout internally) ────────────────
     ("process", "normal"): BlockSpec(
         family="process",
@@ -385,6 +412,16 @@ _INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], str] = {
     ("summarize", "foundation"): "solidBoxesWithIconsInside",
     ("prove", "data"): "stats",
     ("prove", "comparison"): "statsComparison",
+    ("introduce", "application"): "diamondGrid",
+    ("explain", "mechanism"): "diamondGrid",
+    ("list", "sequence"): "diamondRibbon",
+    ("compare", "overview"): "diamondRibbon",
+    ("explain", "overview"): "diamondHub",
+    ("summarize", "overview"): "diamondHub",
+    ("introduce", "example"): "cardGridImage",
+    ("explain", "example"): "cardGridImage",
+    ("list", "overview"): "cardGridDiamond",
+    ("introduce", "overview"): "cardGridDiamond",
 }
 
 # Fallback variant when intent/scope combination is not found.

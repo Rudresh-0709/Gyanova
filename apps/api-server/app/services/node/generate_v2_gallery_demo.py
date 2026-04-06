@@ -114,8 +114,8 @@ def _demo_slides() -> List[Dict[str, Any]]:
             "title": "Supporting Side Strip Demo",
             "subtitle": "Thin right-strip supporting text",
             "intent": "explain",
-            "layout": "right",
-            "image_layout": "right",
+            "layout": "blank",
+            "image_layout": "blank",
             "slide_density": "balanced",
             "contentBlocks": [
                 {
@@ -145,7 +145,6 @@ def _demo_slides() -> List[Dict[str, Any]]:
                     "text": "Supporting note: this paragraph uses the side-strip variant with a thin right accent line for quick contextual guidance.",
                 },
             ],
-            "accentImagePrompt": "Teaching notes sidebar style illustration with neutral tones.",
         },
         {
             "title": "No-Image Blank Layout",
@@ -341,10 +340,10 @@ def main() -> None:
     .card header {{ padding: 14px 16px; border-bottom: 1px solid var(--border); }}
     .card h2 {{ margin: 0 0 0.3rem; font-size: 1.05rem; }}
     .card p {{ margin: 0; color: var(--muted); font-size: 0.9rem; }}
-    iframe {{ width: 100%; height: 720px; border: 0; background: #020612; }}
+        iframe {{ width: 100%; aspect-ratio: 16 / 9; height: auto; border: 0; background: #020612; }}
     @media (max-width: 900px) {{
       body {{ padding: 12px; }}
-      iframe {{ height: 620px; }}
+            iframe {{ aspect-ratio: 4 / 3; }}
     }}
   </style>
 </head>

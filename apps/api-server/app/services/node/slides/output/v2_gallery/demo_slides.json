@@ -79,8 +79,8 @@
     "title": "Supporting Side Strip Demo",
     "subtitle": "Thin right-strip supporting text",
     "intent": "explain",
-    "layout": "right",
-    "image_layout": "right",
+    "layout": "blank",
+    "image_layout": "blank",
     "slide_density": "balanced",
     "contentBlocks": [
       {
@@ -109,8 +109,7 @@
         "variant": "side-strip",
         "text": "Supporting note: this paragraph uses the side-strip variant with a thin right accent line for quick contextual guidance."
       }
-    ],
-    "accentImagePrompt": "Teaching notes sidebar style illustration with neutral tones."
+    ]
   },
   {
     "title": "No-Image Blank Layout",

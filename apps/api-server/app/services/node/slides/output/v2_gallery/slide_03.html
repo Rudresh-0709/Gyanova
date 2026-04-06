@@ -976,7 +976,7 @@ p {
 }
 
 .p-intro {
-    font-size: calc(var(--p-size) * 1.15);
+    font-size: calc(var(--p-size) * 1.22);
     font-weight: 500;
     color: var(--text-primary, #1a1a1a);
     margin-bottom: 0.75rem;
@@ -989,7 +989,7 @@ p {
     font-style: italic;
     color: var(--text-tertiary, #666);
     opacity: 0.95;
-    font-size: calc(var(--p-size) * 0.98);
+    font-size: calc(var(--p-size) * 1.08);
     background: color-mix(in srgb, var(--bg-secondary, #f8fafc) 78%, transparent);
     border: 1px dashed color-mix(in srgb, var(--border-color, #d1d5db) 85%, transparent);
     border-radius: 0.75rem;
@@ -997,7 +997,7 @@ p {
 }
 
 .p-annotation {
-    font-size: calc(var(--p-size) * 1.05);
+    font-size: calc(var(--p-size) * 1.14);
     background: color-mix(in srgb, var(--callout-bg, #fbfbfb) 88%, white);
     color: var(--text-primary, inherit);
     padding: 0.95rem 1rem;
@@ -1007,7 +1007,7 @@ p {
 }
 
 .p-callout {
-    font-size: calc(var(--p-size) * 1.02);
+    font-size: calc(var(--p-size) * 1.1);
     font-weight: 500;
     color: var(--text-primary, #1f2937);
     background: color-mix(in srgb, var(--callout-bg, #f5f5f5) 75%, #fff7ed);
@@ -1020,7 +1020,7 @@ p {
 }
 
 .p-takeaway {
-    font-size: calc(var(--p-size) * 1.04);
+    font-size: calc(var(--p-size) * 1.12);
     font-weight: 600;
     color: var(--text-primary, #0f172a);
     background: linear-gradient(
@@ -1037,7 +1037,7 @@ p {
 
 .p-outro {
     font-weight: 500;
-    font-size: calc(var(--p-size) * 0.97);
+    font-size: calc(var(--p-size) * 1.05);
     color: var(--text-secondary, #4b5563);
     border-top: 1px dashed color-mix(in srgb, var(--border-color, #d1d5db) 85%, transparent);
     padding-top: 0.75rem;
@@ -1052,29 +1052,6 @@ p {
     line-height: 1.4;
     letter-spacing: 0.01em;
     font-style: italic;
-}
-
-.p-side-strip {
-    position: relative;
-    font-size: calc(var(--p-size) * 0.96);
-    color: var(--text-secondary, #4b5563);
-    background: color-mix(in srgb, var(--bg-secondary, #f8fafc) 86%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border-color, #d1d5db) 70%, transparent);
-    border-radius: 0.6rem;
-    padding: 0.85rem 1.15rem 0.85rem 0.95rem;
-    margin: 0.9rem 0;
-}
-
-.p-side-strip::after {
-    content: "";
-    position: absolute;
-    top: 0.35rem;
-    bottom: 0.35rem;
-    right: 0.35rem;
-    width: 2px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--accent, #64748b) 70%, #94a3b8);
-    opacity: 0.95;
 }
 
 /* ================================================
@@ -1620,6 +1597,7 @@ section[data-density="dense"] .block-separator {
 
 section[data-density="super_dense"] .p-annotation,
 section[data-density="dense"] .p-annotation {
+    font-size: calc(var(--p-size) * 1.02);
     padding: 0.5rem 0.625rem;
     margin: 0;
 }
@@ -2196,6 +2174,198 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
     color: var(--text-secondary, #666);
     text-transform: uppercase;
     letter-spacing: 0.08em;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] {
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 1rem;
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
+    position: relative;
+    min-height: 13rem;
+    padding: 1.35rem 1.2rem 1.2rem;
+    border-radius: 1rem;
+    border: 1px solid color-mix(in srgb, var(--accent, #38bdf8) 38%, #7a8ea8);
+    background: transparent;
+    box-shadow: none;
+    text-align: left;
+    justify-content: flex-start;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card::before {
+    display: none;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-content {
+    gap: 0.72rem;
+    align-items: flex-start;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-icon {
+    width: 2.7rem;
+    height: 2.7rem;
+    margin-bottom: 0.35rem;
+    border-radius: 0.78rem;
+    background: color-mix(in srgb, var(--accent, #38bdf8) 12%, transparent);
+    color: color-mix(in srgb, var(--accent, #38bdf8) 82%, #ffffff);
+    box-shadow: none;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-icon i {
+    font-size: 1.15rem;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-number {
+    width: 2.7rem;
+    min-height: 2.7rem;
+    margin-bottom: 0.45rem;
+    border-radius: 0.78rem;
+    background: color-mix(in srgb, var(--accent, #38bdf8) 12%, transparent);
+    color: color-mix(in srgb, var(--accent, #38bdf8) 82%, #ffffff);
+    font-weight: 800;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-title {
+    font-size: 1.24rem;
+    line-height: 1.3;
+    font-weight: 800;
+    color: #f8fbff;
+    letter-spacing: -0.02em;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-text {
+    font-size: 1.08rem;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--text-secondary, #475569) 82%, #ffffff);
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-icon {
+    width: 3rem;
+    height: 3rem;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-icon i {
+    font-size: 1.3rem;
+}
+
+section[data-density="balanced"] .smart-layout[data-variant="solidBoxesWithIconsInside"],
+section[data-density="standard"] .smart-layout[data-variant="solidBoxesWithIconsInside"],
+section[data-density="dense"] .smart-layout[data-variant="solidBoxesWithIconsInside"] {
+    max-width: none;
+}
+
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"],
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"],
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    max-width: none;
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="5"],
+.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1080px) {
+    .smart-layout[data-variant="solidBoxesWithIconsInside"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+    }
+}
+
+@media (max-width: 720px) {
+    .smart-layout[data-variant="solidBoxesWithIconsInside"] {
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
+        min-height: auto;
+        padding: 1.45rem 1.25rem 1.2rem;
+    }
+}
+
+.p-side-strip,
+.p-side-strip-left {
+    position: relative;
+    width: min(20rem, 32%);
+    max-width: 100%;
+    margin-top: 0.9rem;
+    margin-bottom: 0.3rem;
+    padding: 0.95rem 1rem 0.95rem 1rem;
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--bg-secondary, #f8fafc) 84%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border-color, #d1d5db) 72%, transparent);
+    font-size: calc(var(--p-size) * 0.94);
+    line-height: 1.55;
+    color: var(--text-secondary, #475569);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.p-side-strip {
+    margin-left: auto;
+    margin-right: 0;
+    border-right: 4px solid color-mix(in srgb, var(--accent, #64748b) 72%, #94a3b8);
+    padding-right: 1.1rem;
+}
+
+.p-side-strip-left {
+    margin-left: 0;
+    margin-right: auto;
+    border-right: none;
+    border-left: 4px solid color-mix(in srgb, var(--accent, #64748b) 72%, #94a3b8);
+    padding-left: 1.1rem;
+}
+
+.p-side-strip::after,
+.p-side-strip-left::after {
+    content: "";
+    position: absolute;
+    top: 0.45rem;
+    bottom: 0.45rem;
+    width: 2px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent, #64748b) 70%, #94a3b8);
+    opacity: 0.9;
+}
+
+.p-side-strip::after {
+    right: 0.35rem;
+}
+
+.p-side-strip-left::after {
+    left: 0.35rem;
+}
+
+@media (max-width: 840px) {
+    .p-side-strip,
+    .p-side-strip-left {
+        width: 100%;
+    }
 }
 
 .smart-layout[data-variant="relationshipMap"] {
@@ -4094,26 +4264,28 @@ section[data-animated="true"] .cyclic-info-box[data-segment] {
 </head>
 <body>
     <div class="gyml-deck">
-<section id="slide_9818e703" class="slide-section" role="region" aria-label="Slide slide_9818e703" data-image-layout="right-wide" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 2.6rem; --h2-size: 2.2rem; --p-size: 1.25rem; --line-height: 1.55; --card-number-size: 1.25rem; --card-text-size: 1.125rem; --section-padding: 1.5rem 2.25rem; --block-gap: 1rem; --card-padding: 1.125rem; --heading-gap: 1rem" data-animated="true" data-density="balanced">
-<div class="accent-image-placeholder"><div class="placeholder-content"><span class="placeholder-icon">🖼️</span><span class="placeholder-text">Decorative background placeholder</span></div></div>
+<section id="slide_0e483502" class="slide-section" role="region" aria-label="Slide slide_0e483502" data-image-layout="blank" style="--accent-width: 500px; --block-gap: 3rem; --h1-size: 3.0rem; --h2-size: 2.6rem; --p-size: 1.4rem; --line-height: 1.65; --card-number-size: 1.75rem; --card-text-size: 1.25rem; --section-padding: 2.25rem 3.25rem; --block-gap: 1.5rem; --card-padding: 1.25rem; --heading-gap: 1.5rem" data-animated="true" data-density="balanced">
 <div class="body">
 <h1>Supporting Side Strip Demo</h1>
 <p class="p-side-strip">Supporting note: this paragraph uses the side-strip variant with a thin right accent line for quick contextual guidance.</p>
 <div class="block-separator"></div>
 <div class="smart-layout" data-variant="solidBoxesWithIconsInside" data-item-count="3">
 <div class="card anim-slide-up" data-index="0" data-segment="0">
+<div class="card-icon"><i class="ri-lightbulb-line"></i></div>
 <div class="card-content">
 <h4 class="card-title">Concept</h4>
 <p class="card-text">Introduce one core idea per card to reduce split attention.</p>
 </div>
 </div>
 <div class="card anim-slide-up" data-index="1" data-segment="1">
+<div class="card-icon"><i class="ri-compass-3-line"></i></div>
 <div class="card-content">
 <h4 class="card-title">Example</h4>
 <p class="card-text">Attach one concrete real-world case to each concept.</p>
 </div>
 </div>
 <div class="card anim-slide-up" data-index="2" data-segment="2">
+<div class="card-icon"><i class="ri-flag-2-line"></i></div>
 <div class="card-content">
 <h4 class="card-title">Check</h4>
 <p class="card-text">Ask one quick question to verify understanding.</p>

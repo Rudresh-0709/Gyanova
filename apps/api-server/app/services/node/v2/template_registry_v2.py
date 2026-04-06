@@ -109,7 +109,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_accent_placements=(),
         allowed_layouts=("blank", "left", "right"),
         density_ok=("balanced", "standard", "dense"),
-        preferred_smart_layout_variants=("comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "relationshipMap", "statsBadgeGrid", "diamondRibbon"),
+        preferred_smart_layout_variants=("comparisonProsCons", "comparisonBeforeAfter", "statsComparison", "relationshipMap", "statsBadgeGrid", "diamondRibbon", "diamondHub"),
     ),
     # ── Timeline ──────────────────────────────────────────────────────────────
     "Timeline": TemplateSpec(
@@ -135,7 +135,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_accent_placements=("right", "left", "top", "bottom"),
         allowed_layouts=("right", "left", "top", "bottom", "blank"),
         density_ok=("ultra_sparse", "sparse", "balanced", "standard"),
-        preferred_smart_layout_variants=("cardGridIcon", "bulletIcon", "processSteps", "ribbonFold"),
+        preferred_smart_layout_variants=("cardGridIcon", "bulletIcon", "processSteps", "ribbonFold", "cardGridDiamond"),
     ),
     "Card grid": TemplateSpec(
         name="Card grid",
@@ -147,7 +147,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_accent_placements=("top", "bottom"),
         allowed_layouts=("top", "bottom", "blank"),
         density_ok=("sparse", "balanced", "standard"),
-        preferred_smart_layout_variants=("cardGrid", "cardGridIcon", "cardGridSimple"),
+        preferred_smart_layout_variants=("cardGrid", "cardGridIcon", "cardGridSimple", "cardGridDiamond"),
     ),
     "Card grid with image": TemplateSpec(
         name="Card grid with image",
@@ -184,7 +184,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_accent_placements=("top", "bottom"),
         allowed_layouts=("top", "bottom", "blank"),
         density_ok=("sparse", "balanced", "standard", "dense"),
-        preferred_smart_layout_variants=("processSteps", "processArrow", "processAccordion", "relationshipMap", "diamondRibbon"),
+        preferred_smart_layout_variants=("processSteps", "processArrow", "processAccordion", "relationshipMap", "diamondRibbon", "diamondHub"),
     ),
     "Cyclic process block": TemplateSpec(
         name="Cyclic process block",
@@ -236,7 +236,7 @@ TEMPLATE_REGISTRY: Dict[str, TemplateSpec] = {
         allowed_layouts=("right", "left", "top", "bottom", "blank"),
         supports_high_end_image=True,
         density_ok=("balanced", "standard", "dense"),
-        preferred_smart_layout_variants=("cardGridIcon", "processSteps", "bigBullets", "relationshipMap", "ribbonFold", "diamondRibbon"),
+        preferred_smart_layout_variants=("cardGridIcon", "processSteps", "bigBullets", "relationshipMap", "ribbonFold", "diamondRibbon", "diamondHub"),
     ),
     # ── Stats / Data ──────────────────────────────────────────────────────────
     "Stats block": TemplateSpec(

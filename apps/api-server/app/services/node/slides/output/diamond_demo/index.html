@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diamond Content Blocks Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #121a2f;
+      --text: #e6edf7;
+      --muted: #9eb0d0;
+      --border: #243257;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Segoe UI, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+    }
+    .header-container {
+      width: 100%;
+      padding: 24px;
+      text-align: center;
+      background: radial-gradient(circle at top, #182447 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    h1 { margin: 0 0 0.5rem; font-size: 2rem; }
+    .lead { margin: 0; color: var(--muted); }
+    
+    .stack { 
+      display: flex; 
+      flex-direction: column; 
+      width: 100%;
+      max-width: 1920px; /* Max sensible width */
+    }
+    
+    .slide-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 2px solid var(--border);
+      background: #000; /* Distinct background to see slide bounds */
+    }
+    
+    .slide-container header { 
+      padding: 16px 24px; 
+      background: color-mix(in srgb, var(--panel) 88%, #0a0f1f);
+      border-bottom: 1px solid var(--border); 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .slide-container h2 { margin: 0; font-size: 1.25rem; font-weight: 500; }
+    .slide-container p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    
+    iframe { 
+      width: 100%; 
+      aspect-ratio: 16 / 9; 
+      border: 0; 
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-container">
+    <h1>Diamond Blocks Demo Gallery</h1>
+    <p class="lead">Full width slides stacked vertically to check "diamondRibbon" and "diamondGrid".</p>
+  </div>
+  <div class="stack">
+    
+            <section class="slide-container">
+              <header>
+                <h2>1. Diamond Ribbon Layout</h2>
+                <p><strong>variant:</strong> diamondRibbon</p>
+              </header>
+              <iframe src="slide_diamond_01.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="slide-container">
+              <header>
+                <h2>2. Diamond Grid: Vertical Stack (3 items)</h2>
+                <p><strong>variant:</strong> diamondGrid</p>
+              </header>
+              <iframe src="slide_diamond_02.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="slide-container">
+              <header>
+                <h2>3. Diamond Grid: 2x2 Grid (4 items)</h2>
+                <p><strong>variant:</strong> diamondGrid</p>
+              </header>
+              <iframe src="slide_diamond_03.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="slide-container">
+              <header>
+                <h2>4. Diamond Grid: Horizontal Row (4 items)</h2>
+                <p><strong>variant:</strong> diamondGrid</p>
+              </header>
+              <iframe src="slide_diamond_04.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="slide-container">
+              <header>
+                <h2>5. Diamond Grid: Diagonal Flow (3 items)</h2>
+                <p><strong>variant:</strong> diamondGrid</p>
+              </header>
+              <iframe src="slide_diamond_05.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="slide-container">
+              <header>
+                <h2>6. Diamond Hub</h2>
+                <p><strong>variant:</strong> diamondHub</p>
+              </header>
+              <iframe src="slide_diamond_06.html" loading="lazy"></iframe>
+            </section>
+            
+            <section class="slide-container">
+              <header>
+                <h2>7. Diamond Row Bottom</h2>
+                <p><strong>variant:</strong> cardGridDiamond</p>
+              </header>
+              <iframe src="slide_diamond_07.html" loading="lazy"></iframe>
+            </section>
+            
+  </div>
+</body>
+</html>

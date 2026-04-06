@@ -18,6 +18,7 @@ try:
         GyMLFormulaBlock,
         GyMLHeading,
         GyMLImage,
+        GyMLIcon,
         GyMLKeyValueItem,
         GyMLKeyValueList,
         GyMLNumberedList,
@@ -51,6 +52,7 @@ except ImportError:
         GyMLFormulaBlock,
         GyMLHeading,
         GyMLImage,
+        GyMLIcon,
         GyMLKeyValueItem,
         GyMLKeyValueList,
         GyMLNumberedList,
@@ -93,6 +95,18 @@ def _safe_json_loads(raw: str) -> Optional[Dict[str, Any]]:
 def _join_limited(values: List[str], max_items: int = 4) -> str:
     cleaned = [str(v).strip() for v in values if str(v).strip()]
     return "; ".join(cleaned[:max_items])
+
+
+def _default_icon_name(index: int) -> str:
+    icons = [
+        "ri-lightbulb-line",
+        "ri-compass-3-line",
+        "ri-flag-2-line",
+        "ri-book-open-line",
+        "ri-shield-check-line",
+        "ri-line-chart-line",
+    ]
+    return icons[index % len(icons)]
 
 
 def _intent_for_teacher(teacher_intent: str) -> str:
@@ -178,32 +192,98 @@ def _find_primary_block_index(blocks: List[Dict[str, Any]]) -> int:
     return -1
 
 
+def _ensure_sentence(text: str) -> str:
+    cleaned = str(text or "").strip()
+    if not cleaned:
+        return ""
+    if cleaned[-1] in {".", "!", "?"}:
+        return cleaned
+    return f"{cleaned}."
+
+
+def _pick_best_supporting_fact(plan_item: Dict[str, Any]) -> str:
+    key_facts = [str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()]
+    must_cover = [str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()]
+
+    # Prefer richer full-sentence facts over terse keywords.
+    if key_facts:
+        key_facts_sorted = sorted(key_facts, key=lambda text: len(text), reverse=True)
+        return _ensure_sentence(key_facts_sorted[0])
+    if must_cover:
+        return _ensure_sentence(must_cover[0])
+    return ""
+
+
 def _build_intro_text(plan_item: Dict[str, Any]) -> str:
     objective = str(plan_item.get("objective") or "").strip()
     if objective:
-        return objective
+        return _ensure_sentence(objective)
     title = str(plan_item.get("title") or "this topic").strip()
-    return f"Let's frame {title} before diving into the core structure."
+    return _ensure_sentence(f"Let's frame {title} before diving into the core structure")
 
 
 def _build_context_text(plan_item: Dict[str, Any]) -> str:
-    must_cover = [str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()]
-    key_facts = [str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()]
-    if must_cover:
-        return f"Context: {must_cover[0]}"
-    if key_facts:
-        return f"Context: {key_facts[0]}"
-    return "Context: anchor the core idea in a concrete teaching scenario."
+    title = str(plan_item.get("title") or "this topic").strip()
+    objective = str(plan_item.get("objective") or "").strip()
+    best_fact = _pick_best_supporting_fact(plan_item)
+
+    if best_fact and objective:
+        return _ensure_sentence(f"{objective} {best_fact}")
+    if best_fact:
+        return best_fact
+    if objective:
+        return _ensure_sentence(objective)
+    return _ensure_sentence(f"This context sets up the core idea in {title} with a concrete teaching anchor")
 
 
 def _build_callout_text(plan_item: Dict[str, Any]) -> str:
     assessment = str(plan_item.get("assessment_prompt") or "").strip()
+    best_fact = _pick_best_supporting_fact(plan_item)
+    if best_fact and assessment:
+        return _ensure_sentence(f"{best_fact} Check your understanding: {assessment}")
     if assessment:
-        return assessment
-    key_facts = [str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()]
-    if key_facts:
-        return f"Takeaway: {key_facts[0]}"
-    return "Takeaway: summarize the most actionable insight from this slide."
+        return _ensure_sentence(f"Check your understanding: {assessment}")
+    if best_fact:
+        return _ensure_sentence(f"Key takeaway: {best_fact}")
+    return "Key takeaway: summarize the most actionable insight from this slide."
+
+
+def _enforce_supporting_for_big_boxes(payload: Dict[str, Any], plan_item: Dict[str, Any]) -> None:
+    """Ensure solidBoxesWithIconsInside always has a supporting paragraph block."""
+    blocks = payload.get("contentBlocks", [])
+    if not isinstance(blocks, list) or not blocks:
+        return
+
+    primary_idx = _find_primary_block_index(blocks)
+    if primary_idx < 0 or primary_idx >= len(blocks):
+        return
+
+    primary_block = blocks[primary_idx] if isinstance(blocks[primary_idx], dict) else {}
+    primary_type = str(primary_block.get("type") or "").strip().lower()
+    primary_variant = str(primary_block.get("variant") or "").strip()
+
+    if primary_type != "smart_layout" or primary_variant != "solidBoxesWithIconsInside":
+        return
+
+    paragraph_like = {
+        "paragraph",
+        "intro_paragraph",
+        "context_paragraph",
+        "annotation_paragraph",
+        "outro_paragraph",
+    }
+    has_supporting = any(
+        isinstance(block, dict)
+        and str(block.get("type") or "").strip().lower() in paragraph_like
+        for block in blocks
+    )
+    if has_supporting:
+        return
+
+    insert_at = min(primary_idx + 1, len(blocks))
+    blocks.insert(insert_at, {"type": "annotation_paragraph", "text": _build_callout_text(plan_item)})
+    payload["contentBlocks"] = blocks
+    payload["primary_block_index"] = _find_primary_block_index(blocks)
 
 
 def _apply_composition_style(payload: Dict[str, Any], plan_item: Dict[str, Any], composition_style: str) -> None:
@@ -265,6 +345,35 @@ def _apply_composition_style(payload: Dict[str, Any], plan_item: Dict[str, Any],
 
     payload["contentBlocks"] = rebuilt
     payload["primary_block_index"] = _find_primary_block_index(rebuilt)
+
+
+def _enforce_side_strip_only_on_blank_layout(payload: Dict[str, Any]) -> None:
+    blocks = payload.get("contentBlocks", [])
+    if not isinstance(blocks, list):
+        return
+
+    image_layout = str(payload.get("image_layout") or payload.get("layout") or "blank").strip().lower()
+    is_blank_layout = image_layout == "blank"
+
+    rebuilt: List[Dict[str, Any]] = []
+    for block in blocks:
+        if not isinstance(block, dict):
+            rebuilt.append(block)
+            continue
+
+        block_type = str(block.get("type") or "").strip().lower()
+        variant = str(block.get("variant") or "").strip().lower()
+        is_side_strip = block_type == "side_strip_paragraph" or variant in {"side-strip", "side-strip-left"}
+
+        if is_side_strip and not is_blank_layout:
+            text = str(block.get("text") or "").strip()
+            if text:
+                rebuilt.append({"type": "annotation_paragraph", "text": text})
+            continue
+
+        rebuilt.append(block)
+
+    payload["contentBlocks"] = rebuilt
 
 
 def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
@@ -331,19 +440,31 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
             {
                 "label": "Step 1",
                 "description": must_cover[0] if must_cover else "Start with the core idea.",
-                "imagePrompt": _build_image_prompt(plan_item) or f"Instructional process image for {title}",
+                    "description": (
+                        f"{must_cover[0]}. Build context first, then connect this step to the objective: {objective}."
+                        if must_cover
+                        else f"Start with the core idea and explicitly connect it to the objective: {objective or title}."
+                    ),
                 "color": "#4B5563",
             },
             {
                 "label": "Step 2",
                 "description": must_cover[1] if len(must_cover) > 1 else "Show how the idea develops.",
-                "imagePrompt": _build_image_prompt(plan_item) or f"Instructional process image for {title}",
+                    "description": (
+                        f"{must_cover[1]}. Explain how this follows from Step 1 and what changes in understanding it produces."
+                        if len(must_cover) > 1
+                        else "Show how the idea develops, including cause-and-effect and at least one concrete implication."
+                    ),
                 "color": "#2563EB",
             },
             {
                 "label": "Step 3",
                 "description": must_cover[2] if len(must_cover) > 2 else "Close with the outcome.",
-                "imagePrompt": _build_image_prompt(plan_item) or f"Instructional process image for {title}",
+                    "description": (
+                        f"{must_cover[2]}. Close with the outcome and a practical takeaway learners can apply immediately."
+                        if len(must_cover) > 2
+                        else "Close with the outcome, then state the practical takeaway and how to check understanding."
+                    ),
                 "color": "#10B981",
             },
         ]
@@ -362,13 +483,19 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
         all_points = must_cover[:4] + key_facts[:2]
         if all_points:
             for i, point in enumerate(all_points[:4]):
-                sl_items.append({"heading": f"Point {i + 1}", "description": point})
+                item = {"heading": f"Point {i + 1}", "description": point}
+                if smart_layout_variant == "solidBoxesWithIconsInside":
+                    item["icon_name"] = _default_icon_name(i)
+                sl_items.append(item)
         else:
             sl_items = [
                 {"heading": "Core idea", "description": objective or "Teach the concept clearly."},
                 {"heading": "Must cover", "description": _join_limited(must_cover, max_items=3) or "Key supporting points."},
                 {"heading": "Why it matters", "description": str(plan_item.get("assessment_prompt") or "Ask the learner to apply the idea.")},
             ]
+            if smart_layout_variant == "solidBoxesWithIconsInside":
+                for idx, item in enumerate(sl_items):
+                    item["icon_name"] = _default_icon_name(idx)
         content_blocks.append(
             {
                 "type": "smart_layout",
@@ -504,10 +631,27 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
             items = [GyMLProcessArrowItem(label=str(item.get("label") or "Step"), description=str(item.get("description") or ""), imagePrompt=str(item.get("imagePrompt") or ""), color=item.get("color")) for item in block.get("items", []) if isinstance(item, dict)]
             body_children.append(GyMLProcessArrowBlock(items=items))
         elif block_type == "cyclic_process_block":
-            items = [GyMLCyclicProcessItem(label=str(item.get("label") or "Step"), description=str(item.get("description") or ""), imagePrompt=str(item.get("imagePrompt") or ""), icon_name=str(item.get("icon_name") or "ri-repeat-line")) for item in block.get("items", []) if isinstance(item, dict)]
+            items = [
+                GyMLCyclicProcessItem(
+                    label=str(item.get("label") or "Step"),
+                    description=str(item.get("description") or ""),
+                    image_url=str(item.get("image_url") or item.get("imagePrompt") or ""),
+                )
+                for item in block.get("items", [])
+                if isinstance(item, dict)
+            ]
             body_children.append(GyMLCyclicProcessBlock(items=items))
         elif block_type == "smart_layout":
-            items = [GyMLSmartLayoutItem(**{k: v for k, v in item.items() if k in {"heading", "title", "description", "imagePrompt", "icon_name", "color"}}) for item in block.get("items", []) if isinstance(item, dict)]
+            items = []
+            for item in block.get("items", []):
+                if not isinstance(item, dict):
+                    continue
+                item_kwargs = {k: v for k, v in item.items() if k in {"heading", "title", "description", "points", "year", "value", "label"}}
+                # Accept both v2 (`icon_name`) and legacy (`icon`) keys.
+                icon_name = item.get("icon_name") or item.get("icon")
+                if icon_name:
+                    item_kwargs["icon"] = GyMLIcon(alt=str(icon_name))
+                items.append(GyMLSmartLayoutItem(**item_kwargs))
             body_children.append(GyMLSmartLayout(variant=str(block.get("variant") or "bigBullets"), items=items))
         elif block_type == "image":
             body_children.append(GyMLImage(src=str(block.get("src") or block.get("imagePrompt") or ""), alt=str(block.get("alt") or slide_title), is_accent=bool(block.get("is_accent", False))))
@@ -598,6 +742,11 @@ def _enforce_structured_primary(payload: Dict[str, Any], plan_item: Dict[str, An
         "items": items[:6],
     }
 
+    if (smart_layout_variant or "").strip() == "solidBoxesWithIconsInside":
+        for idx, item in enumerate(fallback_block.get("items", [])):
+            if isinstance(item, dict) and not str(item.get("icon_name") or "").strip():
+                item["icon_name"] = _default_icon_name(idx)
+
     # Insert after the first heading/paragraph block (or at position 1)
     insert_at = 1
     for i, block in enumerate(blocks):
@@ -649,7 +798,7 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
 
     if research_context:
         grounding_instruction = (
-            f"RESEARCH CONTEXT (use this as primary source for facts, dates, and names):\n{research_context[:800]}\n"
+            f"RESEARCH CONTEXT (use this as primary source for facts, dates, and names):\n{research_context[:5000]}\n"
             "When research context is provided: use only the facts, dates, entities, and relationships "
             "stated above. Do NOT invent additional statistics, quotes, or historical claims."
         )
@@ -684,6 +833,11 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
                 " Use exactly 4 compact stat tiles in a 2x2 grid."
                 " Each item's heading SHOULD be the headline metric such as a percentage,"
                 " and the description should be a short supporting line."
+            )
+        if smart_layout_variant == "solidBoxesWithIconsInside":
+            primary_block_instruction += (
+                " Every item MUST include `icon_name` with a valid Remix Icon class"
+                " (examples: ri-lightbulb-line, ri-compass-3-line, ri-book-open-line)."
             )
     elif primary_family == "formula":
         primary_block_instruction = (
@@ -721,6 +875,8 @@ HARD RULES (violations will cause rejection):
     NEVER place intro_paragraph and annotation_paragraph/outro_paragraph together on the same slide.
 6. Do not include both an accentImagePrompt and block-embedded image prompts.
 7. Respect selected_template and image policy (image_need: {image_need}, image_tier: {image_tier}).
+8. Content richness is mandatory: each primary block item description should be at least 18 words and should explain meaning, significance, or implication.
+9. Avoid one-line generic text. Prefer specific, explanatory sentences tied to the objective.
 
 {grounding_instruction}
 
@@ -813,6 +969,12 @@ OUTPUT SCHEMA (JSON only):
 
     # Enforce composition style and hard exclusion rule for intro+callout coexistence.
     _apply_composition_style(payload, plan_item, composition_style)
+
+    # Hard rule: solid boxes primary must include at least one supporting paragraph block.
+    _enforce_supporting_for_big_boxes(payload, plan_item)
+
+    # Enforce: side-strip supporting text may only appear on blank image layout slides.
+    _enforce_side_strip_only_on_blank_layout(payload)
 
     is_valid, errors, warnings = _validate_with_existing_validator(payload)
     if not is_valid:

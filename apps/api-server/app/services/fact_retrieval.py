@@ -16,6 +16,7 @@ The system automatically escalates to higher layers when:
 
 import os
 import json
+import re
 import requests
 from typing import Dict, Any, List, Optional
 from enum import Enum
@@ -65,8 +66,58 @@ class FactRetrievalResult:
 # ═══════════════════════════════════════════════════════════════════════════
 
 
+def _tokenize_text(text: str) -> List[str]:
+    return [t for t in re.split(r"[^a-z0-9]+", (text or "").lower()) if t]
+
+
+def _normalized_text(text: str) -> str:
+    return " ".join(_tokenize_text(text))
+
+
+def _score_wiki_search_hit(query: str, hit: Dict[str, Any]) -> int:
+    """Generic heuristic rank for Wikipedia search hits."""
+    query_norm = _normalized_text(query)
+    title = str(hit.get("title", "") or "")
+    title_norm = _normalized_text(title)
+    snippet_norm = _normalized_text(str(hit.get("snippet", "") or ""))
+
+    score = int(hit.get("size", 0) or 0) // 15000
+
+    query_tokens = _tokenize_text(query_norm)
+    if not query_tokens:
+        return score
+
+    title_tokens = set(_tokenize_text(title_norm))
+    snippet_tokens = set(_tokenize_text(snippet_norm))
+    overlap_title = len([t for t in query_tokens if t in title_tokens])
+    overlap_snippet = len([t for t in query_tokens if t in snippet_tokens])
+
+    score += overlap_title * 8
+    score += overlap_snippet * 2
+
+    if title_norm == query_norm:
+        score += 80
+    elif query_norm and query_norm in title_norm:
+        score += 30
+    elif title_norm and title_norm in query_norm:
+        score += 20
+
+    # Slightly prefer canonical pages over list/disambiguation pages.
+    title_l = title.lower()
+    snippet_l = str(hit.get("snippet", "") or "").lower()
+    if "disambiguation" in title_l or "may refer to" in snippet_l:
+        score -= 30
+    if title_l.endswith("(disambiguation)"):
+        score -= 40
+
+    # Light penalty for overly long titles compared to query specificity.
+    score -= max(0, len(title_tokens) - len(set(query_tokens)))
+
+    return score
+
+
 def retrieve_from_wikipedia(
-    query: str, max_chars: int = 1000
+    query: str, max_chars: int = 6000
 ) -> Optional[Dict[str, Any]]:
     """
     Retrieves factual information from Wikipedia using MediaWiki REST API.
@@ -75,6 +126,55 @@ def retrieve_from_wikipedia(
     try:
         import urllib.parse
 
+        headers = {"User-Agent": "AI-Tutor-App/1.0 (Educational Content Generator)"}
+
+        def _fetch_page(page_title: str, page_id: Optional[int] = None) -> Optional[Dict[str, Any]]:
+            encoded_title = urllib.parse.quote(page_title.replace(" ", "_"))
+
+            content_url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{encoded_title}"
+            content_response = requests.get(content_url, headers=headers, timeout=5)
+            if content_response.status_code != 200:
+                return None
+
+            content_data = content_response.json()
+            extract = str(content_data.get("extract", "") or "")
+
+            full_text = ""
+            if page_id is not None:
+                long_params = {
+                    "action": "query",
+                    "format": "json",
+                    "prop": "extracts",
+                    "pageids": str(page_id),
+                    "explaintext": 1,
+                    "exsectionformat": "plain",
+                }
+                long_response = requests.get(
+                    "https://en.wikipedia.org/w/api.php",
+                    params=long_params,
+                    headers=headers,
+                    timeout=8,
+                )
+                if long_response.status_code == 200:
+                    long_data = long_response.json()
+                    pages = long_data.get("query", {}).get("pages", {})
+                    page_obj = pages.get(str(page_id), {}) if isinstance(pages, dict) else {}
+                    full_text = str(page_obj.get("extract", "") or "")
+
+            if not full_text:
+                full_text = extract
+
+            return {
+                "title": page_title,
+                "summary": extract[:max_chars],
+                "full_text": full_text[:max_chars],
+                "url": content_data.get("content_urls", {})
+                .get("desktop", {})
+                .get("page", ""),
+                "source": "Wikipedia",
+                "type": content_data.get("type", "standard"),
+            }
+
         # Search for the article
         search_url = "https://en.wikipedia.org/w/api.php"
         search_params = {
@@ -82,11 +182,9 @@ def retrieve_from_wikipedia(
             "format": "json",
             "list": "search",
             "srsearch": query,
-            "srlimit": 1,
+            "srlimit": 8,
             "srprop": "snippet",
         }
-
-        headers = {"User-Agent": "AI-Tutor-App/1.0 (Educational Content Generator)"}
 
         search_response = requests.get(
             search_url, params=search_params, headers=headers, timeout=5
@@ -94,34 +192,16 @@ def retrieve_from_wikipedia(
         search_response.raise_for_status()
         search_data = search_response.json()
 
-        if not search_data.get("query", {}).get("search"):
+        hits = search_data.get("query", {}).get("search", [])
+        if not hits:
             return None
 
-        # Get the page title
-        page_title = search_data["query"]["search"][0]["title"]
+        # Rank hits instead of blindly taking first result.
+        search_hit = max(hits, key=lambda h: _score_wiki_search_hit(query, h))
+        page_title = search_hit["title"]
+        page_id = search_hit.get("pageid")
 
-        # URL encode the title for the REST API
-        encoded_title = urllib.parse.quote(page_title.replace(" ", "_"))
-
-        # Fetch page content using REST API v1
-        content_url = (
-            f"https://en.wikipedia.org/api/rest_v1/page/summary/{encoded_title}"
-        )
-        content_response = requests.get(content_url, headers=headers, timeout=5)
-        content_response.raise_for_status()
-        content_data = content_response.json()
-
-        extract = content_data.get("extract", "")
-
-        return {
-            "title": page_title,
-            "summary": extract[:max_chars],
-            "url": content_data.get("content_urls", {})
-            .get("desktop", {})
-            .get("page", ""),
-            "source": "Wikipedia",
-            "type": content_data.get("type", "standard"),
-        }
+        return _fetch_page(page_title, page_id=page_id)
 
     except requests.exceptions.RequestException as e:
         print(f"   ⚠ Wikipedia API request failed: {e}")
@@ -462,7 +542,10 @@ def format_for_llm(result: FactRetrievalResult) -> str:
             )
     elif "summary" in data:
         # Wikipedia data
-        formatted += f"{data.get('summary', '')}\n"
+        full_text = str(data.get("full_text", "") or "").strip()
+        summary = str(data.get("summary", "") or "").strip()
+        wiki_text = full_text or summary
+        formatted += f"{wiki_text}\n"
         formatted += f"Source URL: {data.get('url', '')}\n"
     elif "results" in data:
         # Brave or Tavily results

@@ -529,10 +529,57 @@ async def run_generation_task(task_id: str, request: ConfirmPlanRequest):
             persist_task_state(task_id)
             return
 
-        if request.topic:
-            current_state["topic"] = request.topic
-        if request.sub_topics:
-            current_state["sub_topics"] = request.sub_topics
+        # Detect plan changes and invalidate generated slides if necessary
+        old_plans = current_state.get("plans", {})
+        new_plans = request.plans
+        slides = current_state.setdefault("slides", {})
+        
+        for sub_id, new_sub_plan in new_plans.items():
+            if not isinstance(new_sub_plan, list):
+                continue
+            
+            old_sub_plan = old_plans.get(sub_id, [])
+            if not isinstance(old_sub_plan, list):
+                old_sub_plan = []
+            
+            # Find earliest change in title or summary/goal
+            earliest_change_idx = None
+            max_idx = max(len(old_sub_plan), len(new_sub_plan))
+            
+            for i in range(max_idx):
+                if i >= len(old_sub_plan) or i >= len(new_sub_plan):
+                    earliest_change_idx = i
+                    break
+                
+                old_s = old_sub_plan[i]
+                new_s = new_sub_plan[i]
+                
+                old_t = str(old_s.get("title") or "").strip()
+                new_t = str(new_s.get("title") or "").strip()
+                
+                # Check both summary (v2) and goal (v1/legacy)
+                old_g = str(old_s.get("summary") or old_s.get("goal") or "").strip()
+                new_g = str(new_s.get("summary") or new_s.get("goal") or "").strip()
+                
+                if old_t != new_t or old_g != new_g:
+                    earliest_change_idx = i
+                    break
+            
+            if earliest_change_idx is not None:
+                current_slides = slides.get(sub_id, [])
+                if earliest_change_idx < len(current_slides):
+                    logger.info(
+                        f"Plan change detected in subtopic {sub_id} at index {earliest_change_idx}. "
+                        f"Invalidating {len(current_slides) - earliest_change_idx} slides."
+                    )
+                    slides[sub_id] = current_slides[:earliest_change_idx]
+                    
+                    if earliest_change_idx == 0:
+                        logger.info(f"Clearing variety histories for subtopic {sub_id} due to start-of-plan change.")
+                        current_state.pop("layout_history", None)
+                        current_state.pop("variant_history", None)
+                        current_state.pop("composition_history", None)
+                        current_state.pop("angle_history", None)
 
         current_state["plans"] = request.plans
         persist_task_state(task_id)

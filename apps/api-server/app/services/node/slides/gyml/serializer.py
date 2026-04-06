@@ -83,6 +83,7 @@ class GyMLSerializer:
         """
         # Determine image layout (base preference)
         image_layout = self._parse_image_layout(slide.image_layout)
+        self._active_image_layout = image_layout
 
         # Base accent image (from metadata)
         accent_image = None
@@ -162,16 +163,19 @@ class GyMLSerializer:
 
         print(f"DEBUG: Finished assembling body_children, length: {len(body_children)}")
 
-        return GyMLSection(
-            id=slide.id,
-            image_layout=image_layout,
-            accent_image=accent_image,
-            image_style=slide.image_style,
-            slide_density=slide.slide_density,
-            body=GyMLBody(children=body_children),
-            hierarchy=slide.hierarchy,
-            image_caption=None,
-        )
+        try:
+            return GyMLSection(
+                id=slide.id,
+                image_layout=image_layout,
+                accent_image=accent_image,
+                image_style=slide.image_style,
+                slide_density=slide.slide_density,
+                body=GyMLBody(children=body_children),
+                hierarchy=slide.hierarchy,
+                image_caption=None,
+            )
+        finally:
+            self._active_image_layout = None
 
     def serialize_many(self, slides: List[ComposedSlide]) -> List[GyMLSection]:
         """Serialize multiple slides."""
@@ -219,12 +223,22 @@ class GyMLSerializer:
             text = content.get("text", "")
             variant = content.get("variant")
             if variant:
-                return GyMLParagraph(text=text, variant=str(variant))
+                variant_str = str(variant)
+                if variant_str == "side-strip":
+                    if getattr(self, "_active_image_layout", "blank") != "blank":
+                        return GyMLParagraph(text=text, variant="annotation")
+                    align = str(content.get("align") or content.get("side") or "right").strip().lower()
+                    variant_str = "side-strip-left" if align == "left" else "side-strip"
+                return GyMLParagraph(text=text, variant=variant_str)
             return GyMLParagraph(text=text)
 
         elif block_type == "side_strip_paragraph":
             text = content.get("text", "")
-            return GyMLParagraph(text=text, variant="side-strip")
+            if getattr(self, "_active_image_layout", "blank") != "blank":
+                return GyMLParagraph(text=text, variant="annotation")
+            align = str(content.get("align") or content.get("side") or "right").strip().lower()
+            variant = "side-strip-left" if align == "left" else "side-strip"
+            return GyMLParagraph(text=text, variant=variant)
 
         elif block_type == BlockType.INTRO_PARAGRAPH.value:
             text = content.get("text", "")
@@ -913,7 +927,7 @@ class GyMLSerializer:
 
         for item in items:
             if isinstance(item, dict):
-                icon_alt = item.get("icon", "")
+                icon_alt = item.get("icon_name", item.get("icon", ""))
                 heading = item.get("heading", item.get("label", item.get("title", "")))
 
                 # Points support - keep as list for premium rendering

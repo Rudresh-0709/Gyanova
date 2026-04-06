@@ -340,7 +340,7 @@ def _compact_research_for_prompt(result: Any) -> Tuple[str, List[str], str, str]
         except Exception:
             formatted = ""
 
-    compact = "\n".join([line for line in formatted.splitlines() if line.strip()][:18]).strip()
+    compact = "\n".join([line for line in formatted.splitlines() if line.strip()][:60]).strip()
     raw_text = formatted.strip()
     return compact, evidence[:8], confidence, raw_text
 
@@ -558,7 +558,7 @@ def teacher_slide_planning_node(state: Dict[str, Any]) -> Dict[str, Any]:
         research_query = " || ".join(query_values)
 
     if context_chunks:
-        research_context_for_prompt = "\n\n".join(context_chunks[:2]).strip()
+        research_context_for_prompt = "\n\n".join(context_chunks[:4]).strip()
     if combined_evidence:
         # de-duplicate while preserving order
         deduped: List[str] = []

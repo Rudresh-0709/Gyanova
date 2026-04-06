@@ -105,6 +105,7 @@ class SmartLayoutVariant(Enum):
     TABLE = "table"  # Standard table
     TABLE_STRIPED = "tableStriped"  # Alternating rows
     TABLE_HIGHLIGHT = "tableHighlight"  # With highlighted cells
+    DIAMOND_GRID = "diamondGrid"  # Diamond-based patterns
 
 
 class Intent(Enum):

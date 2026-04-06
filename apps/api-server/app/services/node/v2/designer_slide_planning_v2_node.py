@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from app.services.node.v2.block_catalog_v2 import (
+        BLOCK_CATALOG,
         block_to_blueprint,
         get_block_spec,
         get_smart_layout_variant,
@@ -24,6 +25,7 @@ try:
     )
 except ImportError:
     from .block_catalog_v2 import (  # type: ignore
+        BLOCK_CATALOG,
         block_to_blueprint,
         get_block_spec,
         get_smart_layout_variant,
@@ -119,6 +121,21 @@ def _derive_primary_family(teacher_slide: Dict[str, Any]) -> str:
         return "smart_layout"
     # Default: smart_layout is the richest general-purpose primary family
     return "smart_layout"
+
+
+def _available_primary_smart_layout_variants(density: str) -> List[str]:
+    """Return primary-eligible smart_layout variants that support the given density."""
+    density_key = str(density or "balanced").strip().lower()
+    variants: List[str] = []
+    for spec in BLOCK_CATALOG.values():
+        if spec.family != "smart_layout" or not spec.is_primary_candidate:
+            continue
+        if spec.density_ok and density_key not in spec.density_ok:
+            continue
+        name = str(spec.smart_layout_variant or spec.variant).strip()
+        if name:
+            variants.append(name)
+    return sorted(set(variants))
 
 
 def _choose_layout(
@@ -271,6 +288,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
     local_variant_history = list(variant_history)
     local_layout_history = list(layout_history)
     local_composition_history: List[str] = []
+    local_slv_counts: Dict[str, int] = {}
 
     for index, teacher_slide in enumerate(teacher_slides):
         if not isinstance(teacher_slide, dict):
@@ -291,7 +309,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         template_pref_variants = []  # will be filled after template selection
         smart_layout_variant = pick_smart_layout_variant(
             preferred_slv,
-            [preferred_slv, "bigBullets", "cardGridIcon", "timeline", "processSteps"],
+            [preferred_slv, "ribbonFold", "statsBadgeGrid", "timeline", "processSteps", "diamondRibbon", "relationshipMap"],
             local_variant_history,
         )
 
@@ -357,6 +375,37 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         # Determine final primary_variant and smart_layout_variant from the chosen spec
         actual_slv = primary_spec.smart_layout_variant or smart_layout_variant
 
+        # Hard per-subtopic guard: use each smart_layout variant at most once.
+        if primary_spec.family == "smart_layout" and local_slv_counts.get(actual_slv, 0) >= 1:
+            candidate_variants: List[str] = []
+            seen: set[str] = set()
+            for name in (
+                [preferred_slv, smart_layout_variant, "ribbonFold", "statsBadgeGrid", "diamondRibbon", "relationshipMap"]
+                + _available_primary_smart_layout_variants(density)
+            ):
+                variant_name = str(name or "").strip()
+                if not variant_name or variant_name in seen:
+                    continue
+                seen.add(variant_name)
+                if local_slv_counts.get(variant_name, 0) >= 1:
+                    continue
+                candidate_variants.append(variant_name)
+
+            if candidate_variants:
+                replacement_variant = pick_smart_layout_variant(
+                    preferred_slv,
+                    candidate_variants,
+                    local_variant_history,
+                )
+                replacement_spec = get_block_spec("smart_layout", replacement_variant)
+                if (
+                    replacement_spec.family == "smart_layout"
+                    and replacement_spec.is_primary_candidate
+                    and (not replacement_spec.density_ok or density in replacement_spec.density_ok)
+                ):
+                    primary_spec = replacement_spec
+                    actual_slv = replacement_spec.smart_layout_variant or replacement_variant
+
         supporting_specs = select_supporting_blocks(
             family=primary_spec.family,
             density=density,
@@ -387,6 +436,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         local_layout_history.append(layout)
         if actual_slv:
             local_variant_history.append(actual_slv)
+            local_slv_counts[actual_slv] = local_slv_counts.get(actual_slv, 0) + 1
         local_composition_history.append(composition_style)
 
         teacher_slide_ref = str(teacher_slide.get("slide_id") or f"{target_sub_id}_t{index + 1}")
@@ -408,6 +458,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 "sequence_index": index,
                 "title": str(teacher_slide.get("title") or f"{subtopic_name} - Slide {index + 1}").strip(),
                 "objective": str(teacher_slide.get("objective") or "Explain the concept clearly.").strip(),
+                "summary": str(teacher_slide.get("objective") or teacher_slide.get("summary") or "Explain the concept clearly.").strip(),
                 "teaching_intent": teaching_intent,
                 "coverage_scope": coverage_scope,
                 "slide_density": density,

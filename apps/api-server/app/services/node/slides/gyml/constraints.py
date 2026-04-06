@@ -39,7 +39,7 @@ class ConstraintRules:
     """
 
     # Global Limits
-    MAX_SLIDE_WORDS = 180
+    MAX_SLIDE_WORDS = 260
     MIN_SLIDE_WORDS = 20
 
     LAYOUTS: Dict[str, LayoutLimits] = {
@@ -53,16 +53,16 @@ class ConstraintRules:
         "stats": LayoutLimits(
             min_items=2,
             max_items=4,
-            max_words_per_item=15,
+            max_words_per_item=22,
         ),
-        "processSteps": LayoutLimits(min_items=3, max_items=12, max_words_per_item=50),
-        "bigBullets": LayoutLimits(min_items=3, max_items=8, max_words_per_item=30),
-        "bulletIcon": LayoutLimits(min_items=3, max_items=8, max_words_per_item=30),
-        "bulletCheck": LayoutLimits(min_items=3, max_items=8, max_words_per_item=30),
-        "bulletCross": LayoutLimits(min_items=3, max_items=8, max_words_per_item=30),
-        "cardGrid": LayoutLimits(min_items=2, max_items=12, max_words_per_item=25),
+        "processSteps": LayoutLimits(min_items=3, max_items=12, max_words_per_item=65),
+        "bigBullets": LayoutLimits(min_items=3, max_items=8, max_words_per_item=42),
+        "bulletIcon": LayoutLimits(min_items=3, max_items=8, max_words_per_item=42),
+        "bulletCheck": LayoutLimits(min_items=3, max_items=8, max_words_per_item=42),
+        "bulletCross": LayoutLimits(min_items=3, max_items=8, max_words_per_item=42),
+        "cardGrid": LayoutLimits(min_items=2, max_items=12, max_words_per_item=38),
         "solidBoxesWithIconsInside": LayoutLimits(
-            min_items=2, max_items=4, max_words_per_item=20
+            min_items=2, max_items=4, max_words_per_item=34
         ),
         "hub_and_spoke": LayoutLimits(min_items=4, max_items=6, max_words_per_item=80),
     }
