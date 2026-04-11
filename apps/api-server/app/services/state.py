@@ -44,6 +44,9 @@ class TutorState(TypedDict, total=False):
     granularity: str
     topic_granularity: str
     learning_depth: str
+    currentKnowledge: str
+    goal: str
+    curriculumDepth: str
 
     # Subtopics
     sub_topics: List[Dict[str, Any]]

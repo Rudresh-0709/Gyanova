@@ -385,9 +385,9 @@ const ShimmerButton = ({ children, className, ...props }: React.ButtonHTMLAttrib
 export default function LessonInputPage() {
     const [formData, setFormData] = useState({
         topic: "",
-        current_level: "Intermediate",
-        learning_goal: "Understand Core Concepts",
-        learning_depth: "Normal",
+        currentKnowledge: "Intermediate",
+        goal: "Understand Core Concepts",
+        curriculumDepth: "Normal",
         preferred_method: "Socratic",
         teacher_gender: "Female",
     });
@@ -715,12 +715,12 @@ export default function LessonInputPage() {
                                         />
                                     </div>
                                     <div className="grid md:grid-cols-2 gap-6">
-                                        <CustomSelect label="Current Knowledge" icon={Layers} value={formData.current_level} options={levelOptions} onChange={(v) => handleSelectChange("current_level", v)} />
-                                        <CustomSelect label="Your Goal" icon={Target} value={formData.learning_goal} options={goalOptions} onChange={(v) => handleSelectChange("learning_goal", v)} />
+                                        <CustomSelect label="Current Knowledge" icon={Layers} value={formData.currentKnowledge} options={levelOptions} onChange={(v) => handleSelectChange("currentKnowledge", v)} />
+                                        <CustomSelect label="Your Goal" icon={Target} value={formData.goal} options={goalOptions} onChange={(v) => handleSelectChange("goal", v)} />
                                     </div>
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <CustomSelect label="Mental Model" icon={Mic2} value={formData.preferred_method} options={methodOptions} onChange={(v) => handleSelectChange("preferred_method", v)} />
-                                        <CustomSelect label="Curriculum Depth" icon={BookOpen} value={formData.learning_depth} options={granularityOptions} onChange={(v) => handleSelectChange("learning_depth", v)} />
+                                        <CustomSelect label="Curriculum Depth" icon={BookOpen} value={formData.curriculumDepth} options={granularityOptions} onChange={(v) => handleSelectChange("curriculumDepth", v)} />
                                     </div>
                                 </div>
 

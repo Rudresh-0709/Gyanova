@@ -67,26 +67,51 @@ def _compute_target_subtopic_count(
 
 
 def extract_sub_topic(state: TutorState) -> TutorState:
-    system_prompt = """You are an AI-powered educational assistant that helps design structured learning content. 
-    Your goal is to break down a topic into logical, technical sub-topics.
-    
-    CRITICAL RULES:
-    1. STICK EXACTLY to the user's topic. Do NOT rephrase it or change its scope.
-    2. TECHNICAL DEPTH: Sub-topics should be specific enough to cover laws, mechanisms, and examples (e.g., "Refractive Index & Snell's Law" instead of just "Math").
-    3. TOTAL COVERAGE: Ensure all core concepts of the topic are represented in the sub-topics.
-    4. For each sub-topic, estimate its difficulty level.
+    topic_str = state.get("topic", "")
+    current_knowledge = state.get("currentKnowledge", "Intermediate")
+    goal = state.get("goal", "Understand Core Concepts")
+    curriculum_depth = state.get("curriculumDepth", "Normal")
 
-    Format the output as a valid JSON object like:
-    {
-        "topic": "<EXACT original topic provided>",
-        "sub_topics": [
-            {"name": "Sub-topic 1 name", "difficulty": "Beginner"},
-            {"name": "Sub-topic 2 name", "difficulty": "Intermediate"}
-        ]
-    }
+    system_prompt = f"""You are an AI-powered educational assistant that helps design structured learning content.
+Your goal is to break down a topic into logical, technical sub-topics tailored to the user's needs.
 
-    If the topic is too vague or invalid (like "No clear topic detected"), respond with: {"sub_topics": []}
-    """
+=== INPUTS ===
+- topic: {topic_str}
+- currentKnowledge: {current_knowledge}
+- goal: {goal}
+- curriculumDepth: {curriculum_depth}
+
+=== SYSTEM/INSTRUCTION ===
+1. Break down the topic into logical, technical sub-topics.
+2. STICK EXACTLY to the user's topic. Do NOT rephrase it or change its scope.
+3. Subtopics must be ordered progressively from fundamentals to advanced, adjusted to the learner's 'currentKnowledge' level (e.g. advanced learners can skip absolute basics).
+4. Emphasize concepts and frame descriptions based on the user's 'goal' (e.g. Exam Prep => key points, Conceptual Mastery => strong intuition).
+5. SUBTOPIC COUNT RULES based on 'curriculumDepth':
+   - If curriculumDepth == "Summary" or "summary": generate EXACTLY 1 subtopic, written as a summarized/broad "single module" version of the topic.
+   - Otherwise, generate more subtopics proportionally (e.g. Overview = ~3, Normal = ~4-6, Detailed = ~6-8).
+   - You MUST comply with the exact count rules above even if you think more or fewer subtopics would be better.
+
+=== OUTPUT SCHEMA ===
+Format the output as a valid JSON object exactly like this:
+{{
+    "topic": "<EXACT original topic provided>",
+    "sub_topics": [
+        {{
+            "name": "Sub-topic 1 name (Must be unique)",
+            "difficulty": "Beginner/Intermediate/Advanced",
+            "description": "Short objective or description of what this covers."
+        }}
+    ]
+}}
+
+If the topic is too vague or invalid (like "No clear topic detected"), respond with: {{"sub_topics": []}}
+
+=== VALIDATION RULES ===
+- If curriculumDepth is "Summary" or "summary" and you output more than 1 subtopic, that is invalid.
+- If any subtopic title repeats, invalid.
+- Each subtopic must include a short objective/description.
+- If output is not valid JSON with no extra markdown or prose outside the JSON block, invalid.
+"""
     user_prompt = state.get("topic", "")
 
     if state.get("unsupported_topic"):

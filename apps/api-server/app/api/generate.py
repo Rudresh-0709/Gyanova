@@ -415,9 +415,13 @@ cleanup_orphaned_tasks()
 
 class GenerateLessonRequest(BaseModel):
     topic: str
-    current_level: str = "Intermediate"
-    learning_goal: str = "Understand Core Concepts"
-    learning_depth: Literal["Summary", "Overview", "Normal", "Detailed"] = "Normal"
+    currentKnowledge: str = "Intermediate"
+    goal: str = "Understand Core Concepts"
+    curriculumDepth: Literal["Summary", "Overview", "Normal", "Detailed"] = "Normal"
+    # Legacy fields
+    current_level: Optional[str] = None
+    learning_goal: Optional[str] = None
+    learning_depth: Optional[str] = None
     granularity: Optional[str] = None
     preferred_method: str = "Socratic"
     teacher_gender: str = "Female"
@@ -437,8 +441,8 @@ class GenerateLessonRequest(BaseModel):
             }
 
             normalized = legacy_depth_map.get(self.granularity.strip().lower())
-            if normalized and self.learning_depth == "Normal":
-                self.learning_depth = normalized
+            if normalized and self.curriculumDepth == "Normal":
+                self.curriculumDepth = normalized
 
         return self
 
@@ -459,8 +463,11 @@ async def run_planning_task(task_id: str, request: GenerateLessonRequest):
         initial_state = {
             "user_input": request.topic,
             "topic": "",
-            "difficulty": request.current_level,
-            "learning_depth": request.learning_depth,
+            "difficulty": request.currentKnowledge, # Map original field
+            "learning_depth": request.curriculumDepth, # Map original field
+            "currentKnowledge": request.currentKnowledge,
+            "goal": request.goal,
+            "curriculumDepth": request.curriculumDepth,
             "granularity": "N/A",
             "topic_granularity": "N/A",
             "teacher_gender": request.teacher_gender,
