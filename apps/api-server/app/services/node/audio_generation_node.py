@@ -369,12 +369,7 @@ if __name__ == "__main__":
         "topic": full_state.get("topic"),
         "teacher_voice_id": 4,  # nova
         "lesson_intro_narration": full_state.get("lesson_intro_narration"),
-        "subtopic_intro_narrations": {
-            # Just test one subtopic intro
-            list(full_state.get("subtopic_intro_narrations", {}).keys())[0]: list(
-                full_state.get("subtopic_intro_narrations", {}).values()
-            )[0]
-        },
+        "subtopic_intro_narrations": {},
         "slides": test_slides,
     }
 

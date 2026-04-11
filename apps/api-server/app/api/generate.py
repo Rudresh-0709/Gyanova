@@ -74,13 +74,6 @@ def _has_preview_content(result: Dict[str, Any]) -> bool:
         if lesson_intro["html_doc"].strip():
             return True
 
-    subtopic_intros = result.get("subtopic_intro_narrations") or {}
-    if isinstance(subtopic_intros, dict):
-        for intro in subtopic_intros.values():
-            if isinstance(intro, dict) and isinstance(intro.get("html_doc"), str):
-                if intro["html_doc"].strip():
-                    return True
-
     slides = result.get("slides") or {}
     if isinstance(slides, dict):
         for slide_list in slides.values():
@@ -111,18 +104,6 @@ def _merge_generation_state(current_result: Dict[str, Any], state_update: Dict[s
             current_result["slides"] = current_slides
         for sub_id, slide_list in incoming_slides.items():
             current_slides[sub_id] = _merge_slide_lists(current_slides.get(sub_id), slide_list)
-
-    incoming_subtopic_intros = new_state.pop("subtopic_intro_narrations", None)
-    if isinstance(incoming_subtopic_intros, dict):
-        current_intros = current_result.setdefault("subtopic_intro_narrations", {})
-        if not isinstance(current_intros, dict):
-            current_intros = {}
-            current_result["subtopic_intro_narrations"] = current_intros
-        for sub_id, intro_payload in incoming_subtopic_intros.items():
-            if isinstance(intro_payload, dict) and isinstance(current_intros.get(sub_id), dict):
-                current_intros[sub_id].update(intro_payload)
-            else:
-                current_intros[sub_id] = intro_payload
 
     incoming_lesson_intro = new_state.pop("lesson_intro_narration", None)
     if isinstance(incoming_lesson_intro, dict):
@@ -265,16 +246,6 @@ def _collect_audio_paths_from_result(result: Dict[str, Any]) -> List[Path]:
         for seg in lesson_intro.get("narration_segments", []) or []:
             if isinstance(seg, dict):
                 add_audio_path(seg.get("audio_url"))
-
-    subtopic_intros = result.get("subtopic_intro_narrations") or {}
-    if isinstance(subtopic_intros, dict):
-        for intro in subtopic_intros.values():
-            if not isinstance(intro, dict):
-                continue
-            add_audio_path(intro.get("audio_url"))
-            for seg in intro.get("narration_segments", []) or []:
-                if isinstance(seg, dict):
-                    add_audio_path(seg.get("audio_url"))
 
     slides = result.get("slides") or {}
     if isinstance(slides, dict):

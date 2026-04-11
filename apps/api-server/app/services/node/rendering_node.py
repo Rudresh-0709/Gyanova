@@ -178,21 +178,7 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
         intro_image_tasks.append(task)
         intro_task_mapping.append(("lesson", lesson_intro))
     
-    # Process Subtopic Intros
-    subtopic_intros = state.get("subtopic_intro_narrations", {})
-    for sub_id, intro in subtopic_intros.items():
-        if intro and not intro.get("image_url"):
-            print(f"🎨 [Rendering Node] Generating subtopic intro image for {sub_id}...")
-            prompt = generate_intro_image_prompt("subtopic", intro.get("title", "Subtopic"))
-            print(f"   📝 Image prompt: {prompt[:60]}...")
-            task = ImageGenerator.generate_image(
-                prompt=prompt,
-                width=1024,
-                height=576,
-                style="dynamic"
-            )
-            intro_image_tasks.append(task)
-            intro_task_mapping.append(("subtopic", intro))
+    # Note: Subtopic intros are no longer generated per user request
     
     # Run intro image generation concurrently
     if intro_image_tasks:
@@ -242,26 +228,7 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
             lesson_intro["html_doc"] = html
             print("✅ Lesson intro HTML generated")
     
-    # Process Subtopic Intros
-    subtopic_intros = state.get("subtopic_intro_narrations", {})
-    for sub_id, intro in subtopic_intros.items():
-        sub_html = (intro or {}).get("html_doc", "") or ""
-        sub_needs_refresh = (
-            intro
-            and (
-                not sub_html
-                or (
-                    intro.get("image_url")
-                    and "class=\"background-image\"" not in sub_html
-                )
-            )
-        )
-        if sub_needs_refresh:
-            print(f"🎬 [Rendering Node] Generating subtopic intro HTML for {sub_id}...")
-            html = await generate_intro_html(intro, "subtopic")
-            if html:
-                intro["html_doc"] = html
-                print(f"✅ Subtopic intro HTML generated for {sub_id}")
+    # Subtopic intros are no longer rendered since they are removed from generation
     
     # ═══════════════════════════════════════════════════════════════════════════
     # PROCESS REGULAR CONTENT SLIDES
@@ -481,7 +448,5 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
     # Include intro data if it was processed
     if state.get("lesson_intro_narration"):
         return_dict["lesson_intro_narration"] = state["lesson_intro_narration"]
-    if state.get("subtopic_intro_narrations"):
-        return_dict["subtopic_intro_narrations"] = state["subtopic_intro_narrations"]
     
     return return_dict

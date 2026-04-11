@@ -182,61 +182,9 @@ def intro_narration_node(state: Dict[str, Any]) -> Dict[str, Any]:
             state["lesson_intro_narration"]["image_url"] = None
             state["lesson_intro_narration"]["html_doc"] = None
 
-    # 2. Generate Subtopic Intros (Transitionary) - Now independent of narration_style
-    if (
-        "subtopic_intro_narrations" not in state
-        or state["subtopic_intro_narrations"] is None
-    ):
-        state["subtopic_intro_narrations"] = {}
-
-    sub_topics = state.get("sub_topics", [])
-
-    # If sub_topics is missing (older state), fallback to slide_plan keys
-    if not sub_topics and "slide_plan" in state:
-        for sub_id, sub_data in state["slide_plan"].items():
-            sub_topics.append(
-                {"id": sub_id, "name": sub_data.get("subtopic_name", "Subtopic")}
-            )
-
-    for subtopic in sub_topics:
-        sub_id = subtopic.get("id")
-        sub_name = subtopic.get("name")
-
-        existing_sub_intro = state["subtopic_intro_narrations"].get(sub_id) if sub_id else None
-        needs_sub_intro = (
-            not existing_sub_intro
-            or not str(existing_sub_intro.get("narration_text", "")).strip()
-        )
-
-        if sub_id and needs_sub_intro:
-            print(f"Generating transition for subtopic: {sub_name}...")
-            # Pass lesson_intro to explicitly force uniqueness
-            sub_intro = generate_subtopic_intro(
-                sub_name, topic, difficulty, lesson_opening=lesson_intro
-            )
-            title, tagline = extract_title_and_tagline(sub_intro, sub_name)
-            state["subtopic_intro_narrations"][sub_id] = {
-                "narration_text": sub_intro,
-                "title": title,
-                "tagline": tagline,
-                "badge": "SECTION",
-                "image_url": None,  # Will be set by image generation node
-                "html_doc": None,   # Will be set by rendering node
-            }
-        elif sub_id and "title" not in state["subtopic_intro_narrations"][sub_id]:
-            # Ensure fields exist for existing entries
-            sub_intro = state["subtopic_intro_narrations"][sub_id].get("narration_text", "")
-            title, tagline = extract_title_and_tagline(sub_intro, sub_name)
-            state["subtopic_intro_narrations"][sub_id]["title"] = title
-            state["subtopic_intro_narrations"][sub_id]["tagline"] = tagline
-            state["subtopic_intro_narrations"][sub_id]["badge"] = "SECTION"
-            state["subtopic_intro_narrations"][sub_id]["image_url"] = None
-            state["subtopic_intro_narrations"][sub_id]["html_doc"] = None
-
     # Return only modified fields for clean state management
     return {
         "lesson_intro_narration": state["lesson_intro_narration"],
-        "subtopic_intro_narrations": state["subtopic_intro_narrations"],
     }
 
 

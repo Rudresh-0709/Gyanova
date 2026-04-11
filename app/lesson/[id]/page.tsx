@@ -32,7 +32,6 @@ interface SlideEntry {
 
 interface LessonRenderResult {
     lesson_intro_narration?: unknown;
-    subtopic_intro_narrations?: Record<string, unknown>;
     slides?: Record<string, Array<{ html_content?: string | null }> | undefined>;
 }
 
@@ -355,14 +354,6 @@ function hasRenderableLessonContent(
         return true;
     }
 
-    const subtopicIntros = Object.values(result?.subtopic_intro_narrations || {});
-    if (subtopicIntros.some((intro) => {
-        const htmlDoc = (intro as { html_doc?: string | null } | null | undefined)?.html_doc;
-        return typeof htmlDoc === "string" && htmlDoc.trim().length > 0;
-    })) {
-        return true;
-    }
-
     const slideGroups = Object.values(result?.slides || {});
     return slideGroups.some((slides) =>
         Array.isArray(slides) &&
@@ -529,30 +520,7 @@ export default function LessonViewPage() {
         }
 
         lessonData.sub_topics?.forEach((sub: any) => {
-            // 2. Add Subtopic Intro if available (NEW)
-            if (lessonData.subtopic_intro_narrations?.[sub.id]) {
-                const subtopic_intro = lessonData.subtopic_intro_narrations[sub.id];
-                list.push({
-                    slide_id: `subtopic_intro_${sub.id}`,
-                    title: "Section Introduction",
-                    // Use rendered html_doc from backend, fallback to local HTML while backend catches up.
-                    html_doc:
-                        subtopic_intro.html_doc ||
-                        generateSubtopicIntroHtml(
-                            subtopic_intro.title || sub.name || "Section Introduction",
-                            subtopic_intro.narration_text || subtopic_intro.tagline || "Next section.",
-                            subtopic_intro.badge || "SECTION"
-                        ),
-                    narration_segments: [
-                        {
-                            text: subtopic_intro.narration_text || "Next section.",
-                            audio_url: toAudioHttpUrl(subtopic_intro.audio_url),
-                            segment_index: 0,
-                        },
-                    ],
-                    subtopic_name: sub.name || "",
-                });
-            }
+            // 2. Add Subtopic Intro (Disabled per user request)
 
             // 3. Add Content Slides
             const slides = lessonData.slides?.[sub.id] || [];

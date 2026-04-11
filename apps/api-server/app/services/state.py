@@ -71,7 +71,6 @@ class TutorState(TypedDict, total=False):
     # Narration
     intro_text: str
     lesson_intro_narration: Dict[str, Any]
-    subtopic_intro_narrations: Dict[str, Any]
 
     # Audio
     audio_output_dir: str
