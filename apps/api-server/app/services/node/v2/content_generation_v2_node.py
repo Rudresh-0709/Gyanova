@@ -8,11 +8,14 @@ try:
     from app.services.node.v2.research_context_v2 import build_research_context
     from app.services.node.v2.hallucination_guard_v2 import check_slide
     from app.services.node.v2.media_enricher_v2 import enrich_slide_media_sync
+    from app.services.node.v2.narration_v2 import generate_narration_v2
 except ImportError:
     from .gyml_generator_v2 import generate_gyml_v2
     from .research_context_v2 import build_research_context
     from .hallucination_guard_v2 import check_slide
     from .media_enricher_v2 import enrich_slide_media_sync
+    from .narration_v2 import generate_narration_v2
+import json
 
 
 def _build_narration_text(plan_item: Dict[str, Any], slide: Dict[str, Any]) -> str:
@@ -138,9 +141,28 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
             pass
 
         enriched_payload = slide_obj.get("gyml_content", slide_payload)
-        narration_text = _build_narration_text(concept, enriched_payload)
+        
+        # LLM Narration V2
+        try:
+            narration_raw = generate_narration_v2(
+                enriched_slide=slide_obj,
+                topic=str(state.get("topic") or state.get("user_input") or subtopic_name),
+                intent=str(concept.get("teaching_intent", "explain")),
+                mentalModel=state.get("preferred_method", ""),
+                slide_index=index + 1
+            )
+            narration_data = json.loads(narration_raw)
+            segments = narration_data.get("narration_segments", [])
+            if not isinstance(segments, list) or not segments:
+                raise ValueError("narration_segments missing or empty")
+            slide_obj["narration_text"] = "\n\n".join(segments)
+        except Exception as e:
+            # Fallback
+            print(f"[content_generation_v2] Narration JSON parse failed: {e}")
+            fallback_text = _build_narration_text(concept, enriched_payload)
+            slide_obj["narration_text"] = fallback_text
+
         animation_meta = _animation_metadata(enriched_payload)
-        slide_obj["narration_text"] = narration_text
         slide_obj["animation_unit"] = animation_meta["animation_unit"]
         slide_obj["animation_unit_count"] = animation_meta["animation_unit_count"]
         slide_obj["animated_block_index"] = animation_meta["animated_block_index"]
@@ -155,6 +177,9 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         slv = str(concept.get("smart_layout_variant") or "")
         if slv:
             variant_history.append(slv)
+
+        # Break after one slide to yield state back to LangGraph, enabling slide-by-slide streaming!
+        break
 
 
     return {

@@ -388,7 +388,7 @@ export default function LessonInputPage() {
         currentKnowledge: "Intermediate",
         goal: "Understand Core Concepts",
         curriculumDepth: "Normal",
-        preferred_method: "Socratic",
+        preferred_method: "Start with intuition and visuals, avoid formulas unless necessary.",
         teacher_gender: "Female",
     });
 
@@ -663,7 +663,12 @@ export default function LessonInputPage() {
     const methodOptions = [
         { value: "Socratic", label: "Socratic", subLabel: "Learn through questions" },
         { value: "Direct Instruction", label: "Direct Instruction", subLabel: "Clear explanations" },
-        { value: "Storytelling", label: "Storytelling", subLabel: "Learn through analogies" },
+        { value: "Start with intuition and visuals, avoid formulas unless necessary.", label: "Intuition-first", subLabel: "Visual and conceptual" },
+        { value: "Explain using a factory assembly line analogy. Map inputs→raw materials, steps→stations, outputs→products.", label: "Factory analogy", subLabel: "Map parts to a factory" },
+        { value: "Explain as a short story with characters representing key concepts. Keep it accurate and consistent.", label: "Storytelling", subLabel: "Narrative with characters" },
+        { value: "Explain like a coach drawing a play: strategy, roles, and step-by-step execution.", label: "Sports coach", subLabel: "Strategy and execution" },
+        { value: "Explain like navigating a city map: landmarks are key ideas, roads are relationships, routes are processes.", label: "City map", subLabel: "Exploration and paths" },
+        { value: "Start with definitions and precise terminology, then small worked examples.", label: "Math-first", subLabel: "Formal and precise" },
     ];
 
     if (status === "loading") {
@@ -719,7 +724,7 @@ export default function LessonInputPage() {
                                         <CustomSelect label="Your Goal" icon={Target} value={formData.goal} options={goalOptions} onChange={(v) => handleSelectChange("goal", v)} />
                                     </div>
                                     <div className="grid md:grid-cols-2 gap-6">
-                                        <CustomSelect label="Mental Model" icon={Mic2} value={formData.preferred_method} options={methodOptions} onChange={(v) => handleSelectChange("preferred_method", v)} />
+                                        <CustomSelect label="Teaching Style / Mental Model" icon={Mic2} value={formData.preferred_method} options={methodOptions} onChange={(v) => handleSelectChange("preferred_method", v)} />
                                         <CustomSelect label="Curriculum Depth" icon={BookOpen} value={formData.curriculumDepth} options={granularityOptions} onChange={(v) => handleSelectChange("curriculumDepth", v)} />
                                     </div>
                                 </div>

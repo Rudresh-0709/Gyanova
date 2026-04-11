@@ -79,8 +79,20 @@ def _summarize_slide_content(enriched_slide: Dict[str, Any]) -> str:
         return ""
 
     content_blocks = gyml_content.get("contentBlocks", [])
-    if not isinstance(content_blocks, list):
+    if not isinstance(content_blocks, list) or not content_blocks:
         return ""
+
+    # The user specifically requested that ONLY the primary content block is sent 
+    # to the narration function, to keep the output focused.
+    try:
+        primary_idx = int(enriched_slide.get("primary_block_index", 0))
+    except (ValueError, TypeError):
+        primary_idx = 0
+        
+    if 0 <= primary_idx < len(content_blocks):
+        content_blocks = [content_blocks[primary_idx]]
+    else:
+        content_blocks = [content_blocks[0]]
 
     for block in content_blocks:
         if not isinstance(block, dict):
@@ -240,6 +252,8 @@ def generate_narration_v2(
     enriched_slide: Dict[str, Any],
     topic: str,
     intent: str,
+    mentalModel: str = "",
+    slide_index: int = 1,
 ) -> str:
     """
     Generate warm, visual-aware narration for an enriched slide.
@@ -251,9 +265,11 @@ def generate_narration_v2(
         enriched_slide: Slide dict with populated media (gyml_content.contentBlocks has src/icons)
         topic: Course topic (e.g., "Photosynthesis")
         intent: Teaching intent (e.g., "explain", "compare", "assess")
+        mentalModel: The analogy or guiding framework to use for narration
+        slide_index: Index of the current slide for context
 
     Returns:
-        Narration text string with segments separated by "\n\n"
+        JSON string containing narration segments
     """
     # Step 1: Detect what visuals exist on the enriched slide
     has_concept_image, concept_image_alt, has_icons = _detect_concept_visuals(enriched_slide)
@@ -282,9 +298,12 @@ def generate_narration_v2(
 
     prompt = f"""You are a warm, knowledgeable teacher narrating an educational slide to a student.
 
+INPUTS:
 TOPIC: {topic}
+SLIDE INDEX: {slide_index}
 SLIDE TITLE: {slide_title}
 TEACHING INTENT: {intent}
+TEACHING STYLE OR MENTAL MODEL: {mentalModel}
 
 SLIDE CONTENT SUMMARY:
 {content_summary}
@@ -292,14 +311,19 @@ SLIDE CONTENT SUMMARY:
 {visual_cues}
 
 INSTRUCTIONS:
-1. Structure: Hook (1 sentence) → Explain (2-4 sentences with transitions) → Recap/Question (1 sentence).
-2. Tone: Conversational but precise. Like a patient tutor, not a textbook.
-3. Transitions: Use "First... Next... Finally..." or "Notice how... This means..."
-4. Length: 80–150 words total. Split into 3–5 segments separated by double newlines.
-5. Do NOT repeat the slide title verbatim. Do NOT list bullet points — explain them.
-6. Each segment should map roughly to one visual element on the slide (one card, one step, etc.)
-
-Output narration text only. No JSON. No markdown. Segments separated by double newlines (\\n\\n)."""
+1. Teacher Persona: Conversational but precise. Like a patient tutor, not a textbook.
+2. Style/Analogy Rule: You MUST strictly conform to the framework, analogy, or approach provided in TEACHING STYLE OR MENTAL MODEL across all segments. Use its specific vocabulary or formatting (e.g., if factory analogy, use 'assembly', 'station', 'inputs'; if Socratic, ask leading questions).
+3. Segmentation: Each segment should map roughly to one visual element on the slide (one card, one step, etc.) and be short (good for animation sync).
+4. Do NOT repeat the slide title verbatim. Do NOT list bullet points — explain them.
+5. Create 3–5 segments in total.
+6. Output MUST be ONLY valid JSON matching this schema exactly, with NO markdown formatting or code fences:
+{{
+  "narration_segments": [
+    "segment 1...",
+    "segment 2...",
+    "segment 3..."
+  ]
+}}"""
 
     try:
         # Try Groq first (faster, cheaper)
@@ -313,7 +337,13 @@ Output narration text only. No JSON. No markdown. Segments separated by double n
         response = client.invoke([{"role": "user", "content": prompt}])
         narration_text = _extract_response_text(response)
 
-        # Ensure segments are separated by double newlines
+        # Clear fences if LLM ignored instructions
+        if narration_text.startswith("```"):
+            import re
+            match = re.search(r"\{.*\}", narration_text, re.DOTALL)
+            if match:
+                narration_text = match.group(0)
+
         if narration_text:
             return narration_text
 

@@ -405,15 +405,25 @@ class GyMLRenderer:
         return f"<h{level}>{text}</h{level}>"
 
     def _render_paragraph(self, paragraph: GyMLParagraph) -> str:
-        """Render paragraph."""
+        """Render paragraph with optional icon support."""
         text = self._escape(paragraph.text)
         variant_class = f"p-{paragraph.variant}" if paragraph.variant else ""
 
-        # Paragraphs are always visible (not animated)
-        # Only primary content (smart_layout cards) gets data-segment
+        # Icon map for specific paragraph variants
+        icon_map = {
+            "annotation": "ri-information-line",
+            "callout": "ri-lightbulb-line",
+            "takeaway": "ri-check-line"
+        }
 
-        class_attr = f' class="{variant_class}"' if variant_class else ""
-        return f"<p{class_attr}>{text}</p>"
+        # Build paragraph with optional icon wrapper
+        if paragraph.variant in icon_map:
+            icon_class = icon_map[paragraph.variant]
+            class_attr = f' class="{variant_class} p-with-icon"' if variant_class else ' class="p-with-icon"'
+            return f'<p{class_attr}><span class="p-icon" aria-hidden="true"><i class="{icon_class}"></i></span><span class="p-text">{text}</span></p>'
+        else:
+            class_attr = f' class="{variant_class}"' if variant_class else ""
+            return f"<p{class_attr}>{text}</p>"
 
     def _render_divider(self) -> str:
         """Render divider."""
@@ -2419,61 +2429,117 @@ p {
 }
 
 .p-annotation {
-    font-size: calc(var(--p-size) * 1.14);
-    background: color-mix(in srgb, var(--callout-bg, #fbfbfb) 88%, white);
-    color: var(--text-primary, inherit);
-    padding: 0.95rem 1rem;
-    border-left: 4px solid color-mix(in srgb, var(--accent, #e5e7eb) 55%, #9ca3af);
-    border-radius: 0.5rem;
-    margin: 0.5rem 0;
+    position: relative;
+    font-size: calc(var(--p-size) * 1.0);
+    font-style: italic;
+    color: color-mix(in srgb, var(--text-secondary, #4b5563) 88%, var(--text-primary, #111827));
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent, #64748b) 7%, transparent) 0%, transparent 42%),
+                linear-gradient(180deg, color-mix(in srgb, var(--callout-bg, #f8fafc) 45%, white) 0%, transparent 100%);
+    padding: 0.85rem 1rem;
+    border-radius: 0.4rem;
+    margin: 0.6rem 0;
+}
+
+.p-annotation::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: color-mix(in srgb, var(--accent, #64748b) 45%, transparent);
+    border-radius: 0.3rem 0 0 0.3rem;
+}
+
+.p-annotation::after {
+    content: "•";
+    position: absolute;
+    left: 0.45rem;
+    top: 0.2rem;
+    color: color-mix(in srgb, var(--accent, #64748b) 65%, transparent);
+    font-size: 0.6rem;
+    font-weight: bold;
+}
+
+.p-annotation.p-with-icon::before,
+.p-annotation.p-with-icon::after {
+    content: none;
 }
 
 .p-callout {
-    font-size: calc(var(--p-size) * 1.1);
+    font-size: calc(var(--p-size) * 1.05);
     font-weight: 500;
     color: var(--text-primary, #1f2937);
-    background: color-mix(in srgb, var(--callout-bg, #f5f5f5) 75%, #fff7ed);
-    border: 1px solid color-mix(in srgb, var(--accent, #6b7280) 45%, #fed7aa);
-    border-left: 5px solid color-mix(in srgb, var(--accent, #6b7280) 75%, #f97316);
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-    border-radius: 0.75rem;
-    padding: 1rem 1.05rem;
-    margin: 0.5rem 0;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent, #f97316) 12%, #fff7ed) 0%, color-mix(in srgb, var(--accent, #f97316) 5%, white) 100%);
+    border: 1px solid color-mix(in srgb, var(--accent, #f97316) 35%, #fed7aa);
+    border-left: 4px solid color-mix(in srgb, var(--accent, #f97316) 75%, #f97316);
+    border-radius: 0.6rem;
+    padding: 0.9rem 1rem;
+    margin: 0.6rem 0;
 }
 
 .p-takeaway {
-    font-size: calc(var(--p-size) * 1.12);
+    font-size: calc(var(--p-size) * 1.08);
     font-weight: 600;
     color: var(--text-primary, #0f172a);
-    background: linear-gradient(
-        95deg,
-        color-mix(in srgb, var(--accent, #2563eb) 18%, #eff6ff) 0%,
-        color-mix(in srgb, var(--accent, #2563eb) 8%, #ffffff) 100%
-    );
-    border: 1px solid color-mix(in srgb, var(--accent, #2563eb) 38%, #bfdbfe);
-    border-left: 6px solid color-mix(in srgb, var(--accent, #2563eb) 80%, #1d4ed8);
-    border-radius: 0.85rem;
-    padding: 1rem 1.1rem;
-    margin: 0.6rem 0 0.4rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent, #2563eb) 8%, white) 0%, color-mix(in srgb, var(--accent, #2563eb) 5%, #f0f9ff) 100%);
+    border: 1px solid color-mix(in srgb, var(--accent, #2563eb) 32%, #bfdbfe);
+    border-radius: 0.6rem;
+    padding: 0.95rem 1rem;
+    position: relative;
+    margin: 0.7rem 0;
+}
+
+.p-takeaway::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: color-mix(in srgb, var(--accent, #2563eb) 65%, transparent);
+    border-radius: 0 0 0.6rem 0.6rem;
 }
 
 .p-outro {
     font-weight: 500;
-    font-size: calc(var(--p-size) * 1.05);
+    font-size: calc(var(--p-size) * 1.04);
     color: var(--text-secondary, #4b5563);
-    border-top: 1px dashed color-mix(in srgb, var(--border-color, #d1d5db) 85%, transparent);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--text-secondary, #4b5563) 8%, transparent) 0%, transparent 100%);
     padding-top: 0.75rem;
-    margin-top: 0.5rem;
+    padding-bottom: 0rem;
+    margin-top: 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--text-secondary, #4b5563) 15%, transparent);
 }
 
 .p-caption {
-    font-size: 0.8125rem;
-    color: color-mix(in srgb, var(--text-tertiary, #888) 92%, #374151);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: color-mix(in srgb, var(--text-tertiary, #888) 85%, #888);
     text-align: center;
-    margin-top: 0.5rem;
-    line-height: 1.4;
-    letter-spacing: 0.01em;
-    font-style: italic;
+    margin-top: 0.8rem;
+    margin-bottom: 0.4rem;
+    line-height: 1.2;
+}
+
+/* Icon layout utilities */
+.p-with-icon {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+}
+
+.p-icon {
+    flex: 0 0 auto;
+    font-size: 1rem;
+    opacity: 0.82;
+}
+
+.p-text {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 /* ================================================
@@ -3604,6 +3670,7 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
     width: 100%;
     max-width: none;
     margin-inline: 0;
+    margin-top: 0;
     padding: 0;
     overflow: visible;
 }
@@ -3700,7 +3767,11 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(3) {
+    grid-column: 1 / -1;
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] {
