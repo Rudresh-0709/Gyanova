@@ -30,11 +30,51 @@ except ImportError:
     from .v2.density_mapping_v2 import map_brief_density_to_engine
 
 
+# --- New v2 planning taxonomy ---
+VALID_INTENTS_V2 = {"definition", "classification", "recognition", "comparison", "application", "practice"}
+VALID_CONTENT_ANGLES = {"overview", "mechanism", "example", "comparison", "application", "visualization", "summary"}
+VALID_ROLES = {"Introduce", "Interpret", "Guide", "Contrast", "Emphasize", "Connect", "Reinforce", "Question"}
+VALID_VISUAL_TYPES = {"image", "diagram", "chart", "illustration", "none"}
+VALID_IMAGE_ROLES = {"content", "accent", "none"}
+
+# --- Legacy aliases for downstream compatibility ---
 VALID_INTENTS = {"introduce", "explain", "teach", "compare", "demo", "prove", "summarize"}
 VALID_SCOPES = {"foundation", "mechanism", "comparison", "application", "reinforcement"}
+
 VALID_BRIEF_DENSITIES = {"low", "medium", "high"}
 VALID_ENGINE_DENSITIES = {"ultra_sparse", "sparse", "balanced", "standard", "dense", "super_dense"}
 VALID_DENSITIES = VALID_BRIEF_DENSITIES | VALID_ENGINE_DENSITIES
+
+# Mapping tables: new intent → legacy teaching_intent
+_INTENT_TO_TEACHING_INTENT = {
+    "definition": "explain",
+    "classification": "teach",
+    "recognition": "demo",
+    "comparison": "compare",
+    "application": "demo",
+    "practice": "prove",
+}
+
+# Mapping tables: new content_angle → legacy coverage_scope
+_CONTENT_ANGLE_TO_SCOPE = {
+    "overview": "foundation",
+    "mechanism": "mechanism",
+    "example": "application",
+    "comparison": "comparison",
+    "application": "application",
+    "visualization": "mechanism",
+    "summary": "reinforcement",
+}
+
+# Mapping tables: new target_density → brief density
+_TARGET_DENSITY_TO_BRIEF = {
+    "ultra_sparse": "low",
+    "sparse": "low",
+    "balanced": "medium",
+    "standard": "medium",
+    "dense": "high",
+    "super_dense": "high",
+}
 VALID_FACT_RETRIEVERS = {"wiki", "tavily", "none"}
 
 
@@ -395,11 +435,23 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
         {
             "title": f"{subtopic_name}: Core Idea",
             "objective": "Define the core idea and why it matters.",
-            "teaching_intent": "explain",
+            "intent": "definition",
+            "content_angle": "overview",
+            "coverage_contract": "Sole slide responsible for defining core terminology.",
+            "avoid_overlap_with": [],
             "must_cover": ["definition", "key term"],
             "key_facts": ["Introduce one foundational fact."],
-            "formulas": [],
             "assessment_prompt": "In one sentence, explain the core idea.",
+            "role": "Introduce",
+            "goal": "Establish foundational understanding of the core concept.",
+            "reasoning": "Fallback: open with a clear definition to set up later slides.",
+            "visual_required": False,
+            "visual_type": "none",
+            "image_role": "none",
+            "target_density": "balanced",
+            "selected_template": "Title with bullets",
+            # Legacy derived fields
+            "teaching_intent": "explain",
             "coverage_scope": "foundation",
             "slide_density": "medium",
             "high_end_image_required": False,
@@ -410,11 +462,23 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
         {
             "title": f"{subtopic_name}: How It Works",
             "objective": "Explain the mechanism or process clearly.",
-            "teaching_intent": "teach",
+            "intent": "classification",
+            "content_angle": "mechanism",
+            "coverage_contract": "Sole slide responsible for showing the internal process or mechanism.",
+            "avoid_overlap_with": ["definition of core term"],
             "must_cover": ["mechanism", "step order"],
             "key_facts": ["Important causal relationship."],
-            "formulas": [],
             "assessment_prompt": "What happens first and why?",
+            "role": "Interpret",
+            "goal": "Break down the internal workings step by step.",
+            "reasoning": "Fallback: mechanism slide builds on the foundation defined earlier.",
+            "visual_required": True,
+            "visual_type": "diagram",
+            "image_role": "content",
+            "target_density": "balanced",
+            "selected_template": "Image and text",
+            # Legacy derived fields
+            "teaching_intent": "teach",
             "coverage_scope": "mechanism",
             "slide_density": "medium",
             "high_end_image_required": True,
@@ -425,11 +489,23 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
         {
             "title": f"{subtopic_name}: Applied Example",
             "objective": "Apply the concept to a practical scenario.",
-            "teaching_intent": "demo",
+            "intent": "application",
+            "content_angle": "example",
+            "coverage_contract": "Sole slide responsible for a worked application or real-world scenario.",
+            "avoid_overlap_with": ["definition of core term", "mechanism steps"],
             "must_cover": ["application", "decision rule"],
             "key_facts": ["Practical condition or rule of thumb."],
-            "formulas": [],
             "assessment_prompt": "How would you apply this in a new context?",
+            "role": "Guide",
+            "goal": "Demonstrate a practical application of the concept.",
+            "reasoning": "Fallback: application slide to ground abstract understanding.",
+            "visual_required": True,
+            "visual_type": "illustration",
+            "image_role": "content",
+            "target_density": "standard",
+            "selected_template": "Title with bullets and image",
+            # Legacy derived fields
+            "teaching_intent": "demo",
             "coverage_scope": "application",
             "slide_density": "high",
             "high_end_image_required": True,
@@ -438,17 +514,29 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
             "example_slide_candidate": True,
         },
         {
-            "title": f"{subtopic_name}: Recap",
-            "objective": "Summarize and reinforce retention.",
-            "teaching_intent": "summarize",
-            "must_cover": ["summary", "retention"],
+            "title": f"{subtopic_name}: Practice",
+            "objective": "Test recall and deepen retention.",
+            "intent": "practice",
+            "content_angle": "summary",
+            "coverage_contract": "Sole slide responsible for active recall and assessment.",
+            "avoid_overlap_with": ["definition of core term", "mechanism steps", "application scenario"],
+            "must_cover": ["assessment", "retention"],
             "key_facts": ["One high-value takeaway."],
-            "formulas": [],
             "assessment_prompt": "Name the most important takeaway and why.",
+            "role": "Question",
+            "goal": "Reinforce learning through targeted recall.",
+            "reasoning": "Fallback: practice slide to close the learning loop.",
+            "visual_required": False,
+            "visual_type": "none",
+            "image_role": "none",
+            "target_density": "sparse",
+            "selected_template": "Large bullet list",
+            # Legacy derived fields
+            "teaching_intent": "summarize",
             "coverage_scope": "reinforcement",
             "slide_density": "low",
             "high_end_image_required": False,
-            "image_requirement_reason": "Recap should stay focused and uncluttered.",
+            "image_requirement_reason": "Practice should stay focused and uncluttered.",
             "formula_slide_candidate": False,
             "example_slide_candidate": False,
         },
@@ -616,30 +704,75 @@ Use it only as factual evidence to decide slide scope, depth, and examples.
 MODE
 Refactor Mode: {str(is_refactor_mode).lower()}
 
-MISSION
-Design a 4-8 slide teaching sequence that is pedagogically coherent and curriculum-aligned for this subtopic only.
-If Refactor Mode is true, regenerate the slide intent/coverage based on refactor instructions while still focusing only on this subtopic.
-Do not choose visual templates.
+PLANNING RULES (NON-OVERLAPPING SLIDE PARTITION)
+
+CORE OBJECTIVE
+Generate a sequence of 4-8 slides that forms a non-overlapping partition of knowledge for this subtopic.
+Each slide must introduce NEW information, a NEW angle, or a NEW skill.
+Assume the learner remembers previous slides; build forward, not sideways.
+
+NOVELTY CONSTRAINT (CRITICAL)
+Each slide MUST be distinct from all earlier slides.
+Do NOT repeat, restate, or paraphrase earlier:
+- must_cover items
+- key_facts
+- definitions
+- example sentences / worked examples
+- specific entities, sub-items, or named examples (e.g., if Slide 2 covers Simile and Metaphor, Slide 3 must NOT cover Simile and Metaphor again)
+If you detect overlap, you MUST change the later slide's intent, content_angle, coverage_contract, AND the specific entities/sub-items until it adds new value.
+
+STRUCTURAL PARTITIONING RULE (SELF-AWARE PLANNING)
+Before planning, analyze the structure of the subtopic:
+1) TYPE A (Collection): The topic is a set of distinct items/types (e.g., types of poetry, varieties of fruit).
+   - RULE: Move HORIZONTALLY. If Slide 2 defines items A and B, Slide 3 MUST define items C and D. Do not recycle.
+2) TYPE B (System/Process): The topic is a single complex entity or lifecycle (e.g., a CPU, the Water Cycle).
+   - RULE: Move VERTICALLY or SEQUENTIALLY. If Slide 2 defines the "Interface/Overview," Slide 3 MUST define the "Internal Logic/Mechanism."
+3) NO LATERAL MOVEMENT: Every slide must move the learner FORWARD. 
+   - Never restate a definition, fact, or mechanism introduced in an earlier slide. 
+   - If you need to mention a previous concept, assume the learner knows it and only talk about the NEW aspect or relationship.
+   - Example (FAIL): Slide 1 defines "Photosynthesis." Slide 2 ("Mechanism") begins by defining "Photosynthesis" again.
+   - Example (PASS): Slide 1 defines "Photosynthesis." Slide 2 immediately begins with the "Light-Dependent Reactions" (zero-restatement of the general definition).
+
+INTENT DIVERSITY RULE (VERY IMPORTANT)
+Each slide MUST have an explicit "intent" chosen from:
+- definition
+- classification
+- recognition
+- comparison
+- application
+- practice
+
+Rules:
+1) No two CONSECUTIVE slides may share the same intent.
+2) You may reuse an intent later ONLY if the coverage_contract is clearly different and introduces new value.
+3) Avoid using any single intent more than twice unless the lesson is very long.
+
+CONTENT PARTITIONING RULE (GENERAL PEDAGOGY)
+When applicable, separate these modes across different slides (do not mix):
+A) classification: names/categories + distinguishing features (NO full examples)
+B) recognition: identification cues + short snippets only (NO re-teaching the taxonomy)
+C) practice/application: exercises, questions, tasks, or new scenarios (NO re-defining)
 
 DOMAIN CLASSIFICATION
 - If the heuristic domain above is general or uncertain, infer the most likely domain inside this same response and set `subject_domain` to one of: math, science, history, language, general.
 - Use that classified domain to decide when formulas, worked examples, diagrams, timelines, or rule-based explanation slides are needed.
 
-REASONING CHECKLIST
-1. Identify the most important concepts, terms, mechanisms, and formulas for THIS subtopic.
-2. Build progression: foundation -> mechanism -> example/application -> reinforcement.
-3. Keep facts accurate and concise.
-4. In refactor mode, re-angle scope/objectives according to instructions.
+REQUIRED PER-SLIDE SELF-CHECK (DO THIS BEFORE FINALIZING)
+For each slide, confirm:
+- What new value does this slide add that previous slides did not?
+- Does must_cover overlap with earlier slides? If yes, rewrite.
+- Do key_facts overlap with earlier slides? If yes, rewrite.
+- Are the specific entities/sub-items/examples different from earlier slides? If the same entities appear, choose NEW ones.
+- Is the intent different from the immediately previous slide? If no, rewrite.
 
 QUALITY REQUIREMENTS
 1. Each slide objective must be measurable and specific.
-2. must_cover must list key concepts/fields for that slide.
-3. key_facts must provide concrete factual statements.
+2. must_cover must list 2-5 key concepts (unique to this slide).
+3. key_facts must provide 3-6 concrete factual statements (unique to this slide).
 4. formulas only when pedagogically necessary.
-5. assessment_prompt must test that slide's objective.
+5. assessment_prompt must test that slide's unique focus.
 6. Include at least one application-oriented slide.
 7. For math/science, decide if a formula-focused slide is needed.
-8. Decide slide_density per slide and whether high-end dedicated image support is required.
 
 OUTPUT RULES
 - Return JSON only (no prose, no markdown).
@@ -651,19 +784,24 @@ Output JSON schema:
     "subject_domain": "math|science|history|language|general",
     "slides": [
         {{
-            "title": "...",
-            "objective": "...",
-            "teaching_intent": "introduce|explain|teach|compare|demo|prove|summarize",
-            "must_cover": ["..."],
-            "key_facts": ["..."],
+            "title": "short, specific title",
+            "objective": "1 sentence learning goal",
+            "intent": "definition|classification|recognition|comparison|application|practice",
+            "content_angle": "overview|mechanism|example|comparison|application|visualization|summary",
+            "coverage_contract": "clear statement of UNIQUE responsibility",
+            "avoid_overlap_with": ["item1", "item2", "item3"],
+            "must_cover": ["unique_item1", "unique_item2"],
+            "key_facts": ["unique_fact1", "unique_fact2", "unique_fact3"],
             "formulas": ["..."],
-            "assessment_prompt": "...",
-            "coverage_scope": "foundation|mechanism|comparison|application|reinforcement",
-            "slide_density": "low|medium|high",
-            "high_end_image_required": true,
-            "image_requirement_reason": "short reason",
-            "formula_slide_candidate": false,
-            "example_slide_candidate": true,
+            "assessment_prompt": "question aligned to this slide's unique focus",
+            "selected_template": "Title card|Title with bullets|Image and text|Timeline|Two columns|Three columns|Large bullet list|Diagram|Icons with text|Title with bullets and image|Key-Value list|Labeled diagram",
+            "role": "Introduce|Interpret|Guide|Contrast|Emphasize|Connect|Reinforce|Question",
+            "goal": "what this slide achieves in the learning sequence",
+            "reasoning": "why this slide is needed and what new value it adds",
+            "visual_required": true,
+            "visual_type": "image|diagram|chart|illustration|none",
+            "image_role": "content|accent|none",
+            "target_density": "ultra_sparse|sparse|balanced|standard|dense|super_dense",
             "research_evidence": ["optional source title or url"],
             "factual_confidence": "high|medium|low"
         }}
@@ -684,32 +822,54 @@ Output JSON schema:
 
     normalized = []
     for i, slide in enumerate(slides):
-        teaching_intent = str(slide.get("teaching_intent", "explain")).strip().lower()
-        if teaching_intent not in VALID_INTENTS:
-            teaching_intent = "explain"
+        # --- New v2 fields ---
+        intent = str(slide.get("intent", "definition")).strip().lower()
+        if intent not in VALID_INTENTS_V2:
+            intent = "definition"
 
-        coverage_scope = str(slide.get("coverage_scope", "foundation")).strip().lower()
-        if coverage_scope not in VALID_SCOPES:
-            coverage_scope = "foundation"
+        content_angle = str(slide.get("content_angle", "overview")).strip().lower()
+        if content_angle not in VALID_CONTENT_ANGLES:
+            content_angle = "overview"
 
-        slide_density_raw = str(slide.get("slide_density", "medium")).strip().lower()
-        if slide_density_raw not in VALID_DENSITIES:
-            slide_density_raw = "medium"
+        coverage_contract = str(slide.get("coverage_contract", "")).strip()
+        avoid_overlap_with = _to_list(slide.get("avoid_overlap_with"))
+
+        role = str(slide.get("role", "Introduce")).strip()
+        if role not in VALID_ROLES:
+            role = "Introduce"
+
+        goal = str(slide.get("goal", "")).strip()
+        reasoning = str(slide.get("reasoning", "")).strip()
+
+        visual_required = _to_bool(slide.get("visual_required"), default=False)
+        visual_type = str(slide.get("visual_type", "none")).strip().lower()
+        if visual_type not in VALID_VISUAL_TYPES:
+            visual_type = "none"
+        image_role = str(slide.get("image_role", "none")).strip().lower()
+        if image_role not in VALID_IMAGE_ROLES:
+            image_role = "none"
+
+        target_density = str(slide.get("target_density", "balanced")).strip().lower()
+        if target_density not in VALID_ENGINE_DENSITIES:
+            target_density = "balanced"
+
+        selected_template = str(slide.get("selected_template", "Title with bullets")).strip()
+
+        # --- Derive legacy fields for downstream compatibility ---
+        teaching_intent = _INTENT_TO_TEACHING_INTENT.get(intent, "explain")
+        coverage_scope = _CONTENT_ANGLE_TO_SCOPE.get(content_angle, "foundation")
+        slide_density_raw = _TARGET_DENSITY_TO_BRIEF.get(target_density, "medium")
         slide_density_engine = map_brief_density_to_engine(slide_density_raw, slide_index=i)
 
         formulas = _to_list(slide.get("formulas"))
-        high_end_required = _to_bool(
-            slide.get("high_end_image_required"),
-            default=_infer_high_end_image_required(subject_domain, coverage_scope, teaching_intent),
-        )
+        high_end_required = visual_required and image_role == "content"
+        if not high_end_required:
+            high_end_required = _infer_high_end_image_required(subject_domain, coverage_scope, teaching_intent)
         formula_candidate = _to_bool(
             slide.get("formula_slide_candidate"),
             default=bool(formulas) or (subject_domain in {"math", "science"} and coverage_scope in {"mechanism", "comparison"}),
         )
-        example_candidate = _to_bool(
-            slide.get("example_slide_candidate"),
-            default=coverage_scope == "application",
-        )
+        example_candidate = intent == "application" or content_angle in {"example", "application"}
 
         evidence = _to_list(slide.get("research_evidence"))
         if not evidence and research_evidence:
@@ -721,25 +881,43 @@ Output JSON schema:
         if confidence not in {"high", "medium", "low"}:
             confidence = "medium"
 
+        # Derive image_requirement_reason from visual_type/image_role
+        if visual_required and visual_type != "none":
+            image_req_reason = f"{visual_type.capitalize()} required for {content_angle} slide ({role} role)."
+        else:
+            image_req_reason = "No dedicated visual required for this slide."
+
         normalized.append(
             {
                 "slide_id": f"{sub_id}_t{i + 1}",
                 "sequence_index": i,
                 "title": str(slide.get("title", f"{subtopic_name} - Slide {i + 1}")).strip(),
                 "objective": str(slide.get("objective", "Explain the concept clearly.")).strip(),
+                # New v2 fields
+                "intent": intent,
+                "content_angle": content_angle,
+                "coverage_contract": coverage_contract,
+                "avoid_overlap_with": avoid_overlap_with,
+                "role": role,
+                "goal": goal,
+                "reasoning": reasoning,
+                "visual_required": visual_required,
+                "visual_type": visual_type,
+                "image_role": image_role,
+                "target_density": target_density,
+                "selected_template": selected_template,
+                # Legacy derived fields for downstream compatibility
                 "teaching_intent": teaching_intent,
+                "coverage_scope": coverage_scope,
                 "must_cover": _to_list(slide.get("must_cover")),
                 "key_facts": _to_list(slide.get("key_facts")),
                 "formulas": formulas,
                 "assessment_prompt": str(slide.get("assessment_prompt", "")).strip(),
-                "coverage_scope": coverage_scope,
                 "subject_domain": subject_domain,
                 "slide_density": slide_density_raw if slide_density_raw in VALID_BRIEF_DENSITIES else "medium",
                 "slide_density_engine": slide_density_engine,
                 "high_end_image_required": high_end_required,
-                "image_requirement_reason": str(
-                    slide.get("image_requirement_reason", "Visual support selected based on pedagogy and complexity.")
-                ).strip(),
+                "image_requirement_reason": image_req_reason,
                 "formula_slide_candidate": formula_candidate,
                 "example_slide_candidate": example_candidate,
                 "research_evidence": evidence,

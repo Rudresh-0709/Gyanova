@@ -275,20 +275,7 @@ def generate_narration_v2(
     has_concept_image, concept_image_alt, has_icons = _detect_concept_visuals(enriched_slide)
 
     # Step 2: Build visual-awareness instructions for LLM
-    visual_cues = ""
-    if has_concept_image:
-        visual_cues += (
-            f"\nIMPORTANT: This slide contains a concept image/diagram showing "
-            f"'{concept_image_alt}'. Reference it naturally in your narration "
-            f"(e.g., 'As you can see in the diagram...', 'Looking at this illustration...', "
-            f"'The image here shows...'). Do NOT describe the image in detail — "
-            f"the student can see it. Just reference and explain."
-        )
-    else:
-        visual_cues += "\nThis slide has no concept image. Focus narration on the text content and structure."
-
-    if has_icons:
-        visual_cues += "\nThe slide includes icons to highlight key items — reference them naturally."
+    visual_cues = "IMPORTANT: Focus purely on explaining the concepts. DO NOT explicitly reference the frontend visual elements or the screen. Never say 'as you can see', 'shown by the icon', 'in this image', 'on this slide', or similar phrases. Teach the material directly as if having a conversation."
 
     # Step 3: Summarize slide content for the LLM
     content_summary = _summarize_slide_content(enriched_slide)
@@ -311,10 +298,10 @@ SLIDE CONTENT SUMMARY:
 {visual_cues}
 
 INSTRUCTIONS:
-1. Teacher Persona: Conversational but precise. Like a patient tutor, not a textbook.
-2. Style/Analogy Rule: You MUST strictly conform to the framework, analogy, or approach provided in TEACHING STYLE OR MENTAL MODEL across all segments. Use its specific vocabulary or formatting (e.g., if factory analogy, use 'assembly', 'station', 'inputs'; if Socratic, ask leading questions).
+1. Content Conversion: Take the exact facts and concepts from the SLIDE CONTENT SUMMARY and convert them into spoken narration. The slide content MUST be the core of what you say.
+2. Teacher Persona & Mental Model: You MUST teach the content by strictly conforming to the framework, analogy, or approach provided in TEACHING STYLE OR MENTAL MODEL. Present the slide content through this exact lens, using its specific vocabulary (e.g., if it's a factory analogy, map the content to 'assembly' or 'inputs'; if it's Socratic, guide the user with questions).
 3. Segmentation: Each segment should map roughly to one visual element on the slide (one card, one step, etc.) and be short (good for animation sync).
-4. Do NOT repeat the slide title verbatim. Do NOT list bullet points — explain them.
+4. Do NOT repeat the slide title verbatim. Do NOT just read bullet points — explain them naturally as a teacher would.
 5. Create 3–5 segments in total.
 6. Output MUST be ONLY valid JSON matching this schema exactly, with NO markdown formatting or code fences:
 {{

@@ -294,8 +294,14 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         if not isinstance(teacher_slide, dict):
             continue
 
-        density = _normalize_density(teacher_slide.get("slide_density"))
+        # Use target_density from new v2 fields if present, fall back to slide_density
+        density = _normalize_density(
+            teacher_slide.get("target_density") or teacher_slide.get("slide_density")
+        )
         high_end_required = _to_bool(teacher_slide.get("high_end_image_required"), default=False)
+        # Override from new v2 visual fields when present
+        if _to_bool(teacher_slide.get("visual_required"), default=False) and str(teacher_slide.get("image_role", "")).strip().lower() == "content":
+            high_end_required = True
         image_need, image_tier = _derive_image_policy(density, high_end_required)
 
         teaching_intent = str(teacher_slide.get("teaching_intent", "explain")).strip().lower()
@@ -327,6 +333,14 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         template_candidates = rank_templates(template_candidates, variant_history=local_variant_history)
 
         selected_template = template_candidates[0].name if template_candidates else "Title with bullets"
+
+        # Prefer teacher-suggested template when available and valid
+        teacher_template_hint = str(teacher_slide.get("selected_template", "")).strip()
+        if teacher_template_hint:
+            hint_spec = get_template_spec(teacher_template_hint)
+            if hint_spec.name == teacher_template_hint:  # valid template
+                selected_template = teacher_template_hint
+
         template_spec = get_template_spec(selected_template)
 
         # Override to hero-capable template if high-end image required
@@ -459,6 +473,19 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 "title": str(teacher_slide.get("title") or f"{subtopic_name} - Slide {index + 1}").strip(),
                 "objective": str(teacher_slide.get("objective") or "Explain the concept clearly.").strip(),
                 "summary": str(teacher_slide.get("objective") or teacher_slide.get("summary") or "Explain the concept clearly.").strip(),
+                # New v2 planning fields (pass-through)
+                "intent": str(teacher_slide.get("intent", "definition")).strip().lower(),
+                "content_angle": str(teacher_slide.get("content_angle", "overview")).strip().lower(),
+                "coverage_contract": str(teacher_slide.get("coverage_contract", "")).strip(),
+                "avoid_overlap_with": _to_list(teacher_slide.get("avoid_overlap_with")),
+                "role": str(teacher_slide.get("role", "Introduce")).strip(),
+                "goal": str(teacher_slide.get("goal", "")).strip(),
+                "reasoning": str(teacher_slide.get("reasoning", "")).strip(),
+                "visual_required": _to_bool(teacher_slide.get("visual_required"), default=False),
+                "visual_type": str(teacher_slide.get("visual_type", "none")).strip().lower(),
+                "image_role_v2": str(teacher_slide.get("image_role", "none")).strip().lower(),
+                "target_density": str(teacher_slide.get("target_density", density)).strip().lower(),
+                # Legacy fields
                 "teaching_intent": teaching_intent,
                 "coverage_scope": coverage_scope,
                 "slide_density": density,

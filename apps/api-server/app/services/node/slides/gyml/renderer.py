@@ -2616,7 +2616,7 @@ p {
     width: 100%;
     height: 1px;
     background: #b0b0b0;
-    margin: 0.75rem 0;
+    margin: 0.25rem 0;
 }
 
 .card:hover {
@@ -5101,7 +5101,7 @@ th {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2.5rem;
     align-items: stretch;
-    padding: 2rem 0;
+    padding: 0.5rem 0;
 }
 
 .smart-layout[data-variant="comparison"] .card,
@@ -5828,7 +5828,7 @@ section[data-animated="true"] .hub-and-spoke-container .spoke-info-box[data-segm
     width: 100%;
     min-height: 620px;
     flex: 1;
-    padding: 2rem 0;
+    padding: 0.5rem 0;
     overflow: visible;
 }
 
