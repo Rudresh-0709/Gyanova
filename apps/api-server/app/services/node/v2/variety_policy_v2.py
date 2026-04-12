@@ -18,13 +18,15 @@ from typing import Any, Dict, List, Optional, Tuple
 # Constants
 # ---------------------------------------------------------------------------
 
-# How many recent entries to inspect when computing variety penalties.
-RECENT_WINDOW = 4
+# How many recent history *entries* to inspect when computing variety penalties.
+# Note: v2 `variant_history` appends ~2 tokens per slide (template + smart_layout variant),
+# so a window of 10 covers roughly the last ~5 slides.
+RECENT_WINDOW = 10
 
 # Penalty applied when the candidate was used in the most-recent slide.
 PENALTY_IMMEDIATE_REPEAT = 30
 
-# Penalty when candidate appeared within the last RECENT_WINDOW slides.
+# Penalty when candidate appeared within the last RECENT_WINDOW entries.
 PENALTY_RECENT_REPEAT = 15
 
 # Bonus for candidates that have not appeared in recent history at all.

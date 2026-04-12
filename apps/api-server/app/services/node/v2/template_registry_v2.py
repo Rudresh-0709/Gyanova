@@ -3,6 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
+# Each slide appends ~2 tokens to variant_history (template + smart_layout variant).
+# Window of 10 covers last ~5 slides.
+_VARIANT_HISTORY_WINDOW: int = 10
+
 
 @dataclass(frozen=True)
 class TemplateSpec:
@@ -274,7 +278,7 @@ def candidate_templates(
     need = str(image_need or "optional").strip().lower()
     tier = str(image_tier or "accent").strip().lower()
     density_key = str(density or "balanced").strip().lower()
-    recent_templates = set((variant_history or [])[-4:])
+    recent_templates = set((variant_history or [])[-_VARIANT_HISTORY_WINDOW:])
     preferred_slv = str(smart_layout_variant or "").strip()
 
     scored: List[Tuple[int, TemplateSpec]] = []

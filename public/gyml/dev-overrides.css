@@ -1,0 +1,114 @@
+/*
+  GyML Dev Overrides
+  -----------------
+  This file is loaded (development only) into the slide iframe so you can tweak
+  content-block CSS without regenerating slides.
+
+  Workflow:
+  1) Edit this file
+  2) In the slide player, click the "Reload GyML dev CSS" (↻) button
+*/
+
+/* Example: tighten smart layout cards */
+/* .smart-layout .item { border-radius: 14px !important; } */
+
+/* Example: make descriptions slightly smaller */
+/* .smart-layout .description { font-size: 0.95rem !important; line-height: 1.45 !important; } */
+
+/* === Common overrides while tuning content-block hierarchy === */
+.p-context {
+  font-size: clamp(0.9rem, calc(var(--h1-size, 2.25rem) * 0.44), 1.05rem) !important;
+  line-height: 1.55 !important;
+}
+
+/* === Diamond Grid: alternating diamond colors + typography hierarchy === */
+.smart-layout[data-variant="diamondGrid"] .card:nth-child(even) .card-number,
+.smart-layout[data-variant="diamondGrid"] .card:nth-child(even) .card-icon {
+  background: color-mix(in srgb, var(--item-color, #2563eb) 55%, white) !important;
+  color: #0f172a !important;
+}
+.smart-layout[data-variant="diamondGrid"] .card:nth-child(even) .card-icon i {
+  color: #0f172a !important;
+}
+.smart-layout[data-variant="diamondGrid"] .card-title {
+  font-size: clamp(1.2rem, calc(var(--h1-size, 2.25rem) * 0.58), 1.45rem) !important;
+}
+.smart-layout[data-variant="diamondGrid"] .card-text {
+  font-size: clamp(0.95rem, calc(var(--h1-size, 2.25rem) * 0.40), 1.1rem) !important;
+  line-height: 1.62 !important;
+}
+
+/* === solidBoxesWithIconsInside: 3 cols when no image, bento with left/right image === */
+.smart-layout[data-variant="solidBoxesWithIconsInside"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-title {
+  font-size: 1.35rem !important;
+}
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-text {
+  font-size: 0.92rem !important;
+  line-height: 1.55 !important;
+}
+section[data-image-layout="blank"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"],
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"],
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-rows: minmax(6.5rem, auto) !important;
+}
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card,
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card,
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
+  min-height: 10.5rem !important;
+}
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"],
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"],
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"] {
+  grid-template-columns: 1fr !important;
+}
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1),
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1),
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1) {
+  grid-row: span 2 !important;
+  min-height: 15rem !important;
+}
+/* Undo legacy rule that made the 3rd card full-width */
+.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(3) {
+  grid-column: auto !important;
+}
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6),
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6),
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6) {
+  grid-column: 1 / -1 !important;
+}
+
+@media (max-width: 1080px) {
+  .smart-layout[data-variant="solidBoxesWithIconsInside"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* === processAccordion: grid layout (2x2 for 4, bento for 5) === */
+.smart-layout[data-variant="processAccordion"] {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 1.25rem !important;
+  align-items: stretch !important;
+}
+.smart-layout[data-variant="processAccordion"][data-item-count="5"],
+.smart-layout[data-variant="processAccordion"][data-item-count="6"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-auto-flow: row dense !important;
+}
+.smart-layout[data-variant="processAccordion"][data-item-count="5"] .card:nth-child(4) {
+  grid-column: 1 / span 2 !important;
+}
+.smart-layout[data-variant="processAccordion"] .card {
+  margin: 0 !important;
+}

@@ -314,13 +314,27 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         primary_family = _derive_primary_family(teacher_slide)
 
         # Determine the desired smart_layout variant from intent/scope
-        preferred_slv = get_smart_layout_variant(teaching_intent, coverage_scope)
+        preferred_slvs = get_smart_layout_variant(teaching_intent, coverage_scope)
+        preferred_slv = preferred_slvs[0] if preferred_slvs else "solidBoxesWithIconsInside"
 
         # Apply variety: pick a variant that hasn't been overused recently
         template_pref_variants = []  # will be filled after template selection
+        allowed_slvs = list(
+            dict.fromkeys(
+                preferred_slvs
+                + [
+                    "ribbonFold",
+                    "statsBadgeGrid",
+                    "timeline",
+                    "processSteps",
+                    "diamondRibbon",
+                    "relationshipMap",
+                ]
+            )
+        )
         smart_layout_variant = pick_smart_layout_variant(
             preferred_slv,
-            [preferred_slv, "ribbonFold", "statsBadgeGrid", "timeline", "processSteps", "diamondRibbon", "relationshipMap"],
+            allowed_slvs,
             local_variant_history,
         )
 
@@ -364,11 +378,16 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 local_variant_history,
             )
 
+        # Unify variant selection: feed the scored pick into select_primary_block so it
+        # becomes the single source of truth for the final smart_layout variant.
+        ordered_preferences = [smart_layout_variant] + [v for v in preferred_slvs if v != smart_layout_variant]
+
         # Select primary block spec matching the resolved family + variant
         primary_spec = select_primary_block(
             "smart_layout",
             density,
             image_need,
+            preferred_variants=ordered_preferences,
             variant_history=local_variant_history,
             teaching_intent=teaching_intent,
             coverage_scope=coverage_scope,
@@ -382,6 +401,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 fallback_family,
                 density,
                 image_need,
+                preferred_variants=ordered_preferences,
                 variant_history=local_variant_history,
                 teaching_intent=teaching_intent,
                 coverage_scope=coverage_scope,
@@ -391,8 +411,10 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         if primary_family == "formula":
             primary_spec = get_block_spec("formula", "normal")
 
-        # Determine final primary_variant and smart_layout_variant from the chosen spec
-        actual_slv = primary_spec.smart_layout_variant or smart_layout_variant
+        # Single source of truth: the chosen spec defines the final smart_layout variant.
+        actual_slv = primary_spec.smart_layout_variant
+        if actual_slv:
+            smart_layout_variant = actual_slv
 
         # Hard per-subtopic guard: use each smart_layout variant at most once.
         if primary_spec.family == "smart_layout" and local_slv_counts.get(actual_slv, 0) >= 1:
@@ -423,7 +445,9 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     and (not replacement_spec.density_ok or density in replacement_spec.density_ok)
                 ):
                     primary_spec = replacement_spec
-                    actual_slv = replacement_spec.smart_layout_variant or replacement_variant
+                    actual_slv = replacement_spec.smart_layout_variant
+                    if actual_slv:
+                        smart_layout_variant = actual_slv
 
         supporting_specs = select_supporting_blocks(
             family=primary_spec.family,
@@ -528,4 +552,8 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     plans[target_sub_id] = normalized_plans
-    return {"plans": plans}
+    return {
+        "plans": plans,
+        "variant_history": local_variant_history,
+        "layout_history": local_layout_history,
+    }

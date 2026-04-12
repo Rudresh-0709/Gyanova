@@ -146,18 +146,24 @@ class GyMLRenderer:
         comparison_class = " comparison-layout" if has_comparison else ""
         
         vars_list_str = "; ".join(vars_list) if section.hierarchy else ""
+
+        # Used by CSS to gracefully fall back to "blank" layout when a planner chose
+        # left/right/top/bottom but no accent image is actually present.
+        render_image = section.image_layout != "blank"
+        has_image_attr = (
+            ' data-has-image="true"'
+            if (render_image and section.accent_image is not None)
+            else ' data-has-image="false"'
+        )
         lines.append(
             f'<section id="{self._escape(section.id)}" '
             f'class="slide-section{hub_class}{comparison_class}" '
             f'role="region" aria-label="Slide {section.id}" '
             f'data-image-layout="{section.image_layout}" '
             f'style="--accent-width: {accent_width}; --block-gap: {block_gap}; {vars_list_str}"'
-            f"{anim_attr}{density_attr}>"
+            f"{anim_attr}{density_attr}{has_image_attr}>"
         )
 
-        # Check if we should render the image at all
-        render_image = section.image_layout != "blank"
-        
         # 'behind' layout needs the image to be technically before the body 
         # but styled as absolute background.
         render_image_early = render_image and section.image_layout != "bottom"
@@ -2089,6 +2095,24 @@ section[data-image-layout="right-wide"] .accent-image-group {
     height: 100%;
 }
 
+/* If the planner chose a side layout but no image exists, fall back to normal padded layout. */
+section[data-image-layout="right"][data-has-image="false"],
+section[data-image-layout="left"][data-has-image="false"],
+section[data-image-layout="right-wide"][data-has-image="false"] {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: var(--section-padding, 2rem 3rem) !important;
+    gap: var(--block-gap, 1.5rem) !important;
+}
+section[data-image-layout="right"][data-has-image="false"] .body,
+section[data-image-layout="left"][data-has-image="false"] .body,
+section[data-image-layout="right-wide"][data-has-image="false"] .body {
+    order: 0 !important;
+    grid-column: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
 /* Top / Bottom Layouts (Vertical Stacking) */
 section[data-image-layout="top"] {
     display: flex;
@@ -2120,7 +2144,7 @@ section[data-image-layout="bottom"] .accent-image-placeholder {
 section[data-image-layout="top"] .body {
     flex: 1;
     position: relative; /* Required for z-index */
-    padding: 1.5rem 2.5rem;
+    padding: var(--section-padding, 1.5rem 2.5rem);
     margin-top: -100px; /* Overlap adjusted for shorter image */
     z-index: 10;
     /* Smooth gradient from transparent to solid dark background */
@@ -2129,10 +2153,24 @@ section[data-image-layout="top"] .body {
 section[data-image-layout="bottom"] .body {
     flex: 1;
     position: relative; /* Required for z-index */
-    padding: 1.5rem 2.5rem;
+    padding: var(--section-padding, 1.5rem 2.5rem);
     margin-bottom: -100px; /* Overlap adjusted for shorter image */
     z-index: 10;
     background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
+}
+
+/* If top/bottom was chosen but no image exists, behave like a normal padded slide. */
+section[data-image-layout="top"][data-has-image="false"],
+section[data-image-layout="bottom"][data-has-image="false"] {
+    padding: var(--section-padding, 2rem 3rem) !important;
+    gap: var(--block-gap, 1.5rem) !important;
+}
+section[data-image-layout="top"][data-has-image="false"] .body,
+section[data-image-layout="bottom"][data-has-image="false"] .body {
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
 }
 
 /* --- Aggressive Compacting for Super Dense Slides --- */
@@ -2421,7 +2459,9 @@ p {
     font-style: italic;
     color: var(--text-tertiary, #666);
     opacity: 0.95;
-    font-size: calc(var(--p-size) * 1.08);
+    /* Keep context/subtitle clearly subordinate to the main title */
+    font-size: clamp(0.9rem, calc(var(--h1-size, 2.25rem) * 0.44), 1.05rem);
+    line-height: 1.55;
     background: color-mix(in srgb, var(--bg-secondary, #f8fafc) 78%, transparent);
     border: 1px dashed color-mix(in srgb, var(--border-color, #d1d5db) 85%, transparent);
     border-radius: 0.75rem;
@@ -3665,7 +3705,8 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"] {
-    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    /* Default (no supporting image): 3-column vertical grid */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
     width: 100%;
     max-width: none;
@@ -3726,7 +3767,7 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"] .card-title {
-    font-size: 1.24rem;
+    font-size: 1.35rem;
     line-height: 1.3;
     font-weight: 800;
     color: #f8fbff;
@@ -3734,8 +3775,8 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"] .card-text {
-    font-size: 1.08rem;
-    line-height: 1.6;
+    font-size: 0.92rem;
+    line-height: 1.55;
     color: color-mix(in srgb, var(--text-secondary, #475569) 82%, #ffffff);
 }
 
@@ -3757,35 +3798,63 @@ section[data-density="dense"] .smart-layout[data-variant="solidBoxesWithIconsIns
 section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"],
 section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"],
 section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] {
+    /* With a side image: bento grid inside the text column */
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(6.5rem, auto);
     width: 100%;
     max-width: none;
 }
 
-.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"] {
+/* No-image (blank layout): keep a stable 3-column grid */
+section[data-image-layout="blank"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+section[data-image-layout="blank"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"],
+section[data-image-layout="blank"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"],
+section[data-image-layout="blank"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="5"],
+section[data-image-layout="blank"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(3) {
+/* Side-image (left/right): bento rules */
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card,
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card,
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
+    min-height: 10.5rem;
+}
+
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"],
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"],
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"] {
+    grid-template-columns: 1fr;
+}
+
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1),
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1),
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1) {
+    grid-row: span 2;
+    min-height: 15rem;
+}
+
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6),
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6),
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6) {
     grid-column: 1 / -1;
 }
 
-.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="5"],
-.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+/* Guard: never force the 3rd card full-width for top/bottom/blank layouts */
+.smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(3) {
+    grid-column: auto;
 }
 
 @media (max-width: 1080px) {
     .smart-layout[data-variant="solidBoxesWithIconsInside"] {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        /* Keep 3-up on typical slide widths; collapse at 720px */
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         width: 100%;
     }
 }
@@ -4383,6 +4452,17 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
 }
 
+.smart-layout[data-variant="diamondGrid"] .card:nth-child(even) .card-number,
+.smart-layout[data-variant="diamondGrid"] .card:nth-child(even) .card-icon {
+    /* Alternate with a lighter tint of the same base color */
+    background: color-mix(in srgb, var(--item-color, #2563eb) 55%, white);
+    color: #0f172a;
+}
+
+.smart-layout[data-variant="diamondGrid"] .card:nth-child(even) .card-icon i {
+    color: #0f172a;
+}
+
 .smart-layout[data-variant="diamondGrid"] .card-number span,
 .smart-layout[data-variant="diamondGrid"] .card-icon i {
     transform: rotate(-45deg);
@@ -4460,7 +4540,8 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
 
 /* Typography */
 .smart-layout[data-variant="diamondGrid"] .card-title {
-    font-size: 1.6rem;
+    /* ~55–60% of title size, but keep within a readable clamp */
+    font-size: clamp(1.2rem, calc(var(--h1-size, 2.25rem) * 0.58), 1.45rem);
     font-weight: 800;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
@@ -4468,8 +4549,9 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
 }
 
 .smart-layout[data-variant="diamondGrid"] .card-text {
-    font-size: 1.15rem;
-    line-height: 1.6;
+    /* Keep body text readable and clearly distinct from subtitle/context */
+    font-size: clamp(0.95rem, calc(var(--h1-size, 2.25rem) * 0.40), 1.1rem);
+    line-height: 1.62;
     color: var(--text-secondary);
 }
 
@@ -4725,10 +4807,29 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
    ================================================ */
 
 .smart-layout[data-variant="processSteps"],
-.smart-layout[data-variant="processAccordion"] {
+.smart-layout[data-variant="processSteps"] {
     display: flex;
     flex-direction: column;
     gap: 0;
+}
+
+.smart-layout[data-variant="processAccordion"] {
+    /* Grid layout (not stacked): 2x2 for 4 items, bento for 5 items */
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    align-items: stretch;
+}
+
+.smart-layout[data-variant="processAccordion"][data-item-count="5"],
+.smart-layout[data-variant="processAccordion"][data-item-count="6"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-flow: row dense;
+}
+
+/* Bento: 5 items -> last row is 2-wide + 1 */
+.smart-layout[data-variant="processAccordion"][data-item-count="5"] .card:nth-child(4) {
+    grid-column: 1 / span 2;
 }
 
 .smart-layout[data-variant="processSteps"] .card {
@@ -4778,7 +4879,7 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
     border: 1px solid var(--border-color, #e2e8f0);
     background: var(--bg-secondary, #ffffff);
     padding: 1.25rem 1.5rem;
-    margin-bottom: 0.5rem;
+    margin: 0;
     border-left: 4px solid var(--accent, #6366f1);
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
@@ -4803,7 +4904,6 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
 
 section[data-density="super_dense"] .smart-layout[data-variant="processAccordion"] .card {
     padding: 0.75rem 1rem;
-    margin-bottom: 0.25rem;
 }
 
 /* --- Process Arrow --- */

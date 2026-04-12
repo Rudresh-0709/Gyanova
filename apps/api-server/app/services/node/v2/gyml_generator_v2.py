@@ -1036,6 +1036,72 @@ _SUPPORTING_ONLY_TYPES = {
 
 # Maximum characters for a smart_layout item heading (keeps cards readable at typical font sizes)
 _MAX_ITEM_HEADING_LENGTH = 60
+# Word budget for smart_layout item descriptions (keeps cards scannable on desktop/mobile)
+_MIN_ITEM_DESCRIPTION_WORDS = 12
+_MAX_ITEM_DESCRIPTION_WORDS = 15
+
+
+def _count_words(text: str) -> int:
+    tokens = [t for t in str(text or "").strip().split() if t.strip()]
+    return len(tokens)
+
+
+def _trim_to_word_budget(text: str, max_words: int) -> str:
+    cleaned = str(text or "").strip()
+    if not cleaned:
+        return ""
+    words = cleaned.split()
+    if len(words) <= max_words:
+        return cleaned
+
+    trimmed = " ".join(words[:max_words]).rstrip()
+    # Prefer ending at punctuation if we cut mid-thought.
+    for punct in (".", ";", ":"):
+        idx = trimmed.rfind(punct)
+        if idx >= max(0, len(trimmed) - 22):
+            trimmed = trimmed[: idx + 1].strip()
+            break
+    if trimmed and trimmed[-1] not in {".", "!", "?"}:
+        trimmed = f"{trimmed}."
+    return trimmed
+
+
+def _enforce_primary_description_word_budget(payload: Dict[str, Any]) -> None:
+    """
+    Mutates ``payload`` in-place: ensure the primary smart_layout item descriptions
+    are scannable by keeping them within the configured word budget.
+    """
+    try:
+        primary_index = int(payload.get("primary_block_index", 0) or 0)
+    except Exception:
+        primary_index = 0
+
+    blocks = payload.get("contentBlocks", [])
+    if not isinstance(blocks, list) or not blocks:
+        return
+    if primary_index < 0 or primary_index >= len(blocks):
+        return
+
+    block = blocks[primary_index]
+    if not isinstance(block, dict):
+        return
+    if str(block.get("type") or "").strip().lower() != "smart_layout":
+        return
+
+    items = block.get("items", [])
+    if not isinstance(items, list):
+        return
+
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        description = str(item.get("description") or "").strip()
+        if not description:
+            continue
+        if _count_words(description) > _MAX_ITEM_DESCRIPTION_WORDS:
+            item["description"] = _trim_to_word_budget(
+                description, _MAX_ITEM_DESCRIPTION_WORDS
+            )
 
 
 def _has_structured_primary(blocks: List[Dict[str, Any]]) -> bool:
@@ -1267,7 +1333,7 @@ HARD RULES (violations will cause rejection):
     NEVER place intro_paragraph and annotation_paragraph/outro_paragraph together on the same slide.
 6. Do not include both an accentImagePrompt and block-embedded image prompts.
 7. Respect selected_template and image policy (image_need: {image_need}, image_tier: {image_tier}).
-8. Content richness is mandatory: each primary block item description should be at least 18 words and should explain meaning, significance, or implication.
+8. Description length: each primary block item description MUST be 12–15 words (1 sentence). Keep it specific and meaningful; remove filler instead of adding extra words.
 9. Avoid one-line generic text. Prefer specific, explanatory sentences tied to the objective.
 
 {grounding_instruction}
@@ -1325,6 +1391,8 @@ OUTPUT SCHEMA (JSON only):
   "heroImagePrompt": "optional string (only if image_tier=hero)"
 }}
 """
+    # Enforce scannability for the primary block descriptions even if the LLM overshoots.
+    # This is intentionally conservative (only trims when exceeding the max word budget).
 
     payload = None
     try:
@@ -1375,6 +1443,9 @@ OUTPUT SCHEMA (JSON only):
 
     # Enforce composition style and hard exclusion rule for intro+callout coexistence.
     _apply_composition_style(payload, plan_item, composition_style)
+
+    # Keep primary smart_layout descriptions within the scannable word budget.
+    _enforce_primary_description_word_budget(payload)
 
     # Hard rule: solid boxes primary must include at least one supporting paragraph block.
     _enforce_supporting_for_big_boxes(payload, plan_item)

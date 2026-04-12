@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -560,15 +561,19 @@ _INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], List[str]] = {
     ("prove", "comparison"):  ["statsComparison", "statsBadgeGrid", "comparisonProsCons"],
     ("prove", "foundation"):  ["stats", "statsBadgeGrid", "solidBoxesWithIconsInside"],
 }
-# Fallback variant when intent/scope combination is not found.
-_DEFAULT_SMART_LAYOUT_VARIANT = "solidBoxesWithIconsInside"
+# Fallback variants when intent/scope combination is not found.
+_DEFAULT_SMART_LAYOUT_VARIANTS = ["solidBoxesWithIconsInside", "diamondGrid", "cardGridDiamond"]
+
+# Each slide appends ~2 tokens to variant_history (template + smart_layout variant).
+# Window of 10 covers last ~5 slides.
+_VARIANT_HISTORY_WINDOW: int = 10
 
 
-def get_smart_layout_variant(teaching_intent: str, coverage_scope: str) -> str:
-    """Return the preferred smart_layout variant for a given intent/scope pair."""
+def get_smart_layout_variant(teaching_intent: str, coverage_scope: str) -> List[str]:
+    """Return ranked preferred smart_layout variants for a given intent/scope pair."""
     intent = str(teaching_intent or "explain").strip().lower()
     scope = str(coverage_scope or "foundation").strip().lower()
-    return _INTENT_SCOPE_TO_VARIANT.get((intent, scope), _DEFAULT_SMART_LAYOUT_VARIANT)
+    return _INTENT_SCOPE_TO_VARIANT.get((intent, scope), _DEFAULT_SMART_LAYOUT_VARIANTS)
 
 
 def get_block_spec(family: str, variant: str = "normal") -> BlockSpec:
@@ -579,15 +584,28 @@ def select_primary_block(
     family: str,
     density: str,
     image_need: str,
+    preferred_variants: Optional[List[str]] = None,
     variant_history: Optional[List[str]] = None,
-    teaching_intent: str = "explain",
-    coverage_scope: str = "foundation",
+    teaching_intent: Optional[str] = None,
+    coverage_scope: Optional[str] = None,
 ) -> BlockSpec:
     """Select the best primary BlockSpec, applying history-based anti-repetition."""
     family_key = str(family or "smart_layout").strip().lower()
     density_key = str(density or "balanced").strip().lower()
     image_need_key = str(image_need or "optional").strip().lower()
-    recent_variants = set((variant_history or [])[-4:])
+    recent_variants = set((variant_history or [])[-_VARIANT_HISTORY_WINDOW:])
+    intent_key = str(teaching_intent or "explain").strip().lower()
+    scope_key = str(coverage_scope or "foundation").strip().lower()
+
+    resolved_preferred_variants: List[str]
+    if isinstance(preferred_variants, str):  # tolerate legacy single-string style
+        resolved_preferred_variants = [preferred_variants]
+    else:
+        resolved_preferred_variants = list(preferred_variants or [])
+    if not resolved_preferred_variants and teaching_intent and coverage_scope:
+        resolved_preferred_variants = get_smart_layout_variant(intent_key, scope_key)
+    if not resolved_preferred_variants:
+        resolved_preferred_variants = []
 
     # Build candidates that match density and are primary candidates
     candidates = [spec for spec in BLOCK_CATALOG.values() if spec.is_primary_candidate]
@@ -613,23 +631,44 @@ def select_primary_block(
 
     # For smart_layout family, pick the best variant based on intent/scope
     if family_key in {"smart_layout", "process", "comparison", "recap", "overview"}:
-        preferred_variant = get_smart_layout_variant(teaching_intent, coverage_scope)
-        # Try preferred variant first (non-repeated)
-        preferred = [
-            spec for spec in family_candidates
-            if spec.smart_layout_variant == preferred_variant
-            and spec.smart_layout_variant not in recent_variants
-        ]
-        if preferred:
-            return preferred[0]
-        # Preferred variant was recently used – try any non-repeated smart_layout variant
+        # Phase 1: Try each preferred variant in rank order, skip recently used
+        deduped_preferred: List[str] = []
+        seen: set[str] = set()
+        for name in resolved_preferred_variants:
+            variant_name = str(name or "").strip()
+            if not variant_name or variant_name in seen:
+                continue
+            seen.add(variant_name)
+            deduped_preferred.append(variant_name)
+
+        for variant_name in deduped_preferred:
+            candidates = [
+                spec
+                for spec in family_candidates
+                if spec.smart_layout_variant == variant_name
+                and variant_name not in recent_variants
+            ]
+            if candidates:
+                return candidates[0]
+
+        # Phase 2: All preferred variants recently used — try ANY non-repeated variant (random)
         non_repeated = [
-            spec for spec in family_candidates
-            if spec.smart_layout_variant not in recent_variants
+            spec
+            for spec in family_candidates
+            if spec.smart_layout_variant and spec.smart_layout_variant not in recent_variants
         ]
         if non_repeated:
-            non_repeated.sort(key=lambda s: (s.family != "smart_layout", s.variant))
-            return non_repeated[0]
+            return random.choice(non_repeated)
+
+        # Phase 3: Everything repeated — use first preferred variant anyway (freshest choice)
+        for variant_name in deduped_preferred:
+            candidates = [spec for spec in family_candidates if spec.smart_layout_variant == variant_name]
+            if candidates:
+                return candidates[0]
+
+        # Phase 4: Nothing matched at all — random from all family candidates
+        if family_candidates:
+            return random.choice(family_candidates)
 
     # If image required and family is title-like, prefer content-image-aware spec
     if image_need_key == "required" and family_key in {"overview", "title"}:
@@ -638,10 +677,11 @@ def select_primary_block(
                 return candidate
 
     # Sort: prefer smart_layout family, then preferred variant match
+    preferred_set = set(resolved_preferred_variants or get_smart_layout_variant(intent_key, scope_key))
     family_candidates.sort(key=lambda spec: (
         spec.family != "smart_layout",
         spec.family != family_key,
-        spec.variant not in {get_smart_layout_variant(teaching_intent, coverage_scope)},
+        spec.variant not in preferred_set,
         spec.family,
         spec.variant,
     ))

@@ -15,6 +15,7 @@ import {
     X,
     Maximize2,
     Minimize2,
+    RefreshCw,
 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────
@@ -213,6 +214,11 @@ function splitDeckIntoSlides(html: string): string[] {
             .join("");
         const styleTag = doc.head.querySelector("style")?.outerHTML || "";
 
+        const devOverridesCssLink =
+            process.env.NODE_ENV === "development"
+                ? `<link rel="stylesheet" href="/gyml/dev-overrides.css?v=${Date.now()}">`
+                : "";
+
         // Override: let the section fill the viewport naturally
         const overrideStyles = `<style>
             .gyml-deck{height:100%!important;overflow:hidden!important;}
@@ -340,7 +346,7 @@ function splitDeckIntoSlides(html: string): string[] {
 
         return sectionsToRender.map(
             (sec) =>
-                `<html><head>${headLinks}${styleTag}${overrideStyles}</head>` +
+                `<html><head>${headLinks}${styleTag}${devOverridesCssLink}${overrideStyles}</head>` +
                 `<body><div class="gyml-deck">${sec.outerHTML}</div>${bodyScripts}${bridgeScript}</body></html>`
         );
     } catch {
@@ -411,6 +417,7 @@ export default function LessonViewPage() {
     const [loaderStatus, setLoaderStatus] = useState("pending");
     const [error, setError] = useState<string | null>(null);
     const [slideList, setSlideList] = useState<SlideEntry[]>([]);
+    const [devCssNonce, setDevCssNonce] = useState(0);
 
     // Player state
     const [currentSlideIdx, setCurrentSlideIdx] = useState(0);
@@ -552,7 +559,7 @@ export default function LessonViewPage() {
         });
 
         setSlideList(list);
-    }, [lessonData]);
+    }, [lessonData, devCssNonce]);
 
     useEffect(() => {
         if (slideList.length === 0) {
@@ -1021,6 +1028,15 @@ export default function LessonViewPage() {
 
                     {/* Center controls */}
                     <div className="flex items-center gap-3">
+                        {process.env.NODE_ENV === "development" && (
+                            <button
+                                onClick={() => setDevCssNonce((v) => v + 1)}
+                                className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-white backdrop-blur-sm"
+                                title="Reload GyML dev CSS"
+                            >
+                                <RefreshCw className="w-5 h-5" />
+                            </button>
+                        )}
                         <button
                             onClick={toggleMute}
                             className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-white backdrop-blur-sm"
