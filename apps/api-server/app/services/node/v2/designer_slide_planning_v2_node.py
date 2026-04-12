@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 try:
     from app.services.node.v2.block_catalog_v2 import (
         BLOCK_CATALOG,
+        BlockSpec,
         block_to_blueprint,
         get_block_spec,
         get_smart_layout_variant,
@@ -19,13 +20,14 @@ try:
         template_allows_layout,
     )
     from app.services.node.v2.variety_policy_v2 import (
-        pick_layout,
         pick_smart_layout_variant,
         rank_templates,
     )
+    from app.services.node.v2.image_manager_adapter_v2 import determine_image_layout_v2
 except ImportError:
     from .block_catalog_v2 import (  # type: ignore
         BLOCK_CATALOG,
+        BlockSpec,
         block_to_blueprint,
         get_block_spec,
         get_smart_layout_variant,
@@ -39,10 +41,10 @@ except ImportError:
         template_allows_layout,
     )
     from .variety_policy_v2 import (  # type: ignore
-        pick_layout,
         pick_smart_layout_variant,
         rank_templates,
     )
+    from .image_manager_adapter_v2 import determine_image_layout_v2  # type: ignore
 
 
 VALID_DENSITIES = {"ultra_sparse", "sparse", "balanced", "standard", "dense", "super_dense"}
@@ -144,14 +146,17 @@ def _choose_layout(
     image_tier: str,
     density: str,
     layout_history: List[str],
+    primary_spec: BlockSpec,
 ) -> str:
-    spec = get_template_spec(template_name)
-    allowed = list(spec.allowed_layouts)
-    return pick_layout(
-        allowed,
+    # Delegate to determine_image_layout_v2 which now handles width-based rules
+    return determine_image_layout_v2(
+        engine_density=density,
+        intent="explain", # intent fallback
+        slide_index=len(layout_history),
+        has_wide_block=(primary_spec.width_class == "wide"),
         layout_history=layout_history,
-        image_need=image_need,
-        density=density,
+        explicit_layout=None,
+        allowed_layouts=get_template_spec(template_name).allowed_layouts,
     )
 
 
@@ -437,7 +442,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         if image_tier in {"hero", "accent"}:
             supporting_specs = [spec for spec in supporting_specs if not spec.implies_content_image]
 
-        layout = _choose_layout(selected_template, image_need, image_tier, density, local_layout_history)
+        layout = _choose_layout(selected_template, image_need, image_tier, density, local_layout_history, primary_spec=primary_spec)
         composition_style = _pick_composition_style(
             style_history=local_composition_history,
             template=template_spec,

@@ -41,6 +41,11 @@ try:
         GyMLTreeNode,
         GyMLFeatureShowcaseBlock,
         GyMLFeatureShowcaseItem,
+        GyMLHubAndSpoke,
+        GyMLHubAndSpokeItem,
+        GyMLCyclicBlock,
+        GyMLCyclicItem,
+        GyMLSequentialOutput,
     )
     from app.services.node.slides.gyml.validator import GyMLValidator
 except ImportError:
@@ -75,6 +80,11 @@ except ImportError:
         GyMLTreeNode,
         GyMLFeatureShowcaseBlock,
         GyMLFeatureShowcaseItem,
+        GyMLHubAndSpoke,
+        GyMLHubAndSpokeItem,
+        GyMLCyclicBlock,
+        GyMLCyclicItem,
+        GyMLSequentialOutput,
     )
     from ..slides.gyml.validator import GyMLValidator  # type: ignore
 
@@ -641,18 +651,87 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
                 if isinstance(item, dict)
             ]
             body_children.append(GyMLCyclicProcessBlock(items=items))
-        elif block_type == "smart_layout":
+        elif block_type == "feature_showcase_block":
             items = []
-            for item in block.get("items", []):
-                if not isinstance(item, dict):
-                    continue
-                item_kwargs = {k: v for k, v in item.items() if k in {"heading", "title", "description", "points", "year", "value", "label"}}
-                # Accept both v2 (`icon_name`) and legacy (`icon`) keys.
-                icon_name = item.get("icon_name") or item.get("icon")
-                if icon_name:
-                    item_kwargs["icon"] = GyMLIcon(alt=str(icon_name))
-                items.append(GyMLSmartLayoutItem(**item_kwargs))
-            body_children.append(GyMLSmartLayout(variant=str(block.get("variant") or "bigBullets"), items=items))
+            for it in block.get("items", []):
+                if not isinstance(it, dict): continue
+                icon_name = it.get("icon_name") or it.get("icon")
+                items.append(GyMLFeatureShowcaseItem(
+                    label=str(it.get("heading") or it.get("title") or "Feature"),
+                    description=it.get("description"),
+                    icon=str(icon_name) if icon_name else None
+                ))
+            body_children.append(GyMLFeatureShowcaseBlock(
+                title=str(block.get("title") or slide_title),
+                items=items,
+                image_url=str(block.get("image_url") or block.get("imagePrompt") or "")
+            ))
+        elif block_type == "hub_and_spoke":
+            items = []
+            for it in block.get("items", []):
+                if not isinstance(it, dict): continue
+                icon_name = it.get("icon_name") or it.get("icon")
+                items.append(GyMLHubAndSpokeItem(
+                    label=str(it.get("heading") or it.get("title") or "Point"),
+                    description=it.get("description"),
+                    icon=str(icon_name) if icon_name else None
+                ))
+            body_children.append(GyMLHubAndSpoke(hub_label=str(block.get("hub_label") or slide_title), items=items))
+        elif block_type == "smart_layout":
+            variant = block.get("variant")
+            # Route specialized variants to their dedicated GyML classes
+            if variant == "hubAndSpoke":
+                items = []
+                for it in block.get("items", []):
+                    if not isinstance(it, dict): continue
+                    icon_name = it.get("icon_name") or it.get("icon")
+                    items.append(GyMLHubAndSpokeItem(
+                        label=str(it.get("heading") or it.get("title") or "Point"),
+                        description=it.get("description"),
+                        icon=str(icon_name) if icon_name else None
+                    ))
+                body_children.append(GyMLHubAndSpoke(hub_label=str(block.get("hub_label") or slide_title), items=items))
+            elif variant == "featureShowcase":
+                items = []
+                for it in block.get("items", []):
+                    if not isinstance(it, dict): continue
+                    icon_name = it.get("icon_name") or it.get("icon")
+                    items.append(GyMLFeatureShowcaseItem(
+                        label=str(it.get("heading") or it.get("title") or "Feature"),
+                        description=it.get("description"),
+                        icon=str(icon_name) if icon_name else None
+                    ))
+                body_children.append(GyMLFeatureShowcaseBlock(
+                    title=str(block.get("title") or slide_title),
+                    items=items,
+                    image_url=str(block.get("image_url") or block.get("imagePrompt") or "")
+                ))
+            elif variant == "cyclicBlock":
+                items = []
+                for it in block.get("items", []):
+                    if not isinstance(it, dict): continue
+                    icon_name = it.get("icon_name") or it.get("icon")
+                    items.append(GyMLCyclicItem(
+                        label=str(it.get("heading") or it.get("title") or "Stage"),
+                        description=it.get("description"),
+                        icon=str(icon_name) if icon_name else None
+                    ))
+                body_children.append(GyMLCyclicBlock(items=items, hub_label=str(block.get("hub_label") or slide_title)))
+            elif variant == "sequentialOutput":
+                items = [str(it.get("text") or it.get("description") or it) for it in block.get("items", [])]
+                body_children.append(GyMLSequentialOutput(items=items))
+            else:
+                items = []
+                for item in block.get("items", []):
+                    if not isinstance(item, dict):
+                        continue
+                    item_kwargs = {k: v for k, v in item.items() if k in {"heading", "title", "description", "points", "year", "value", "label"}}
+                    # Accept both v2 (`icon_name`) and legacy (`icon`) keys.
+                    icon_name = item.get("icon_name") or item.get("icon")
+                    if icon_name:
+                        item_kwargs["icon"] = GyMLIcon(alt=str(icon_name))
+                    items.append(GyMLSmartLayoutItem(**item_kwargs))
+                body_children.append(GyMLSmartLayout(variant=str(block.get("variant") or "bigBullets"), items=items))
         elif block_type == "image":
             body_children.append(GyMLImage(src=str(block.get("src") or block.get("imagePrompt") or ""), alt=str(block.get("alt") or slide_title), is_accent=bool(block.get("is_accent", False))))
         else:
@@ -682,6 +761,10 @@ _STRUCTURED_PRIMARY_TYPES = {
     "formula_block",
     "process_arrow_block",
     "cyclic_process_block",
+    "feature_showcase_block",
+    "hub_and_spoke",
+    "cyclic_block",
+    "sequential_output",
     "step_list",
     "rich_text",
 }
@@ -735,11 +818,19 @@ def _enforce_structured_primary(payload: Dict[str, Any], plan_item: Dict[str, An
             {"heading": "Key Concept", "description": objective or title},
             {"heading": "Why It Matters", "description": str(plan_item.get("assessment_prompt") or "Reflect on what you learned.")},
         ]
+        
+    fallback_limit = 6
+    if smart_layout_variant == "relationshipMap":
+        fallback_limit = 3
+    elif smart_layout_variant in ("cardGridDiamond", "diamondGrid", "diamondRibbon", "processArrow", "ribbonFold", "statsBadgeGrid"):
+        fallback_limit = 4
+    elif smart_layout_variant == "diamondHub":
+        fallback_limit = 5
 
     fallback_block: Dict[str, Any] = {
         "type": "smart_layout",
         "variant": smart_layout_variant or "bigBullets",
-        "items": items[:6],
+        "items": items[:fallback_limit],
     }
 
     if (smart_layout_variant or "").strip() == "solidBoxesWithIconsInside":
@@ -792,6 +883,10 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
         expected_items = "4"
     if smart_layout_variant == "statsBadgeGrid":
         expected_items = "4"
+    if smart_layout_variant in ("cardGridDiamond", "diamondGrid", "diamondRibbon", "processArrow"):
+        expected_items = "4"
+    if smart_layout_variant == "diamondHub":
+        expected_items = "5"
 
     research_context = str(plan_item.get("research_context") or plan_item.get("research_raw_text") or "").strip()
     factual_confidence = str(plan_item.get("factual_confidence") or "low").strip().lower()
@@ -962,6 +1057,11 @@ OUTPUT SCHEMA (JSON only):
         payload.pop("accentImagePrompt", None)
         payload.pop("heroImagePrompt", None)
         payload.pop("imagePrompt", None)
+
+    # Enforce: use the layout decided by the planner (ground truth for variety/constraints)
+    planned_layout = str(plan_item.get("layout") or designer_blueprint.get("layout") or payload.get("layout") or "blank").strip().lower()
+    payload["layout"] = planned_layout
+    payload["image_layout"] = planned_layout
 
     # Enforce: non-title slides must have a structured primary block.
     # If the LLM only produced paragraphs/headings, inject a fallback smart_layout.

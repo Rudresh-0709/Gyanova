@@ -33,9 +33,28 @@ def determine_image_layout_v2(
     has_wide_block: bool,
     layout_history: list[str] | None = None,
     explicit_layout: str | None = None,
+    allowed_layouts: list[str] | tuple[str, ...] | None = None,
 ) -> str:
     density_key = str(engine_density or "balanced").strip().lower()
     mapped_float = _DENSITY_TO_FLOAT.get(density_key, _DENSITY_TO_FLOAT["balanced"])
+
+    # Determine acceptable layouts based on width_class (User Requirement)
+    if has_wide_block:
+        width_allowed = ["top", "bottom", "blank"]
+    else:
+        width_allowed = ["left", "right", "blank"] # Allowing blank for narrow too for safety
+
+    # Intersect with template constraints if provided
+    effective_allowed = width_allowed
+    if allowed_layouts:
+        template_allowed = [str(l).strip().lower() for l in allowed_layouts]
+        intersection = [ly for ly in width_allowed if ly in template_allowed]
+        if intersection:
+            effective_allowed = intersection
+        else:
+            # If intersection is empty (mismatch between template and width rule),
+            # default to the width-based rule as the primary visual constraint.
+            effective_allowed = width_allowed
 
     raw_result = ImageManager.determine_placement(
         slide_density=mapped_float,
@@ -48,10 +67,12 @@ def determine_image_layout_v2(
 
     raw_result = str(raw_result or "blank").strip().lower()
 
-    if density_key in ("dense", "super_dense") and raw_result in ("left", "right"):
-        raw_result = "top" if slide_index % 2 == 0 else "bottom"
-
-    normalized_history = [_normalize_history_layout(item) for item in list(layout_history or []) if str(item or "").strip()]
+    # Apply history-based variety/flipping
+    normalized_history = [
+        _normalize_history_layout(item)
+        for item in list(layout_history or [])
+        if str(item or "").strip()
+    ]
     if normalized_history:
         last_layout = normalized_history[-1]
         if raw_result == last_layout:
@@ -60,13 +81,22 @@ def determine_image_layout_v2(
                 "right": "left",
                 "top": "bottom",
                 "bottom": "top",
-                "blank": "left",
+                "blank": "left" if not has_wide_block else "top",
             }
             raw_result = flip_map.get(raw_result, raw_result)
 
-        if len(normalized_history) >= 2:
-            last_two = normalized_history[-2:]
-            if all(ly in ("left", "right") for ly in last_two) and raw_result in ("left", "right"):
-                raw_result = "top" if slide_index % 2 == 0 else "bottom"
+    # Final enforcement of effective_allowed
+    if raw_result not in effective_allowed:
+        # Fallback strategy: try to find a similar one in effective_allowed
+        if raw_result in ("left", "right"):
+            for fb in ["top", "bottom", "blank"]:
+                if fb in effective_allowed:
+                    return fb
+        elif raw_result in ("top", "bottom"):
+            for fb in ["left", "right", "blank"]:
+                if fb in effective_allowed:
+                    return fb
+        
+        return effective_allowed[0]
 
     return raw_result

@@ -1507,7 +1507,7 @@ body {
     flex-direction: row;
     width: 100%;
     max-width: 1200px;
-    margin: 2rem auto;
+    margin: 0.5rem auto;
     gap: 0;
     padding: 1rem;
     align-items: flex-start;
@@ -4483,7 +4483,7 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
     grid-template-rows: 1fr 200px 1fr;
     gap: 1rem;
     width: 100%;
-    margin: 2rem auto;
+    margin: 0.5rem auto;
     align-items: center;
 }
 
@@ -4646,7 +4646,7 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 2rem;
     width: 100%;
-    margin: 2rem auto;
+    margin: 0.5rem auto;
     align-items: stretch;
 }
 
@@ -4771,6 +4771,39 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
 .smart-layout[data-variant="processSteps"] .card:last-child::after,
 .smart-layout[data-variant="processAccordion"] .card:last-child::after {
     display: none;
+}
+
+.smart-layout[data-variant="processAccordion"] .card {
+    position: relative;
+    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--bg-secondary, #ffffff);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 0.5rem;
+    border-left: 4px solid var(--accent, #6366f1);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.smart-layout[data-variant="processAccordion"] .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+    margin-bottom: 0.25rem;
+}
+
+.smart-layout[data-variant="processAccordion"] .card-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text-secondary, #475569);
+}
+
+.smart-layout[data-variant="processAccordion"] .card-number {
+    display: none;
+}
+
+section[data-density="super_dense"] .smart-layout[data-variant="processAccordion"] .card {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.25rem;
 }
 
 /* --- Process Arrow --- */

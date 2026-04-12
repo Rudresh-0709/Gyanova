@@ -508,6 +508,17 @@ def plan_slide_v2(
 
     # ===== Step 7: Determine image layout =====
     teaching_intent = str(teacher_brief.get("teaching_intent", "explain")).strip().lower()
+
+    # Intersect template allowed layouts with block supported layouts
+    effective_allowed = list(template_spec.allowed_layouts)
+    if primary_spec.supported_layouts:
+        # If block explicitly restricts layouts, intersect them
+        block_set = set(primary_spec.supported_layouts)
+        effective_allowed = [ly for ly in effective_allowed if ly in block_set]
+        # If intersection is empty (should not happen with good catalog design), fallback to block supported
+        if not effective_allowed:
+            effective_allowed = list(primary_spec.supported_layouts)
+
     image_layout = determine_image_layout_v2(
         engine_density=engine_density,
         intent=teaching_intent,
@@ -515,6 +526,7 @@ def plan_slide_v2(
         has_wide_block=has_wide_block,
         layout_history=layout_history,
         explicit_layout=None,
+        allowed_layouts=effective_allowed,
     )
 
     # ===== Step 8: Build designer blueprint =====

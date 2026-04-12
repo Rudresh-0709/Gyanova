@@ -13,6 +13,8 @@ import {
     Volume2,
     VolumeX,
     X,
+    Maximize2,
+    Minimize2,
 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────
@@ -417,10 +419,12 @@ export default function LessonViewPage() {
     const [currentSegIdx, setCurrentSegIdx] = useState(-1);
     const [showControls, setShowControls] = useState(true);
     const [iframeReady, setIframeReady] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     // Refs (used to avoid stale closures in callbacks)
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
     const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const playbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hasAutoStartedRef = useRef(false);
@@ -604,8 +608,17 @@ export default function LessonViewPage() {
                 setIframeReady(true);
             }
         };
+
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
         window.addEventListener("message", handleMessage);
-        return () => window.removeEventListener("message", handleMessage);
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => {
+            window.removeEventListener("message", handleMessage);
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+        };
     }, [resetControlsTimer]);
 
     // ─── Audio playback engine ──────────────────────────────────────────
@@ -774,7 +787,11 @@ export default function LessonViewPage() {
                     goPrev();
                     break;
                 case "Escape":
-                    router.push("/lesson/new");
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        router.push("/lesson/new");
+                    }
                     break;
                 case "m":
                     setIsMuted((m) => !m);
@@ -826,6 +843,16 @@ export default function LessonViewPage() {
             if (audioRef.current) audioRef.current.muted = !m;
             return !m;
         });
+    };
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            containerRef.current?.requestFullscreen().catch((err) => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
     };
 
     // ─── Progress ───────────────────────────────────────────────────────
@@ -892,6 +919,7 @@ export default function LessonViewPage() {
 
     return (
         <div
+            ref={containerRef}
             className="fixed inset-0 bg-[#0a0f1a] z-50 flex flex-col"
             onMouseMove={resetControlsTimer}
             onClick={resetControlsTimer}
@@ -901,8 +929,9 @@ export default function LessonViewPage() {
 
             {/* ─── Top bar ─────────────────────────────────────────── */}
             <div
-                className={`absolute top-0 left-0 right-0 z-30 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-                    }`}
+                className={`absolute top-0 left-0 right-0 z-30 transition-opacity duration-300 ${
+                    showControls && !isFullscreen ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
             >
                 {/* Narration progress bar */}
                 <div className="h-1 bg-white/10 w-full">
@@ -953,8 +982,9 @@ export default function LessonViewPage() {
 
             {/* ─── Bottom controls ─────────────────────────────────── */}
             <div
-                className={`absolute bottom-0 left-0 right-0 z-30 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"
-                    }`}
+                className={`absolute bottom-0 left-0 right-0 z-30 transition-opacity duration-300 ${
+                    showControls && !isFullscreen ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
             >
                 {/* Slide progress dots */}
                 <div className="flex justify-center gap-1.5 pb-3">
@@ -1013,7 +1043,17 @@ export default function LessonViewPage() {
                             )}
                         </button>
 
-                        <div className="w-10" /> {/* spacer */}
+                        <button
+                            onClick={toggleFullscreen}
+                            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-white backdrop-blur-sm"
+                            title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                        >
+                            {isFullscreen ? (
+                                <Minimize2 className="w-5 h-5" />
+                            ) : (
+                                <Maximize2 className="w-5 h-5" />
+                            )}
+                        </button>
                     </div>
 
                     {/* Next */}

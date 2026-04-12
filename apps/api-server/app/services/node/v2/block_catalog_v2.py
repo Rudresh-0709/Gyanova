@@ -17,6 +17,8 @@ class BlockSpec:
     smart_layout_variant: str = ""
     # Pedagogical intents this block fits best
     intent_fit: Tuple[str, ...] = ()
+    # Allowed image layouts for this block (blank, left, right, top, bottom). If empty, all are allowed.
+    supported_layouts: Tuple[str, ...] = ()
 
 
 BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
@@ -314,6 +316,42 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         smart_layout_variant="diamondHub",
         intent_fit=("introduce", "explain", "summarize"),
     ),
+    ("smart_layout", "hubAndSpoke"): BlockSpec(
+        family="smart_layout",
+        variant="hubAndSpoke",
+        width_class="wide",
+        density_ok=("balanced", "standard", "dense"),
+        is_primary_candidate=True,
+        smart_layout_variant="hubAndSpoke",
+        intent_fit=("explain", "introduce"),
+    ),
+    ("smart_layout", "featureShowcase"): BlockSpec(
+        family="smart_layout",
+        variant="featureShowcase",
+        width_class="wide",
+        density_ok=("balanced", "standard"),
+        is_primary_candidate=True,
+        smart_layout_variant="featureShowcase",
+        intent_fit=("explain", "teach"),
+    ),
+    ("smart_layout", "cyclicBlock"): BlockSpec(
+        family="smart_layout",
+        variant="cyclicBlock",
+        width_class="wide",
+        density_ok=("balanced", "standard"),
+        is_primary_candidate=True,
+        smart_layout_variant="cyclicBlock",
+        intent_fit=("explain", "teach"),
+    ),
+    ("smart_layout", "sequentialOutput"): BlockSpec(
+        family="smart_layout",
+        variant="sequentialOutput",
+        width_class="normal",
+        density_ok=("balanced", "standard", "dense"),
+        is_primary_candidate=True,
+        smart_layout_variant="sequentialOutput",
+        intent_fit=("demo", "teach"),
+    ),
     # ── Legacy family aliases (map to smart_layout internally) ────────────────
     ("process", "normal"): BlockSpec(
         family="process",
@@ -350,6 +388,33 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         is_primary_candidate=True,
         smart_layout_variant="comparisonProsCons",
         intent_fit=("compare",),
+    ),
+    # ── Specialized Graph Blocks ──────────────────────────────────────────────
+    ("cyclic_process_block", "normal"): BlockSpec(
+        family="cyclic_process_block",
+        variant="normal",
+        width_class="wide",
+        density_ok=("balanced", "standard", "dense"),
+        is_primary_candidate=True,
+        intent_fit=("explain", "teach"),
+    ),
+    ("feature_showcase_block", "normal"): BlockSpec(
+        family="feature_showcase_block",
+        variant="normal",
+        width_class="wide",
+        has_content_image=True,
+        implies_content_image=True,
+        density_ok=("balanced", "standard"),
+        is_primary_candidate=True,
+        intent_fit=("explain", "teach"),
+    ),
+    ("process_arrow_block", "default"): BlockSpec(
+        family="process_arrow_block",
+        variant="default",
+        width_class="wide",
+        density_ok=("balanced", "standard", "dense"),
+        is_primary_candidate=True,
+        intent_fit=("teach", "demo"),
     ),
     # ── Supporting (non-primary) blocks ──────────────────────────────────────
     ("supporting_text", "normal"): BlockSpec(
