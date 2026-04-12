@@ -28,6 +28,7 @@ class ImageManager:
         explicit_layout: Optional[ImagePlacementValue] = None,
         slide_index: int = 0,
         has_wide_block: bool = False,
+        block_spec=None,
     ) -> ImagePlacementValue:
         """
         Decide image layout based on density, intent, and explicit orientation.
@@ -50,7 +51,17 @@ class ImageManager:
 
         # 2. Density / Complexity Overrides
         # If density is very high (> 1.0) or has wide content, side layouts look cramped.
-        if (slide_density > 1.0) or has_wide_block:
+        # Check if the block actually restricts to top/bottom only.
+        block_restricts_to_vertical = False
+        if block_spec and getattr(block_spec, "supported_layouts", None):
+            supported = set(block_spec.supported_layouts)
+            # Only force top/bottom if the block genuinely cannot do side layouts.
+            block_restricts_to_vertical = not ({"left", "right"} & supported)
+        elif has_wide_block:
+            # No supported_layouts declared, fall back to old behavior.
+            block_restricts_to_vertical = True
+
+        if (slide_density > 1.0) or block_restricts_to_vertical:
             # For dense/complex slides, use top/bottom layouts to preserve horizontal space
             # This allows image generation for dense slides instead of skipping entirely
             return "top" if slide_index % 2 == 0 else "bottom"

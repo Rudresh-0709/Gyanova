@@ -39,8 +39,8 @@ def determine_image_layout_v2(
     density_key = str(engine_density or "balanced").strip().lower()
     mapped_float = _DENSITY_TO_FLOAT.get(density_key, _DENSITY_TO_FLOAT["balanced"])
 
-    # Tier 1: Use block's explicit supported_layouts if populated
-    if block_spec and block_spec.supported_layouts:
+    # Tier 1: Use block's explicit supported_layouts (most accurate)
+    if block_spec and getattr(block_spec, "supported_layouts", None):
         width_allowed = list(block_spec.supported_layouts)
     # Tier 2: Fall back to width_class heuristic for un-audited blocks  
     elif has_wide_block:
@@ -68,6 +68,7 @@ def determine_image_layout_v2(
         explicit_layout=explicit_layout,
         slide_index=slide_index,
         has_wide_block=has_wide_block,
+        block_spec=block_spec,
     )
 
     raw_result = str(raw_result or "blank").strip().lower()

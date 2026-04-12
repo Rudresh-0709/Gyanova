@@ -191,7 +191,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="cardGridImage",
         width_class="wide",
-        supported_layouts=("blank"),
+        supported_layouts=("blank",),
         has_content_image=True,
         implies_content_image=True,
         density_ok=("ultra_sparse", "sparse", "balanced"),
@@ -346,7 +346,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="hubAndSpoke",
         width_class="wide",
-        supported_layouts=("blank"),
+        supported_layouts=("blank",),
         density_ok=("balanced", "standard", "dense"),
         is_primary_candidate=True,
         smart_layout_variant="hubAndSpoke",
@@ -356,7 +356,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="featureShowcase",
         width_class="wide",
-        supported_layouts=("blank"),
+        supported_layouts=("blank",),
         density_ok=("balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="featureShowcase",
@@ -366,7 +366,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="cyclicBlock",
         width_class="wide",
-        supported_layouts=("blank"),
+        supported_layouts=("blank",),
         density_ok=("balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="cyclicBlock",
@@ -653,6 +653,7 @@ def select_supporting_blocks(
     family: str,
     density: str,
     max_supporting_blocks: int,
+    offset: int = 0,
 ) -> List[BlockSpec]:
     density_key = str(density or "balanced").strip().lower()
     candidates = [
@@ -661,6 +662,10 @@ def select_supporting_blocks(
         if not spec.is_primary_candidate and (not spec.density_ok or density_key in spec.density_ok)
     ]
     candidates.sort(key=lambda spec: (spec.family, spec.variant))
+    if candidates and offset:
+        normalized = int(offset) % len(candidates)
+        if normalized:
+            candidates = candidates[normalized:] + candidates[:normalized]
     return candidates[: max(0, int(max_supporting_blocks))]
 
 

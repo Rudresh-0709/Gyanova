@@ -402,6 +402,10 @@ def _compose_planned_blocks(
     density: str,
     image_need: str,
     image_tier: str,
+    variant_history: List[str] | None = None,
+    teaching_intent: str = "explain",
+    coverage_scope: str = "foundation",
+    slide_index: int = 0,
 ) -> Tuple[BlockSpec, List[BlockSpec], bool]:
     """
     Compose primary block and supporting blocks respecting template constraints.
@@ -410,7 +414,14 @@ def _compose_planned_blocks(
       (primary_spec, supporting_specs, has_wide_block)
     """
     # Get primary block
-    primary_spec = select_primary_block(primary_family, density, image_need)
+    primary_spec = select_primary_block(
+        primary_family,
+        density,
+        image_need,
+        variant_history=variant_history,
+        teaching_intent=teaching_intent,
+        coverage_scope=coverage_scope,
+    )
 
     # Validate against template's allowed_primary_families
     if (
@@ -419,7 +430,14 @@ def _compose_planned_blocks(
     ):
         # Fallback to first allowed family
         primary_family = template_spec.allowed_primary_families[0]
-        primary_spec = select_primary_block(primary_family, density, image_need)
+        primary_spec = select_primary_block(
+            primary_family,
+            density,
+            image_need,
+            variant_history=variant_history,
+            teaching_intent=teaching_intent,
+            coverage_scope=coverage_scope,
+        )
 
     # Determine has_wide_block
     has_wide_block = primary_spec.width_class == "wide"
@@ -429,6 +447,7 @@ def _compose_planned_blocks(
         family=primary_family,
         density=density,
         max_supporting_blocks=template_spec.max_supporting_blocks,
+        offset=slide_index + len(list(variant_history or [])),
     )
 
     # Sparse templates allow only 1 supporting block
@@ -500,6 +519,8 @@ def plan_slide_v2(
         state.get("v2_no_consecutive_template", True), default=True
     )
     hard_rule_family_cap = _to_bool(state.get("v2_family_cap_last4", True), default=True)
+    teaching_intent = str(teacher_brief.get("teaching_intent", "explain")).strip().lower()
+    coverage_scope = str(teacher_brief.get("coverage_scope", "foundation")).strip().lower()
 
     # ===== Step 1: Map density tier =====
     brief_density = str(teacher_brief.get("density_tier", "medium")).strip().lower()
@@ -574,6 +595,10 @@ def plan_slide_v2(
             density=engine_density,
             image_need=image_need,
             image_tier=image_tier,
+            variant_history=variant_history,
+            teaching_intent=teaching_intent,
+            coverage_scope=coverage_scope,
+            slide_index=slide_index,
         )
 
         validated_template_spec = _validate_template_block_compatibility(
@@ -601,7 +626,7 @@ def plan_slide_v2(
     primary_tags = list(primary_traits.tags) if primary_traits else []
 
     # ===== Step 7: Determine image layout =====
-    teaching_intent = str(teacher_brief.get("teaching_intent", "explain")).strip().lower()
+    # teaching_intent already normalized above (used for block selection too).
 
     # Intersect template allowed layouts with block supported layouts
     effective_allowed = list(template_spec.allowed_layouts)

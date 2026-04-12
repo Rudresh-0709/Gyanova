@@ -121,11 +121,30 @@ def _default_icon_name(index: int) -> str:
 
 def _intent_for_teacher(teacher_intent: str) -> str:
     intent = str(teacher_intent or "explain").strip().lower()
-    return intent if intent in {"introduce", "explain", "teach", "compare", "demo", "prove", "summarize", "narrate", "list"} else "explain"
+    return (
+        intent
+        if intent
+        in {
+            "introduce",
+            "explain",
+            "teach",
+            "compare",
+            "demo",
+            "prove",
+            "summarize",
+            "narrate",
+            "list",
+        }
+        else "explain"
+    )
 
 
-def _build_narration_text(plan_item: Dict[str, Any], slide_payload: Dict[str, Any]) -> str:
-    title = str(plan_item.get("title") or slide_payload.get("title") or "This slide").strip()
+def _build_narration_text(
+    plan_item: Dict[str, Any], slide_payload: Dict[str, Any]
+) -> str:
+    title = str(
+        plan_item.get("title") or slide_payload.get("title") or "This slide"
+    ).strip()
     must_cover = _join_limited(plan_item.get("must_cover", []), max_items=4)
     key_facts = _join_limited(plan_item.get("key_facts", []), max_items=3)
     formulas = _join_limited(plan_item.get("formulas", []), max_items=2)
@@ -142,7 +161,9 @@ def _build_narration_text(plan_item: Dict[str, Any], slide_payload: Dict[str, An
         parts.append(f"Use these formulas where relevant: {formulas}.")
     if assessment:
         parts.append(f"Check understanding by asking: {assessment}.")
-    parts.append("Keep the explanation concise, accurate, and connected to the learner's objective.")
+    parts.append(
+        "Keep the explanation concise, accurate, and connected to the learner's objective."
+    )
 
     sentences = [segment.strip() for segment in parts if segment.strip()]
     return "\n\n".join(sentences)
@@ -174,12 +195,18 @@ _COMPOSITION_STYLES = (
 )
 
 
-def _resolve_composition_style(plan_item: Dict[str, Any], designer_blueprint: Dict[str, Any]) -> str:
-    raw_style = str(
-        plan_item.get("composition_style")
-        or designer_blueprint.get("composition_style")
-        or ""
-    ).strip().lower()
+def _resolve_composition_style(
+    plan_item: Dict[str, Any], designer_blueprint: Dict[str, Any]
+) -> str:
+    raw_style = (
+        str(
+            plan_item.get("composition_style")
+            or designer_blueprint.get("composition_style")
+            or ""
+        )
+        .strip()
+        .lower()
+    )
     if raw_style in _COMPOSITION_STYLES:
         return raw_style
 
@@ -212,8 +239,12 @@ def _ensure_sentence(text: str) -> str:
 
 
 def _pick_best_supporting_fact(plan_item: Dict[str, Any]) -> str:
-    key_facts = [str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()]
-    must_cover = [str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()]
+    key_facts = [
+        str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()
+    ]
+    must_cover = [
+        str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()
+    ]
 
     # Prefer richer full-sentence facts over terse keywords.
     if key_facts:
@@ -229,7 +260,9 @@ def _build_intro_text(plan_item: Dict[str, Any]) -> str:
     if objective:
         return _ensure_sentence(objective)
     title = str(plan_item.get("title") or "this topic").strip()
-    return _ensure_sentence(f"Let's frame {title} before diving into the core structure")
+    return _ensure_sentence(
+        f"Let's frame {title} before diving into the core structure"
+    )
 
 
 def _build_context_text(plan_item: Dict[str, Any]) -> str:
@@ -243,7 +276,9 @@ def _build_context_text(plan_item: Dict[str, Any]) -> str:
         return best_fact
     if objective:
         return _ensure_sentence(objective)
-    return _ensure_sentence(f"This context sets up the core idea in {title} with a concrete teaching anchor")
+    return _ensure_sentence(
+        f"This context sets up the core idea in {title} with a concrete teaching anchor"
+    )
 
 
 def _build_callout_text(plan_item: Dict[str, Any]) -> str:
@@ -258,7 +293,9 @@ def _build_callout_text(plan_item: Dict[str, Any]) -> str:
     return "Key takeaway: summarize the most actionable insight from this slide."
 
 
-def _enforce_supporting_for_big_boxes(payload: Dict[str, Any], plan_item: Dict[str, Any]) -> None:
+def _enforce_supporting_for_big_boxes(
+    payload: Dict[str, Any], plan_item: Dict[str, Any]
+) -> None:
     """Ensure solidBoxesWithIconsInside always has a supporting paragraph block."""
     blocks = payload.get("contentBlocks", [])
     if not isinstance(blocks, list) or not blocks:
@@ -291,12 +328,17 @@ def _enforce_supporting_for_big_boxes(payload: Dict[str, Any], plan_item: Dict[s
         return
 
     insert_at = min(primary_idx + 1, len(blocks))
-    blocks.insert(insert_at, {"type": "annotation_paragraph", "text": _build_callout_text(plan_item)})
+    blocks.insert(
+        insert_at,
+        {"type": "annotation_paragraph", "text": _build_callout_text(plan_item)},
+    )
     payload["contentBlocks"] = blocks
     payload["primary_block_index"] = _find_primary_block_index(blocks)
 
 
-def _apply_composition_style(payload: Dict[str, Any], plan_item: Dict[str, Any], composition_style: str) -> None:
+def _apply_composition_style(
+    payload: Dict[str, Any], plan_item: Dict[str, Any], composition_style: str
+) -> None:
     blocks = payload.get("contentBlocks", [])
     if not isinstance(blocks, list):
         return
@@ -328,11 +370,17 @@ def _apply_composition_style(payload: Dict[str, Any], plan_item: Dict[str, Any],
     after_primary: List[Dict[str, Any]] = []
 
     if composition_style == "context_then_primary":
-        before_primary.append({"type": "context_paragraph", "text": _build_context_text(plan_item)})
+        before_primary.append(
+            {"type": "context_paragraph", "text": _build_context_text(plan_item)}
+        )
     elif composition_style == "primary_then_callout":
-        after_primary.append({"type": "annotation_paragraph", "text": _build_callout_text(plan_item)})
+        after_primary.append(
+            {"type": "annotation_paragraph", "text": _build_callout_text(plan_item)}
+        )
     elif composition_style == "intro_then_primary":
-        before_primary.append({"type": "intro_paragraph", "text": _build_intro_text(plan_item)})
+        before_primary.append(
+            {"type": "intro_paragraph", "text": _build_intro_text(plan_item)}
+        )
 
     rebuilt: List[Dict[str, Any]] = []
     rebuilt.extend(filtered_blocks[:primary_idx])
@@ -342,14 +390,19 @@ def _apply_composition_style(payload: Dict[str, Any], plan_item: Dict[str, Any],
     rebuilt.extend(filtered_blocks[primary_idx + 1 :])
 
     # Hard rule: never allow intro + annotation/outro on the same slide.
-    has_intro = any(str(block.get("type") or "").strip().lower() == "intro_paragraph" for block in rebuilt if isinstance(block, dict))
+    has_intro = any(
+        str(block.get("type") or "").strip().lower() == "intro_paragraph"
+        for block in rebuilt
+        if isinstance(block, dict)
+    )
     if has_intro:
         rebuilt = [
             block
             for block in rebuilt
             if not (
                 isinstance(block, dict)
-                and str(block.get("type") or "").strip().lower() in {"annotation_paragraph", "outro_paragraph"}
+                and str(block.get("type") or "").strip().lower()
+                in {"annotation_paragraph", "outro_paragraph"}
             )
         ]
 
@@ -362,7 +415,11 @@ def _enforce_side_strip_only_on_blank_layout(payload: Dict[str, Any]) -> None:
     if not isinstance(blocks, list):
         return
 
-    image_layout = str(payload.get("image_layout") or payload.get("layout") or "blank").strip().lower()
+    image_layout = (
+        str(payload.get("image_layout") or payload.get("layout") or "blank")
+        .strip()
+        .lower()
+    )
     is_blank_layout = image_layout == "blank"
 
     rebuilt: List[Dict[str, Any]] = []
@@ -373,7 +430,10 @@ def _enforce_side_strip_only_on_blank_layout(payload: Dict[str, Any]) -> None:
 
         block_type = str(block.get("type") or "").strip().lower()
         variant = str(block.get("variant") or "").strip().lower()
-        is_side_strip = block_type == "side_strip_paragraph" or variant in {"side-strip", "side-strip-left"}
+        is_side_strip = block_type == "side_strip_paragraph" or variant in {
+            "side-strip",
+            "side-strip-left",
+        }
 
         if is_side_strip and not is_blank_layout:
             text = str(block.get("text") or "").strip()
@@ -390,12 +450,26 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     title = str(plan_item.get("title") or "Untitled Slide").strip()
     intent = _intent_for_teacher(plan_item.get("teaching_intent", "explain"))
     template = str(plan_item.get("selected_template") or "Title with bullets").strip()
-    designer_blueprint = plan_item.get("designer_blueprint", {}) if isinstance(plan_item.get("designer_blueprint"), dict) else {}
-    primary = designer_blueprint.get("primary_block", {}) if isinstance(designer_blueprint.get("primary_block"), dict) else {}
-    supporting_blocks = designer_blueprint.get("supporting_blocks", []) if isinstance(designer_blueprint.get("supporting_blocks"), list) else []
+    designer_blueprint = (
+        plan_item.get("designer_blueprint", {})
+        if isinstance(plan_item.get("designer_blueprint"), dict)
+        else {}
+    )
+    primary = (
+        designer_blueprint.get("primary_block", {})
+        if isinstance(designer_blueprint.get("primary_block"), dict)
+        else {}
+    )
+    supporting_blocks = (
+        designer_blueprint.get("supporting_blocks", [])
+        if isinstance(designer_blueprint.get("supporting_blocks"), list)
+        else []
+    )
     image_need = str(plan_item.get("image_need") or "optional").strip().lower()
     image_tier = str(plan_item.get("image_tier") or "accent").strip().lower()
-    layout = _normalize_layout(plan_item.get("selected_layout") or designer_blueprint.get("layout") or "blank")
+    layout = _normalize_layout(
+        plan_item.get("selected_layout") or designer_blueprint.get("layout") or "blank"
+    )
 
     # Resolve the intended smart_layout variant from plan
     smart_layout_variant = (
@@ -412,11 +486,19 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
         }
     ]
 
-    family = str(primary.get("family") or plan_item.get("primary_family") or "smart_layout").strip().lower()
+    family = (
+        str(primary.get("family") or plan_item.get("primary_family") or "smart_layout")
+        .strip()
+        .lower()
+    )
 
     # Build content-rich primary block based on planned family
-    must_cover = [str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()]
-    key_facts = [str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()]
+    must_cover = [
+        str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()
+    ]
+    key_facts = [
+        str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()
+    ]
     objective = str(plan_item.get("objective") or "").strip()
 
     if family == "comparison":
@@ -429,11 +511,15 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
                     ["Mechanism", "How it works", "Explanation"],
                     ["Application", "Where it appears", "Example"],
                 ],
-                "caption": str(plan_item.get("objective") or "Comparison of key dimensions").strip(),
+                "caption": str(
+                    plan_item.get("objective") or "Comparison of key dimensions"
+                ).strip(),
             }
         )
     elif family == "formula":
-        formula_text = _join_limited(plan_item.get("formulas", []), max_items=2) or "y = f(x)"
+        formula_text = (
+            _join_limited(plan_item.get("formulas", []), max_items=2) or "y = f(x)"
+        )
         content_blocks.append(
             {
                 "type": "formula_block",
@@ -442,39 +528,49 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
                     {"name": "x", "meaning": "Input"},
                     {"name": "y", "meaning": "Output"},
                 ],
-                "example": str(plan_item.get("objective") or "Show how the formula applies.").strip(),
+                "example": str(
+                    plan_item.get("objective") or "Show how the formula applies."
+                ).strip(),
             }
         )
     elif family == "process":
         items = [
             {
                 "label": "Step 1",
-                "description": must_cover[0] if must_cover else "Start with the core idea.",
-                    "description": (
-                        f"{must_cover[0]}. Build context first, then connect this step to the objective: {objective}."
-                        if must_cover
-                        else f"Start with the core idea and explicitly connect it to the objective: {objective or title}."
-                    ),
+                "description": (
+                    must_cover[0] if must_cover else "Start with the core idea."
+                ),
+                "description": (
+                    f"{must_cover[0]}. Build context first, then connect this step to the objective: {objective}."
+                    if must_cover
+                    else f"Start with the core idea and explicitly connect it to the objective: {objective or title}."
+                ),
                 "color": "#4B5563",
             },
             {
                 "label": "Step 2",
-                "description": must_cover[1] if len(must_cover) > 1 else "Show how the idea develops.",
-                    "description": (
-                        f"{must_cover[1]}. Explain how this follows from Step 1 and what changes in understanding it produces."
-                        if len(must_cover) > 1
-                        else "Show how the idea develops, including cause-and-effect and at least one concrete implication."
-                    ),
+                "description": (
+                    must_cover[1]
+                    if len(must_cover) > 1
+                    else "Show how the idea develops."
+                ),
+                "description": (
+                    f"{must_cover[1]}. Explain how this follows from Step 1 and what changes in understanding it produces."
+                    if len(must_cover) > 1
+                    else "Show how the idea develops, including cause-and-effect and at least one concrete implication."
+                ),
                 "color": "#2563EB",
             },
             {
                 "label": "Step 3",
-                "description": must_cover[2] if len(must_cover) > 2 else "Close with the outcome.",
-                    "description": (
-                        f"{must_cover[2]}. Close with the outcome and a practical takeaway learners can apply immediately."
-                        if len(must_cover) > 2
-                        else "Close with the outcome, then state the practical takeaway and how to check understanding."
-                    ),
+                "description": (
+                    must_cover[2] if len(must_cover) > 2 else "Close with the outcome."
+                ),
+                "description": (
+                    f"{must_cover[2]}. Close with the outcome and a practical takeaway learners can apply immediately."
+                    if len(must_cover) > 2
+                    else "Close with the outcome, then state the practical takeaway and how to check understanding."
+                ),
                 "color": "#10B981",
             },
         ]
@@ -485,7 +581,15 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
             items_recap.append({"title": "Key idea", "description": must_cover[0]})
         if key_facts:
             items_recap.append({"title": "Key fact", "description": key_facts[0]})
-        items_recap.append({"title": "Check", "description": str(plan_item.get("assessment_prompt") or "Explain it back in your own words.")})
+        items_recap.append(
+            {
+                "title": "Check",
+                "description": str(
+                    plan_item.get("assessment_prompt")
+                    or "Explain it back in your own words."
+                ),
+            }
+        )
         content_blocks.append({"type": "numbered_list", "items": items_recap})
     else:
         # Default: rich smart_layout with the planned variant
@@ -499,9 +603,22 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
                 sl_items.append(item)
         else:
             sl_items = [
-                {"heading": "Core idea", "description": objective or "Teach the concept clearly."},
-                {"heading": "Must cover", "description": _join_limited(must_cover, max_items=3) or "Key supporting points."},
-                {"heading": "Why it matters", "description": str(plan_item.get("assessment_prompt") or "Ask the learner to apply the idea.")},
+                {
+                    "heading": "Core idea",
+                    "description": objective or "Teach the concept clearly.",
+                },
+                {
+                    "heading": "Must cover",
+                    "description": _join_limited(must_cover, max_items=3)
+                    or "Key supporting points.",
+                },
+                {
+                    "heading": "Why it matters",
+                    "description": str(
+                        plan_item.get("assessment_prompt")
+                        or "Ask the learner to apply the idea."
+                    ),
+                },
             ]
             if smart_layout_variant == "solidBoxesWithIconsInside":
                 for idx, item in enumerate(sl_items):
@@ -534,7 +651,9 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
         "image_layout": layout,
         "contentBlocks": content_blocks,
         "primary_block_index": 1 if len(content_blocks) > 1 else 0,
-        "slide_density": str(plan_item.get("slide_density") or "balanced").strip().lower(),
+        "slide_density": str(plan_item.get("slide_density") or "balanced")
+        .strip()
+        .lower(),
         "selected_template": template,
         "image_need": image_need,
         "image_tier": image_tier,
@@ -550,7 +669,9 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
 
 def _validate_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     title = str(payload.get("title") or "Untitled Slide").strip()
-    layout = _normalize_layout(payload.get("layout") or payload.get("image_layout") or "blank")
+    layout = _normalize_layout(
+        payload.get("layout") or payload.get("image_layout") or "blank"
+    )
     image_layout = _normalize_layout(payload.get("image_layout") or layout)
     if layout == "blank" and image_layout != "blank":
         layout = image_layout
@@ -593,10 +714,14 @@ def _validate_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
                 if text:
                     items.append({"heading": f"Point {i + 1}", "description": text})
             if items:
-                normalized_blocks.append({"type": "smart_layout", "variant": "bigBullets", "items": items})
+                normalized_blocks.append(
+                    {"type": "smart_layout", "variant": "bigBullets", "items": items}
+                )
                 continue
 
-        text_value = str(block.get("text") or block.get("description") or block.get("title") or title).strip()
+        text_value = str(
+            block.get("text") or block.get("description") or block.get("title") or title
+        ).strip()
         normalized_blocks.append({"type": "paragraph", "text": text_value})
 
     if not normalized_blocks:
@@ -619,33 +744,88 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
         if not isinstance(block, dict):
             continue
         block_type = str(block.get("type") or "paragraph").strip().lower()
-        if block_type in {"paragraph", "intro_paragraph", "context_paragraph", "annotation_paragraph", "outro_paragraph", "caption"}:
-            body_children.append(GyMLParagraph(text=str(block.get("text") or block.get("description") or "")))
+        if block_type in {
+            "paragraph",
+            "intro_paragraph",
+            "context_paragraph",
+            "annotation_paragraph",
+            "outro_paragraph",
+            "caption",
+        }:
+            body_children.append(
+                GyMLParagraph(
+                    text=str(block.get("text") or block.get("description") or "")
+                )
+            )
         elif block_type == "comparison_table":
-            body_children.append(GyMLComparisonTable(headers=list(block.get("headers", [])), rows=list(block.get("rows", [])), caption=block.get("caption")))
+            body_children.append(
+                GyMLComparisonTable(
+                    headers=list(block.get("headers", [])),
+                    rows=list(block.get("rows", [])),
+                    caption=block.get("caption"),
+                )
+            )
         elif block_type == "key_value_list":
-            items = [GyMLKeyValueItem(key=str(item.get("key") or item.get("label") or "Key"), value=str(item.get("value") or item.get("description") or "Value")) for item in block.get("items", []) if isinstance(item, dict)]
+            items = [
+                GyMLKeyValueItem(
+                    key=str(item.get("key") or item.get("label") or "Key"),
+                    value=str(item.get("value") or item.get("description") or "Value"),
+                )
+                for item in block.get("items", [])
+                if isinstance(item, dict)
+            ]
             body_children.append(GyMLKeyValueList(items=items))
         elif block_type == "rich_text":
-            body_children.append(GyMLRichText(paragraphs=[str(p) for p in block.get("paragraphs", [])]))
+            body_children.append(
+                GyMLRichText(paragraphs=[str(p) for p in block.get("paragraphs", [])])
+            )
         elif block_type == "numbered_list":
-            items = [GyMLNumberedListItem(title=str(item.get("title") or item.get("label") or "Item"), description=str(item.get("description") or "")) for item in block.get("items", []) if isinstance(item, dict)]
+            items = [
+                GyMLNumberedListItem(
+                    title=str(item.get("title") or item.get("label") or "Item"),
+                    description=str(item.get("description") or ""),
+                )
+                for item in block.get("items", [])
+                if isinstance(item, dict)
+            ]
             body_children.append(GyMLNumberedList(items=items))
         elif block_type == "formula_block":
             variables = []
             for var in block.get("variables", []):
                 if isinstance(var, dict):
-                    variables.append({"name": str(var.get("name") or "x"), "meaning": str(var.get("meaning") or "")})
-            body_children.append(GyMLFormulaBlock(expression=str(block.get("expression") or ""), variables=variables, example=str(block.get("example") or "")))
+                    variables.append(
+                        {
+                            "name": str(var.get("name") or "x"),
+                            "meaning": str(var.get("meaning") or ""),
+                        }
+                    )
+            body_children.append(
+                GyMLFormulaBlock(
+                    expression=str(block.get("expression") or ""),
+                    variables=variables,
+                    example=str(block.get("example") or ""),
+                )
+            )
         elif block_type == "process_arrow_block":
-            items = [GyMLProcessArrowItem(label=str(item.get("label") or "Step"), description=str(item.get("description") or ""), imagePrompt=str(item.get("imagePrompt") or ""), color=item.get("color")) for item in block.get("items", []) if isinstance(item, dict)]
+            items = [
+                GyMLProcessArrowItem(
+                    label=str(item.get("label") or "Step"),
+                    description=str(item.get("description") or ""),
+                    imagePrompt=str(item.get("imagePrompt") or ""),
+                    color=item.get("color"),
+                )
+                for item in block.get("items", [])
+                if isinstance(item, dict)
+            ]
             body_children.append(GyMLProcessArrowBlock(items=items))
         elif block_type == "cyclic_process_block":
             items = [
                 GyMLCyclicProcessItem(
                     label=str(item.get("label") or "Step"),
                     description=str(item.get("description") or ""),
-                    image_url=str(item.get("image_url") or item.get("imagePrompt") or ""),
+                    image_url=str(
+                        item.get("image_url") or item.get("imagePrompt") or ""
+                    ),
                 )
                 for item in block.get("items", [])
                 if isinstance(item, dict)
@@ -654,88 +834,159 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
         elif block_type == "feature_showcase_block":
             items = []
             for it in block.get("items", []):
-                if not isinstance(it, dict): continue
+                if not isinstance(it, dict):
+                    continue
                 icon_name = it.get("icon_name") or it.get("icon")
-                items.append(GyMLFeatureShowcaseItem(
-                    label=str(it.get("heading") or it.get("title") or "Feature"),
-                    description=it.get("description"),
-                    icon=str(icon_name) if icon_name else None
-                ))
-            body_children.append(GyMLFeatureShowcaseBlock(
-                title=str(block.get("title") or slide_title),
-                items=items,
-                image_url=str(block.get("image_url") or block.get("imagePrompt") or "")
-            ))
+                items.append(
+                    GyMLFeatureShowcaseItem(
+                        label=str(it.get("heading") or it.get("title") or "Feature"),
+                        description=it.get("description"),
+                        icon=str(icon_name) if icon_name else None,
+                    )
+                )
+            body_children.append(
+                GyMLFeatureShowcaseBlock(
+                    title=str(block.get("title") or slide_title),
+                    items=items,
+                    image_url=str(
+                        block.get("image_url") or block.get("imagePrompt") or ""
+                    ),
+                )
+            )
         elif block_type == "hub_and_spoke":
             items = []
             for it in block.get("items", []):
-                if not isinstance(it, dict): continue
+                if not isinstance(it, dict):
+                    continue
                 icon_name = it.get("icon_name") or it.get("icon")
-                items.append(GyMLHubAndSpokeItem(
-                    label=str(it.get("heading") or it.get("title") or "Point"),
-                    description=it.get("description"),
-                    icon=str(icon_name) if icon_name else None
-                ))
-            body_children.append(GyMLHubAndSpoke(hub_label=str(block.get("hub_label") or slide_title), items=items))
+                items.append(
+                    GyMLHubAndSpokeItem(
+                        label=str(it.get("heading") or it.get("title") or "Point"),
+                        description=it.get("description"),
+                        icon=str(icon_name) if icon_name else None,
+                    )
+                )
+            body_children.append(
+                GyMLHubAndSpoke(
+                    hub_label=str(block.get("hub_label") or slide_title), items=items
+                )
+            )
         elif block_type == "smart_layout":
             variant = block.get("variant")
             # Route specialized variants to their dedicated GyML classes
             if variant == "hubAndSpoke":
                 items = []
                 for it in block.get("items", []):
-                    if not isinstance(it, dict): continue
+                    if not isinstance(it, dict):
+                        continue
                     icon_name = it.get("icon_name") or it.get("icon")
-                    items.append(GyMLHubAndSpokeItem(
-                        label=str(it.get("heading") or it.get("title") or "Point"),
-                        description=it.get("description"),
-                        icon=str(icon_name) if icon_name else None
-                    ))
-                body_children.append(GyMLHubAndSpoke(hub_label=str(block.get("hub_label") or slide_title), items=items))
+                    items.append(
+                        GyMLHubAndSpokeItem(
+                            label=str(it.get("heading") or it.get("title") or "Point"),
+                            description=it.get("description"),
+                            icon=str(icon_name) if icon_name else None,
+                        )
+                    )
+                body_children.append(
+                    GyMLHubAndSpoke(
+                        hub_label=str(block.get("hub_label") or slide_title),
+                        items=items,
+                    )
+                )
             elif variant == "featureShowcase":
                 items = []
                 for it in block.get("items", []):
-                    if not isinstance(it, dict): continue
+                    if not isinstance(it, dict):
+                        continue
                     icon_name = it.get("icon_name") or it.get("icon")
-                    items.append(GyMLFeatureShowcaseItem(
-                        label=str(it.get("heading") or it.get("title") or "Feature"),
-                        description=it.get("description"),
-                        icon=str(icon_name) if icon_name else None
-                    ))
-                body_children.append(GyMLFeatureShowcaseBlock(
-                    title=str(block.get("title") or slide_title),
-                    items=items,
-                    image_url=str(block.get("image_url") or block.get("imagePrompt") or "")
-                ))
+                    items.append(
+                        GyMLFeatureShowcaseItem(
+                            label=str(
+                                it.get("heading") or it.get("title") or "Feature"
+                            ),
+                            description=it.get("description"),
+                            icon=str(icon_name) if icon_name else None,
+                        )
+                    )
+                body_children.append(
+                    GyMLFeatureShowcaseBlock(
+                        title=str(block.get("title") or slide_title),
+                        items=items,
+                        image_url=str(
+                            block.get("image_url") or block.get("imagePrompt") or ""
+                        ),
+                    )
+                )
             elif variant == "cyclicBlock":
                 items = []
                 for it in block.get("items", []):
-                    if not isinstance(it, dict): continue
+                    if not isinstance(it, dict):
+                        continue
                     icon_name = it.get("icon_name") or it.get("icon")
-                    items.append(GyMLCyclicItem(
-                        label=str(it.get("heading") or it.get("title") or "Stage"),
-                        description=it.get("description"),
-                        icon=str(icon_name) if icon_name else None
-                    ))
-                body_children.append(GyMLCyclicBlock(items=items, hub_label=str(block.get("hub_label") or slide_title)))
+                    items.append(
+                        GyMLCyclicItem(
+                            label=str(it.get("heading") or it.get("title") or "Stage"),
+                            description=it.get("description"),
+                            icon=str(icon_name) if icon_name else None,
+                        )
+                    )
+                body_children.append(
+                    GyMLCyclicBlock(
+                        items=items,
+                        hub_label=str(block.get("hub_label") or slide_title),
+                    )
+                )
             elif variant == "sequentialOutput":
-                items = [str(it.get("text") or it.get("description") or it) for it in block.get("items", [])]
+                items = [
+                    str(it.get("text") or it.get("description") or it)
+                    for it in block.get("items", [])
+                ]
                 body_children.append(GyMLSequentialOutput(items=items))
             else:
                 items = []
                 for item in block.get("items", []):
                     if not isinstance(item, dict):
                         continue
-                    item_kwargs = {k: v for k, v in item.items() if k in {"heading", "title", "description", "points", "year", "value", "label"}}
+                    item_kwargs = {
+                        k: v
+                        for k, v in item.items()
+                        if k
+                        in {
+                            "heading",
+                            "title",
+                            "description",
+                            "points",
+                            "year",
+                            "value",
+                            "label",
+                        }
+                    }
                     # Accept both v2 (`icon_name`) and legacy (`icon`) keys.
                     icon_name = item.get("icon_name") or item.get("icon")
                     if icon_name:
                         item_kwargs["icon"] = GyMLIcon(alt=str(icon_name))
                     items.append(GyMLSmartLayoutItem(**item_kwargs))
-                body_children.append(GyMLSmartLayout(variant=str(block.get("variant") or "bigBullets"), items=items))
+                body_children.append(
+                    GyMLSmartLayout(
+                        variant=str(block.get("variant") or "bigBullets"), items=items
+                    )
+                )
         elif block_type == "image":
-            body_children.append(GyMLImage(src=str(block.get("src") or block.get("imagePrompt") or ""), alt=str(block.get("alt") or slide_title), is_accent=bool(block.get("is_accent", False))))
+            body_children.append(
+                GyMLImage(
+                    src=str(block.get("src") or block.get("imagePrompt") or ""),
+                    alt=str(block.get("alt") or slide_title),
+                    is_accent=bool(block.get("is_accent", False)),
+                )
+            )
         else:
-            body_children.append(GyMLParagraph(text=str(block.get("text") or block.get("description") or slide_title)))
+            body_children.append(
+                GyMLParagraph(
+                    text=str(
+                        block.get("text") or block.get("description") or slide_title
+                    )
+                )
+            )
 
     section = GyMLSection(
         id=str(payload.get("title") or "slide").strip().replace(" ", "_"),
@@ -746,7 +997,9 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
     return section
 
 
-def _validate_with_existing_validator(payload: Dict[str, Any]) -> Tuple[bool, List[str], List[str]]:
+def _validate_with_existing_validator(
+    payload: Dict[str, Any],
+) -> Tuple[bool, List[str], List[str]]:
     validator = GyMLValidator()
     result = validator.validate(_slide_to_section(payload))
     return result.is_valid, list(result.errors), list(result.warnings)
@@ -770,7 +1023,16 @@ _STRUCTURED_PRIMARY_TYPES = {
 }
 
 # Block types that are only acceptable as *supporting* blocks (never primary)
-_SUPPORTING_ONLY_TYPES = {"heading", "paragraph", "intro_paragraph", "context_paragraph", "annotation_paragraph", "outro_paragraph", "caption", "image"}
+_SUPPORTING_ONLY_TYPES = {
+    "heading",
+    "paragraph",
+    "intro_paragraph",
+    "context_paragraph",
+    "annotation_paragraph",
+    "outro_paragraph",
+    "caption",
+    "image",
+}
 
 # Maximum characters for a smart_layout item heading (keeps cards readable at typical font sizes)
 _MAX_ITEM_HEADING_LENGTH = 60
@@ -778,10 +1040,16 @@ _MAX_ITEM_HEADING_LENGTH = 60
 
 def _has_structured_primary(blocks: List[Dict[str, Any]]) -> bool:
     """Return True if any block in the list qualifies as a structured primary block."""
-    return any(str(b.get("type") or "").strip().lower() in _STRUCTURED_PRIMARY_TYPES for b in blocks if isinstance(b, dict))
+    return any(
+        str(b.get("type") or "").strip().lower() in _STRUCTURED_PRIMARY_TYPES
+        for b in blocks
+        if isinstance(b, dict)
+    )
 
 
-def _enforce_structured_primary(payload: Dict[str, Any], plan_item: Dict[str, Any], smart_layout_variant: str) -> None:
+def _enforce_structured_primary(
+    payload: Dict[str, Any], plan_item: Dict[str, Any], smart_layout_variant: str
+) -> None:
     """
     Mutates ``payload`` in-place: if the slide has no structured primary block,
     inject a smart_layout block built from plan_item data as a fallback.
@@ -794,7 +1062,9 @@ def _enforce_structured_primary(payload: Dict[str, Any], plan_item: Dict[str, An
         return
 
     # Check if a template is explicitly title/sparse – those may skip primary block.
-    selected_template = str(payload.get("selected_template") or plan_item.get("selected_template") or "").strip()
+    selected_template = str(
+        payload.get("selected_template") or plan_item.get("selected_template") or ""
+    ).strip()
     sparse_templates = {"Title card", "Formula block", "Large bullet list"}
     if selected_template in sparse_templates:
         return
@@ -805,32 +1075,35 @@ def _enforce_structured_primary(payload: Dict[str, Any], plan_item: Dict[str, An
     # Build a minimal smart_layout block from plan_item content
     title = str(plan_item.get("title") or "The Topic").strip()
     objective = str(plan_item.get("objective") or "").strip()
-    must_cover = [str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()]
-    key_facts = [str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()]
+    must_cover = [
+        str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()
+    ]
+    key_facts = [
+        str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()
+    ]
 
     items = []
     # Use must_cover points as items
     for point in (must_cover + key_facts)[:6]:
-        items.append({"heading": point[:_MAX_ITEM_HEADING_LENGTH], "description": point})
+        items.append(
+            {"heading": point[:_MAX_ITEM_HEADING_LENGTH], "description": point}
+        )
     # Ensure at least 2 items
     if len(items) < 2:
         items = [
             {"heading": "Key Concept", "description": objective or title},
-            {"heading": "Why It Matters", "description": str(plan_item.get("assessment_prompt") or "Reflect on what you learned.")},
+            {
+                "heading": "Why It Matters",
+                "description": str(
+                    plan_item.get("assessment_prompt") or "Reflect on what you learned."
+                ),
+            },
         ]
-        
-    fallback_limit = 6
-    if smart_layout_variant == "relationshipMap":
-        fallback_limit = 3
-    elif smart_layout_variant in ("cardGridDiamond", "diamondGrid", "diamondRibbon", "processArrow", "ribbonFold", "statsBadgeGrid"):
-        fallback_limit = 4
-    elif smart_layout_variant == "diamondHub":
-        fallback_limit = 5
 
     fallback_block: Dict[str, Any] = {
         "type": "smart_layout",
         "variant": smart_layout_variant or "bigBullets",
-        "items": items[:fallback_limit],
+        "items": items[:6],
     }
 
     if (smart_layout_variant or "").strip() == "solidBoxesWithIconsInside":
@@ -841,7 +1114,11 @@ def _enforce_structured_primary(payload: Dict[str, Any], plan_item: Dict[str, An
     # Insert after the first heading/paragraph block (or at position 1)
     insert_at = 1
     for i, block in enumerate(blocks):
-        if isinstance(block, dict) and str(block.get("type") or "").strip().lower() not in _SUPPORTING_ONLY_TYPES:
+        if (
+            isinstance(block, dict)
+            and str(block.get("type") or "").strip().lower()
+            not in _SUPPORTING_ONLY_TYPES
+        ):
             break
         insert_at = i + 1
 
@@ -853,16 +1130,38 @@ def _enforce_structured_primary(payload: Dict[str, Any], plan_item: Dict[str, An
 
 def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     title = str(plan_item.get("title") or "Untitled Slide").strip()
-    selected_template = str(plan_item.get("selected_template") or "Title with bullets").strip()
-    designer_blueprint = plan_item.get("designer_blueprint", {}) if isinstance(plan_item.get("designer_blueprint"), dict) else {}
+    selected_template = str(
+        plan_item.get("selected_template") or "Title with bullets"
+    ).strip()
+    designer_blueprint = (
+        plan_item.get("designer_blueprint", {})
+        if isinstance(plan_item.get("designer_blueprint"), dict)
+        else {}
+    )
     composition_style = _resolve_composition_style(plan_item, designer_blueprint)
     image_need = str(plan_item.get("image_need") or "optional").strip().lower()
     image_tier = str(plan_item.get("image_tier") or "accent").strip().lower()
 
     # ── Planned primary block info ───────────────────────────────────────────
-    primary_family = str(plan_item.get("primary_family") or designer_blueprint.get("primary_family") or "smart_layout").strip().lower()
-    primary_variant = str(plan_item.get("primary_variant") or designer_blueprint.get("primary_variant") or "bigBullets").strip()
-    smart_layout_variant = str(plan_item.get("smart_layout_variant") or designer_blueprint.get("smart_layout_variant") or "bigBullets").strip()
+    primary_family = (
+        str(
+            plan_item.get("primary_family")
+            or designer_blueprint.get("primary_family")
+            or "smart_layout"
+        )
+        .strip()
+        .lower()
+    )
+    primary_variant = str(
+        plan_item.get("primary_variant")
+        or designer_blueprint.get("primary_variant")
+        or "bigBullets"
+    ).strip()
+    smart_layout_variant = str(
+        plan_item.get("smart_layout_variant")
+        or designer_blueprint.get("smart_layout_variant")
+        or "bigBullets"
+    ).strip()
     slide_density = str(plan_item.get("slide_density") or "balanced").strip().lower()
 
     # Derive expected item count from density
@@ -883,13 +1182,13 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
         expected_items = "4"
     if smart_layout_variant == "statsBadgeGrid":
         expected_items = "4"
-    if smart_layout_variant in ("cardGridDiamond", "diamondGrid", "diamondRibbon", "processArrow"):
-        expected_items = "4"
-    if smart_layout_variant == "diamondHub":
-        expected_items = "5"
 
-    research_context = str(plan_item.get("research_context") or plan_item.get("research_raw_text") or "").strip()
-    factual_confidence = str(plan_item.get("factual_confidence") or "low").strip().lower()
+    research_context = str(
+        plan_item.get("research_context") or plan_item.get("research_raw_text") or ""
+    ).strip()
+    factual_confidence = (
+        str(plan_item.get("factual_confidence") or "low").strip().lower()
+    )
 
     if research_context:
         grounding_instruction = (
@@ -914,8 +1213,8 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
         )
         if smart_layout_variant == "relationshipMap":
             primary_block_instruction += (
-                ' Use exactly 3 items arranged as left circle, center circle, and right circle.'
-                ' The first two items MUST include `icon_name` values so the renderer can place'
+                " Use exactly 3 items arranged as left circle, center circle, and right circle."
+                " The first two items MUST include `icon_name` values so the renderer can place"
                 " connector icons between the circles."
             )
         if smart_layout_variant == "ribbonFold":
@@ -935,9 +1234,7 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
                 " (examples: ri-lightbulb-line, ri-compass-3-line, ri-book-open-line)."
             )
     elif primary_family == "formula":
-        primary_block_instruction = (
-            'You MUST include exactly ONE `"type": "formula_block"` block as the PRIMARY teaching block.'
-        )
+        primary_block_instruction = 'You MUST include exactly ONE `"type": "formula_block"` block as the PRIMARY teaching block.'
     elif primary_family == "comparison":
         primary_block_instruction = (
             'You MUST include exactly ONE `"type": "comparison_table"` OR a `"type": "smart_layout"` '
@@ -950,7 +1247,7 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
         )
     else:
         primary_block_instruction = (
-            f'You MUST include exactly ONE structured primary teaching block '
+            f"You MUST include exactly ONE structured primary teaching block "
             f'(smart_layout variant "{smart_layout_variant}" is strongly preferred). '
             f"It MUST contain {expected_items} items."
         )
@@ -1059,7 +1356,16 @@ OUTPUT SCHEMA (JSON only):
         payload.pop("imagePrompt", None)
 
     # Enforce: use the layout decided by the planner (ground truth for variety/constraints)
-    planned_layout = str(plan_item.get("layout") or designer_blueprint.get("layout") or payload.get("layout") or "blank").strip().lower()
+    planned_layout = (
+        str(
+            plan_item.get("layout")
+            or designer_blueprint.get("layout")
+            or payload.get("layout")
+            or "blank"
+        )
+        .strip()
+        .lower()
+    )
     payload["layout"] = planned_layout
     payload["image_layout"] = planned_layout
 

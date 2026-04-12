@@ -1,0 +1,654 @@
+{
+  "task_id": "e244d0a7-e296-4322-b699-f426f62c02ef",
+  "updated_at": "2026-04-12T11:29:30.649066Z",
+  "status": "planning_completed",
+  "result": {
+    "user_input": "Convolution Neural Network",
+    "topic": "Convolution Neural Network",
+    "difficulty": "Intermediate",
+    "learning_depth": "Summary",
+    "currentKnowledge": "Intermediate",
+    "goal": "Understand Core Concepts",
+    "curriculumDepth": "Summary",
+    "granularity": "Focused",
+    "topic_granularity": "Focused",
+    "teacher_gender": "Female",
+    "sub_topics": [
+      {
+        "name": "Core Concepts of Convolution Neural Networks",
+        "difficulty": "Intermediate",
+        "description": "Understanding the fundamental architecture, convolutional layers, pooling layers, and fully connected layers that form the basis of Convolution Neural Networks.",
+        "id": "sub_1_a14213"
+      }
+    ],
+    "plans": {
+      "sub_1_a14213": [
+        {
+          "slide_id": "sub_1_a14213_t1",
+          "teacher_slide_ref": "sub_1_a14213_t1",
+          "sequence_index": 0,
+          "title": "Introduction to Convolutional Neural Networks",
+          "objective": "Understand the basic definition and purpose of CNNs.",
+          "summary": "Understand the basic definition and purpose of CNNs.",
+          "intent": "definition",
+          "content_angle": "overview",
+          "coverage_contract": "Provide a foundational definition and purpose of CNNs.",
+          "avoid_overlap_with": [],
+          "role": "Introduce",
+          "goal": "Establish a foundational understanding of what CNNs are.",
+          "reasoning": "This slide sets the stage for deeper exploration by providing essential context.",
+          "visual_required": true,
+          "visual_type": "image",
+          "image_role_v2": "content",
+          "target_density": "balanced",
+          "teaching_intent": "explain",
+          "coverage_scope": "foundation",
+          "slide_density": "balanced",
+          "must_cover": [
+            "Definition of CNN",
+            "Purpose of CNN"
+          ],
+          "key_facts": [
+            "CNN stands for Convolutional Neural Network.",
+            "CNNs are a type of feedforward neural network.",
+            "They are primarily used for processing image data."
+          ],
+          "formulas": [],
+          "assessment_prompt": "What is a CNN and what is its primary use?",
+          "research_evidence": [
+            "https://en.wikipedia.org/wiki/Convolutional_neural_network"
+          ],
+          "research_raw_text": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nA convolutional neural network (CNN) is a type of feedforward neural network that learns features via filter (or kernel) optimization. This type of deep learning network has been applied to process and make predictions from many different types of data including text, images and audio. CNNs are the de-facto standard in deep learning-based approaches to computer vision and image processing, and have only recently been replaced—in some cases—by newer architectures such as the transformer.\nVanishing gradients and exploding gradients, seen during backpropagation in earlier neural networks, are prevented by the regularization that comes from using shared weights over fewer connections. For example, for each neuron in the fully-connected layer, 10,000 weights would be required for processing an image sized 100 × 100 pixels. However, applying cascaded convolution (or cross-correlation) kernels, only 25 weights for each convolutional layer are required to process 5x5-sized tiles. Higher-layer features are extracted from wider context windows, compared to lower-layer features.\nSome applications of CNNs include: \n\nimage and video recognition,\nrecommender systems,\nimage classification,\nimage segmentation,\nmedical image analysis,\nnatural language processing,\nbrain–computer interfaces, and\nfinancial time series.\nCNNs are also known as shift invariant or space invariant artificial neural networks, based on the shared-weight architecture of the convolution kernels or filters that slide along input features and provide translation-equivariant responses known as feature maps. Counter-intuitively, most convolutional neural networks are not invariant to translation, due to the downsampling operation they apply to the input.\nFeedforward neural networks are usually fully connected networks, that is, each neuron in one layer is connected to all neurons in the next layer. The \"full connectivity\" of these networks makes them prone to overfitting data. Typical ways of regularization, or preventing overfitting, include: penalizing parameters during training (such as weight decay) or trimming connectivity (skipped connections, dropout, etc.) Robust datasets also increase the probability that CNNs will learn the generalized principles that characterize a given dataset rather than the biases of a poorly-populated set.\nConvolutional networks were inspired by biological processes in that the connectivity pattern between neurons resembles the organization of the animal visual cortex. Individual cortical neurons respond to stimuli only in a restricted region of the visual field known as the receptive field. The receptive fields of different neurons partially overlap such that they cover the entire visual field.\nCNNs use relatively little pre-processing compared to other image classification algorithms. This means that the network learns to optimize the filters (or kernels) through automated learning, whereas in traditional algorithms these filters are hand-engineered. This simplifies and automates the process, enhancing efficiency and scalability overcoming human-intervention bottlenecks.\n\n\nArchitecture\n\nA convolutional neural network consists of an input layer, hidden layers and an output layer. In a convolutional neural network, the hidden layers include one or more layers that perform convolutions. Typically this includes a layer that performs a dot product of the convolution kernel with the layer's input matrix. This product is usually the Frobenius inner product, and its activation function is commonly ReLU. As the convolution kernel slides along the input matrix for the layer, the convolution operation generates a feature map, which in turn contributes to the input of the next layer. This is followed by other layers such as pooling layers, fully connected layers, and normalization layers.\nHere it should be noted how close a convolutional neural network is to a matched filter.\n\n\nConvolutional layers\nIn a CNN, the input is a tensor with shape:\n(number of inputs) × (input height) × (input width) × (input channels)\nAfter passing through a convolutional layer, the image becomes abstracted to a feature map, also called an activation map, with shape:\n(number of inputs) × (feature map height) × (feature map width) × (feature map channels).\nConvolutional layers convolve the input and pass its result to the next layer. This is similar to the response of a neuron in the visual cortex to a specific stimulus. Each convolutional neuron processes data only for its receptive field. \n\nAlthough fully connected feedforward neural networks can be used to learn features and classify data, this architecture is generally impractical for larger inputs (e.g., high-resolution images), which would require massive numbers of neurons because each pixel is a relevant input feature. A fully connected layer for an image of size 100 × 100 has 10,000 weights for each neuron in the second layer. Convolution reduces the number of free parameters, allowing the network to be deeper. For example, using a 5 × 5 tiling region, each with the same shared weights, requires only 25 neurons. Using shared weights means there are many fewer parameters, which helps avoid the vanishing gradients and exploding gradients problems seen during backpropagation in earlier neural networks.\nTo speed processing, standard convolutional layers can be replaced by depthwise separable convolutional layers, which are based on a depthwise convolution followed by a pointwise convolution. The depthwise convolution is a spatial convolution applied independently over each channel of the input tensor, while the pointwise convolution is a standard convolution restricted to the use of \n  \n    \n      \n        1\n        ×\n        1\n      \n    \n    {\\displaystyle 1\\times 1}\n  \n kernels.\n\n\nPooling layers\nConvolutional networks may include local and/or global pooling layers along with traditional convolutional layers. Pooling layers reduce the dimensions of data by combining the outputs of\nSource URL: https://en.wikipedia.org/wiki/Convolutional_neural_network",
+          "research_context": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nA convolutional neural network (CNN) is a type of feedforward neural network that learns features via filter (or kernel) optimization. This type of deep learning network has been applied to process and make predictions from many different types of data including text, images and audio. CNNs are the de-facto standard in deep learning-based approaches to computer vision and image processing, and have only recently been replaced—in some cases—by newer architectures such as the transformer.\nVanishing gradients and exploding gradients, seen during backpropagation in earlier neural networks, are prevented by the regularization that comes from using shared weights over fewer connections. For example, for each neuron in the fully-connected layer, 10,000 weights would be required for processing an image sized 100 × 100 pixels. However, applying cascaded convolution (or cross-correlation) kernels, only 25 weights for each convolutional layer are required to process 5x5-sized tiles. Higher-layer features are extracted from wider context windows, compared to lower-layer features.\nSome applications of CNNs include: \n\nimage and video recognition,\nrecommender systems,\nimage classification,\nimage segmentation,\nmedical image analysis,\nnatural language processing,\nbrain–computer interfaces, and\nfinancial time series.\nCNNs are also known as shift invariant or space invariant artificial neural networks, based on the shared-weight architecture of the convolution kernels or filters that slide along input features and provide translation-equivariant responses known as feature maps. Counter-intuitively, most convolutional neural networks are not invariant to translation, due to the downsampling operation they apply to the input.\nFeedforward neural networks are usually fully connected networks, that is, each neuron in one layer is connected to all neurons in the next layer. The \"full connectivity\" of these networks makes them prone to overfitting data. Typical ways of regularization, or preventing overfitting, include: penalizing parameters during training (such as weight decay) or trimming connectivity (skipped connections, dropout, etc.) Robust datasets also increase the probability that CNNs will learn the generalized principles that characterize a given dataset rather than the biases of a poorly-populated set.\nConvolutional networks were inspired by biological processes in that the connectivity pattern between neurons resembles the organization of the animal visual cortex. Individual cortical neurons respond to stimuli only in a restricted region of the visual field known as the receptive field. The receptive fields of different neurons partially overlap such that they cover the entire visual field.\nCNNs use relatively little pre-processing compared to other image classification algorithms. This means that the network learns to optimize the filters (or kernels) through automated learning, whereas in traditional algorithms these filters are hand-engineered. This simplifies and automates the process, enhancing efficiency and scalability overcoming human-intervention bottlenecks.\n\n\nArchitecture\n\nA convolutional neural network consists of an input layer, hidden layers and an output layer. In a convolutional neural network, the hidden layers include one or more layers that perform convolutions. Typically this includes a layer that performs a dot product of the convolution kernel with the layer's input matrix. This product is usually the Frobenius inner product, and its activation function is commonly ReLU. As the convolution kernel slides along the input matrix for the layer, the convolution operation generates a feature map, which in turn contributes to the input of the next layer. This is followed by other layers such as pooling layers, fully connected layers, and normalization layers.\nHere it should be noted how close a convolutional neural network is to a matched filter.\n\n\nConvolutional layers\nIn a CNN, the input is a tensor with shape:\n(number of inputs) × (input height) × (input width) × (input channels)\nAfter passing through a convolutional layer, the image becomes abstracted to a feature map, also called an activation map, with shape:\n(number of inputs) × (feature map height) × (feature map width) × (feature map channels).\nConvolutional layers convolve the input and pass its result to the next layer. This is similar to the response of a neuron in the visual cortex to a specific stimulus. Each convolutional neuron processes data only for its receptive field. \n\nAlthough fully connected feedforward neural networks can be used to learn features and classify data, this architecture is generally impractical for larger inputs (e.g., high-resolution images), which would require massive numbers of neurons because each pixel is a relevant input feature. A fully connected layer for an image of size 100 × 100 has 10,000 weights for each neuron in the second layer. Convolution reduces the number of free parameters, allowing the network to be deeper. For example, using a 5 × 5 tiling region, each with the same shared weights, requires only 25 neurons. Using shared weights means there are many fewer parameters, which helps avoid the vanishing gradients and exploding gradients problems seen during backpropagation in earlier neural networks.\nTo speed processing, standard convolutional layers can be replaced by depthwise separable convolutional layers, which are based on a depthwise convolution followed by a pointwise convolution. The depthwise convolution is a spatial convolution applied independently over each channel of the input tensor, while the pointwise convolution is a standard convolution restricted to the use of \n  \n    \n      \n        1\n        ×\n        1\n      \n    \n    {\\displaystyle 1\\times 1}\n  \n kernels.\n\n\nPooling layers\nConvolutional networks may include local and/or global pooling layers along with traditional convolutional layers. Pooling layers reduce the dimensions of data by combining the outputs of\nSource URL: https://en.wikipedia.org/wiki/Convolutional_neural_network",
+          "factual_confidence": "high",
+          "high_end_image_required": true,
+          "image_need": "required",
+          "image_tier": "hero",
+          "selected_template": "Title card",
+          "selected_layout": "right",
+          "primary_family": "smart_layout",
+          "primary_variant": "cardGridDiamond",
+          "smart_layout_variant": "cardGridDiamond",
+          "composition_style": "primary_only",
+          "designer_blueprint": {
+            "template": {
+              "name": "Title card",
+              "is_sparse": true,
+              "image_mode_capability": "hero",
+              "image_mode_required": "hero",
+              "max_blocks": 2,
+              "max_supporting_blocks": 1,
+              "allowed_primary_families": [
+                "title",
+                "overview",
+                "smart_layout"
+              ],
+              "allowed_accent_placements": [
+                "top",
+                "bottom",
+                "left",
+                "right"
+              ],
+              "allowed_layouts": [
+                "top",
+                "bottom",
+                "left",
+                "right",
+                "blank"
+              ],
+              "supports_high_end_image": true,
+              "preferred_smart_layout_variants": []
+            },
+            "primary_block": {
+              "family": "smart_layout",
+              "variant": "cardGridDiamond",
+              "width_class": "normal",
+              "has_content_image": false,
+              "implies_content_image": false,
+              "density_ok": [
+                "sparse",
+                "balanced",
+                "standard"
+              ],
+              "is_primary_candidate": true,
+              "smart_layout_variant": "cardGridDiamond",
+              "intent_fit": [
+                "explain",
+                "list",
+                "introduce"
+              ]
+            },
+            "primary_family": "smart_layout",
+            "primary_variant": "cardGridDiamond",
+            "smart_layout_variant": "cardGridDiamond",
+            "supporting_blocks": [
+              {
+                "family": "smart_layout",
+                "variant": "bigBullets",
+                "width_class": "normal",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "ultra_sparse",
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bigBullets",
+                "intent_fit": [
+                  "explain",
+                  "list",
+                  "introduce",
+                  "summarize"
+                ]
+              }
+            ],
+            "composition_style": "primary_only",
+            "image_need": "required",
+            "image_tier": "hero",
+            "layout": "right",
+            "notes": [
+              "Teacher intent: explain",
+              "Coverage scope: foundation",
+              "Planned smart_layout variant: cardGridDiamond",
+              "Composition style: primary_only"
+            ]
+          }
+        },
+        {
+          "slide_id": "sub_1_a14213_t2",
+          "teacher_slide_ref": "sub_1_a14213_t2",
+          "sequence_index": 1,
+          "title": "Core Components of CNNs",
+          "objective": "Identify and understand the core components of CNNs.",
+          "summary": "Identify and understand the core components of CNNs.",
+          "intent": "classification",
+          "content_angle": "mechanism",
+          "coverage_contract": "Introduce the main components that make up a CNN.",
+          "avoid_overlap_with": [
+            "Definition of CNN",
+            "Purpose of CNN"
+          ],
+          "role": "Guide",
+          "goal": "Break down the structure of CNNs into understandable parts.",
+          "reasoning": "Understanding the components helps learners grasp how CNNs function.",
+          "visual_required": true,
+          "visual_type": "diagram",
+          "image_role_v2": "content",
+          "target_density": "standard",
+          "teaching_intent": "teach",
+          "coverage_scope": "mechanism",
+          "slide_density": "standard",
+          "must_cover": [
+            "Convolutional layers",
+            "Pooling layers",
+            "Fully connected layers"
+          ],
+          "key_facts": [
+            "Convolutional layers apply a convolution operation to the input.",
+            "Pooling layers reduce the spatial dimensions of the input.",
+            "Fully connected layers connect every neuron in one layer to every neuron in the next."
+          ],
+          "formulas": [],
+          "assessment_prompt": "List the core components of a CNN and their functions.",
+          "research_evidence": [
+            "https://en.wikipedia.org/wiki/Convolutional_neural_network"
+          ],
+          "research_raw_text": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nA convolutional neural network (CNN) is a type of feedforward neural network that learns features via filter (or kernel) optimization. This type of deep learning network has been applied to process and make predictions from many different types of data including text, images and audio. CNNs are the de-facto standard in deep learning-based approaches to computer vision and image processing, and have only recently been replaced—in some cases—by newer architectures such as the transformer.\nVanishing gradients and exploding gradients, seen during backpropagation in earlier neural networks, are prevented by the regularization that comes from using shared weights over fewer connections. For example, for each neuron in the fully-connected layer, 10,000 weights would be required for processing an image sized 100 × 100 pixels. However, applying cascaded convolution (or cross-correlation) kernels, only 25 weights for each convolutional layer are required to process 5x5-sized tiles. Higher-layer features are extracted from wider context windows, compared to lower-layer features.\nSome applications of CNNs include: \n\nimage and video recognition,\nrecommender systems,\nimage classification,\nimage segmentation,\nmedical image analysis,\nnatural language processing,\nbrain–computer interfaces, and\nfinancial time series.\nCNNs are also known as shift invariant or space invariant artificial neural networks, based on the shared-weight architecture of the convolution kernels or filters that slide along input features and provide translation-equivariant responses known as feature maps. Counter-intuitively, most convolutional neural networks are not invariant to translation, due to the downsampling operation they apply to the input.\nFeedforward neural networks are usually fully connected networks, that is, each neuron in one layer is connected to all neurons in the next layer. The \"full connectivity\" of these networks makes them prone to overfitting data. Typical ways of regularization, or preventing overfitting, include: penalizing parameters during training (such as weight decay) or trimming connectivity (skipped connections, dropout, etc.) Robust datasets also increase the probability that CNNs will learn the generalized principles that characterize a given dataset rather than the biases of a poorly-populated set.\nConvolutional networks were inspired by biological processes in that the connectivity pattern between neurons resembles the organization of the animal visual cortex. Individual cortical neurons respond to stimuli only in a restricted region of the visual field known as the receptive field. The receptive fields of different neurons partially overlap such that they cover the entire visual field.\nCNNs use relatively little pre-processing compared to other image classification algorithms. This means that the network learns to optimize the filters (or kernels) through automated learning, whereas in traditional algorithms these filters are hand-engineered. This simplifies and automates the process, enhancing efficiency and scalability overcoming human-intervention bottlenecks.\n\n\nArchitecture\n\nA convolutional neural network consists of an input layer, hidden layers and an output layer. In a convolutional neural network, the hidden layers include one or more layers that perform convolutions. Typically this includes a layer that performs a dot product of the convolution kernel with the layer's input matrix. This product is usually the Frobenius inner product, and its activation function is commonly ReLU. As the convolution kernel slides along the input matrix for the layer, the convolution operation generates a feature map, which in turn contributes to the input of the next layer. This is followed by other layers such as pooling layers, fully connected layers, and normalization layers.\nHere it should be noted how close a convolutional neural network is to a matched filter.\n\n\nConvolutional layers\nIn a CNN, the input is a tensor with shape:\n(number of inputs) × (input height) × (input width) × (input channels)\nAfter passing through a convolutional layer, the image becomes abstracted to a feature map, also called an activation map, with shape:\n(number of inputs) × (feature map height) × (feature map width) × (feature map channels).\nConvolutional layers convolve the input and pass its result to the next layer. This is similar to the response of a neuron in the visual cortex to a specific stimulus. Each convolutional neuron processes data only for its receptive field. \n\nAlthough fully connected feedforward neural networks can be used to learn features and classify data, this architecture is generally impractical for larger inputs (e.g., high-resolution images), which would require massive numbers of neurons because each pixel is a relevant input feature. A fully connected layer for an image of size 100 × 100 has 10,000 weights for each neuron in the second layer. Convolution reduces the number of free parameters, allowing the network to be deeper. For example, using a 5 × 5 tiling region, each with the same shared weights, requires only 25 neurons. Using shared weights means there are many fewer parameters, which helps avoid the vanishing gradients and exploding gradients problems seen during backpropagation in earlier neural networks.\nTo speed processing, standard convolutional layers can be replaced by depthwise separable convolutional layers, which are based on a depthwise convolution followed by a pointwise convolution. The depthwise convolution is a spatial convolution applied independently over each channel of the input tensor, while the pointwise convolution is a standard convolution restricted to the use of \n  \n    \n      \n        1\n        ×\n        1\n      \n    \n    {\\displaystyle 1\\times 1}\n  \n kernels.\n\n\nPooling layers\nConvolutional networks may include local and/or global pooling layers along with traditional convolutional layers. Pooling layers reduce the dimensions of data by combining the outputs of\nSource URL: https://en.wikipedia.org/wiki/Convolutional_neural_network",
+          "research_context": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nA convolutional neural network (CNN) is a type of feedforward neural network that learns features via filter (or kernel) optimization. This type of deep learning network has been applied to process and make predictions from many different types of data including text, images and audio. CNNs are the de-facto standard in deep learning-based approaches to computer vision and image processing, and have only recently been replaced—in some cases—by newer architectures such as the transformer.\nVanishing gradients and exploding gradients, seen during backpropagation in earlier neural networks, are prevented by the regularization that comes from using shared weights over fewer connections. For example, for each neuron in the fully-connected layer, 10,000 weights would be required for processing an image sized 100 × 100 pixels. However, applying cascaded convolution (or cross-correlation) kernels, only 25 weights for each convolutional layer are required to process 5x5-sized tiles. Higher-layer features are extracted from wider context windows, compared to lower-layer features.\nSome applications of CNNs include: \n\nimage and video recognition,\nrecommender systems,\nimage classification,\nimage segmentation,\nmedical image analysis,\nnatural language processing,\nbrain–computer interfaces, and\nfinancial time series.\nCNNs are also known as shift invariant or space invariant artificial neural networks, based on the shared-weight architecture of the convolution kernels or filters that slide along input features and provide translation-equivariant responses known as feature maps. Counter-intuitively, most convolutional neural networks are not invariant to translation, due to the downsampling operation they apply to the input.\nFeedforward neural networks are usually fully connected networks, that is, each neuron in one layer is connected to all neurons in the next layer. The \"full connectivity\" of these networks makes them prone to overfitting data. Typical ways of regularization, or preventing overfitting, include: penalizing parameters during training (such as weight decay) or trimming connectivity (skipped connections, dropout, etc.) Robust datasets also increase the probability that CNNs will learn the generalized principles that characterize a given dataset rather than the biases of a poorly-populated set.\nConvolutional networks were inspired by biological processes in that the connectivity pattern between neurons resembles the organization of the animal visual cortex. Individual cortical neurons respond to stimuli only in a restricted region of the visual field known as the receptive field. The receptive fields of different neurons partially overlap such that they cover the entire visual field.\nCNNs use relatively little pre-processing compared to other image classification algorithms. This means that the network learns to optimize the filters (or kernels) through automated learning, whereas in traditional algorithms these filters are hand-engineered. This simplifies and automates the process, enhancing efficiency and scalability overcoming human-intervention bottlenecks.\n\n\nArchitecture\n\nA convolutional neural network consists of an input layer, hidden layers and an output layer. In a convolutional neural network, the hidden layers include one or more layers that perform convolutions. Typically this includes a layer that performs a dot product of the convolution kernel with the layer's input matrix. This product is usually the Frobenius inner product, and its activation function is commonly ReLU. As the convolution kernel slides along the input matrix for the layer, the convolution operation generates a feature map, which in turn contributes to the input of the next layer. This is followed by other layers such as pooling layers, fully connected layers, and normalization layers.\nHere it should be noted how close a convolutional neural network is to a matched filter.\n\n\nConvolutional layers\nIn a CNN, the input is a tensor with shape:\n(number of inputs) × (input height) × (input width) × (input channels)\nAfter passing through a convolutional layer, the image becomes abstracted to a feature map, also called an activation map, with shape:\n(number of inputs) × (feature map height) × (feature map width) × (feature map channels).\nConvolutional layers convolve the input and pass its result to the next layer. This is similar to the response of a neuron in the visual cortex to a specific stimulus. Each convolutional neuron processes data only for its receptive field. \n\nAlthough fully connected feedforward neural networks can be used to learn features and classify data, this architecture is generally impractical for larger inputs (e.g., high-resolution images), which would require massive numbers of neurons because each pixel is a relevant input feature. A fully connected layer for an image of size 100 × 100 has 10,000 weights for each neuron in the second layer. Convolution reduces the number of free parameters, allowing the network to be deeper. For example, using a 5 × 5 tiling region, each with the same shared weights, requires only 25 neurons. Using shared weights means there are many fewer parameters, which helps avoid the vanishing gradients and exploding gradients problems seen during backpropagation in earlier neural networks.\nTo speed processing, standard convolutional layers can be replaced by depthwise separable convolutional layers, which are based on a depthwise convolution followed by a pointwise convolution. The depthwise convolution is a spatial convolution applied independently over each channel of the input tensor, while the pointwise convolution is a standard convolution restricted to the use of \n  \n    \n      \n        1\n        ×\n        1\n      \n    \n    {\\displaystyle 1\\times 1}\n  \n kernels.\n\n\nPooling layers\nConvolutional networks may include local and/or global pooling layers along with traditional convolutional layers. Pooling layers reduce the dimensions of data by combining the outputs of\nSource URL: https://en.wikipedia.org/wiki/Convolutional_neural_network",
+          "factual_confidence": "high",
+          "high_end_image_required": true,
+          "image_need": "required",
+          "image_tier": "hero",
+          "selected_template": "Feature showcase block",
+          "selected_layout": "left",
+          "primary_family": "smart_layout",
+          "primary_variant": "comparisonBeforeAfter",
+          "smart_layout_variant": "comparisonBeforeAfter",
+          "composition_style": "context_then_primary",
+          "designer_blueprint": {
+            "template": {
+              "name": "Feature showcase block",
+              "is_sparse": false,
+              "image_mode_capability": "hero",
+              "image_mode_required": "hero",
+              "max_blocks": 4,
+              "max_supporting_blocks": 2,
+              "allowed_primary_families": [
+                "overview",
+                "example",
+                "process",
+                "smart_layout"
+              ],
+              "allowed_accent_placements": [
+                "right",
+                "left",
+                "top",
+                "bottom"
+              ],
+              "allowed_layouts": [
+                "right",
+                "left",
+                "top",
+                "bottom",
+                "blank"
+              ],
+              "supports_high_end_image": true,
+              "preferred_smart_layout_variants": [
+                "cardGridIcon",
+                "processSteps",
+                "bigBullets",
+                "relationshipMap",
+                "ribbonFold",
+                "diamondRibbon",
+                "diamondHub"
+              ]
+            },
+            "primary_block": {
+              "family": "smart_layout",
+              "variant": "comparisonBeforeAfter",
+              "width_class": "normal",
+              "has_content_image": false,
+              "implies_content_image": false,
+              "density_ok": [
+                "balanced",
+                "standard"
+              ],
+              "is_primary_candidate": true,
+              "smart_layout_variant": "comparisonBeforeAfter",
+              "intent_fit": [
+                "compare"
+              ]
+            },
+            "primary_family": "smart_layout",
+            "primary_variant": "comparisonBeforeAfter",
+            "smart_layout_variant": "comparisonBeforeAfter",
+            "supporting_blocks": [
+              {
+                "family": "smart_layout",
+                "variant": "bigBullets",
+                "width_class": "normal",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "ultra_sparse",
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bigBullets",
+                "intent_fit": [
+                  "explain",
+                  "list",
+                  "introduce",
+                  "summarize"
+                ]
+              },
+              {
+                "family": "smart_layout",
+                "variant": "bulletCheck",
+                "width_class": "normal",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bulletCheck",
+                "intent_fit": [
+                  "list",
+                  "summarize"
+                ]
+              }
+            ],
+            "composition_style": "context_then_primary",
+            "image_need": "required",
+            "image_tier": "hero",
+            "layout": "left",
+            "notes": [
+              "Teacher intent: teach",
+              "Coverage scope: mechanism",
+              "Planned smart_layout variant: comparisonBeforeAfter",
+              "Composition style: context_then_primary"
+            ]
+          }
+        },
+        {
+          "slide_id": "sub_1_a14213_t3",
+          "teacher_slide_ref": "sub_1_a14213_t3",
+          "sequence_index": 2,
+          "title": "How CNNs Process Data",
+          "objective": "Explain the data processing workflow in CNNs.",
+          "summary": "Explain the data processing workflow in CNNs.",
+          "intent": "recognition",
+          "content_angle": "mechanism",
+          "coverage_contract": "Detail the step-by-step data processing in CNNs.",
+          "avoid_overlap_with": [
+            "Convolutional layers",
+            "Pooling layers",
+            "Fully connected layers"
+          ],
+          "role": "Interpret",
+          "goal": "Clarify the data processing sequence within CNNs.",
+          "reasoning": "Learners need to understand the data flow to grasp CNN operations.",
+          "visual_required": true,
+          "visual_type": "diagram",
+          "image_role_v2": "content",
+          "target_density": "standard",
+          "teaching_intent": "demo",
+          "coverage_scope": "mechanism",
+          "slide_density": "standard",
+          "must_cover": [
+            "Input layer",
+            "Feature maps",
+            "Activation functions"
+          ],
+          "key_facts": [
+            "Data enters through the input layer as a tensor.",
+            "Convolutional layers transform data into feature maps.",
+            "Activation functions like ReLU introduce non-linearity."
+          ],
+          "formulas": [],
+          "assessment_prompt": "Describe the data flow from input to feature maps in a CNN.",
+          "research_evidence": [
+            "https://en.wikipedia.org/wiki/Convolutional_neural_network"
+          ],
+          "research_raw_text": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nA convolutional neural network (CNN) is a type of feedforward neural network that learns features via filter (or kernel) optimization. This type of deep learning network has been applied to process and make predictions from many different types of data including text, images and audio. CNNs are the de-facto standard in deep learning-based approaches to computer vision and image processing, and have only recently been replaced—in some cases—by newer architectures such as the transformer.\nVanishing gradients and exploding gradients, seen during backpropagation in earlier neural networks, are prevented by the regularization that comes from using shared weights over fewer connections. For example, for each neuron in the fully-connected layer, 10,000 weights would be required for processing an image sized 100 × 100 pixels. However, applying cascaded convolution (or cross-correlation) kernels, only 25 weights for each convolutional layer are required to process 5x5-sized tiles. Higher-layer features are extracted from wider context windows, compared to lower-layer features.\nSome applications of CNNs include: \n\nimage and video recognition,\nrecommender systems,\nimage classification,\nimage segmentation,\nmedical image analysis,\nnatural language processing,\nbrain–computer interfaces, and\nfinancial time series.\nCNNs are also known as shift invariant or space invariant artificial neural networks, based on the shared-weight architecture of the convolution kernels or filters that slide along input features and provide translation-equivariant responses known as feature maps. Counter-intuitively, most convolutional neural networks are not invariant to translation, due to the downsampling operation they apply to the input.\nFeedforward neural networks are usually fully connected networks, that is, each neuron in one layer is connected to all neurons in the next layer. The \"full connectivity\" of these networks makes them prone to overfitting data. Typical ways of regularization, or preventing overfitting, include: penalizing parameters during training (such as weight decay) or trimming connectivity (skipped connections, dropout, etc.) Robust datasets also increase the probability that CNNs will learn the generalized principles that characterize a given dataset rather than the biases of a poorly-populated set.\nConvolutional networks were inspired by biological processes in that the connectivity pattern between neurons resembles the organization of the animal visual cortex. Individual cortical neurons respond to stimuli only in a restricted region of the visual field known as the receptive field. The receptive fields of different neurons partially overlap such that they cover the entire visual field.\nCNNs use relatively little pre-processing compared to other image classification algorithms. This means that the network learns to optimize the filters (or kernels) through automated learning, whereas in traditional algorithms these filters are hand-engineered. This simplifies and automates the process, enhancing efficiency and scalability overcoming human-intervention bottlenecks.\n\n\nArchitecture\n\nA convolutional neural network consists of an input layer, hidden layers and an output layer. In a convolutional neural network, the hidden layers include one or more layers that perform convolutions. Typically this includes a layer that performs a dot product of the convolution kernel with the layer's input matrix. This product is usually the Frobenius inner product, and its activation function is commonly ReLU. As the convolution kernel slides along the input matrix for the layer, the convolution operation generates a feature map, which in turn contributes to the input of the next layer. This is followed by other layers such as pooling layers, fully connected layers, and normalization layers.\nHere it should be noted how close a convolutional neural network is to a matched filter.\n\n\nConvolutional layers\nIn a CNN, the input is a tensor with shape:\n(number of inputs) × (input height) × (input width) × (input channels)\nAfter passing through a convolutional layer, the image becomes abstracted to a feature map, also called an activation map, with shape:\n(number of inputs) × (feature map height) × (feature map width) × (feature map channels).\nConvolutional layers convolve the input and pass its result to the next layer. This is similar to the response of a neuron in the visual cortex to a specific stimulus. Each convolutional neuron processes data only for its receptive field. \n\nAlthough fully connected feedforward neural networks can be used to learn features and classify data, this architecture is generally impractical for larger inputs (e.g., high-resolution images), which would require massive numbers of neurons because each pixel is a relevant input feature. A fully connected layer for an image of size 100 × 100 has 10,000 weights for each neuron in the second layer. Convolution reduces the number of free parameters, allowing the network to be deeper. For example, using a 5 × 5 tiling region, each with the same shared weights, requires only 25 neurons. Using shared weights means there are many fewer parameters, which helps avoid the vanishing gradients and exploding gradients problems seen during backpropagation in earlier neural networks.\nTo speed processing, standard convolutional layers can be replaced by depthwise separable convolutional layers, which are based on a depthwise convolution followed by a pointwise convolution. The depthwise convolution is a spatial convolution applied independently over each channel of the input tensor, while the pointwise convolution is a standard convolution restricted to the use of \n  \n    \n      \n        1\n        ×\n        1\n      \n    \n    {\\displaystyle 1\\times 1}\n  \n kernels.\n\n\nPooling layers\nConvolutional networks may include local and/or global pooling layers along with traditional convolutional layers. Pooling layers reduce the dimensions of data by combining the outputs of\nSource URL: https://en.wikipedia.org/wiki/Convolutional_neural_network",
+          "research_context": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nA convolutional neural network (CNN) is a type of feedforward neural network that learns features via filter (or kernel) optimization. This type of deep learning network has been applied to process and make predictions from many different types of data including text, images and audio. CNNs are the de-facto standard in deep learning-based approaches to computer vision and image processing, and have only recently been replaced—in some cases—by newer architectures such as the transformer.\nVanishing gradients and exploding gradients, seen during backpropagation in earlier neural networks, are prevented by the regularization that comes from using shared weights over fewer connections. For example, for each neuron in the fully-connected layer, 10,000 weights would be required for processing an image sized 100 × 100 pixels. However, applying cascaded convolution (or cross-correlation) kernels, only 25 weights for each convolutional layer are required to process 5x5-sized tiles. Higher-layer features are extracted from wider context windows, compared to lower-layer features.\nSome applications of CNNs include: \n\nimage and video recognition,\nrecommender systems,\nimage classification,\nimage segmentation,\nmedical image analysis,\nnatural language processing,\nbrain–computer interfaces, and\nfinancial time series.\nCNNs are also known as shift invariant or space invariant artificial neural networks, based on the shared-weight architecture of the convolution kernels or filters that slide along input features and provide translation-equivariant responses known as feature maps. Counter-intuitively, most convolutional neural networks are not invariant to translation, due to the downsampling operation they apply to the input.\nFeedforward neural networks are usually fully connected networks, that is, each neuron in one layer is connected to all neurons in the next layer. The \"full connectivity\" of these networks makes them prone to overfitting data. Typical ways of regularization, or preventing overfitting, include: penalizing parameters during training (such as weight decay) or trimming connectivity (skipped connections, dropout, etc.) Robust datasets also increase the probability that CNNs will learn the generalized principles that characterize a given dataset rather than the biases of a poorly-populated set.\nConvolutional networks were inspired by biological processes in that the connectivity pattern between neurons resembles the organization of the animal visual cortex. Individual cortical neurons respond to stimuli only in a restricted region of the visual field known as the receptive field. The receptive fields of different neurons partially overlap such that they cover the entire visual field.\nCNNs use relatively little pre-processing compared to other image classification algorithms. This means that the network learns to optimize the filters (or kernels) through automated learning, whereas in traditional algorithms these filters are hand-engineered. This simplifies and automates the process, enhancing efficiency and scalability overcoming human-intervention bottlenecks.\n\n\nArchitecture\n\nA convolutional neural network consists of an input layer, hidden layers and an output layer. In a convolutional neural network, the hidden layers include one or more layers that perform convolutions. Typically this includes a layer that performs a dot product of the convolution kernel with the layer's input matrix. This product is usually the Frobenius inner product, and its activation function is commonly ReLU. As the convolution kernel slides along the input matrix for the layer, the convolution operation generates a feature map, which in turn contributes to the input of the next layer. This is followed by other layers such as pooling layers, fully connected layers, and normalization layers.\nHere it should be noted how close a convolutional neural network is to a matched filter.\n\n\nConvolutional layers\nIn a CNN, the input is a tensor with shape:\n(number of inputs) × (input height) × (input width) × (input channels)\nAfter passing through a convolutional layer, the image becomes abstracted to a feature map, also called an activation map, with shape:\n(number of inputs) × (feature map height) × (feature map width) × (feature map channels).\nConvolutional layers convolve the input and pass its result to the next layer. This is similar to the response of a neuron in the visual cortex to a specific stimulus. Each convolutional neuron processes data only for its receptive field. \n\nAlthough fully connected feedforward neural networks can be used to learn features and classify data, this architecture is generally impractical for larger inputs (e.g., high-resolution images), which would require massive numbers of neurons because each pixel is a relevant input feature. A fully connected layer for an image of size 100 × 100 has 10,000 weights for each neuron in the second layer. Convolution reduces the number of free parameters, allowing the network to be deeper. For example, using a 5 × 5 tiling region, each with the same shared weights, requires only 25 neurons. Using shared weights means there are many fewer parameters, which helps avoid the vanishing gradients and exploding gradients problems seen during backpropagation in earlier neural networks.\nTo speed processing, standard convolutional layers can be replaced by depthwise separable convolutional layers, which are based on a depthwise convolution followed by a pointwise convolution. The depthwise convolution is a spatial convolution applied independently over each channel of the input tensor, while the pointwise convolution is a standard convolution restricted to the use of \n  \n    \n      \n        1\n        ×\n        1\n      \n    \n    {\\displaystyle 1\\times 1}\n  \n kernels.\n\n\nPooling layers\nConvolutional networks may include local and/or global pooling layers along with traditional convolutional layers. Pooling layers reduce the dimensions of data by combining the outputs of\nSource URL: https://en.wikipedia.org/wiki/Convolutional_neural_network",
+          "factual_confidence": "high",
+          "high_end_image_required": true,
+          "image_need": "required",
+          "image_tier": "hero",
+          "selected_template": "Feature showcase block",
+          "selected_layout": "top",
+          "primary_family": "smart_layout",
+          "primary_variant": "comparisonProsCons",
+          "smart_layout_variant": "comparisonProsCons",
+          "composition_style": "intro_then_primary",
+          "designer_blueprint": {
+            "template": {
+              "name": "Feature showcase block",
+              "is_sparse": false,
+              "image_mode_capability": "hero",
+              "image_mode_required": "hero",
+              "max_blocks": 4,
+              "max_supporting_blocks": 2,
+              "allowed_primary_families": [
+                "overview",
+                "example",
+                "process",
+                "smart_layout"
+              ],
+              "allowed_accent_placements": [
+                "right",
+                "left",
+                "top",
+                "bottom"
+              ],
+              "allowed_layouts": [
+                "right",
+                "left",
+                "top",
+                "bottom",
+                "blank"
+              ],
+              "supports_high_end_image": true,
+              "preferred_smart_layout_variants": [
+                "cardGridIcon",
+                "processSteps",
+                "bigBullets",
+                "relationshipMap",
+                "ribbonFold",
+                "diamondRibbon",
+                "diamondHub"
+              ]
+            },
+            "primary_block": {
+              "family": "smart_layout",
+              "variant": "comparisonProsCons",
+              "width_class": "normal",
+              "has_content_image": false,
+              "implies_content_image": false,
+              "density_ok": [
+                "balanced",
+                "standard",
+                "dense"
+              ],
+              "is_primary_candidate": true,
+              "smart_layout_variant": "comparisonProsCons",
+              "intent_fit": [
+                "compare"
+              ]
+            },
+            "primary_family": "smart_layout",
+            "primary_variant": "comparisonProsCons",
+            "smart_layout_variant": "comparisonProsCons",
+            "supporting_blocks": [
+              {
+                "family": "smart_layout",
+                "variant": "bigBullets",
+                "width_class": "normal",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "ultra_sparse",
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bigBullets",
+                "intent_fit": [
+                  "explain",
+                  "list",
+                  "introduce",
+                  "summarize"
+                ]
+              },
+              {
+                "family": "smart_layout",
+                "variant": "bulletCheck",
+                "width_class": "normal",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bulletCheck",
+                "intent_fit": [
+                  "list",
+                  "summarize"
+                ]
+              }
+            ],
+            "composition_style": "intro_then_primary",
+            "image_need": "required",
+            "image_tier": "hero",
+            "layout": "top",
+            "notes": [
+              "Teacher intent: demo",
+              "Coverage scope: mechanism",
+              "Planned smart_layout variant: comparisonProsCons",
+              "Composition style: intro_then_primary"
+            ]
+          }
+        },
+        {
+          "slide_id": "sub_1_a14213_t4",
+          "teacher_slide_ref": "sub_1_a14213_t4",
+          "sequence_index": 3,
+          "title": "Applications of CNNs",
+          "objective": "Explore various applications of CNNs in real-world scenarios.",
+          "summary": "Explore various applications of CNNs in real-world scenarios.",
+          "intent": "application",
+          "content_angle": "example",
+          "coverage_contract": "Showcase diverse applications where CNNs are effectively used.",
+          "avoid_overlap_with": [
+            "Input layer",
+            "Feature maps",
+            "Activation functions"
+          ],
+          "role": "Connect",
+          "goal": "Demonstrate the versatility and impact of CNNs in various fields.",
+          "reasoning": "Illustrating applications helps learners relate theory to practice.",
+          "visual_required": true,
+          "visual_type": "image",
+          "image_role_v2": "content",
+          "target_density": "sparse",
+          "teaching_intent": "demo",
+          "coverage_scope": "application",
+          "slide_density": "sparse",
+          "must_cover": [
+            "Image recognition",
+            "Medical image analysis",
+            "Natural language processing"
+          ],
+          "key_facts": [
+            "CNNs are widely used in image and video recognition tasks.",
+            "They play a significant role in medical image analysis.",
+            "CNNs are applied in natural language processing for text analysis."
+          ],
+          "formulas": [],
+          "assessment_prompt": "Identify and describe one application of CNNs.",
+          "research_evidence": [
+            "https://en.wikipedia.org/wiki/Convolutional_neural_network"
+          ],
+          "research_raw_text": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nA convolutional neural network (CNN) is a type of feedforward neural network that learns features via filter (or kernel) optimization. This type of deep learning network has been applied to process and make predictions from many different types of data including text, images and audio. CNNs are the de-facto standard in deep learning-based approaches to computer vision and image processing, and have only recently been replaced—in some cases—by newer architectures such as the transformer.\nVanishing gradients and exploding gradients, seen during backpropagation in earlier neural networks, are prevented by the regularization that comes from using shared weights over fewer connections. For example, for each neuron in the fully-connected layer, 10,000 weights would be required for processing an image sized 100 × 100 pixels. However, applying cascaded convolution (or cross-correlation) kernels, only 25 weights for each convolutional layer are required to process 5x5-sized tiles. Higher-layer features are extracted from wider context windows, compared to lower-layer features.\nSome applications of CNNs include: \n\nimage and video recognition,\nrecommender systems,\nimage classification,\nimage segmentation,\nmedical image analysis,\nnatural language processing,\nbrain–computer interfaces, and\nfinancial time series.\nCNNs are also known as shift invariant or space invariant artificial neural networks, based on the shared-weight architecture of the convolution kernels or filters that slide along input features and provide translation-equivariant responses known as feature maps. Counter-intuitively, most convolutional neural networks are not invariant to translation, due to the downsampling operation they apply to the input.\nFeedforward neural networks are usually fully connected networks, that is, each neuron in one layer is connected to all neurons in the next layer. The \"full connectivity\" of these networks makes them prone to overfitting data. Typical ways of regularization, or preventing overfitting, include: penalizing parameters during training (such as weight decay) or trimming connectivity (skipped connections, dropout, etc.) Robust datasets also increase the probability that CNNs will learn the generalized principles that characterize a given dataset rather than the biases of a poorly-populated set.\nConvolutional networks were inspired by biological processes in that the connectivity pattern between neurons resembles the organization of the animal visual cortex. Individual cortical neurons respond to stimuli only in a restricted region of the visual field known as the receptive field. The receptive fields of different neurons partially overlap such that they cover the entire visual field.\nCNNs use relatively little pre-processing compared to other image classification algorithms. This means that the network learns to optimize the filters (or kernels) through automated learning, whereas in traditional algorithms these filters are hand-engineered. This simplifies and automates the process, enhancing efficiency and scalability overcoming human-intervention bottlenecks.\n\n\nArchitecture\n\nA convolutional neural network consists of an input layer, hidden layers and an output layer. In a convolutional neural network, the hidden layers include one or more layers that perform convolutions. Typically this includes a layer that performs a dot product of the convolution kernel with the layer's input matrix. This product is usually the Frobenius inner product, and its activation function is commonly ReLU. As the convolution kernel slides along the input matrix for the layer, the convolution operation generates a feature map, which in turn contributes to the input of the next layer. This is followed by other layers such as pooling layers, fully connected layers, and normalization layers.\nHere it should be noted how close a convolutional neural network is to a matched filter.\n\n\nConvolutional layers\nIn a CNN, the input is a tensor with shape:\n(number of inputs) × (input height) × (input width) × (input channels)\nAfter passing through a convolutional layer, the image becomes abstracted to a feature map, also called an activation map, with shape:\n(number of inputs) × (feature map height) × (feature map width) × (feature map channels).\nConvolutional layers convolve the input and pass its result to the next layer. This is similar to the response of a neuron in the visual cortex to a specific stimulus. Each convolutional neuron processes data only for its receptive field. \n\nAlthough fully connected feedforward neural networks can be used to learn features and classify data, this architecture is generally impractical for larger inputs (e.g., high-resolution images), which would require massive numbers of neurons because each pixel is a relevant input feature. A fully connected layer for an image of size 100 × 100 has 10,000 weights for each neuron in the second layer. Convolution reduces the number of free parameters, allowing the network to be deeper. For example, using a 5 × 5 tiling region, each with the same shared weights, requires only 25 neurons. Using shared weights means there are many fewer parameters, which helps avoid the vanishing gradients and exploding gradients problems seen during backpropagation in earlier neural networks.\nTo speed processing, standard convolutional layers can be replaced by depthwise separable convolutional layers, which are based on a depthwise convolution followed by a pointwise convolution. The depthwise convolution is a spatial convolution applied independently over each channel of the input tensor, while the pointwise convolution is a standard convolution restricted to the use of \n  \n    \n      \n        1\n        ×\n        1\n      \n    \n    {\\displaystyle 1\\times 1}\n  \n kernels.\n\n\nPooling layers\nConvolutional networks may include local and/or global pooling layers along with traditional convolutional layers. Pooling layers reduce the dimensions of data by combining the outputs of\nSource URL: https://en.wikipedia.org/wiki/Convolutional_neural_network",
+          "research_context": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nA convolutional neural network (CNN) is a type of feedforward neural network that learns features via filter (or kernel) optimization. This type of deep learning network has been applied to process and make predictions from many different types of data including text, images and audio. CNNs are the de-facto standard in deep learning-based approaches to computer vision and image processing, and have only recently been replaced—in some cases—by newer architectures such as the transformer.\nVanishing gradients and exploding gradients, seen during backpropagation in earlier neural networks, are prevented by the regularization that comes from using shared weights over fewer connections. For example, for each neuron in the fully-connected layer, 10,000 weights would be required for processing an image sized 100 × 100 pixels. However, applying cascaded convolution (or cross-correlation) kernels, only 25 weights for each convolutional layer are required to process 5x5-sized tiles. Higher-layer features are extracted from wider context windows, compared to lower-layer features.\nSome applications of CNNs include: \n\nimage and video recognition,\nrecommender systems,\nimage classification,\nimage segmentation,\nmedical image analysis,\nnatural language processing,\nbrain–computer interfaces, and\nfinancial time series.\nCNNs are also known as shift invariant or space invariant artificial neural networks, based on the shared-weight architecture of the convolution kernels or filters that slide along input features and provide translation-equivariant responses known as feature maps. Counter-intuitively, most convolutional neural networks are not invariant to translation, due to the downsampling operation they apply to the input.\nFeedforward neural networks are usually fully connected networks, that is, each neuron in one layer is connected to all neurons in the next layer. The \"full connectivity\" of these networks makes them prone to overfitting data. Typical ways of regularization, or preventing overfitting, include: penalizing parameters during training (such as weight decay) or trimming connectivity (skipped connections, dropout, etc.) Robust datasets also increase the probability that CNNs will learn the generalized principles that characterize a given dataset rather than the biases of a poorly-populated set.\nConvolutional networks were inspired by biological processes in that the connectivity pattern between neurons resembles the organization of the animal visual cortex. Individual cortical neurons respond to stimuli only in a restricted region of the visual field known as the receptive field. The receptive fields of different neurons partially overlap such that they cover the entire visual field.\nCNNs use relatively little pre-processing compared to other image classification algorithms. This means that the network learns to optimize the filters (or kernels) through automated learning, whereas in traditional algorithms these filters are hand-engineered. This simplifies and automates the process, enhancing efficiency and scalability overcoming human-intervention bottlenecks.\n\n\nArchitecture\n\nA convolutional neural network consists of an input layer, hidden layers and an output layer. In a convolutional neural network, the hidden layers include one or more layers that perform convolutions. Typically this includes a layer that performs a dot product of the convolution kernel with the layer's input matrix. This product is usually the Frobenius inner product, and its activation function is commonly ReLU. As the convolution kernel slides along the input matrix for the layer, the convolution operation generates a feature map, which in turn contributes to the input of the next layer. This is followed by other layers such as pooling layers, fully connected layers, and normalization layers.\nHere it should be noted how close a convolutional neural network is to a matched filter.\n\n\nConvolutional layers\nIn a CNN, the input is a tensor with shape:\n(number of inputs) × (input height) × (input width) × (input channels)\nAfter passing through a convolutional layer, the image becomes abstracted to a feature map, also called an activation map, with shape:\n(number of inputs) × (feature map height) × (feature map width) × (feature map channels).\nConvolutional layers convolve the input and pass its result to the next layer. This is similar to the response of a neuron in the visual cortex to a specific stimulus. Each convolutional neuron processes data only for its receptive field. \n\nAlthough fully connected feedforward neural networks can be used to learn features and classify data, this architecture is generally impractical for larger inputs (e.g., high-resolution images), which would require massive numbers of neurons because each pixel is a relevant input feature. A fully connected layer for an image of size 100 × 100 has 10,000 weights for each neuron in the second layer. Convolution reduces the number of free parameters, allowing the network to be deeper. For example, using a 5 × 5 tiling region, each with the same shared weights, requires only 25 neurons. Using shared weights means there are many fewer parameters, which helps avoid the vanishing gradients and exploding gradients problems seen during backpropagation in earlier neural networks.\nTo speed processing, standard convolutional layers can be replaced by depthwise separable convolutional layers, which are based on a depthwise convolution followed by a pointwise convolution. The depthwise convolution is a spatial convolution applied independently over each channel of the input tensor, while the pointwise convolution is a standard convolution restricted to the use of \n  \n    \n      \n        1\n        ×\n        1\n      \n    \n    {\\displaystyle 1\\times 1}\n  \n kernels.\n\n\nPooling layers\nConvolutional networks may include local and/or global pooling layers along with traditional convolutional layers. Pooling layers reduce the dimensions of data by combining the outputs of\nSource URL: https://en.wikipedia.org/wiki/Convolutional_neural_network",
+          "factual_confidence": "high",
+          "high_end_image_required": true,
+          "image_need": "required",
+          "image_tier": "hero",
+          "selected_template": "Title with bullets and image",
+          "selected_layout": "right",
+          "primary_family": "smart_layout",
+          "primary_variant": "cardGridDiamond",
+          "smart_layout_variant": "cardGridDiamond",
+          "composition_style": "primary_only",
+          "designer_blueprint": {
+            "template": {
+              "name": "Title with bullets and image",
+              "is_sparse": false,
+              "image_mode_capability": "content",
+              "image_mode_required": null,
+              "max_blocks": 4,
+              "max_supporting_blocks": 2,
+              "allowed_primary_families": [
+                "overview",
+                "example",
+                "diagram",
+                "smart_layout"
+              ],
+              "allowed_accent_placements": [
+                "right",
+                "left"
+              ],
+              "allowed_layouts": [
+                "right",
+                "left",
+                "top",
+                "bottom",
+                "blank"
+              ],
+              "supports_high_end_image": false,
+              "preferred_smart_layout_variants": [
+                "bigBullets",
+                "cardGridSimple"
+              ]
+            },
+            "primary_block": {
+              "family": "smart_layout",
+              "variant": "cardGridDiamond",
+              "width_class": "normal",
+              "has_content_image": false,
+              "implies_content_image": false,
+              "density_ok": [
+                "sparse",
+                "balanced",
+                "standard"
+              ],
+              "is_primary_candidate": true,
+              "smart_layout_variant": "cardGridDiamond",
+              "intent_fit": [
+                "explain",
+                "list",
+                "introduce"
+              ]
+            },
+            "primary_family": "smart_layout",
+            "primary_variant": "cardGridDiamond",
+            "smart_layout_variant": "cardGridDiamond",
+            "supporting_blocks": [
+              {
+                "family": "smart_layout",
+                "variant": "bigBullets",
+                "width_class": "normal",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "ultra_sparse",
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bigBullets",
+                "intent_fit": [
+                  "explain",
+                  "list",
+                  "introduce",
+                  "summarize"
+                ]
+              },
+              {
+                "family": "smart_layout",
+                "variant": "bulletCheck",
+                "width_class": "normal",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bulletCheck",
+                "intent_fit": [
+                  "list",
+                  "summarize"
+                ]
+              }
+            ],
+            "composition_style": "primary_only",
+            "image_need": "required",
+            "image_tier": "hero",
+            "layout": "right",
+            "notes": [
+              "Teacher intent: demo",
+              "Coverage scope: application",
+              "Planned smart_layout variant: cardGridDiamond",
+              "Composition style: primary_only"
+            ]
+          }
+        }
+      ]
+    },
+    "slides": {},
+    "intro_text": "",
+    "unsupported_topic": false,
+    "unsupported_subject": "",
+    "unsupported_message": "",
+    "messages": [],
+    "subtopic_target_count": 1,
+    "subtopic_available_count": 1,
+    "fact_retriever": "wiki",
+    "teacher_research_raw_text": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nA convolutional neural network (CNN) is a type of feedforward neural network that learns features via filter (or kernel) optimization. This type of deep learning network has been applied to process and make predictions from many different types of data including text, images and audio. CNNs are the de-facto standard in deep learning-based approaches to computer vision and image processing, and have only recently been replaced—in some cases—by newer architectures such as the transformer.\nVanishing gradients and exploding gradients, seen during backpropagation in earlier neural networks, are prevented by the regularization that comes from using shared weights over fewer connections. For example, for each neuron in the fully-connected layer, 10,000 weights would be required for processing an image sized 100 × 100 pixels. However, applying cascaded convolution (or cross-correlation) kernels, only 25 weights for each convolutional layer are required to process 5x5-sized tiles. Higher-layer features are extracted from wider context windows, compared to lower-layer features.\nSome applications of CNNs include: \n\nimage and video recognition,\nrecommender systems,\nimage classification,\nimage segmentation,\nmedical image analysis,\nnatural language processing,\nbrain–computer interfaces, and\nfinancial time series.\nCNNs are also known as shift invariant or space invariant artificial neural networks, based on the shared-weight architecture of the convolution kernels or filters that slide along input features and provide translation-equivariant responses known as feature maps. Counter-intuitively, most convolutional neural networks are not invariant to translation, due to the downsampling operation they apply to the input.\nFeedforward neural networks are usually fully connected networks, that is, each neuron in one layer is connected to all neurons in the next layer. The \"full connectivity\" of these networks makes them prone to overfitting data. Typical ways of regularization, or preventing overfitting, include: penalizing parameters during training (such as weight decay) or trimming connectivity (skipped connections, dropout, etc.) Robust datasets also increase the probability that CNNs will learn the generalized principles that characterize a given dataset rather than the biases of a poorly-populated set.\nConvolutional networks were inspired by biological processes in that the connectivity pattern between neurons resembles the organization of the animal visual cortex. Individual cortical neurons respond to stimuli only in a restricted region of the visual field known as the receptive field. The receptive fields of different neurons partially overlap such that they cover the entire visual field.\nCNNs use relatively little pre-processing compared to other image classification algorithms. This means that the network learns to optimize the filters (or kernels) through automated learning, whereas in traditional algorithms these filters are hand-engineered. This simplifies and automates the process, enhancing efficiency and scalability overcoming human-intervention bottlenecks.\n\n\nArchitecture\n\nA convolutional neural network consists of an input layer, hidden layers and an output layer. In a convolutional neural network, the hidden layers include one or more layers that perform convolutions. Typically this includes a layer that performs a dot product of the convolution kernel with the layer's input matrix. This product is usually the Frobenius inner product, and its activation function is commonly ReLU. As the convolution kernel slides along the input matrix for the layer, the convolution operation generates a feature map, which in turn contributes to the input of the next layer. This is followed by other layers such as pooling layers, fully connected layers, and normalization layers.\nHere it should be noted how close a convolutional neural network is to a matched filter.\n\n\nConvolutional layers\nIn a CNN, the input is a tensor with shape:\n(number of inputs) × (input height) × (input width) × (input channels)\nAfter passing through a convolutional layer, the image becomes abstracted to a feature map, also called an activation map, with shape:\n(number of inputs) × (feature map height) × (feature map width) × (feature map channels).\nConvolutional layers convolve the input and pass its result to the next layer. This is similar to the response of a neuron in the visual cortex to a specific stimulus. Each convolutional neuron processes data only for its receptive field. \n\nAlthough fully connected feedforward neural networks can be used to learn features and classify data, this architecture is generally impractical for larger inputs (e.g., high-resolution images), which would require massive numbers of neurons because each pixel is a relevant input feature. A fully connected layer for an image of size 100 × 100 has 10,000 weights for each neuron in the second layer. Convolution reduces the number of free parameters, allowing the network to be deeper. For example, using a 5 × 5 tiling region, each with the same shared weights, requires only 25 neurons. Using shared weights means there are many fewer parameters, which helps avoid the vanishing gradients and exploding gradients problems seen during backpropagation in earlier neural networks.\nTo speed processing, standard convolutional layers can be replaced by depthwise separable convolutional layers, which are based on a depthwise convolution followed by a pointwise convolution. The depthwise convolution is a spatial convolution applied independently over each channel of the input tensor, while the pointwise convolution is a standard convolution restricted to the use of \n  \n    \n      \n        1\n        ×\n        1\n      \n    \n    {\\displaystyle 1\\times 1}\n  \n kernels.\n\n\nPooling layers\nConvolutional networks may include local and/or global pooling layers along with traditional convolutional layers. Pooling layers reduce the dimensions of data by combining the outputs of\nSource URL: https://en.wikipedia.org/wiki/Convolutional_neural_network"
+  }
+}
