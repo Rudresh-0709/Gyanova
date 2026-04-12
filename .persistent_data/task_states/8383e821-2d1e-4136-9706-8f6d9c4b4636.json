@@ -1,0 +1,630 @@
+{
+  "task_id": "8383e821-2d1e-4136-9706-8f6d9c4b4636",
+  "updated_at": "2026-04-12T09:01:39.679695Z",
+  "status": "planning_completed",
+  "result": {
+    "user_input": "Electrolysis",
+    "topic": "Electrolysis",
+    "difficulty": "Intermediate",
+    "learning_depth": "Summary",
+    "currentKnowledge": "Intermediate",
+    "goal": "Understand Core Concepts",
+    "curriculumDepth": "Summary",
+    "granularity": "Focused",
+    "topic_granularity": "Focused",
+    "teacher_gender": "Female",
+    "sub_topics": [
+      {
+        "name": "Fundamentals and Applications of Electrolysis",
+        "difficulty": "Intermediate",
+        "description": "Understanding the core principles, processes, and key applications of electrolysis, including electrochemical reactions, electrode processes, and industrial uses.",
+        "id": "sub_1_1fc250"
+      }
+    ],
+    "plans": {
+      "sub_1_1fc250": [
+        {
+          "slide_id": "sub_1_1fc250_t1",
+          "teacher_slide_ref": "sub_1_1fc250_t1",
+          "sequence_index": 0,
+          "title": "Introduction to Electrolysis",
+          "objective": "Understand the basic concept and definition of electrolysis.",
+          "summary": "Understand the basic concept and definition of electrolysis.",
+          "intent": "definition",
+          "content_angle": "overview",
+          "coverage_contract": "Define electrolysis and explain its fundamental concept.",
+          "avoid_overlap_with": [],
+          "role": "Introduce",
+          "goal": "Provide a foundational understanding of what electrolysis is.",
+          "reasoning": "This slide sets the stage for understanding the broader topic of electrolysis by introducing its basic definition and key components.",
+          "visual_required": true,
+          "visual_type": "diagram",
+          "image_role_v2": "content",
+          "target_density": "balanced",
+          "teaching_intent": "explain",
+          "coverage_scope": "foundation",
+          "slide_density": "balanced",
+          "must_cover": [
+            "definition of electrolysis",
+            "role of electric current",
+            "decomposition potential"
+          ],
+          "key_facts": [
+            "Electrolysis is a process that uses direct electric current to drive a non-spontaneous chemical reaction.",
+            "The decomposition potential is the minimum voltage needed for electrolysis to occur.",
+            "The term 'electrolysis' was coined by Michael Faraday in 1834."
+          ],
+          "formulas": [],
+          "assessment_prompt": "What is electrolysis and what is the role of decomposition potential?",
+          "research_evidence": [
+            "https://en.wikipedia.org/wiki/Electrolysis"
+          ],
+          "research_raw_text": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nIn chemistry and manufacturing, electrolysis is a technique that uses direct electric current (DC) to drive an otherwise non-spontaneous biological and physical reaction. Electrolysis is commercially important as a stage in the separation of elements from naturally occurring sources such as ores using an electrolytic cell. The voltage that is needed for electrolysis to occur is called the decomposition potential. The word \"lysis\" means to separate or break, so in terms, electrolysis would mean \"breakdown via electricity.\"\n\n\nEtymology\nThe word \"electrolysis\" was introduced by Michael Faraday in 1834, using the Greek words ἤλεκτρον [ɛ̌ːlektron] \"amber\", which since the 17th century was associated with electrical phenomena, and λύσις [lýsis] meaning \"dissolution\". Nevertheless, electrolysis, as a tool to study chemical reactions and obtain pure elements, precedes the coinage of the term and formal description by Faraday.\n\n\nHistory\nIn the early nineteenth century, William Nicholson and Anthony Carlisle sought to further Volta's experiments. They attached two wires to either side of a voltaic pile and placed the other ends in a tube filled with water. They noticed when the wires were brought together that each wire produced bubbles. One type was hydrogen, the other was oxygen.\nIn 1785 a Dutch scientist named Martin van Marum created an electrostatic generator that he used to reduce tin, zinc and antimony from their salts using a process later known as electrolysis. Though he unknowingly produced electrolysis, it was not until 1800 when William Nicholson and Anthony Carlisle discovered how electrolysis works.\nIn 1791 Luigi Galvani experimented with frog legs. He claimed that placing animal muscle between two dissimilar metal sheets resulted in electricity. Responding to these claims, Alessandro Volta conducted his own tests. This would give insight to Humphry Davy's ideas on electrolysis. During preliminary experiments, Humphry Davy hypothesized that when two elements combine to form a compound, electrical energy is released. Humphry Davy would go on to create Decomposition Tables from his preliminary experiments on Electrolysis. The Decomposition Tables would give insight on the energies needed to break apart certain compounds.\nIn 1817 Johan August Arfwedson determined there was another element, lithium, in some of his samples; however, he could not isolate the component. It was not until 1821 that William Thomas Brande used electrolysis to single it out. Two years later, he streamlined the process using lithium chloride and potassium chloride with electrolysis to produce lithium and lithium hydroxide.\nDuring the later years of Humphry Davy's research, Michael Faraday became his assistant. While studying the process of electrolysis under Humphry Davy, Michael Faraday discovered two laws of electrolysis.\nDuring the time of Maxwell and Faraday, concerns came about for electropositive and electronegative activities.\nIn November 1875, Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis of gallium hydroxide, producing 3.4 mg of gallium. The following December, he presented his discovery of gallium to the Académie des sciences in Paris.\nOn June 26, 1886, Ferdinand Frederick Henri Moissan finally felt comfortable performing electrolysis on anhydrous hydrogen fluoride to create a gaseous fluorine pure element. Before he used hydrogen fluoride, Henri Moissan used fluoride salts with electrolysis. Thus on June 28, 1886, he performed his experiment in front of the Académie des sciences to show his discovery of the new element fluorine. While trying to find elemental fluorine through electrolysis of fluoride salts, many chemists perished including Paulin Louyet and Jérôme Nicklès.\nIn 1886 Charles Martin Hall from America and Paul Héroult from France both filed for American patents for the electrolysis of aluminum, with Héroult submitting his in May, and Hall, in July. Hall was able to get his patent by proving through letters to his brother and family evidence that his method was discovered before the French patent was submitted. This became known as the Hall–Héroult process which benefited many industries because aluminum's price then dropped from four dollars to thirty cents per pound.\nIn 1902 Polish engineer and inventor Stanisław Łaszczyński filed for and obtained Polish patent for the electrolysis of copper and zinc.\n\n\nTimeline\n1785 – Martinus van Marum's electrostatic generator was used to reduce tin, zinc, and antimony from their salts using electrolysis.\n1789 - Adriaan Paets van Troostwijk and Jan Rudolph Deiman conducted early experiments on water electrolysis using an Electrostatic generator, producing small amounts of hydrogen and oxygen.\n1800 – William Nicholson and Anthony Carlisle (and also Johann Ritter), demonstrated the first sustained electrolysis of water into hydrogen and oxygen using a Voltaic pile.\n1808 – Potassium (1807), sodium (1807), barium, calcium and magnesium were discovered by Humphry Davy using electrolysis.\n1821 – Lithium was discovered by the English chemist William Thomas Brande, who obtained it by electrolysis of lithium oxide.\n1834 – Michael Faraday published his two laws of electrolysis, provided a mathematical explanation for them, and introduced terminology such as electrode, electrolyte, anode, cathode, anion, and cation.\n1875 – Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis.\n1886 – Fluorine was discovered by Henri Moissan using electrolysis.\n1886 – Hall–Héroult process developed for making aluminium.\n1890 – Castner–Kellner process developed for making sodium hydroxide.\n1902 – Stanisław Łaszczyński obtained copper using electrolysis.\n1930 – Development of the modern chlor-alkali process (electrolysis of brine to produce chlorine and sodium hydroxide), which became an important industrial method.\n\n\nOverview\nElectrolysis is the passing of a direct electric current through an electrolyte which is producing chemical reactions a\nSource URL: https://en.wikipedia.org/wiki/Electrolysis\n\n📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nThe Kolbe electrolysis or Kolbe reaction is an organic reaction named after Hermann Kolbe. The Kolbe reaction is formally a decarboxylative dimerisation of two carboxylic acids (or carboxylate ions). The overall reaction is:\n\n\nMechanism and side-reactions\nThe reaction mechanism involves a two-stage radical process: electrochemical oxidation first gives a alkylcarboxyl radical, which decarboxylates almost immediately to give an alkyl radical intermediate.  The alkyl radicals which combine to form a covalent bond. As an example, electrolysis of acetic acid yields ethane and carbon dioxide:\n\nCH3COOH → CH3COO− → CH3COO· → CH3· + CO2\n2CH3· → CH3CH3\nAnother example is the synthesis of 2,7-dimethyl-2,7-dinitrooctane from 4-methyl-4-nitrovaleric acid:\n\nOther compounds can trap the radicals formed by decarboxylation, and the Kolbe reaction has also been occasionally used in cross-coupling reactions.  \nIf a mixture of two different carboxylates are used, the radical cross-coupling reaction generally gives all combinations of them:\n\nR1COO− + R2COO− → R1−R1 and/or R1−R2 and/or R2−R2\nThe reaction process can be enhanced and the Hofer–Moest reaction alternative suppressed, by performing the reaction under weakly acidic conditions in protic solvents, and using a high current density and a platinum anodic electrode.\nIn 2022, it was discovered that the Kolbe electrolysis is enhanced if an alternating square wave current is used instead of a direct current.\n\n\nHofer–Moest reaction\nIn the Hofer–Moest reaction, the alkyl radical undergo further oxidation to form a carbocation, rather than coupling with another alkyl radical, which then reacts with an available nucleophile. The Hofer–Moest reaction, rather than Kolbe radical-coupling, always occurs if the carboxylic acid bears a carbocation-stabilizing side-substituent at the α position, but only sometimes otherwise.\n\n\nApplications\nKolbe electrolysis has a few industrial applications.  The reaction typically yields <50%.\nIn one example, sebacic acid has been produced commercially by Kolbe electrolysis of adipic acid.\nKolbe electrolysis has been examined for converting biomass into biodiesel and for grafting of carbon electrodes.\n\n\nSee also\nElectrosynthesis\nWurtz reaction\n\n\nReferences\n\n\nFurther reading\nKolbe, Hermann (1848). \"Zersetzung der Valeriansäure durch den elektrischen Strom\" [Decomposition of valeric acid by an electric current]. Annalen der Chemie und Pharmacie. 64 (3): 339–341. doi:10.1002/jlac.18480640346.\nKolbe, Hermann (1849). \"Untersuchungen über die Elektrolyse organischer Verbindungen\" [Investigations of the electrolysis of organic compounds]. Annalen der Chemie und Pharmacie. 69 (3): 257–294. doi:10.1002/jlac.18490690302.\n\n\nExternal links\n\"Kolbe Electrolysis\". Organic Chemistry Portal. Retrieved 22 October 2007.\nSource URL: https://en.wikipedia.org/wiki/Kolbe_electrolysis",
+          "research_context": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nIn chemistry and manufacturing, electrolysis is a technique that uses direct electric current (DC) to drive an otherwise non-spontaneous biological and physical reaction. Electrolysis is commercially important as a stage in the separation of elements from naturally occurring sources such as ores using an electrolytic cell. The voltage that is needed for electrolysis to occur is called the decomposition potential. The word \"lysis\" means to separate or break, so in terms, electrolysis would mean \"breakdown via electricity.\"\n\n\nEtymology\nThe word \"electrolysis\" was introduced by Michael Faraday in 1834, using the Greek words ἤλεκτρον [ɛ̌ːlektron] \"amber\", which since the 17th century was associated with electrical phenomena, and λύσις [lýsis] meaning \"dissolution\". Nevertheless, electrolysis, as a tool to study chemical reactions and obtain pure elements, precedes the coinage of the term and formal description by Faraday.\n\n\nHistory\nIn the early nineteenth century, William Nicholson and Anthony Carlisle sought to further Volta's experiments. They attached two wires to either side of a voltaic pile and placed the other ends in a tube filled with water. They noticed when the wires were brought together that each wire produced bubbles. One type was hydrogen, the other was oxygen.\nIn 1785 a Dutch scientist named Martin van Marum created an electrostatic generator that he used to reduce tin, zinc and antimony from their salts using a process later known as electrolysis. Though he unknowingly produced electrolysis, it was not until 1800 when William Nicholson and Anthony Carlisle discovered how electrolysis works.\nIn 1791 Luigi Galvani experimented with frog legs. He claimed that placing animal muscle between two dissimilar metal sheets resulted in electricity. Responding to these claims, Alessandro Volta conducted his own tests. This would give insight to Humphry Davy's ideas on electrolysis. During preliminary experiments, Humphry Davy hypothesized that when two elements combine to form a compound, electrical energy is released. Humphry Davy would go on to create Decomposition Tables from his preliminary experiments on Electrolysis. The Decomposition Tables would give insight on the energies needed to break apart certain compounds.\nIn 1817 Johan August Arfwedson determined there was another element, lithium, in some of his samples; however, he could not isolate the component. It was not until 1821 that William Thomas Brande used electrolysis to single it out. Two years later, he streamlined the process using lithium chloride and potassium chloride with electrolysis to produce lithium and lithium hydroxide.\nDuring the later years of Humphry Davy's research, Michael Faraday became his assistant. While studying the process of electrolysis under Humphry Davy, Michael Faraday discovered two laws of electrolysis.\nDuring the time of Maxwell and Faraday, concerns came about for electropositive and electronegative activities.\nIn November 1875, Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis of gallium hydroxide, producing 3.4 mg of gallium. The following December, he presented his discovery of gallium to the Académie des sciences in Paris.\nOn June 26, 1886, Ferdinand Frederick Henri Moissan finally felt comfortable performing electrolysis on anhydrous hydrogen fluoride to create a gaseous fluorine pure element. Before he used hydrogen fluoride, Henri Moissan used fluoride salts with electrolysis. Thus on June 28, 1886, he performed his experiment in front of the Académie des sciences to show his discovery of the new element fluorine. While trying to find elemental fluorine through electrolysis of fluoride salts, many chemists perished including Paulin Louyet and Jérôme Nicklès.\nIn 1886 Charles Martin Hall from America and Paul Héroult from France both filed for American patents for the electrolysis of aluminum, with Héroult submitting his in May, and Hall, in July. Hall was able to get his patent by proving through letters to his brother and family evidence that his method was discovered before the French patent was submitted. This became known as the Hall–Héroult process which benefited many industries because aluminum's price then dropped from four dollars to thirty cents per pound.\nIn 1902 Polish engineer and inventor Stanisław Łaszczyński filed for and obtained Polish patent for the electrolysis of copper and zinc.\n\n\nTimeline\n1785 – Martinus van Marum's electrostatic generator was used to reduce tin, zinc, and antimony from their salts using electrolysis.\n1789 - Adriaan Paets van Troostwijk and Jan Rudolph Deiman conducted early experiments on water electrolysis using an Electrostatic generator, producing small amounts of hydrogen and oxygen.\n1800 – William Nicholson and Anthony Carlisle (and also Johann Ritter), demonstrated the first sustained electrolysis of water into hydrogen and oxygen using a Voltaic pile.\n1808 – Potassium (1807), sodium (1807), barium, calcium and magnesium were discovered by Humphry Davy using electrolysis.\n1821 – Lithium was discovered by the English chemist William Thomas Brande, who obtained it by electrolysis of lithium oxide.\n1834 – Michael Faraday published his two laws of electrolysis, provided a mathematical explanation for them, and introduced terminology such as electrode, electrolyte, anode, cathode, anion, and cation.\n1875 – Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis.\n1886 – Fluorine was discovered by Henri Moissan using electrolysis.\n1886 – Hall–Héroult process developed for making aluminium.\n1890 – Castner–Kellner process developed for making sodium hydroxide.\n1902 – Stanisław Łaszczyński obtained copper using electrolysis.\n1930 – Development of the modern chlor-alkali process (electrolysis of brine to produce chlorine and sodium hydroxide), which became an important industrial method.\n\n\nOverview\nElectrolysis is the passing of a direct electric current through an electrolyte which is producing chemical reactions a\nSource URL: https://en.wikipedia.org/wiki/Electrolysis\n\n📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nThe Kolbe electrolysis or Kolbe reaction is an organic reaction named after Hermann Kolbe. The Kolbe reaction is formally a decarboxylative dimerisation of two carboxylic acids (or carboxylate ions). The overall reaction is:\n\n\nMechanism and side-reactions\nThe reaction mechanism involves a two-stage radical process: electrochemical oxidation first gives a alkylcarboxyl radical, which decarboxylates almost immediately to give an alkyl radical intermediate.  The alkyl radicals which combine to form a covalent bond. As an example, electrolysis of acetic acid yields ethane and carbon dioxide:\n\nCH3COOH → CH3COO− → CH3COO· → CH3· + CO2\n2CH3· → CH3CH3\nAnother example is the synthesis of 2,7-dimethyl-2,7-dinitrooctane from 4-methyl-4-nitrovaleric acid:\n\nOther compounds can trap the radicals formed by decarboxylation, and the Kolbe reaction has also been occasionally used in cross-coupling reactions.  \nIf a mixture of two different carboxylates are used, the radical cross-coupling reaction generally gives all combinations of them:\n\nR1COO− + R2COO− → R1−R1 and/or R1−R2 and/or R2−R2\nThe reaction process can be enhanced and the Hofer–Moest reaction alternative suppressed, by performing the reaction under weakly acidic conditions in protic solvents, and using a high current density and a platinum anodic electrode.\nIn 2022, it was discovered that the Kolbe electrolysis is enhanced if an alternating square wave current is used instead of a direct current.\n\n\nHofer–Moest reaction\nIn the Hofer–Moest reaction, the alkyl radical undergo further oxidation to form a carbocation, rather than coupling with another alkyl radical, which then reacts with an available nucleophile. The Hofer–Moest reaction, rather than Kolbe radical-coupling, always occurs if the carboxylic acid bears a carbocation-stabilizing side-substituent at the α position, but only sometimes otherwise.\n\n\nApplications\nKolbe electrolysis has a few industrial applications.  The reaction typically yields <50%.\nIn one example, sebacic acid has been produced commercially by Kolbe electrolysis of adipic acid.\nKolbe electrolysis has been examined for converting biomass into biodiesel and for grafting of carbon electrodes.\n\n\nSee also\nElectrosynthesis\nWurtz reaction\n\n\nReferences\n\n\nFurther reading\nKolbe, Hermann (1848). \"Zersetzung der Valeriansäure durch den elektrischen Strom\" [Decomposition of valeric acid by an electric current]. Annalen der Chemie und Pharmacie. 64 (3): 339–341. doi:10.1002/jlac.18480640346.\nKolbe, Hermann (1849). \"Untersuchungen über die Elektrolyse organischer Verbindungen\" [Investigations of the electrolysis of organic compounds]. Annalen der Chemie und Pharmacie. 69 (3): 257–294. doi:10.1002/jlac.18490690302.\n\n\nExternal links\n\"Kolbe Electrolysis\". Organic Chemistry Portal. Retrieved 22 October 2007.\nSource URL: https://en.wikipedia.org/wiki/Kolbe_electrolysis",
+          "factual_confidence": "high",
+          "high_end_image_required": true,
+          "image_need": "required",
+          "image_tier": "hero",
+          "selected_template": "Title card",
+          "selected_layout": "top",
+          "primary_family": "smart_layout",
+          "primary_variant": "solidBoxesWithIconsInside",
+          "smart_layout_variant": "solidBoxesWithIconsInside",
+          "composition_style": "primary_only",
+          "designer_blueprint": {
+            "template": {
+              "name": "Title card",
+              "is_sparse": true,
+              "image_mode_capability": "hero",
+              "image_mode_required": "hero",
+              "max_blocks": 2,
+              "max_supporting_blocks": 1,
+              "allowed_primary_families": [
+                "title",
+                "overview",
+                "smart_layout"
+              ],
+              "allowed_accent_placements": [
+                "top",
+                "bottom",
+                "left",
+                "right"
+              ],
+              "allowed_layouts": [
+                "top",
+                "bottom",
+                "left",
+                "right",
+                "blank"
+              ],
+              "supports_high_end_image": true,
+              "preferred_smart_layout_variants": []
+            },
+            "primary_block": {
+              "family": "smart_layout",
+              "variant": "solidBoxesWithIconsInside",
+              "width_class": "wide",
+              "has_content_image": false,
+              "implies_content_image": false,
+              "density_ok": [
+                "ultra_sparse",
+                "sparse",
+                "balanced",
+                "standard"
+              ],
+              "is_primary_candidate": true,
+              "smart_layout_variant": "solidBoxesWithIconsInside",
+              "intent_fit": [
+                "introduce",
+                "explain",
+                "list",
+                "summarize"
+              ]
+            },
+            "primary_family": "smart_layout",
+            "primary_variant": "solidBoxesWithIconsInside",
+            "smart_layout_variant": "solidBoxesWithIconsInside",
+            "supporting_blocks": [
+              {
+                "family": "smart_layout",
+                "variant": "bigBullets",
+                "width_class": "wide",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "ultra_sparse",
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bigBullets",
+                "intent_fit": [
+                  "explain",
+                  "list",
+                  "introduce",
+                  "summarize"
+                ]
+              }
+            ],
+            "composition_style": "primary_only",
+            "image_need": "required",
+            "image_tier": "hero",
+            "layout": "top",
+            "notes": [
+              "Teacher intent: explain",
+              "Coverage scope: foundation",
+              "Planned smart_layout variant: solidBoxesWithIconsInside",
+              "Composition style: primary_only"
+            ]
+          }
+        },
+        {
+          "slide_id": "sub_1_1fc250_t2",
+          "teacher_slide_ref": "sub_1_1fc250_t2",
+          "sequence_index": 1,
+          "title": "Historical Development of Electrolysis",
+          "objective": "Explore the historical milestones in the development of electrolysis.",
+          "summary": "Explore the historical milestones in the development of electrolysis.",
+          "intent": "classification",
+          "content_angle": "overview",
+          "coverage_contract": "Outline key historical events and discoveries in the field of electrolysis.",
+          "avoid_overlap_with": [
+            "definition of electrolysis"
+          ],
+          "role": "Guide",
+          "goal": "Provide historical context to understand the evolution of electrolysis.",
+          "reasoning": "Understanding the historical development helps learners appreciate the scientific progress and key discoveries that shaped the current understanding of electrolysis.",
+          "visual_required": true,
+          "visual_type": "chart",
+          "image_role_v2": "content",
+          "target_density": "sparse",
+          "teaching_intent": "teach",
+          "coverage_scope": "foundation",
+          "slide_density": "sparse",
+          "must_cover": [
+            "early experiments",
+            "discovery timeline",
+            "key contributors"
+          ],
+          "key_facts": [
+            "In 1785, Martin van Marum used an electrostatic generator to reduce metals from their salts.",
+            "William Nicholson and Anthony Carlisle demonstrated the first sustained electrolysis of water in 1800.",
+            "Michael Faraday published his laws of electrolysis in 1834, providing a mathematical explanation."
+          ],
+          "formulas": [],
+          "assessment_prompt": "List two key historical milestones in the development of electrolysis.",
+          "research_evidence": [
+            "https://en.wikipedia.org/wiki/Electrolysis"
+          ],
+          "research_raw_text": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nIn chemistry and manufacturing, electrolysis is a technique that uses direct electric current (DC) to drive an otherwise non-spontaneous biological and physical reaction. Electrolysis is commercially important as a stage in the separation of elements from naturally occurring sources such as ores using an electrolytic cell. The voltage that is needed for electrolysis to occur is called the decomposition potential. The word \"lysis\" means to separate or break, so in terms, electrolysis would mean \"breakdown via electricity.\"\n\n\nEtymology\nThe word \"electrolysis\" was introduced by Michael Faraday in 1834, using the Greek words ἤλεκτρον [ɛ̌ːlektron] \"amber\", which since the 17th century was associated with electrical phenomena, and λύσις [lýsis] meaning \"dissolution\". Nevertheless, electrolysis, as a tool to study chemical reactions and obtain pure elements, precedes the coinage of the term and formal description by Faraday.\n\n\nHistory\nIn the early nineteenth century, William Nicholson and Anthony Carlisle sought to further Volta's experiments. They attached two wires to either side of a voltaic pile and placed the other ends in a tube filled with water. They noticed when the wires were brought together that each wire produced bubbles. One type was hydrogen, the other was oxygen.\nIn 1785 a Dutch scientist named Martin van Marum created an electrostatic generator that he used to reduce tin, zinc and antimony from their salts using a process later known as electrolysis. Though he unknowingly produced electrolysis, it was not until 1800 when William Nicholson and Anthony Carlisle discovered how electrolysis works.\nIn 1791 Luigi Galvani experimented with frog legs. He claimed that placing animal muscle between two dissimilar metal sheets resulted in electricity. Responding to these claims, Alessandro Volta conducted his own tests. This would give insight to Humphry Davy's ideas on electrolysis. During preliminary experiments, Humphry Davy hypothesized that when two elements combine to form a compound, electrical energy is released. Humphry Davy would go on to create Decomposition Tables from his preliminary experiments on Electrolysis. The Decomposition Tables would give insight on the energies needed to break apart certain compounds.\nIn 1817 Johan August Arfwedson determined there was another element, lithium, in some of his samples; however, he could not isolate the component. It was not until 1821 that William Thomas Brande used electrolysis to single it out. Two years later, he streamlined the process using lithium chloride and potassium chloride with electrolysis to produce lithium and lithium hydroxide.\nDuring the later years of Humphry Davy's research, Michael Faraday became his assistant. While studying the process of electrolysis under Humphry Davy, Michael Faraday discovered two laws of electrolysis.\nDuring the time of Maxwell and Faraday, concerns came about for electropositive and electronegative activities.\nIn November 1875, Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis of gallium hydroxide, producing 3.4 mg of gallium. The following December, he presented his discovery of gallium to the Académie des sciences in Paris.\nOn June 26, 1886, Ferdinand Frederick Henri Moissan finally felt comfortable performing electrolysis on anhydrous hydrogen fluoride to create a gaseous fluorine pure element. Before he used hydrogen fluoride, Henri Moissan used fluoride salts with electrolysis. Thus on June 28, 1886, he performed his experiment in front of the Académie des sciences to show his discovery of the new element fluorine. While trying to find elemental fluorine through electrolysis of fluoride salts, many chemists perished including Paulin Louyet and Jérôme Nicklès.\nIn 1886 Charles Martin Hall from America and Paul Héroult from France both filed for American patents for the electrolysis of aluminum, with Héroult submitting his in May, and Hall, in July. Hall was able to get his patent by proving through letters to his brother and family evidence that his method was discovered before the French patent was submitted. This became known as the Hall–Héroult process which benefited many industries because aluminum's price then dropped from four dollars to thirty cents per pound.\nIn 1902 Polish engineer and inventor Stanisław Łaszczyński filed for and obtained Polish patent for the electrolysis of copper and zinc.\n\n\nTimeline\n1785 – Martinus van Marum's electrostatic generator was used to reduce tin, zinc, and antimony from their salts using electrolysis.\n1789 - Adriaan Paets van Troostwijk and Jan Rudolph Deiman conducted early experiments on water electrolysis using an Electrostatic generator, producing small amounts of hydrogen and oxygen.\n1800 – William Nicholson and Anthony Carlisle (and also Johann Ritter), demonstrated the first sustained electrolysis of water into hydrogen and oxygen using a Voltaic pile.\n1808 – Potassium (1807), sodium (1807), barium, calcium and magnesium were discovered by Humphry Davy using electrolysis.\n1821 – Lithium was discovered by the English chemist William Thomas Brande, who obtained it by electrolysis of lithium oxide.\n1834 – Michael Faraday published his two laws of electrolysis, provided a mathematical explanation for them, and introduced terminology such as electrode, electrolyte, anode, cathode, anion, and cation.\n1875 – Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis.\n1886 – Fluorine was discovered by Henri Moissan using electrolysis.\n1886 – Hall–Héroult process developed for making aluminium.\n1890 – Castner–Kellner process developed for making sodium hydroxide.\n1902 – Stanisław Łaszczyński obtained copper using electrolysis.\n1930 – Development of the modern chlor-alkali process (electrolysis of brine to produce chlorine and sodium hydroxide), which became an important industrial method.\n\n\nOverview\nElectrolysis is the passing of a direct electric current through an electrolyte which is producing chemical reactions a\nSource URL: https://en.wikipedia.org/wiki/Electrolysis\n\n📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nThe Kolbe electrolysis or Kolbe reaction is an organic reaction named after Hermann Kolbe. The Kolbe reaction is formally a decarboxylative dimerisation of two carboxylic acids (or carboxylate ions). The overall reaction is:\n\n\nMechanism and side-reactions\nThe reaction mechanism involves a two-stage radical process: electrochemical oxidation first gives a alkylcarboxyl radical, which decarboxylates almost immediately to give an alkyl radical intermediate.  The alkyl radicals which combine to form a covalent bond. As an example, electrolysis of acetic acid yields ethane and carbon dioxide:\n\nCH3COOH → CH3COO− → CH3COO· → CH3· + CO2\n2CH3· → CH3CH3\nAnother example is the synthesis of 2,7-dimethyl-2,7-dinitrooctane from 4-methyl-4-nitrovaleric acid:\n\nOther compounds can trap the radicals formed by decarboxylation, and the Kolbe reaction has also been occasionally used in cross-coupling reactions.  \nIf a mixture of two different carboxylates are used, the radical cross-coupling reaction generally gives all combinations of them:\n\nR1COO− + R2COO− → R1−R1 and/or R1−R2 and/or R2−R2\nThe reaction process can be enhanced and the Hofer–Moest reaction alternative suppressed, by performing the reaction under weakly acidic conditions in protic solvents, and using a high current density and a platinum anodic electrode.\nIn 2022, it was discovered that the Kolbe electrolysis is enhanced if an alternating square wave current is used instead of a direct current.\n\n\nHofer–Moest reaction\nIn the Hofer–Moest reaction, the alkyl radical undergo further oxidation to form a carbocation, rather than coupling with another alkyl radical, which then reacts with an available nucleophile. The Hofer–Moest reaction, rather than Kolbe radical-coupling, always occurs if the carboxylic acid bears a carbocation-stabilizing side-substituent at the α position, but only sometimes otherwise.\n\n\nApplications\nKolbe electrolysis has a few industrial applications.  The reaction typically yields <50%.\nIn one example, sebacic acid has been produced commercially by Kolbe electrolysis of adipic acid.\nKolbe electrolysis has been examined for converting biomass into biodiesel and for grafting of carbon electrodes.\n\n\nSee also\nElectrosynthesis\nWurtz reaction\n\n\nReferences\n\n\nFurther reading\nKolbe, Hermann (1848). \"Zersetzung der Valeriansäure durch den elektrischen Strom\" [Decomposition of valeric acid by an electric current]. Annalen der Chemie und Pharmacie. 64 (3): 339–341. doi:10.1002/jlac.18480640346.\nKolbe, Hermann (1849). \"Untersuchungen über die Elektrolyse organischer Verbindungen\" [Investigations of the electrolysis of organic compounds]. Annalen der Chemie und Pharmacie. 69 (3): 257–294. doi:10.1002/jlac.18490690302.\n\n\nExternal links\n\"Kolbe Electrolysis\". Organic Chemistry Portal. Retrieved 22 October 2007.\nSource URL: https://en.wikipedia.org/wiki/Kolbe_electrolysis",
+          "research_context": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nIn chemistry and manufacturing, electrolysis is a technique that uses direct electric current (DC) to drive an otherwise non-spontaneous biological and physical reaction. Electrolysis is commercially important as a stage in the separation of elements from naturally occurring sources such as ores using an electrolytic cell. The voltage that is needed for electrolysis to occur is called the decomposition potential. The word \"lysis\" means to separate or break, so in terms, electrolysis would mean \"breakdown via electricity.\"\n\n\nEtymology\nThe word \"electrolysis\" was introduced by Michael Faraday in 1834, using the Greek words ἤλεκτρον [ɛ̌ːlektron] \"amber\", which since the 17th century was associated with electrical phenomena, and λύσις [lýsis] meaning \"dissolution\". Nevertheless, electrolysis, as a tool to study chemical reactions and obtain pure elements, precedes the coinage of the term and formal description by Faraday.\n\n\nHistory\nIn the early nineteenth century, William Nicholson and Anthony Carlisle sought to further Volta's experiments. They attached two wires to either side of a voltaic pile and placed the other ends in a tube filled with water. They noticed when the wires were brought together that each wire produced bubbles. One type was hydrogen, the other was oxygen.\nIn 1785 a Dutch scientist named Martin van Marum created an electrostatic generator that he used to reduce tin, zinc and antimony from their salts using a process later known as electrolysis. Though he unknowingly produced electrolysis, it was not until 1800 when William Nicholson and Anthony Carlisle discovered how electrolysis works.\nIn 1791 Luigi Galvani experimented with frog legs. He claimed that placing animal muscle between two dissimilar metal sheets resulted in electricity. Responding to these claims, Alessandro Volta conducted his own tests. This would give insight to Humphry Davy's ideas on electrolysis. During preliminary experiments, Humphry Davy hypothesized that when two elements combine to form a compound, electrical energy is released. Humphry Davy would go on to create Decomposition Tables from his preliminary experiments on Electrolysis. The Decomposition Tables would give insight on the energies needed to break apart certain compounds.\nIn 1817 Johan August Arfwedson determined there was another element, lithium, in some of his samples; however, he could not isolate the component. It was not until 1821 that William Thomas Brande used electrolysis to single it out. Two years later, he streamlined the process using lithium chloride and potassium chloride with electrolysis to produce lithium and lithium hydroxide.\nDuring the later years of Humphry Davy's research, Michael Faraday became his assistant. While studying the process of electrolysis under Humphry Davy, Michael Faraday discovered two laws of electrolysis.\nDuring the time of Maxwell and Faraday, concerns came about for electropositive and electronegative activities.\nIn November 1875, Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis of gallium hydroxide, producing 3.4 mg of gallium. The following December, he presented his discovery of gallium to the Académie des sciences in Paris.\nOn June 26, 1886, Ferdinand Frederick Henri Moissan finally felt comfortable performing electrolysis on anhydrous hydrogen fluoride to create a gaseous fluorine pure element. Before he used hydrogen fluoride, Henri Moissan used fluoride salts with electrolysis. Thus on June 28, 1886, he performed his experiment in front of the Académie des sciences to show his discovery of the new element fluorine. While trying to find elemental fluorine through electrolysis of fluoride salts, many chemists perished including Paulin Louyet and Jérôme Nicklès.\nIn 1886 Charles Martin Hall from America and Paul Héroult from France both filed for American patents for the electrolysis of aluminum, with Héroult submitting his in May, and Hall, in July. Hall was able to get his patent by proving through letters to his brother and family evidence that his method was discovered before the French patent was submitted. This became known as the Hall–Héroult process which benefited many industries because aluminum's price then dropped from four dollars to thirty cents per pound.\nIn 1902 Polish engineer and inventor Stanisław Łaszczyński filed for and obtained Polish patent for the electrolysis of copper and zinc.\n\n\nTimeline\n1785 – Martinus van Marum's electrostatic generator was used to reduce tin, zinc, and antimony from their salts using electrolysis.\n1789 - Adriaan Paets van Troostwijk and Jan Rudolph Deiman conducted early experiments on water electrolysis using an Electrostatic generator, producing small amounts of hydrogen and oxygen.\n1800 – William Nicholson and Anthony Carlisle (and also Johann Ritter), demonstrated the first sustained electrolysis of water into hydrogen and oxygen using a Voltaic pile.\n1808 – Potassium (1807), sodium (1807), barium, calcium and magnesium were discovered by Humphry Davy using electrolysis.\n1821 – Lithium was discovered by the English chemist William Thomas Brande, who obtained it by electrolysis of lithium oxide.\n1834 – Michael Faraday published his two laws of electrolysis, provided a mathematical explanation for them, and introduced terminology such as electrode, electrolyte, anode, cathode, anion, and cation.\n1875 – Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis.\n1886 – Fluorine was discovered by Henri Moissan using electrolysis.\n1886 – Hall–Héroult process developed for making aluminium.\n1890 – Castner–Kellner process developed for making sodium hydroxide.\n1902 – Stanisław Łaszczyński obtained copper using electrolysis.\n1930 – Development of the modern chlor-alkali process (electrolysis of brine to produce chlorine and sodium hydroxide), which became an important industrial method.\n\n\nOverview\nElectrolysis is the passing of a direct electric current through an electrolyte which is producing chemical reactions a\nSource URL: https://en.wikipedia.org/wiki/Electrolysis\n\n📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nThe Kolbe electrolysis or Kolbe reaction is an organic reaction named after Hermann Kolbe. The Kolbe reaction is formally a decarboxylative dimerisation of two carboxylic acids (or carboxylate ions). The overall reaction is:\n\n\nMechanism and side-reactions\nThe reaction mechanism involves a two-stage radical process: electrochemical oxidation first gives a alkylcarboxyl radical, which decarboxylates almost immediately to give an alkyl radical intermediate.  The alkyl radicals which combine to form a covalent bond. As an example, electrolysis of acetic acid yields ethane and carbon dioxide:\n\nCH3COOH → CH3COO− → CH3COO· → CH3· + CO2\n2CH3· → CH3CH3\nAnother example is the synthesis of 2,7-dimethyl-2,7-dinitrooctane from 4-methyl-4-nitrovaleric acid:\n\nOther compounds can trap the radicals formed by decarboxylation, and the Kolbe reaction has also been occasionally used in cross-coupling reactions.  \nIf a mixture of two different carboxylates are used, the radical cross-coupling reaction generally gives all combinations of them:\n\nR1COO− + R2COO− → R1−R1 and/or R1−R2 and/or R2−R2\nThe reaction process can be enhanced and the Hofer–Moest reaction alternative suppressed, by performing the reaction under weakly acidic conditions in protic solvents, and using a high current density and a platinum anodic electrode.\nIn 2022, it was discovered that the Kolbe electrolysis is enhanced if an alternating square wave current is used instead of a direct current.\n\n\nHofer–Moest reaction\nIn the Hofer–Moest reaction, the alkyl radical undergo further oxidation to form a carbocation, rather than coupling with another alkyl radical, which then reacts with an available nucleophile. The Hofer–Moest reaction, rather than Kolbe radical-coupling, always occurs if the carboxylic acid bears a carbocation-stabilizing side-substituent at the α position, but only sometimes otherwise.\n\n\nApplications\nKolbe electrolysis has a few industrial applications.  The reaction typically yields <50%.\nIn one example, sebacic acid has been produced commercially by Kolbe electrolysis of adipic acid.\nKolbe electrolysis has been examined for converting biomass into biodiesel and for grafting of carbon electrodes.\n\n\nSee also\nElectrosynthesis\nWurtz reaction\n\n\nReferences\n\n\nFurther reading\nKolbe, Hermann (1848). \"Zersetzung der Valeriansäure durch den elektrischen Strom\" [Decomposition of valeric acid by an electric current]. Annalen der Chemie und Pharmacie. 64 (3): 339–341. doi:10.1002/jlac.18480640346.\nKolbe, Hermann (1849). \"Untersuchungen über die Elektrolyse organischer Verbindungen\" [Investigations of the electrolysis of organic compounds]. Annalen der Chemie und Pharmacie. 69 (3): 257–294. doi:10.1002/jlac.18490690302.\n\n\nExternal links\n\"Kolbe Electrolysis\". Organic Chemistry Portal. Retrieved 22 October 2007.\nSource URL: https://en.wikipedia.org/wiki/Kolbe_electrolysis",
+          "factual_confidence": "high",
+          "high_end_image_required": true,
+          "image_need": "required",
+          "image_tier": "hero",
+          "selected_template": "Title card",
+          "selected_layout": "bottom",
+          "primary_family": "smart_layout",
+          "primary_variant": "cardGridDiamond",
+          "smart_layout_variant": "cardGridDiamond",
+          "composition_style": "context_then_primary",
+          "designer_blueprint": {
+            "template": {
+              "name": "Title card",
+              "is_sparse": true,
+              "image_mode_capability": "hero",
+              "image_mode_required": "hero",
+              "max_blocks": 2,
+              "max_supporting_blocks": 1,
+              "allowed_primary_families": [
+                "title",
+                "overview",
+                "smart_layout"
+              ],
+              "allowed_accent_placements": [
+                "top",
+                "bottom",
+                "left",
+                "right"
+              ],
+              "allowed_layouts": [
+                "top",
+                "bottom",
+                "left",
+                "right",
+                "blank"
+              ],
+              "supports_high_end_image": true,
+              "preferred_smart_layout_variants": []
+            },
+            "primary_block": {
+              "family": "smart_layout",
+              "variant": "cardGridDiamond",
+              "width_class": "wide",
+              "has_content_image": false,
+              "implies_content_image": false,
+              "density_ok": [
+                "sparse",
+                "balanced",
+                "standard"
+              ],
+              "is_primary_candidate": true,
+              "smart_layout_variant": "cardGridDiamond",
+              "intent_fit": [
+                "explain",
+                "list",
+                "introduce"
+              ]
+            },
+            "primary_family": "smart_layout",
+            "primary_variant": "cardGridDiamond",
+            "smart_layout_variant": "cardGridDiamond",
+            "supporting_blocks": [
+              {
+                "family": "smart_layout",
+                "variant": "bigBullets",
+                "width_class": "wide",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "ultra_sparse",
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bigBullets",
+                "intent_fit": [
+                  "explain",
+                  "list",
+                  "introduce",
+                  "summarize"
+                ]
+              }
+            ],
+            "composition_style": "context_then_primary",
+            "image_need": "required",
+            "image_tier": "hero",
+            "layout": "bottom",
+            "notes": [
+              "Teacher intent: teach",
+              "Coverage scope: foundation",
+              "Planned smart_layout variant: cardGridDiamond",
+              "Composition style: context_then_primary"
+            ]
+          }
+        },
+        {
+          "slide_id": "sub_1_1fc250_t3",
+          "teacher_slide_ref": "sub_1_1fc250_t3",
+          "sequence_index": 2,
+          "title": "Mechanism of Electrolysis",
+          "objective": "Learn how electrolysis works at a molecular level.",
+          "summary": "Learn how electrolysis works at a molecular level.",
+          "intent": "recognition",
+          "content_angle": "mechanism",
+          "coverage_contract": "Explain the process and components involved in electrolysis.",
+          "avoid_overlap_with": [
+            "definition of electrolysis",
+            "historical events"
+          ],
+          "role": "Interpret",
+          "goal": "Explain the detailed mechanism of electrolysis to facilitate deeper understanding.",
+          "reasoning": "This slide provides insight into the operational aspects of electrolysis, crucial for understanding its applications.",
+          "visual_required": true,
+          "visual_type": "diagram",
+          "image_role_v2": "content",
+          "target_density": "standard",
+          "teaching_intent": "demo",
+          "coverage_scope": "mechanism",
+          "slide_density": "standard",
+          "must_cover": [
+            "electrolytic cell",
+            "anode and cathode",
+            "ion movement"
+          ],
+          "key_facts": [
+            "An electrolytic cell is used to conduct electrolysis, consisting of an anode and a cathode.",
+            "The anode is the positive electrode where oxidation occurs, and the cathode is the negative electrode where reduction occurs.",
+            "Ions move towards the electrodes, where they gain or lose electrons, resulting in chemical reactions."
+          ],
+          "formulas": [],
+          "assessment_prompt": "Describe the role of the anode and cathode in electrolysis.",
+          "research_evidence": [
+            "https://en.wikipedia.org/wiki/Electrolysis"
+          ],
+          "research_raw_text": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nIn chemistry and manufacturing, electrolysis is a technique that uses direct electric current (DC) to drive an otherwise non-spontaneous biological and physical reaction. Electrolysis is commercially important as a stage in the separation of elements from naturally occurring sources such as ores using an electrolytic cell. The voltage that is needed for electrolysis to occur is called the decomposition potential. The word \"lysis\" means to separate or break, so in terms, electrolysis would mean \"breakdown via electricity.\"\n\n\nEtymology\nThe word \"electrolysis\" was introduced by Michael Faraday in 1834, using the Greek words ἤλεκτρον [ɛ̌ːlektron] \"amber\", which since the 17th century was associated with electrical phenomena, and λύσις [lýsis] meaning \"dissolution\". Nevertheless, electrolysis, as a tool to study chemical reactions and obtain pure elements, precedes the coinage of the term and formal description by Faraday.\n\n\nHistory\nIn the early nineteenth century, William Nicholson and Anthony Carlisle sought to further Volta's experiments. They attached two wires to either side of a voltaic pile and placed the other ends in a tube filled with water. They noticed when the wires were brought together that each wire produced bubbles. One type was hydrogen, the other was oxygen.\nIn 1785 a Dutch scientist named Martin van Marum created an electrostatic generator that he used to reduce tin, zinc and antimony from their salts using a process later known as electrolysis. Though he unknowingly produced electrolysis, it was not until 1800 when William Nicholson and Anthony Carlisle discovered how electrolysis works.\nIn 1791 Luigi Galvani experimented with frog legs. He claimed that placing animal muscle between two dissimilar metal sheets resulted in electricity. Responding to these claims, Alessandro Volta conducted his own tests. This would give insight to Humphry Davy's ideas on electrolysis. During preliminary experiments, Humphry Davy hypothesized that when two elements combine to form a compound, electrical energy is released. Humphry Davy would go on to create Decomposition Tables from his preliminary experiments on Electrolysis. The Decomposition Tables would give insight on the energies needed to break apart certain compounds.\nIn 1817 Johan August Arfwedson determined there was another element, lithium, in some of his samples; however, he could not isolate the component. It was not until 1821 that William Thomas Brande used electrolysis to single it out. Two years later, he streamlined the process using lithium chloride and potassium chloride with electrolysis to produce lithium and lithium hydroxide.\nDuring the later years of Humphry Davy's research, Michael Faraday became his assistant. While studying the process of electrolysis under Humphry Davy, Michael Faraday discovered two laws of electrolysis.\nDuring the time of Maxwell and Faraday, concerns came about for electropositive and electronegative activities.\nIn November 1875, Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis of gallium hydroxide, producing 3.4 mg of gallium. The following December, he presented his discovery of gallium to the Académie des sciences in Paris.\nOn June 26, 1886, Ferdinand Frederick Henri Moissan finally felt comfortable performing electrolysis on anhydrous hydrogen fluoride to create a gaseous fluorine pure element. Before he used hydrogen fluoride, Henri Moissan used fluoride salts with electrolysis. Thus on June 28, 1886, he performed his experiment in front of the Académie des sciences to show his discovery of the new element fluorine. While trying to find elemental fluorine through electrolysis of fluoride salts, many chemists perished including Paulin Louyet and Jérôme Nicklès.\nIn 1886 Charles Martin Hall from America and Paul Héroult from France both filed for American patents for the electrolysis of aluminum, with Héroult submitting his in May, and Hall, in July. Hall was able to get his patent by proving through letters to his brother and family evidence that his method was discovered before the French patent was submitted. This became known as the Hall–Héroult process which benefited many industries because aluminum's price then dropped from four dollars to thirty cents per pound.\nIn 1902 Polish engineer and inventor Stanisław Łaszczyński filed for and obtained Polish patent for the electrolysis of copper and zinc.\n\n\nTimeline\n1785 – Martinus van Marum's electrostatic generator was used to reduce tin, zinc, and antimony from their salts using electrolysis.\n1789 - Adriaan Paets van Troostwijk and Jan Rudolph Deiman conducted early experiments on water electrolysis using an Electrostatic generator, producing small amounts of hydrogen and oxygen.\n1800 – William Nicholson and Anthony Carlisle (and also Johann Ritter), demonstrated the first sustained electrolysis of water into hydrogen and oxygen using a Voltaic pile.\n1808 – Potassium (1807), sodium (1807), barium, calcium and magnesium were discovered by Humphry Davy using electrolysis.\n1821 – Lithium was discovered by the English chemist William Thomas Brande, who obtained it by electrolysis of lithium oxide.\n1834 – Michael Faraday published his two laws of electrolysis, provided a mathematical explanation for them, and introduced terminology such as electrode, electrolyte, anode, cathode, anion, and cation.\n1875 – Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis.\n1886 – Fluorine was discovered by Henri Moissan using electrolysis.\n1886 – Hall–Héroult process developed for making aluminium.\n1890 – Castner–Kellner process developed for making sodium hydroxide.\n1902 – Stanisław Łaszczyński obtained copper using electrolysis.\n1930 – Development of the modern chlor-alkali process (electrolysis of brine to produce chlorine and sodium hydroxide), which became an important industrial method.\n\n\nOverview\nElectrolysis is the passing of a direct electric current through an electrolyte which is producing chemical reactions a\nSource URL: https://en.wikipedia.org/wiki/Electrolysis\n\n📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nThe Kolbe electrolysis or Kolbe reaction is an organic reaction named after Hermann Kolbe. The Kolbe reaction is formally a decarboxylative dimerisation of two carboxylic acids (or carboxylate ions). The overall reaction is:\n\n\nMechanism and side-reactions\nThe reaction mechanism involves a two-stage radical process: electrochemical oxidation first gives a alkylcarboxyl radical, which decarboxylates almost immediately to give an alkyl radical intermediate.  The alkyl radicals which combine to form a covalent bond. As an example, electrolysis of acetic acid yields ethane and carbon dioxide:\n\nCH3COOH → CH3COO− → CH3COO· → CH3· + CO2\n2CH3· → CH3CH3\nAnother example is the synthesis of 2,7-dimethyl-2,7-dinitrooctane from 4-methyl-4-nitrovaleric acid:\n\nOther compounds can trap the radicals formed by decarboxylation, and the Kolbe reaction has also been occasionally used in cross-coupling reactions.  \nIf a mixture of two different carboxylates are used, the radical cross-coupling reaction generally gives all combinations of them:\n\nR1COO− + R2COO− → R1−R1 and/or R1−R2 and/or R2−R2\nThe reaction process can be enhanced and the Hofer–Moest reaction alternative suppressed, by performing the reaction under weakly acidic conditions in protic solvents, and using a high current density and a platinum anodic electrode.\nIn 2022, it was discovered that the Kolbe electrolysis is enhanced if an alternating square wave current is used instead of a direct current.\n\n\nHofer–Moest reaction\nIn the Hofer–Moest reaction, the alkyl radical undergo further oxidation to form a carbocation, rather than coupling with another alkyl radical, which then reacts with an available nucleophile. The Hofer–Moest reaction, rather than Kolbe radical-coupling, always occurs if the carboxylic acid bears a carbocation-stabilizing side-substituent at the α position, but only sometimes otherwise.\n\n\nApplications\nKolbe electrolysis has a few industrial applications.  The reaction typically yields <50%.\nIn one example, sebacic acid has been produced commercially by Kolbe electrolysis of adipic acid.\nKolbe electrolysis has been examined for converting biomass into biodiesel and for grafting of carbon electrodes.\n\n\nSee also\nElectrosynthesis\nWurtz reaction\n\n\nReferences\n\n\nFurther reading\nKolbe, Hermann (1848). \"Zersetzung der Valeriansäure durch den elektrischen Strom\" [Decomposition of valeric acid by an electric current]. Annalen der Chemie und Pharmacie. 64 (3): 339–341. doi:10.1002/jlac.18480640346.\nKolbe, Hermann (1849). \"Untersuchungen über die Elektrolyse organischer Verbindungen\" [Investigations of the electrolysis of organic compounds]. Annalen der Chemie und Pharmacie. 69 (3): 257–294. doi:10.1002/jlac.18490690302.\n\n\nExternal links\n\"Kolbe Electrolysis\". Organic Chemistry Portal. Retrieved 22 October 2007.\nSource URL: https://en.wikipedia.org/wiki/Kolbe_electrolysis",
+          "research_context": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nIn chemistry and manufacturing, electrolysis is a technique that uses direct electric current (DC) to drive an otherwise non-spontaneous biological and physical reaction. Electrolysis is commercially important as a stage in the separation of elements from naturally occurring sources such as ores using an electrolytic cell. The voltage that is needed for electrolysis to occur is called the decomposition potential. The word \"lysis\" means to separate or break, so in terms, electrolysis would mean \"breakdown via electricity.\"\n\n\nEtymology\nThe word \"electrolysis\" was introduced by Michael Faraday in 1834, using the Greek words ἤλεκτρον [ɛ̌ːlektron] \"amber\", which since the 17th century was associated with electrical phenomena, and λύσις [lýsis] meaning \"dissolution\". Nevertheless, electrolysis, as a tool to study chemical reactions and obtain pure elements, precedes the coinage of the term and formal description by Faraday.\n\n\nHistory\nIn the early nineteenth century, William Nicholson and Anthony Carlisle sought to further Volta's experiments. They attached two wires to either side of a voltaic pile and placed the other ends in a tube filled with water. They noticed when the wires were brought together that each wire produced bubbles. One type was hydrogen, the other was oxygen.\nIn 1785 a Dutch scientist named Martin van Marum created an electrostatic generator that he used to reduce tin, zinc and antimony from their salts using a process later known as electrolysis. Though he unknowingly produced electrolysis, it was not until 1800 when William Nicholson and Anthony Carlisle discovered how electrolysis works.\nIn 1791 Luigi Galvani experimented with frog legs. He claimed that placing animal muscle between two dissimilar metal sheets resulted in electricity. Responding to these claims, Alessandro Volta conducted his own tests. This would give insight to Humphry Davy's ideas on electrolysis. During preliminary experiments, Humphry Davy hypothesized that when two elements combine to form a compound, electrical energy is released. Humphry Davy would go on to create Decomposition Tables from his preliminary experiments on Electrolysis. The Decomposition Tables would give insight on the energies needed to break apart certain compounds.\nIn 1817 Johan August Arfwedson determined there was another element, lithium, in some of his samples; however, he could not isolate the component. It was not until 1821 that William Thomas Brande used electrolysis to single it out. Two years later, he streamlined the process using lithium chloride and potassium chloride with electrolysis to produce lithium and lithium hydroxide.\nDuring the later years of Humphry Davy's research, Michael Faraday became his assistant. While studying the process of electrolysis under Humphry Davy, Michael Faraday discovered two laws of electrolysis.\nDuring the time of Maxwell and Faraday, concerns came about for electropositive and electronegative activities.\nIn November 1875, Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis of gallium hydroxide, producing 3.4 mg of gallium. The following December, he presented his discovery of gallium to the Académie des sciences in Paris.\nOn June 26, 1886, Ferdinand Frederick Henri Moissan finally felt comfortable performing electrolysis on anhydrous hydrogen fluoride to create a gaseous fluorine pure element. Before he used hydrogen fluoride, Henri Moissan used fluoride salts with electrolysis. Thus on June 28, 1886, he performed his experiment in front of the Académie des sciences to show his discovery of the new element fluorine. While trying to find elemental fluorine through electrolysis of fluoride salts, many chemists perished including Paulin Louyet and Jérôme Nicklès.\nIn 1886 Charles Martin Hall from America and Paul Héroult from France both filed for American patents for the electrolysis of aluminum, with Héroult submitting his in May, and Hall, in July. Hall was able to get his patent by proving through letters to his brother and family evidence that his method was discovered before the French patent was submitted. This became known as the Hall–Héroult process which benefited many industries because aluminum's price then dropped from four dollars to thirty cents per pound.\nIn 1902 Polish engineer and inventor Stanisław Łaszczyński filed for and obtained Polish patent for the electrolysis of copper and zinc.\n\n\nTimeline\n1785 – Martinus van Marum's electrostatic generator was used to reduce tin, zinc, and antimony from their salts using electrolysis.\n1789 - Adriaan Paets van Troostwijk and Jan Rudolph Deiman conducted early experiments on water electrolysis using an Electrostatic generator, producing small amounts of hydrogen and oxygen.\n1800 – William Nicholson and Anthony Carlisle (and also Johann Ritter), demonstrated the first sustained electrolysis of water into hydrogen and oxygen using a Voltaic pile.\n1808 – Potassium (1807), sodium (1807), barium, calcium and magnesium were discovered by Humphry Davy using electrolysis.\n1821 – Lithium was discovered by the English chemist William Thomas Brande, who obtained it by electrolysis of lithium oxide.\n1834 – Michael Faraday published his two laws of electrolysis, provided a mathematical explanation for them, and introduced terminology such as electrode, electrolyte, anode, cathode, anion, and cation.\n1875 – Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis.\n1886 – Fluorine was discovered by Henri Moissan using electrolysis.\n1886 – Hall–Héroult process developed for making aluminium.\n1890 – Castner–Kellner process developed for making sodium hydroxide.\n1902 – Stanisław Łaszczyński obtained copper using electrolysis.\n1930 – Development of the modern chlor-alkali process (electrolysis of brine to produce chlorine and sodium hydroxide), which became an important industrial method.\n\n\nOverview\nElectrolysis is the passing of a direct electric current through an electrolyte which is producing chemical reactions a\nSource URL: https://en.wikipedia.org/wiki/Electrolysis\n\n📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nThe Kolbe electrolysis or Kolbe reaction is an organic reaction named after Hermann Kolbe. The Kolbe reaction is formally a decarboxylative dimerisation of two carboxylic acids (or carboxylate ions). The overall reaction is:\n\n\nMechanism and side-reactions\nThe reaction mechanism involves a two-stage radical process: electrochemical oxidation first gives a alkylcarboxyl radical, which decarboxylates almost immediately to give an alkyl radical intermediate.  The alkyl radicals which combine to form a covalent bond. As an example, electrolysis of acetic acid yields ethane and carbon dioxide:\n\nCH3COOH → CH3COO− → CH3COO· → CH3· + CO2\n2CH3· → CH3CH3\nAnother example is the synthesis of 2,7-dimethyl-2,7-dinitrooctane from 4-methyl-4-nitrovaleric acid:\n\nOther compounds can trap the radicals formed by decarboxylation, and the Kolbe reaction has also been occasionally used in cross-coupling reactions.  \nIf a mixture of two different carboxylates are used, the radical cross-coupling reaction generally gives all combinations of them:\n\nR1COO− + R2COO− → R1−R1 and/or R1−R2 and/or R2−R2\nThe reaction process can be enhanced and the Hofer–Moest reaction alternative suppressed, by performing the reaction under weakly acidic conditions in protic solvents, and using a high current density and a platinum anodic electrode.\nIn 2022, it was discovered that the Kolbe electrolysis is enhanced if an alternating square wave current is used instead of a direct current.\n\n\nHofer–Moest reaction\nIn the Hofer–Moest reaction, the alkyl radical undergo further oxidation to form a carbocation, rather than coupling with another alkyl radical, which then reacts with an available nucleophile. The Hofer–Moest reaction, rather than Kolbe radical-coupling, always occurs if the carboxylic acid bears a carbocation-stabilizing side-substituent at the α position, but only sometimes otherwise.\n\n\nApplications\nKolbe electrolysis has a few industrial applications.  The reaction typically yields <50%.\nIn one example, sebacic acid has been produced commercially by Kolbe electrolysis of adipic acid.\nKolbe electrolysis has been examined for converting biomass into biodiesel and for grafting of carbon electrodes.\n\n\nSee also\nElectrosynthesis\nWurtz reaction\n\n\nReferences\n\n\nFurther reading\nKolbe, Hermann (1848). \"Zersetzung der Valeriansäure durch den elektrischen Strom\" [Decomposition of valeric acid by an electric current]. Annalen der Chemie und Pharmacie. 64 (3): 339–341. doi:10.1002/jlac.18480640346.\nKolbe, Hermann (1849). \"Untersuchungen über die Elektrolyse organischer Verbindungen\" [Investigations of the electrolysis of organic compounds]. Annalen der Chemie und Pharmacie. 69 (3): 257–294. doi:10.1002/jlac.18490690302.\n\n\nExternal links\n\"Kolbe Electrolysis\". Organic Chemistry Portal. Retrieved 22 October 2007.\nSource URL: https://en.wikipedia.org/wiki/Kolbe_electrolysis",
+          "factual_confidence": "high",
+          "high_end_image_required": true,
+          "image_need": "required",
+          "image_tier": "hero",
+          "selected_template": "Feature showcase block",
+          "selected_layout": "top",
+          "primary_family": "smart_layout",
+          "primary_variant": "processArrow",
+          "smart_layout_variant": "processArrow",
+          "composition_style": "intro_then_primary",
+          "designer_blueprint": {
+            "template": {
+              "name": "Feature showcase block",
+              "is_sparse": false,
+              "image_mode_capability": "hero",
+              "image_mode_required": "hero",
+              "max_blocks": 4,
+              "max_supporting_blocks": 2,
+              "allowed_primary_families": [
+                "overview",
+                "example",
+                "process",
+                "smart_layout"
+              ],
+              "allowed_accent_placements": [
+                "right",
+                "left",
+                "top",
+                "bottom"
+              ],
+              "allowed_layouts": [
+                "right",
+                "left",
+                "top",
+                "bottom",
+                "blank"
+              ],
+              "supports_high_end_image": true,
+              "preferred_smart_layout_variants": [
+                "cardGridIcon",
+                "processSteps",
+                "bigBullets",
+                "relationshipMap",
+                "ribbonFold",
+                "diamondRibbon",
+                "diamondHub"
+              ]
+            },
+            "primary_block": {
+              "family": "smart_layout",
+              "variant": "processArrow",
+              "width_class": "wide",
+              "has_content_image": false,
+              "implies_content_image": false,
+              "density_ok": [
+                "balanced",
+                "standard",
+                "dense"
+              ],
+              "is_primary_candidate": true,
+              "smart_layout_variant": "processArrow",
+              "intent_fit": [
+                "teach",
+                "demo"
+              ]
+            },
+            "primary_family": "smart_layout",
+            "primary_variant": "processArrow",
+            "smart_layout_variant": "processArrow",
+            "supporting_blocks": [
+              {
+                "family": "smart_layout",
+                "variant": "bigBullets",
+                "width_class": "wide",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "ultra_sparse",
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bigBullets",
+                "intent_fit": [
+                  "explain",
+                  "list",
+                  "introduce",
+                  "summarize"
+                ]
+              },
+              {
+                "family": "smart_layout",
+                "variant": "bulletCheck",
+                "width_class": "wide",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bulletCheck",
+                "intent_fit": [
+                  "list",
+                  "summarize"
+                ]
+              }
+            ],
+            "composition_style": "intro_then_primary",
+            "image_need": "required",
+            "image_tier": "hero",
+            "layout": "top",
+            "notes": [
+              "Teacher intent: demo",
+              "Coverage scope: mechanism",
+              "Planned smart_layout variant: processArrow",
+              "Composition style: intro_then_primary"
+            ]
+          }
+        },
+        {
+          "slide_id": "sub_1_1fc250_t4",
+          "teacher_slide_ref": "sub_1_1fc250_t4",
+          "sequence_index": 3,
+          "title": "Applications of Electrolysis",
+          "objective": "Identify and understand various applications of electrolysis in industry.",
+          "summary": "Identify and understand various applications of electrolysis in industry.",
+          "intent": "application",
+          "content_angle": "example",
+          "coverage_contract": "Discuss significant industrial applications of electrolysis.",
+          "avoid_overlap_with": [
+            "definition of electrolysis",
+            "mechanism of electrolysis"
+          ],
+          "role": "Connect",
+          "goal": "Showcase the practical utility of electrolysis in various industrial processes.",
+          "reasoning": "Highlighting applications helps learners connect theoretical knowledge to real-world industrial practices.",
+          "visual_required": true,
+          "visual_type": "image",
+          "image_role_v2": "accent",
+          "target_density": "standard",
+          "teaching_intent": "demo",
+          "coverage_scope": "application",
+          "slide_density": "standard",
+          "must_cover": [
+            "metal extraction",
+            "electroplating",
+            "water splitting"
+          ],
+          "key_facts": [
+            "Electrolysis is used in the extraction of metals from ores, such as aluminum in the Hall–Héroult process.",
+            "Electroplating uses electrolysis to coat objects with a thin layer of metal.",
+            "Water splitting through electrolysis produces hydrogen and oxygen gases."
+          ],
+          "formulas": [],
+          "assessment_prompt": "What are two industrial applications of electrolysis?",
+          "research_evidence": [
+            "https://en.wikipedia.org/wiki/Electrolysis"
+          ],
+          "research_raw_text": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nIn chemistry and manufacturing, electrolysis is a technique that uses direct electric current (DC) to drive an otherwise non-spontaneous biological and physical reaction. Electrolysis is commercially important as a stage in the separation of elements from naturally occurring sources such as ores using an electrolytic cell. The voltage that is needed for electrolysis to occur is called the decomposition potential. The word \"lysis\" means to separate or break, so in terms, electrolysis would mean \"breakdown via electricity.\"\n\n\nEtymology\nThe word \"electrolysis\" was introduced by Michael Faraday in 1834, using the Greek words ἤλεκτρον [ɛ̌ːlektron] \"amber\", which since the 17th century was associated with electrical phenomena, and λύσις [lýsis] meaning \"dissolution\". Nevertheless, electrolysis, as a tool to study chemical reactions and obtain pure elements, precedes the coinage of the term and formal description by Faraday.\n\n\nHistory\nIn the early nineteenth century, William Nicholson and Anthony Carlisle sought to further Volta's experiments. They attached two wires to either side of a voltaic pile and placed the other ends in a tube filled with water. They noticed when the wires were brought together that each wire produced bubbles. One type was hydrogen, the other was oxygen.\nIn 1785 a Dutch scientist named Martin van Marum created an electrostatic generator that he used to reduce tin, zinc and antimony from their salts using a process later known as electrolysis. Though he unknowingly produced electrolysis, it was not until 1800 when William Nicholson and Anthony Carlisle discovered how electrolysis works.\nIn 1791 Luigi Galvani experimented with frog legs. He claimed that placing animal muscle between two dissimilar metal sheets resulted in electricity. Responding to these claims, Alessandro Volta conducted his own tests. This would give insight to Humphry Davy's ideas on electrolysis. During preliminary experiments, Humphry Davy hypothesized that when two elements combine to form a compound, electrical energy is released. Humphry Davy would go on to create Decomposition Tables from his preliminary experiments on Electrolysis. The Decomposition Tables would give insight on the energies needed to break apart certain compounds.\nIn 1817 Johan August Arfwedson determined there was another element, lithium, in some of his samples; however, he could not isolate the component. It was not until 1821 that William Thomas Brande used electrolysis to single it out. Two years later, he streamlined the process using lithium chloride and potassium chloride with electrolysis to produce lithium and lithium hydroxide.\nDuring the later years of Humphry Davy's research, Michael Faraday became his assistant. While studying the process of electrolysis under Humphry Davy, Michael Faraday discovered two laws of electrolysis.\nDuring the time of Maxwell and Faraday, concerns came about for electropositive and electronegative activities.\nIn November 1875, Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis of gallium hydroxide, producing 3.4 mg of gallium. The following December, he presented his discovery of gallium to the Académie des sciences in Paris.\nOn June 26, 1886, Ferdinand Frederick Henri Moissan finally felt comfortable performing electrolysis on anhydrous hydrogen fluoride to create a gaseous fluorine pure element. Before he used hydrogen fluoride, Henri Moissan used fluoride salts with electrolysis. Thus on June 28, 1886, he performed his experiment in front of the Académie des sciences to show his discovery of the new element fluorine. While trying to find elemental fluorine through electrolysis of fluoride salts, many chemists perished including Paulin Louyet and Jérôme Nicklès.\nIn 1886 Charles Martin Hall from America and Paul Héroult from France both filed for American patents for the electrolysis of aluminum, with Héroult submitting his in May, and Hall, in July. Hall was able to get his patent by proving through letters to his brother and family evidence that his method was discovered before the French patent was submitted. This became known as the Hall–Héroult process which benefited many industries because aluminum's price then dropped from four dollars to thirty cents per pound.\nIn 1902 Polish engineer and inventor Stanisław Łaszczyński filed for and obtained Polish patent for the electrolysis of copper and zinc.\n\n\nTimeline\n1785 – Martinus van Marum's electrostatic generator was used to reduce tin, zinc, and antimony from their salts using electrolysis.\n1789 - Adriaan Paets van Troostwijk and Jan Rudolph Deiman conducted early experiments on water electrolysis using an Electrostatic generator, producing small amounts of hydrogen and oxygen.\n1800 – William Nicholson and Anthony Carlisle (and also Johann Ritter), demonstrated the first sustained electrolysis of water into hydrogen and oxygen using a Voltaic pile.\n1808 – Potassium (1807), sodium (1807), barium, calcium and magnesium were discovered by Humphry Davy using electrolysis.\n1821 – Lithium was discovered by the English chemist William Thomas Brande, who obtained it by electrolysis of lithium oxide.\n1834 – Michael Faraday published his two laws of electrolysis, provided a mathematical explanation for them, and introduced terminology such as electrode, electrolyte, anode, cathode, anion, and cation.\n1875 – Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis.\n1886 – Fluorine was discovered by Henri Moissan using electrolysis.\n1886 – Hall–Héroult process developed for making aluminium.\n1890 – Castner–Kellner process developed for making sodium hydroxide.\n1902 – Stanisław Łaszczyński obtained copper using electrolysis.\n1930 – Development of the modern chlor-alkali process (electrolysis of brine to produce chlorine and sodium hydroxide), which became an important industrial method.\n\n\nOverview\nElectrolysis is the passing of a direct electric current through an electrolyte which is producing chemical reactions a\nSource URL: https://en.wikipedia.org/wiki/Electrolysis\n\n📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nThe Kolbe electrolysis or Kolbe reaction is an organic reaction named after Hermann Kolbe. The Kolbe reaction is formally a decarboxylative dimerisation of two carboxylic acids (or carboxylate ions). The overall reaction is:\n\n\nMechanism and side-reactions\nThe reaction mechanism involves a two-stage radical process: electrochemical oxidation first gives a alkylcarboxyl radical, which decarboxylates almost immediately to give an alkyl radical intermediate.  The alkyl radicals which combine to form a covalent bond. As an example, electrolysis of acetic acid yields ethane and carbon dioxide:\n\nCH3COOH → CH3COO− → CH3COO· → CH3· + CO2\n2CH3· → CH3CH3\nAnother example is the synthesis of 2,7-dimethyl-2,7-dinitrooctane from 4-methyl-4-nitrovaleric acid:\n\nOther compounds can trap the radicals formed by decarboxylation, and the Kolbe reaction has also been occasionally used in cross-coupling reactions.  \nIf a mixture of two different carboxylates are used, the radical cross-coupling reaction generally gives all combinations of them:\n\nR1COO− + R2COO− → R1−R1 and/or R1−R2 and/or R2−R2\nThe reaction process can be enhanced and the Hofer–Moest reaction alternative suppressed, by performing the reaction under weakly acidic conditions in protic solvents, and using a high current density and a platinum anodic electrode.\nIn 2022, it was discovered that the Kolbe electrolysis is enhanced if an alternating square wave current is used instead of a direct current.\n\n\nHofer–Moest reaction\nIn the Hofer–Moest reaction, the alkyl radical undergo further oxidation to form a carbocation, rather than coupling with another alkyl radical, which then reacts with an available nucleophile. The Hofer–Moest reaction, rather than Kolbe radical-coupling, always occurs if the carboxylic acid bears a carbocation-stabilizing side-substituent at the α position, but only sometimes otherwise.\n\n\nApplications\nKolbe electrolysis has a few industrial applications.  The reaction typically yields <50%.\nIn one example, sebacic acid has been produced commercially by Kolbe electrolysis of adipic acid.\nKolbe electrolysis has been examined for converting biomass into biodiesel and for grafting of carbon electrodes.\n\n\nSee also\nElectrosynthesis\nWurtz reaction\n\n\nReferences\n\n\nFurther reading\nKolbe, Hermann (1848). \"Zersetzung der Valeriansäure durch den elektrischen Strom\" [Decomposition of valeric acid by an electric current]. Annalen der Chemie und Pharmacie. 64 (3): 339–341. doi:10.1002/jlac.18480640346.\nKolbe, Hermann (1849). \"Untersuchungen über die Elektrolyse organischer Verbindungen\" [Investigations of the electrolysis of organic compounds]. Annalen der Chemie und Pharmacie. 69 (3): 257–294. doi:10.1002/jlac.18490690302.\n\n\nExternal links\n\"Kolbe Electrolysis\". Organic Chemistry Portal. Retrieved 22 October 2007.\nSource URL: https://en.wikipedia.org/wiki/Kolbe_electrolysis",
+          "research_context": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nIn chemistry and manufacturing, electrolysis is a technique that uses direct electric current (DC) to drive an otherwise non-spontaneous biological and physical reaction. Electrolysis is commercially important as a stage in the separation of elements from naturally occurring sources such as ores using an electrolytic cell. The voltage that is needed for electrolysis to occur is called the decomposition potential. The word \"lysis\" means to separate or break, so in terms, electrolysis would mean \"breakdown via electricity.\"\n\n\nEtymology\nThe word \"electrolysis\" was introduced by Michael Faraday in 1834, using the Greek words ἤλεκτρον [ɛ̌ːlektron] \"amber\", which since the 17th century was associated with electrical phenomena, and λύσις [lýsis] meaning \"dissolution\". Nevertheless, electrolysis, as a tool to study chemical reactions and obtain pure elements, precedes the coinage of the term and formal description by Faraday.\n\n\nHistory\nIn the early nineteenth century, William Nicholson and Anthony Carlisle sought to further Volta's experiments. They attached two wires to either side of a voltaic pile and placed the other ends in a tube filled with water. They noticed when the wires were brought together that each wire produced bubbles. One type was hydrogen, the other was oxygen.\nIn 1785 a Dutch scientist named Martin van Marum created an electrostatic generator that he used to reduce tin, zinc and antimony from their salts using a process later known as electrolysis. Though he unknowingly produced electrolysis, it was not until 1800 when William Nicholson and Anthony Carlisle discovered how electrolysis works.\nIn 1791 Luigi Galvani experimented with frog legs. He claimed that placing animal muscle between two dissimilar metal sheets resulted in electricity. Responding to these claims, Alessandro Volta conducted his own tests. This would give insight to Humphry Davy's ideas on electrolysis. During preliminary experiments, Humphry Davy hypothesized that when two elements combine to form a compound, electrical energy is released. Humphry Davy would go on to create Decomposition Tables from his preliminary experiments on Electrolysis. The Decomposition Tables would give insight on the energies needed to break apart certain compounds.\nIn 1817 Johan August Arfwedson determined there was another element, lithium, in some of his samples; however, he could not isolate the component. It was not until 1821 that William Thomas Brande used electrolysis to single it out. Two years later, he streamlined the process using lithium chloride and potassium chloride with electrolysis to produce lithium and lithium hydroxide.\nDuring the later years of Humphry Davy's research, Michael Faraday became his assistant. While studying the process of electrolysis under Humphry Davy, Michael Faraday discovered two laws of electrolysis.\nDuring the time of Maxwell and Faraday, concerns came about for electropositive and electronegative activities.\nIn November 1875, Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis of gallium hydroxide, producing 3.4 mg of gallium. The following December, he presented his discovery of gallium to the Académie des sciences in Paris.\nOn June 26, 1886, Ferdinand Frederick Henri Moissan finally felt comfortable performing electrolysis on anhydrous hydrogen fluoride to create a gaseous fluorine pure element. Before he used hydrogen fluoride, Henri Moissan used fluoride salts with electrolysis. Thus on June 28, 1886, he performed his experiment in front of the Académie des sciences to show his discovery of the new element fluorine. While trying to find elemental fluorine through electrolysis of fluoride salts, many chemists perished including Paulin Louyet and Jérôme Nicklès.\nIn 1886 Charles Martin Hall from America and Paul Héroult from France both filed for American patents for the electrolysis of aluminum, with Héroult submitting his in May, and Hall, in July. Hall was able to get his patent by proving through letters to his brother and family evidence that his method was discovered before the French patent was submitted. This became known as the Hall–Héroult process which benefited many industries because aluminum's price then dropped from four dollars to thirty cents per pound.\nIn 1902 Polish engineer and inventor Stanisław Łaszczyński filed for and obtained Polish patent for the electrolysis of copper and zinc.\n\n\nTimeline\n1785 – Martinus van Marum's electrostatic generator was used to reduce tin, zinc, and antimony from their salts using electrolysis.\n1789 - Adriaan Paets van Troostwijk and Jan Rudolph Deiman conducted early experiments on water electrolysis using an Electrostatic generator, producing small amounts of hydrogen and oxygen.\n1800 – William Nicholson and Anthony Carlisle (and also Johann Ritter), demonstrated the first sustained electrolysis of water into hydrogen and oxygen using a Voltaic pile.\n1808 – Potassium (1807), sodium (1807), barium, calcium and magnesium were discovered by Humphry Davy using electrolysis.\n1821 – Lithium was discovered by the English chemist William Thomas Brande, who obtained it by electrolysis of lithium oxide.\n1834 – Michael Faraday published his two laws of electrolysis, provided a mathematical explanation for them, and introduced terminology such as electrode, electrolyte, anode, cathode, anion, and cation.\n1875 – Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis.\n1886 – Fluorine was discovered by Henri Moissan using electrolysis.\n1886 – Hall–Héroult process developed for making aluminium.\n1890 – Castner–Kellner process developed for making sodium hydroxide.\n1902 – Stanisław Łaszczyński obtained copper using electrolysis.\n1930 – Development of the modern chlor-alkali process (electrolysis of brine to produce chlorine and sodium hydroxide), which became an important industrial method.\n\n\nOverview\nElectrolysis is the passing of a direct electric current through an electrolyte which is producing chemical reactions a\nSource URL: https://en.wikipedia.org/wiki/Electrolysis\n\n📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nThe Kolbe electrolysis or Kolbe reaction is an organic reaction named after Hermann Kolbe. The Kolbe reaction is formally a decarboxylative dimerisation of two carboxylic acids (or carboxylate ions). The overall reaction is:\n\n\nMechanism and side-reactions\nThe reaction mechanism involves a two-stage radical process: electrochemical oxidation first gives a alkylcarboxyl radical, which decarboxylates almost immediately to give an alkyl radical intermediate.  The alkyl radicals which combine to form a covalent bond. As an example, electrolysis of acetic acid yields ethane and carbon dioxide:\n\nCH3COOH → CH3COO− → CH3COO· → CH3· + CO2\n2CH3· → CH3CH3\nAnother example is the synthesis of 2,7-dimethyl-2,7-dinitrooctane from 4-methyl-4-nitrovaleric acid:\n\nOther compounds can trap the radicals formed by decarboxylation, and the Kolbe reaction has also been occasionally used in cross-coupling reactions.  \nIf a mixture of two different carboxylates are used, the radical cross-coupling reaction generally gives all combinations of them:\n\nR1COO− + R2COO− → R1−R1 and/or R1−R2 and/or R2−R2\nThe reaction process can be enhanced and the Hofer–Moest reaction alternative suppressed, by performing the reaction under weakly acidic conditions in protic solvents, and using a high current density and a platinum anodic electrode.\nIn 2022, it was discovered that the Kolbe electrolysis is enhanced if an alternating square wave current is used instead of a direct current.\n\n\nHofer–Moest reaction\nIn the Hofer–Moest reaction, the alkyl radical undergo further oxidation to form a carbocation, rather than coupling with another alkyl radical, which then reacts with an available nucleophile. The Hofer–Moest reaction, rather than Kolbe radical-coupling, always occurs if the carboxylic acid bears a carbocation-stabilizing side-substituent at the α position, but only sometimes otherwise.\n\n\nApplications\nKolbe electrolysis has a few industrial applications.  The reaction typically yields <50%.\nIn one example, sebacic acid has been produced commercially by Kolbe electrolysis of adipic acid.\nKolbe electrolysis has been examined for converting biomass into biodiesel and for grafting of carbon electrodes.\n\n\nSee also\nElectrosynthesis\nWurtz reaction\n\n\nReferences\n\n\nFurther reading\nKolbe, Hermann (1848). \"Zersetzung der Valeriansäure durch den elektrischen Strom\" [Decomposition of valeric acid by an electric current]. Annalen der Chemie und Pharmacie. 64 (3): 339–341. doi:10.1002/jlac.18480640346.\nKolbe, Hermann (1849). \"Untersuchungen über die Elektrolyse organischer Verbindungen\" [Investigations of the electrolysis of organic compounds]. Annalen der Chemie und Pharmacie. 69 (3): 257–294. doi:10.1002/jlac.18490690302.\n\n\nExternal links\n\"Kolbe Electrolysis\". Organic Chemistry Portal. Retrieved 22 October 2007.\nSource URL: https://en.wikipedia.org/wiki/Kolbe_electrolysis",
+          "factual_confidence": "high",
+          "high_end_image_required": false,
+          "image_need": "forbidden",
+          "image_tier": "none",
+          "selected_template": "Title with bullets and image",
+          "selected_layout": "bottom",
+          "primary_family": "smart_layout",
+          "primary_variant": "processAccordion",
+          "smart_layout_variant": "processAccordion",
+          "composition_style": "primary_then_callout",
+          "designer_blueprint": {
+            "template": {
+              "name": "Title with bullets and image",
+              "is_sparse": false,
+              "image_mode_capability": "content",
+              "image_mode_required": null,
+              "max_blocks": 4,
+              "max_supporting_blocks": 2,
+              "allowed_primary_families": [
+                "overview",
+                "example",
+                "diagram",
+                "smart_layout"
+              ],
+              "allowed_accent_placements": [
+                "right",
+                "left"
+              ],
+              "allowed_layouts": [
+                "right",
+                "left",
+                "top",
+                "bottom",
+                "blank"
+              ],
+              "supports_high_end_image": false,
+              "preferred_smart_layout_variants": [
+                "bigBullets",
+                "cardGridSimple"
+              ]
+            },
+            "primary_block": {
+              "family": "smart_layout",
+              "variant": "processAccordion",
+              "width_class": "wide",
+              "has_content_image": false,
+              "implies_content_image": false,
+              "density_ok": [
+                "standard",
+                "dense",
+                "super_dense"
+              ],
+              "is_primary_candidate": true,
+              "smart_layout_variant": "processAccordion",
+              "intent_fit": [
+                "teach",
+                "explain"
+              ]
+            },
+            "primary_family": "smart_layout",
+            "primary_variant": "processAccordion",
+            "smart_layout_variant": "processAccordion",
+            "supporting_blocks": [
+              {
+                "family": "smart_layout",
+                "variant": "bigBullets",
+                "width_class": "wide",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "ultra_sparse",
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bigBullets",
+                "intent_fit": [
+                  "explain",
+                  "list",
+                  "introduce",
+                  "summarize"
+                ]
+              },
+              {
+                "family": "smart_layout",
+                "variant": "bulletCheck",
+                "width_class": "wide",
+                "has_content_image": false,
+                "implies_content_image": false,
+                "density_ok": [
+                  "sparse",
+                  "balanced",
+                  "standard"
+                ],
+                "is_primary_candidate": false,
+                "smart_layout_variant": "bulletCheck",
+                "intent_fit": [
+                  "list",
+                  "summarize"
+                ]
+              }
+            ],
+            "composition_style": "primary_then_callout",
+            "image_need": "forbidden",
+            "image_tier": "none",
+            "layout": "bottom",
+            "notes": [
+              "Teacher intent: demo",
+              "Coverage scope: application",
+              "Planned smart_layout variant: processAccordion",
+              "Composition style: primary_then_callout"
+            ]
+          }
+        }
+      ]
+    },
+    "slides": {},
+    "intro_text": "",
+    "unsupported_topic": false,
+    "unsupported_subject": "",
+    "unsupported_message": "",
+    "messages": [],
+    "subtopic_target_count": 1,
+    "subtopic_available_count": 1,
+    "fact_retriever": "wiki",
+    "teacher_research_raw_text": "📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nIn chemistry and manufacturing, electrolysis is a technique that uses direct electric current (DC) to drive an otherwise non-spontaneous biological and physical reaction. Electrolysis is commercially important as a stage in the separation of elements from naturally occurring sources such as ores using an electrolytic cell. The voltage that is needed for electrolysis to occur is called the decomposition potential. The word \"lysis\" means to separate or break, so in terms, electrolysis would mean \"breakdown via electricity.\"\n\n\nEtymology\nThe word \"electrolysis\" was introduced by Michael Faraday in 1834, using the Greek words ἤλεκτρον [ɛ̌ːlektron] \"amber\", which since the 17th century was associated with electrical phenomena, and λύσις [lýsis] meaning \"dissolution\". Nevertheless, electrolysis, as a tool to study chemical reactions and obtain pure elements, precedes the coinage of the term and formal description by Faraday.\n\n\nHistory\nIn the early nineteenth century, William Nicholson and Anthony Carlisle sought to further Volta's experiments. They attached two wires to either side of a voltaic pile and placed the other ends in a tube filled with water. They noticed when the wires were brought together that each wire produced bubbles. One type was hydrogen, the other was oxygen.\nIn 1785 a Dutch scientist named Martin van Marum created an electrostatic generator that he used to reduce tin, zinc and antimony from their salts using a process later known as electrolysis. Though he unknowingly produced electrolysis, it was not until 1800 when William Nicholson and Anthony Carlisle discovered how electrolysis works.\nIn 1791 Luigi Galvani experimented with frog legs. He claimed that placing animal muscle between two dissimilar metal sheets resulted in electricity. Responding to these claims, Alessandro Volta conducted his own tests. This would give insight to Humphry Davy's ideas on electrolysis. During preliminary experiments, Humphry Davy hypothesized that when two elements combine to form a compound, electrical energy is released. Humphry Davy would go on to create Decomposition Tables from his preliminary experiments on Electrolysis. The Decomposition Tables would give insight on the energies needed to break apart certain compounds.\nIn 1817 Johan August Arfwedson determined there was another element, lithium, in some of his samples; however, he could not isolate the component. It was not until 1821 that William Thomas Brande used electrolysis to single it out. Two years later, he streamlined the process using lithium chloride and potassium chloride with electrolysis to produce lithium and lithium hydroxide.\nDuring the later years of Humphry Davy's research, Michael Faraday became his assistant. While studying the process of electrolysis under Humphry Davy, Michael Faraday discovered two laws of electrolysis.\nDuring the time of Maxwell and Faraday, concerns came about for electropositive and electronegative activities.\nIn November 1875, Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis of gallium hydroxide, producing 3.4 mg of gallium. The following December, he presented his discovery of gallium to the Académie des sciences in Paris.\nOn June 26, 1886, Ferdinand Frederick Henri Moissan finally felt comfortable performing electrolysis on anhydrous hydrogen fluoride to create a gaseous fluorine pure element. Before he used hydrogen fluoride, Henri Moissan used fluoride salts with electrolysis. Thus on June 28, 1886, he performed his experiment in front of the Académie des sciences to show his discovery of the new element fluorine. While trying to find elemental fluorine through electrolysis of fluoride salts, many chemists perished including Paulin Louyet and Jérôme Nicklès.\nIn 1886 Charles Martin Hall from America and Paul Héroult from France both filed for American patents for the electrolysis of aluminum, with Héroult submitting his in May, and Hall, in July. Hall was able to get his patent by proving through letters to his brother and family evidence that his method was discovered before the French patent was submitted. This became known as the Hall–Héroult process which benefited many industries because aluminum's price then dropped from four dollars to thirty cents per pound.\nIn 1902 Polish engineer and inventor Stanisław Łaszczyński filed for and obtained Polish patent for the electrolysis of copper and zinc.\n\n\nTimeline\n1785 – Martinus van Marum's electrostatic generator was used to reduce tin, zinc, and antimony from their salts using electrolysis.\n1789 - Adriaan Paets van Troostwijk and Jan Rudolph Deiman conducted early experiments on water electrolysis using an Electrostatic generator, producing small amounts of hydrogen and oxygen.\n1800 – William Nicholson and Anthony Carlisle (and also Johann Ritter), demonstrated the first sustained electrolysis of water into hydrogen and oxygen using a Voltaic pile.\n1808 – Potassium (1807), sodium (1807), barium, calcium and magnesium were discovered by Humphry Davy using electrolysis.\n1821 – Lithium was discovered by the English chemist William Thomas Brande, who obtained it by electrolysis of lithium oxide.\n1834 – Michael Faraday published his two laws of electrolysis, provided a mathematical explanation for them, and introduced terminology such as electrode, electrolyte, anode, cathode, anion, and cation.\n1875 – Paul Émile Lecoq de Boisbaudran discovered gallium using electrolysis.\n1886 – Fluorine was discovered by Henri Moissan using electrolysis.\n1886 – Hall–Héroult process developed for making aluminium.\n1890 – Castner–Kellner process developed for making sodium hydroxide.\n1902 – Stanisław Łaszczyński obtained copper using electrolysis.\n1930 – Development of the modern chlor-alkali process (electrolysis of brine to produce chlorine and sodium hydroxide), which became an important industrial method.\n\n\nOverview\nElectrolysis is the passing of a direct electric current through an electrolyte which is producing chemical reactions a\nSource URL: https://en.wikipedia.org/wiki/Electrolysis\n\n📚 VERIFIED FACTS (Source: WIKIPEDIA):\nConfidence: HIGH\n\nThe Kolbe electrolysis or Kolbe reaction is an organic reaction named after Hermann Kolbe. The Kolbe reaction is formally a decarboxylative dimerisation of two carboxylic acids (or carboxylate ions). The overall reaction is:\n\n\nMechanism and side-reactions\nThe reaction mechanism involves a two-stage radical process: electrochemical oxidation first gives a alkylcarboxyl radical, which decarboxylates almost immediately to give an alkyl radical intermediate.  The alkyl radicals which combine to form a covalent bond. As an example, electrolysis of acetic acid yields ethane and carbon dioxide:\n\nCH3COOH → CH3COO− → CH3COO· → CH3· + CO2\n2CH3· → CH3CH3\nAnother example is the synthesis of 2,7-dimethyl-2,7-dinitrooctane from 4-methyl-4-nitrovaleric acid:\n\nOther compounds can trap the radicals formed by decarboxylation, and the Kolbe reaction has also been occasionally used in cross-coupling reactions.  \nIf a mixture of two different carboxylates are used, the radical cross-coupling reaction generally gives all combinations of them:\n\nR1COO− + R2COO− → R1−R1 and/or R1−R2 and/or R2−R2\nThe reaction process can be enhanced and the Hofer–Moest reaction alternative suppressed, by performing the reaction under weakly acidic conditions in protic solvents, and using a high current density and a platinum anodic electrode.\nIn 2022, it was discovered that the Kolbe electrolysis is enhanced if an alternating square wave current is used instead of a direct current.\n\n\nHofer–Moest reaction\nIn the Hofer–Moest reaction, the alkyl radical undergo further oxidation to form a carbocation, rather than coupling with another alkyl radical, which then reacts with an available nucleophile. The Hofer–Moest reaction, rather than Kolbe radical-coupling, always occurs if the carboxylic acid bears a carbocation-stabilizing side-substituent at the α position, but only sometimes otherwise.\n\n\nApplications\nKolbe electrolysis has a few industrial applications.  The reaction typically yields <50%.\nIn one example, sebacic acid has been produced commercially by Kolbe electrolysis of adipic acid.\nKolbe electrolysis has been examined for converting biomass into biodiesel and for grafting of carbon electrodes.\n\n\nSee also\nElectrosynthesis\nWurtz reaction\n\n\nReferences\n\n\nFurther reading\nKolbe, Hermann (1848). \"Zersetzung der Valeriansäure durch den elektrischen Strom\" [Decomposition of valeric acid by an electric current]. Annalen der Chemie und Pharmacie. 64 (3): 339–341. doi:10.1002/jlac.18480640346.\nKolbe, Hermann (1849). \"Untersuchungen über die Elektrolyse organischer Verbindungen\" [Investigations of the electrolysis of organic compounds]. Annalen der Chemie und Pharmacie. 69 (3): 257–294. doi:10.1002/jlac.18490690302.\n\n\nExternal links\n\"Kolbe Electrolysis\". Organic Chemistry Portal. Retrieved 22 October 2007.\nSource URL: https://en.wikipedia.org/wiki/Kolbe_electrolysis"
+  }
+}

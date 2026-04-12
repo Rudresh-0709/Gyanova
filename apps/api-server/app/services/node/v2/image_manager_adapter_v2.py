@@ -31,6 +31,7 @@ def determine_image_layout_v2(
     intent: str,
     slide_index: int,
     has_wide_block: bool,
+    block_spec=None,
     layout_history: list[str] | None = None,
     explicit_layout: str | None = None,
     allowed_layouts: list[str] | tuple[str, ...] | None = None,
@@ -38,11 +39,15 @@ def determine_image_layout_v2(
     density_key = str(engine_density or "balanced").strip().lower()
     mapped_float = _DENSITY_TO_FLOAT.get(density_key, _DENSITY_TO_FLOAT["balanced"])
 
-    # Determine acceptable layouts based on width_class (User Requirement)
-    if has_wide_block:
+    # Tier 1: Use block's explicit supported_layouts if populated
+    if block_spec and block_spec.supported_layouts:
+        width_allowed = list(block_spec.supported_layouts)
+    # Tier 2: Fall back to width_class heuristic for un-audited blocks  
+    elif has_wide_block:
         width_allowed = ["top", "bottom", "blank"]
+    # Tier 3: No width constraint
     else:
-        width_allowed = ["left", "right", "blank"] # Allowing blank for narrow too for safety
+        width_allowed = ["left", "right", "top", "bottom", "blank"]
 
     # Intersect with template constraints if provided
     effective_allowed = width_allowed

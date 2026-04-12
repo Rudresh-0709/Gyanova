@@ -184,3 +184,96 @@ def pick_layout(
 
     scored.sort(key=lambda x: -x[0])
     return scored[0][1] if scored else allowed_layouts[0]
+
+
+# ---------------------------------------------------------------------------
+# Backwards-compatible API (used by slide_planner_v2)
+# ---------------------------------------------------------------------------
+
+
+def _normalize_token(value: Any) -> str:
+    return str(value or "").strip()
+
+
+def _normalize_template_token(token: Any) -> str:
+    """
+    Normalize a template history token.
+
+    Supports "Template|layout" tokens and plain template names.
+    """
+    text = _normalize_token(token)
+    if not text:
+        return ""
+    if "|" in text:
+        return text.split("|", 1)[0].strip()
+    return text
+
+
+def template_allowed_by_hard_rule(
+    template_name: str,
+    layout_history: List[str],
+    *,
+    disallow_consecutive: bool = True,
+) -> bool:
+    if not disallow_consecutive:
+        return True
+    if not layout_history:
+        return True
+    last_template = _normalize_template_token(layout_history[-1])
+    if not last_template:
+        return True
+    return str(template_name).strip() != last_template
+
+
+def template_penalty(template_name: str, layout_history: List[str], *, window: int = 6) -> float:
+    normalized = [_normalize_template_token(item) for item in (layout_history or []) if _normalize_template_token(item)]
+    recent = normalized[-max(int(window or 0), 0) :] if window else normalized
+    # Scale the internal integer penalties down to a small float.
+    return float(score_against_history(str(template_name).strip(), recent)) / 10.0
+
+
+def _normalize_family_token(token: Any) -> str:
+    text = _normalize_token(token)
+    if not text:
+        return ""
+    if ":" in text:
+        return text.split(":", 1)[0].strip()
+    return text
+
+
+def family_allowed_by_hard_rule(
+    family: str,
+    variant_history: List[str],
+    *,
+    max_in_window: int = 2,
+    window: int = 4,
+) -> bool:
+    normalized = [_normalize_family_token(item) for item in (variant_history or []) if _normalize_family_token(item)]
+    recent = normalized[-max(int(window or 0), 0) :] if window else normalized
+    count = sum(1 for item in recent if item == str(family).strip())
+    return count < int(max_in_window or 0)
+
+
+def family_penalty(family: str, variant_history: List[str], *, window: int = 6) -> float:
+    normalized = [_normalize_family_token(item) for item in (variant_history or []) if _normalize_family_token(item)]
+    recent = normalized[-max(int(window or 0), 0) :] if window else normalized
+    return float(score_against_history(str(family).strip(), recent)) / 10.0
+
+
+def variant_penalty(
+    family: str,
+    variant: str,
+    variant_history: List[str],
+    *,
+    window: int = 6,
+) -> float:
+    token = f"{str(family).strip()}:{str(variant).strip()}"
+    normalized = [_normalize_token(item) for item in (variant_history or []) if _normalize_token(item)]
+    recent = normalized[-max(int(window or 0), 0) :] if window else normalized
+    return float(score_against_history(token, recent)) / 10.0
+
+
+def smart_layout_variant_penalty(image_mode: str, variant_history: List[str], *, window: int = 6) -> float:
+    normalized = [_normalize_token(item) for item in (variant_history or []) if _normalize_token(item)]
+    recent = normalized[-max(int(window or 0), 0) :] if window else normalized
+    return float(score_against_history(str(image_mode).strip(), recent)) / 10.0

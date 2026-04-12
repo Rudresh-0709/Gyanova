@@ -16,6 +16,7 @@ Feature-flagged behind caller's discretion.
 from __future__ import annotations
 
 from copy import deepcopy
+import logging
 from typing import Any, Dict, List, Optional, Tuple
 
 
@@ -80,6 +81,9 @@ except ImportError:
     from .block_traits_v2 import BLOCK_TRAITS, BlockTraitsV2  # type: ignore
     from .template_traits_v2 import TEMPLATE_TRAITS, TemplateTraitsV2  # type: ignore
     from .image_manager_adapter_v2 import determine_image_layout_v2  # type: ignore
+
+
+logger = logging.getLogger(__name__)
 
 
 def _to_bool(value: Any, default: bool = False) -> bool:
@@ -258,6 +262,75 @@ def _select_template_with_variety(
     # Sort by penalty, then name for determinism
     scored.sort(key=lambda item: (item[0], item[1].name))
     return scored[0][1] if scored else template_candidates[0]
+
+
+def _apply_high_end_template_override(
+    template_spec: TemplateSpec,
+    template_candidates: List[TemplateSpec],
+    image_need: str,
+) -> TemplateSpec:
+    if (
+        image_need == "required"
+        and template_spec.image_mode_capability not in {"hero", "content"}
+    ):
+        for candidate in template_candidates:
+            if candidate.supports_high_end_image or candidate.image_mode_capability == "hero":
+                return candidate
+    return template_spec
+
+
+def _validate_template_block_compatibility(
+    *,
+    template_spec: TemplateSpec,
+    block_spec: BlockSpec | None,
+    template_candidates: List[TemplateSpec],
+    primary_family: str,
+    image_need: str,
+    image_tier: str,
+    layout_history: List[str],
+    variant_history: List[str],
+    hard_rule_no_consecutive_template: bool,
+) -> TemplateSpec:
+    """
+    Ensure selected template has at least one viable layout that the chosen block supports.
+
+    If incompatible, re-select the best alternative template from candidates that DO overlap.
+    """
+    if not block_spec or not getattr(block_spec, "supported_layouts", None):
+        return template_spec
+
+    block_layouts = set(block_spec.supported_layouts)
+    template_layouts = set(template_spec.allowed_layouts)
+
+    # TODO: Prefer templates where most allowed_layouts survive intersection,
+    # not just "any overlap". Current rule only rejects empty intersections.
+    if block_layouts & template_layouts:
+        return template_spec
+
+    compatible_templates: List[TemplateSpec] = []
+    for candidate in template_candidates:
+        candidate_layouts = set(candidate.allowed_layouts)
+        if block_layouts & candidate_layouts:
+            compatible_templates.append(candidate)
+
+    if compatible_templates:
+        selected = _select_template_with_variety(
+            template_candidates=compatible_templates,
+            primary_family=primary_family,
+            image_need=image_need,
+            image_tier=image_tier,
+            layout_history=layout_history,
+            variant_history=variant_history,
+            hard_rule_no_consecutive_template=hard_rule_no_consecutive_template,
+        )
+        return _apply_high_end_template_override(selected, compatible_templates, image_need)
+
+    logger.warning(
+        "No template compatible with block supported_layouts=%s. Keeping template '%s'.",
+        getattr(block_spec, "supported_layouts", None),
+        template_spec.name,
+    )
+    return template_spec
 
 
 def _select_primary_family_with_variety(
@@ -465,41 +538,62 @@ def plan_slide_v2(
         variant_history=variant_history,
         hard_rule_no_consecutive_template=hard_rule_no_consecutive,
     )
+    template_spec = _apply_high_end_template_override(template_spec, template_candidates, image_need)
+
+    # ===== Step 5-6: Select blocks (and validate template compatibility) =====
+    primary_family = requested_family
+    composition_style = "primary_only"
+    primary_spec: BlockSpec | None = None
+    supporting_specs: List[BlockSpec] = []
+    has_wide_block = False
+
+    # Template selection happens before block selection. Validate after we know the block.
+    # If the selected template has zero overlap with the block's supported layouts, re-select once.
+    for _ in range(3):
+        # ===== Step 5: Select primary family with variety =====
+        primary_family = _select_primary_family_with_variety(
+            requested_family=requested_family,
+            template_spec=template_spec,
+            variant_history=variant_history,
+            hard_rule_family_cap=hard_rule_family_cap,
+        )
+
+        # ===== Step 5.5: Select composition style =====
+        composition_style = _pick_composition_style(
+            slide_index=slide_index,
+            template_spec=template_spec,
+            image_need=image_need,
+            composition_history=composition_history,
+        )
+
+        # ===== Step 6: Compose primary and supporting blocks =====
+        primary_spec, supporting_specs, has_wide_block = _compose_planned_blocks(
+            template_spec=template_spec,
+            primary_family=primary_family,
+            primary_variant="normal",
+            density=engine_density,
+            image_need=image_need,
+            image_tier=image_tier,
+        )
+
+        validated_template_spec = _validate_template_block_compatibility(
+            template_spec=template_spec,
+            block_spec=primary_spec,
+            template_candidates=template_candidates,
+            primary_family=requested_family,
+            image_need=image_need,
+            image_tier=image_tier,
+            layout_history=layout_history,
+            variant_history=variant_history,
+            hard_rule_no_consecutive_template=hard_rule_no_consecutive,
+        )
+
+        if validated_template_spec.name == template_spec.name:
+            break
+
+        template_spec = validated_template_spec
+
     selected_template = template_spec.name
-
-    # Override if high-end required but template doesn't support
-    if image_need == "required" and template_spec.image_mode_capability not in {"hero", "content"}:
-        for candidate in template_candidates:
-            if candidate.supports_high_end_image or candidate.image_mode_capability == "hero":
-                selected_template = candidate.name
-                template_spec = candidate
-                break
-
-    # ===== Step 5: Select primary family with variety =====
-    primary_family = _select_primary_family_with_variety(
-        requested_family=requested_family,
-        template_spec=template_spec,
-        variant_history=variant_history,
-        hard_rule_family_cap=hard_rule_family_cap,
-    )
-
-    # ===== Step 5.5: Select composition style =====
-    composition_style = _pick_composition_style(
-        slide_index=slide_index,
-        template_spec=template_spec,
-        image_need=image_need,
-        composition_history=composition_history,
-    )
-
-    # ===== Step 6: Compose primary and supporting blocks =====
-    primary_spec, supporting_specs, has_wide_block = _compose_planned_blocks(
-        template_spec=template_spec,
-        primary_family=primary_family,
-        primary_variant="normal",
-        density=engine_density,
-        image_need=image_need,
-        image_tier=image_tier,
-    )
 
     # Look up traits for primary block
     primary_traits = BLOCK_TRAITS.get((primary_spec.family, primary_spec.variant))
@@ -524,6 +618,7 @@ def plan_slide_v2(
         intent=teaching_intent,
         slide_index=slide_index,
         has_wide_block=has_wide_block,
+        block_spec=primary_spec,
         layout_history=layout_history,
         explicit_layout=None,
         allowed_layouts=effective_allowed,

@@ -60,7 +60,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("formula", "normal"): BlockSpec(
         family="formula",
         variant="normal",
-        width_class="normal",
+        width_class="wide",
         density_ok=("sparse", "balanced", "standard"),
         is_primary_candidate=True,
         intent_fit=("prove", "teach"),
@@ -78,7 +78,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "bigBullets"): BlockSpec(
         family="smart_layout",
         variant="bigBullets",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "top", "bottom", "blank"),
         density_ok=("ultra_sparse", "sparse", "balanced", "standard"),
         is_primary_candidate=False,
         smart_layout_variant="bigBullets",
@@ -87,7 +88,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "bulletIcon"): BlockSpec(
         family="smart_layout",
         variant="bulletIcon",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "top", "bottom", "blank"),
         density_ok=("sparse", "balanced", "standard"),
         is_primary_candidate=False,
         smart_layout_variant="bulletIcon",
@@ -96,7 +98,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "bulletCheck"): BlockSpec(
         family="smart_layout",
         variant="bulletCheck",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("sparse", "balanced", "standard"),
         is_primary_candidate=False,
         smart_layout_variant="bulletCheck",
@@ -105,7 +108,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "solidBoxesWithIconsInside"): BlockSpec(
         family="smart_layout",
         variant="solidBoxesWithIconsInside",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("ultra_sparse", "sparse", "balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="solidBoxesWithIconsInside",
@@ -115,7 +119,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "timeline"): BlockSpec(
         family="smart_layout",
         variant="timeline",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("sparse", "balanced", "standard", "dense"),
         is_primary_candidate=True,
         smart_layout_variant="timeline",
@@ -124,7 +129,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "timelineIcon"): BlockSpec(
         family="smart_layout",
         variant="timelineIcon",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("sparse", "balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="timelineIcon",
@@ -134,6 +140,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="timelineHorizontal",
         width_class="wide",
+        supported_layouts=("top", "bottom", "blank"),
         density_ok=("sparse", "balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="timelineHorizontal",
@@ -142,7 +149,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "timelineSequential"): BlockSpec(
         family="smart_layout",
         variant="timelineSequential",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("balanced", "standard", "dense"),
         is_primary_candidate=True,
         smart_layout_variant="timelineSequential",
@@ -152,7 +160,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "cardGrid"): BlockSpec(
         family="smart_layout",
         variant="cardGrid",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("sparse", "balanced", "standard"),
         is_primary_candidate=False,
         smart_layout_variant="cardGrid",
@@ -161,7 +170,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "cardGridIcon"): BlockSpec(
         family="smart_layout",
         variant="cardGridIcon",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("sparse", "balanced", "standard"),
         is_primary_candidate=False,
         smart_layout_variant="cardGridIcon",
@@ -170,7 +180,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "cardGridSimple"): BlockSpec(
         family="smart_layout",
         variant="cardGridSimple",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("ultra_sparse", "sparse", "balanced"),
         is_primary_candidate=False,
         smart_layout_variant="cardGridSimple",
@@ -180,6 +191,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="cardGridImage",
         width_class="wide",
+        supported_layouts=("blank"),
         has_content_image=True,
         implies_content_image=True,
         density_ok=("ultra_sparse", "sparse", "balanced"),
@@ -190,7 +202,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "cardGridDiamond"): BlockSpec(
         family="smart_layout",
         variant="cardGridDiamond",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("sparse", "balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="cardGridDiamond",
@@ -200,7 +213,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "processSteps"): BlockSpec(
         family="smart_layout",
         variant="processSteps",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("sparse", "balanced", "standard", "dense"),
         is_primary_candidate=True,
         smart_layout_variant="processSteps",
@@ -210,6 +224,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="processArrow",
         width_class="wide",
+        supported_layouts=("top", "bottom", "blank"),
         density_ok=("balanced", "standard", "dense"),
         is_primary_candidate=True,
         smart_layout_variant="processArrow",
@@ -219,6 +234,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="processAccordion",
         width_class="wide",
+        supported_layouts=("left", "right", "top", "bottom", "blank"),
         density_ok=("standard", "dense", "super_dense"),
         is_primary_candidate=True,
         smart_layout_variant="processAccordion",
@@ -228,7 +244,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "comparisonProsCons"): BlockSpec(
         family="smart_layout",
         variant="comparisonProsCons",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("balanced", "standard", "dense"),
         is_primary_candidate=True,
         smart_layout_variant="comparisonProsCons",
@@ -237,7 +254,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "comparisonBeforeAfter"): BlockSpec(
         family="smart_layout",
         variant="comparisonBeforeAfter",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="comparisonBeforeAfter",
@@ -248,6 +266,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="stats",
         width_class="wide",
+        supported_layouts=("top", "bottom", "blank"),
         density_ok=("sparse", "balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="stats",
@@ -257,6 +276,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="statsComparison",
         width_class="wide",
+        supported_layouts=("left", "right", "top", "bottom", "blank"),
         density_ok=("balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="statsComparison",
@@ -266,6 +286,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="relationshipMap",
         width_class="wide",
+        supported_layouts=("top", "bottom", "blank"),
         density_ok=("dense", "super_dense"),
         is_primary_candidate=True,
         smart_layout_variant="relationshipMap",
@@ -275,6 +296,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="ribbonFold",
         width_class="wide",
+        supported_layouts=("top", "bottom", "blank"),
         density_ok=("balanced", "standard", "dense"),
         is_primary_candidate=True,
         smart_layout_variant="ribbonFold",
@@ -283,7 +305,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "statsBadgeGrid"): BlockSpec(
         family="smart_layout",
         variant="statsBadgeGrid",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("dense", "super_dense"),
         is_primary_candidate=True,
         smart_layout_variant="statsBadgeGrid",
@@ -293,6 +316,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="diamondRibbon",
         width_class="wide",
+        supported_layouts=("top", "bottom", "blank"),
         density_ok=("dense", "super_dense"),
         is_primary_candidate=True,
         smart_layout_variant="diamondRibbon",
@@ -301,7 +325,8 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
     ("smart_layout", "diamondGrid"): BlockSpec(
         family="smart_layout",
         variant="diamondGrid",
-        width_class="wide",
+        width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("ultra_sparse", "sparse", "balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="diamondGrid",
@@ -311,6 +336,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="diamondHub",
         width_class="wide",
+        supported_layouts=("top", "bottom", "blank"),
         density_ok=("sparse", "balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="diamondHub",
@@ -320,6 +346,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="hubAndSpoke",
         width_class="wide",
+        supported_layouts=("blank"),
         density_ok=("balanced", "standard", "dense"),
         is_primary_candidate=True,
         smart_layout_variant="hubAndSpoke",
@@ -329,6 +356,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="featureShowcase",
         width_class="wide",
+        supported_layouts=("blank"),
         density_ok=("balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="featureShowcase",
@@ -338,6 +366,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="cyclicBlock",
         width_class="wide",
+        supported_layouts=("blank"),
         density_ok=("balanced", "standard"),
         is_primary_candidate=True,
         smart_layout_variant="cyclicBlock",
@@ -347,6 +376,7 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         family="smart_layout",
         variant="sequentialOutput",
         width_class="normal",
+        supported_layouts=("left", "right", "blank"),
         density_ok=("balanced", "standard", "dense"),
         is_primary_candidate=True,
         smart_layout_variant="sequentialOutput",
@@ -453,42 +483,83 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
 
 # Preferred smart_layout variant per (teaching_intent, coverage_scope) pair.
 # Used by the planner to pick a good default when the family is "smart_layout".
-_INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], str] = {
-    ("narrate", "sequence"): "timeline",
-    ("narrate", "mechanism"): "timelineSequential",
-    ("narrate", "foundation"): "timeline",
-    ("teach", "mechanism"): "processSteps",
-    ("teach", "sequence"): "processSteps",
-    ("teach", "application"): "processArrow",
-    ("demo", "mechanism"): "processArrow",
-    ("demo", "application"): "processAccordion",
-    ("compare", "comparison"): "comparisonProsCons",
-    ("compare", "foundation"): "comparisonBeforeAfter",
-    ("compare", "mechanism"): "relationshipMap",
-    ("explain", "foundation"): "solidBoxesWithIconsInside",
-    ("explain", "overview"): "solidBoxesWithIconsInside",
-    ("explain", "comparison"): "relationshipMap",
-    ("explain", "application"): "solidBoxesWithIconsInside",
-    ("list", "foundation"): "solidBoxesWithIconsInside",
-    ("list", "overview"): "solidBoxesWithIconsInside",
-    ("introduce", "foundation"): "solidBoxesWithIconsInside",
-    ("introduce", "overview"): "solidBoxesWithIconsInside",
-    ("summarize", "reinforcement"): "solidBoxesWithIconsInside",
-    ("summarize", "foundation"): "solidBoxesWithIconsInside",
-    ("prove", "data"): "stats",
-    ("prove", "comparison"): "statsComparison",
-    ("introduce", "application"): "diamondGrid",
-    ("explain", "mechanism"): "diamondGrid",
-    ("list", "sequence"): "diamondRibbon",
-    ("compare", "overview"): "diamondRibbon",
-    ("explain", "overview"): "diamondHub",
-    ("summarize", "overview"): "diamondHub",
-    ("introduce", "example"): "cardGridImage",
-    ("explain", "example"): "cardGridImage",
-    ("list", "overview"): "cardGridDiamond",
-    ("introduce", "overview"): "cardGridDiamond",
-}
+_INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], List[str]] = {
 
+    # ═══════════════════════════════════════════════════════════════════════
+    # NARRATE — telling a story, walking through a sequence of events
+    # ═══════════════════════════════════════════════════════════════════════
+    ("narrate", "sequence"):    ["timeline", "timelineIcon", "timelineHorizontal"],
+    ("narrate", "mechanism"):   ["timelineSequential", "timeline", "timelineIcon"],
+    ("narrate", "foundation"):  ["timeline", "timelineIcon", "timelineHorizontal"],
+    ("narrate", "overview"):    ["timelineHorizontal", "timeline", "diamondHub"],
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # TEACH — instructing how something works, step-by-step pedagogy
+    # ═══════════════════════════════════════════════════════════════════════
+    ("teach", "mechanism"):     ["processSteps", "processAccordion", "timelineSequential"],
+    ("teach", "sequence"):      ["processSteps", "processArrow", "timeline"],
+    ("teach", "application"):   ["processArrow", "processAccordion", "sequentialOutput"],
+    ("teach", "foundation"):    ["processSteps", "ribbonFold", "solidBoxesWithIconsInside"],
+    ("teach", "overview"):      ["processAccordion", "ribbonFold", "featureShowcase"],
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # DEMO — demonstrating application, showing how to do something
+    # ═══════════════════════════════════════════════════════════════════════
+    ("demo", "mechanism"):      ["processArrow", "sequentialOutput", "processSteps"],
+    ("demo", "application"):    ["processAccordion", "sequentialOutput", "processArrow"],
+    ("demo", "sequence"):       ["sequentialOutput", "processSteps", "timeline"],
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # COMPARE — contrasting two or more things, pros/cons, before/after
+    # ═══════════════════════════════════════════════════════════════════════
+    ("compare", "comparison"):  ["comparisonProsCons", "comparisonBeforeAfter", "statsComparison"],
+    ("compare", "foundation"):  ["comparisonBeforeAfter", "comparisonProsCons", "diamondGrid"],
+    ("compare", "mechanism"):   ["relationshipMap", "comparisonProsCons", "statsComparison"],
+    ("compare", "overview"):    ["diamondRibbon", "comparisonProsCons", "statsBadgeGrid"],
+    ("compare", "data"):        ["statsComparison", "statsBadgeGrid", "comparisonProsCons"],
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # EXPLAIN — breaking down a concept, making something clear
+    # ═══════════════════════════════════════════════════════════════════════
+    ("explain", "foundation"):  ["solidBoxesWithIconsInside", "diamondGrid", "cardGridDiamond"],
+    ("explain", "overview"):    ["solidBoxesWithIconsInside", "diamondHub", "cardGridDiamond", "hubAndSpoke"],
+    ("explain", "comparison"):  ["relationshipMap", "comparisonProsCons", "statsComparison"],
+    ("explain", "application"): ["solidBoxesWithIconsInside", "processSteps", "diamondGrid"],
+    ("explain", "mechanism"):   ["diamondGrid", "cyclicBlock", "processAccordion", "featureShowcase"],
+    ("explain", "example"):     ["cardGridImage", "cardGridDiamond", "cardGridIcon"],
+    ("explain", "sequence"):    ["timelineSequential", "ribbonFold", "processSteps"],
+    ("explain", "data"):        ["stats", "statsBadgeGrid", "ribbonFold"],
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # LIST — enumerating items, features, points
+    # ═══════════════════════════════════════════════════════════════════════
+    ("list", "foundation"):     ["solidBoxesWithIconsInside", "diamondGrid", "cardGridDiamond"],
+    ("list", "overview"):       ["solidBoxesWithIconsInside", "cardGridDiamond", "diamondRibbon"],
+    ("list", "sequence"):       ["diamondRibbon", "ribbonFold", "timeline"],
+    ("list", "application"):    ["solidBoxesWithIconsInside", "diamondGrid", "cardGridIcon"],
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # INTRODUCE — first exposure, setting the stage, high-level intro
+    # ═══════════════════════════════════════════════════════════════════════
+    ("introduce", "foundation"): ["solidBoxesWithIconsInside", "diamondGrid", "cardGridSimple"],
+    ("introduce", "overview"):   ["solidBoxesWithIconsInside", "cardGridDiamond", "diamondHub"],
+    ("introduce", "application"):["diamondGrid", "solidBoxesWithIconsInside", "cardGridIcon"],
+    ("introduce", "example"):    ["cardGridImage", "cardGridDiamond", "cardGridIcon"],
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # SUMMARIZE — wrapping up, reinforcing key takeaways
+    # ═══════════════════════════════════════════════════════════════════════
+    ("summarize", "reinforcement"): ["solidBoxesWithIconsInside", "diamondHub", "diamondGrid"],
+    ("summarize", "foundation"):    ["solidBoxesWithIconsInside", "diamondHub", "cardGridDiamond"],
+    ("summarize", "overview"):      ["diamondHub", "solidBoxesWithIconsInside", "ribbonFold"],
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # PROVE — backing up claims with data, evidence, statistics
+    # ═══════════════════════════════════════════════════════════════════════
+    ("prove", "data"):        ["stats", "statsBadgeGrid", "statsComparison"],
+    ("prove", "comparison"):  ["statsComparison", "statsBadgeGrid", "comparisonProsCons"],
+    ("prove", "foundation"):  ["stats", "statsBadgeGrid", "solidBoxesWithIconsInside"],
+}
 # Fallback variant when intent/scope combination is not found.
 _DEFAULT_SMART_LAYOUT_VARIANT = "solidBoxesWithIconsInside"
 
