@@ -16,6 +16,39 @@
 /* .smart-layout .description { font-size: 0.95rem !important; line-height: 1.45 !important; } */
 
 /* === Common overrides while tuning content-block hierarchy === */
+:root {
+  --slide-content-padding: var(
+    --section-padding,
+    clamp(1.5rem, 3.2vh, 2.75rem) clamp(1.75rem, 3vw, 3.25rem)
+  );
+}
+
+/* Base layout refactor: section has no padding, .body owns padding */
+section { padding: 0 !important; }
+.body {
+  padding: var(--slide-content-padding) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0 !important;
+  height: 100% !important;
+  align-self: stretch !important;
+  justify-content: center !important;
+  justify-content: safe center !important;
+  min-height: 0 !important;
+}
+
+/* Make titles slightly larger */
+h1 { font-size: calc(var(--h1-size, 2.25rem) + 0.2rem) !important; }
+h2 { font-size: calc(var(--h2-size, 2rem) + 0.15rem) !important; }
+
+section[data-image-layout="right"] .body,
+section[data-image-layout="right-wide"] .body {
+  padding-right: 0 !important;
+}
+section[data-image-layout="left"] .body {
+  padding-left: 0 !important;
+}
+
 .p-context {
   font-size: clamp(0.9rem, calc(var(--h1-size, 2.25rem) * 0.44), 1.05rem) !important;
   line-height: 1.55 !important;

@@ -1486,6 +1486,15 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+:root {
+    /* Single source of truth for content padding (applied ONLY on .body). */
+    /* Use responsive padding by default; allow per-slide overrides via --section-padding. */
+    --slide-content-padding: var(
+        --section-padding,
+        clamp(1.5rem, 3.2vh, 2.75rem) clamp(1.75rem, 3vw, 3.25rem)
+    );
+}
+
 /* Deck Container - Full viewport with snap scrolling */
 .gyml-deck {
     width: 100%;
@@ -2019,7 +2028,8 @@ section {
     position: relative;
     width: 100%;
     height: 100vh;
-    padding: var(--section-padding, 2rem 3rem);
+    /* Section never has padding — all padding lives on .body. */
+    padding: 0;
     background: var(--bg-secondary, #ffffff);
     overflow: hidden;
     display: flex;
@@ -2034,12 +2044,12 @@ section[data-image-layout="right"] {
     grid-template-columns: 1fr var(--accent-width, 500px);
     gap: 0;
     align-items: stretch;
-    padding: 0 !important;
 }
 section[data-image-layout="right"] .body { 
     order: 1; 
     grid-column: 1; 
-    padding: 2rem 0 2rem 3rem;
+    padding: var(--slide-content-padding);
+    padding-right: 0;
     margin-right: var(--block-gap, 3rem);
 }
 section[data-image-layout="right"] .accent-image-wrapper,
@@ -2056,12 +2066,12 @@ section[data-image-layout="left"] {
     grid-template-columns: var(--accent-width, 500px) 1fr;
     gap: 0;
     align-items: stretch;
-    padding: 0 !important;
 }
 section[data-image-layout="left"] .body { 
     order: 2; 
     grid-column: 2; 
-    padding: 2rem 3rem 2rem 0;
+    padding: var(--slide-content-padding);
+    padding-left: 0;
     margin-left: var(--block-gap, 3rem);
 }
 section[data-image-layout="left"] .accent-image-wrapper,
@@ -2078,12 +2088,12 @@ section[data-image-layout="right-wide"] {
     grid-template-columns: 1fr 500px;
     gap: 0;
     align-items: stretch;
-    padding: 0 !important;
 }
 section[data-image-layout="right-wide"] .body { 
     order: 1; 
     grid-column: 1; 
-    padding: 2rem 0 2rem 3rem;
+    padding: var(--slide-content-padding);
+    padding-right: 0;
     margin-right: var(--block-gap, 3rem);
 }
 section[data-image-layout="right-wide"] .accent-image-wrapper,
@@ -2101,15 +2111,14 @@ section[data-image-layout="left"][data-has-image="false"],
 section[data-image-layout="right-wide"][data-has-image="false"] {
     display: flex !important;
     flex-direction: column !important;
-    padding: var(--section-padding, 2rem 3rem) !important;
-    gap: var(--block-gap, 1.5rem) !important;
+    gap: 0 !important;
 }
 section[data-image-layout="right"][data-has-image="false"] .body,
 section[data-image-layout="left"][data-has-image="false"] .body,
 section[data-image-layout="right-wide"][data-has-image="false"] .body {
     order: 0 !important;
     grid-column: auto !important;
-    padding: 0 !important;
+    padding: var(--slide-content-padding) !important;
     margin: 0 !important;
 }
 
@@ -2117,13 +2126,11 @@ section[data-image-layout="right-wide"][data-has-image="false"] .body {
 section[data-image-layout="top"] {
     display: flex;
     flex-direction: column;
-    padding: 0 !important;
     gap: 0;
 }
 section[data-image-layout="bottom"] {
     display: flex;
     flex-direction: column;
-    padding: 0 !important;
     gap: 0;
 }
 
@@ -2144,7 +2151,7 @@ section[data-image-layout="bottom"] .accent-image-placeholder {
 section[data-image-layout="top"] .body {
     flex: 1;
     position: relative; /* Required for z-index */
-    padding: var(--section-padding, 1.5rem 2.5rem);
+    padding: var(--slide-content-padding);
     margin-top: -100px; /* Overlap adjusted for shorter image */
     z-index: 10;
     /* Smooth gradient from transparent to solid dark background */
@@ -2153,7 +2160,7 @@ section[data-image-layout="top"] .body {
 section[data-image-layout="bottom"] .body {
     flex: 1;
     position: relative; /* Required for z-index */
-    padding: var(--section-padding, 1.5rem 2.5rem);
+    padding: var(--slide-content-padding);
     margin-bottom: -100px; /* Overlap adjusted for shorter image */
     z-index: 10;
     background: linear-gradient(to top, transparent 0%, rgba(13, 27, 42, 0.9) 60px, var(--bg-color, #0d1b2a) 100px);
@@ -2162,13 +2169,12 @@ section[data-image-layout="bottom"] .body {
 /* If top/bottom was chosen but no image exists, behave like a normal padded slide. */
 section[data-image-layout="top"][data-has-image="false"],
 section[data-image-layout="bottom"][data-has-image="false"] {
-    padding: var(--section-padding, 2rem 3rem) !important;
-    gap: var(--block-gap, 1.5rem) !important;
+    gap: 0 !important;
 }
 section[data-image-layout="top"][data-has-image="false"] .body,
 section[data-image-layout="bottom"][data-has-image="false"] .body {
     position: static !important;
-    padding: 0 !important;
+    padding: var(--slide-content-padding) !important;
     margin: 0 !important;
     background: transparent !important;
 }
@@ -2184,8 +2190,7 @@ section[data-density="super_dense"] h2 { font-size: 1.5rem !important; margin-bo
 section[data-density="super_dense"] p { font-size: 0.95rem !important; line-height: 1.4; }
 
 section[data-density="super_dense"] .body {
-    justify-content: flex-start;
-    padding-top: 0.5rem;
+    justify-content: center;
 }
 
 section[data-density="super_dense"] .hub-and-spoke-container {
@@ -2287,8 +2292,8 @@ section[data-image-layout="behind"] {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 0 !important;
     text-align: center;
+    --slide-content-padding: 4rem;
 }
 
 section[data-image-layout="behind"] .accent-image-group,
@@ -2318,7 +2323,7 @@ section[data-image-layout="behind"] .body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 4rem;
+    padding: var(--slide-content-padding);
     color: white !important;
 }
 
@@ -2388,15 +2393,23 @@ section[data-image-layout="right-wide"] .accent-image-wrapper img {
 /* ... */
 
 .body {
-    flex: 1;
+    flex: 1 1 0;
+    height: 100%;
+    align-self: stretch;
     display: flex;
     flex-direction: column;
+    min-width: 0; /* Prevent overflow in grid/flex layouts */
     gap: var(--block-gap, 0.75rem);
+    padding: var(--slide-content-padding);
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
+    /* Vertical centering: equal whitespace above/below when content is short.
+       "safe center" prevents top clipping if content overflows. */
     justify-content: center;
+    justify-content: safe center;
+    min-height: 0;
 }
 
 /* Chrome/Safari: Hide scrollbar for body content */
@@ -2409,7 +2422,7 @@ section[data-image-layout="right-wide"] .accent-image-wrapper img {
    ================================================ */
 
 h1 {
-    font-size: var(--h1-size, 2.25rem);
+    font-size: calc(var(--h1-size, 2.25rem) + 0.2rem);
     font-weight: 800;
     line-height: 1.25;
     letter-spacing: -0.03em;
@@ -2418,7 +2431,7 @@ h1 {
 }
 
 h2 {
-    font-size: var(--h2-size, 2rem);
+    font-size: calc(var(--h2-size, 2rem) + 0.15rem);
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.02em;
@@ -2594,13 +2607,14 @@ p {
 
 /* Comparison Layout Overrides — Maximize horizontal room */
 .comparison-layout .body {
-    padding-left: 1.5rem !important;
-    padding-right: 0 !important;
+    padding: var(--slide-content-padding);
+    padding-right: 0;
+    padding-left: 1.5rem;
     max-width: none !important;
 }
 
 .comparison-layout[data-image-layout="right"] .body {
-    padding-right: 0 !important;
+    padding-right: 0;
 }
 
 .column {
@@ -3078,14 +3092,16 @@ p {
    Shrinks card internals that are otherwise hardcoded.
    ================================================ */
 
-section[data-density="super_dense"] {
-    padding-top: 1.5rem !important;
-    padding-bottom: 2rem !important;
-}
-
 section[data-density="super_dense"] .body,
 section[data-density="dense"] .body {
-    justify-content: flex-start !important;
+    justify-content: center;
+}
+
+@supports (justify-content: safe center) {
+    section[data-density="super_dense"] .body,
+    section[data-density="dense"] .body {
+        justify-content: safe center;
+    }
 }
 
 section[data-density="super_dense"] .card-icon,
@@ -3714,6 +3730,9 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
     margin-top: 0;
     padding: 0;
     overflow: visible;
+    /* Let the grid expand to reduce unused bottom whitespace on sparse slides */
+    flex: 1 1 auto;
+    align-content: stretch;
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
@@ -3726,6 +3745,7 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
     box-shadow: none;
     text-align: left;
     justify-content: flex-start;
+    height: 100%;
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"] .card::before {
@@ -5560,13 +5580,6 @@ th {
     align-self: center;
 }
 
-.body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0; /* Prevent overflow */
-}
-
 /* ================================================
    PLACEHOLDER IMAGE
    ================================================ */
@@ -5616,13 +5629,12 @@ section[data-image-layout="right"] .accent-image-placeholder {
    ================================================ */
 
 @media (max-width: 768px) {
-    .gyml-deck {
-        padding: 1rem;
+    :root {
+        --section-padding: clamp(1rem, 2.4vh, 1.25rem) clamp(1.25rem, 3vw, 1.5rem);
     }
-    
-    section {
-        padding: 2rem;
-    }
+
+    .gyml-deck { padding: 0; }
+    section { padding: 0; }
     
     section[data-image-layout="right"],
     section[data-image-layout="left"] {
@@ -5645,8 +5657,8 @@ section[data-image-layout="right"] .accent-image-placeholder {
     
     .accent-image-group {
         width: 100%;
-        max-width: 400px;
-        margin: 0 auto 1.5rem auto;
+        max-width: none;
+        margin: 0;
     }
     
     .smart-layout {
@@ -5724,9 +5736,12 @@ section[data-animated="true"] .smart-layout[data-variant="timelineHorizontal"]::
    ================================================ */
 
 /* HUB AND SPOKE SLIDE OVERRIDES */
+section.holds-hub {
+    --slide-content-padding: 1.5rem 3rem 2.5rem 3rem;
+}
+
 section.holds-hub .body {
-    justify-content: flex-start !important;
-    padding-top: 1.5rem;
+    justify-content: center;
 }
 
 .hub-and-spoke-container {
