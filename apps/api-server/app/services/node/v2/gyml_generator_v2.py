@@ -102,6 +102,115 @@ def _safe_json_loads(raw: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+def _get_block_item_schema(variant: str) -> str:
+    """Get the representative JSON schema for a smart_layout item based on its variant."""
+    v = str(variant).lower()
+    if "stats" in v:
+        # Stats variants use value/label
+        return '{"value": "50%", "label": "Accuracy Rating"}'
+    if "timeline" in v:
+        # Timeline variants use year/description
+        return '{"year": "1994", "description": "Detailed event description"}'
+    if "numberedlist" in v or "step" in v:
+        # Numbered lists use title/description
+        return '{"title": "Step Name", "description": "What to do in this step."}'
+
+    # Check if variant typically supports icons (standard across gyanova)
+    icon_variants = {
+        "bigbullets",
+        "cardgridicon",
+        "cardgriddiamond",
+        "relationshipmap",
+        "ribbonfold",
+        "diamondribbon",
+        "diamondgrid",
+        "diamondhub",
+        "hubandspoke",
+        "cyclicblock",
+        "bulleticon",
+        "timelineicon",
+        "solidboxeswithiconsinside",
+        "processaccordion",
+    }
+
+    if any(iv in v for iv in icon_variants):
+        return '{"heading": "Item Title", "description": "Self-contained teaching point.", "icon": "ri-lightbulb-line"}'
+
+    return '{"heading": "Item Title", "description": "Self-contained teaching point."}'
+
+
+def _get_primary_block_schema(family: str, variant: str, expected_items: int) -> str:
+    """Construct a sample JSON schema snippet for the primary block based on its family/variant."""
+    family = str(family).strip().lower()
+    variant = str(variant).strip().lower()
+
+    if family == "formula":
+        return (
+            "{\n"
+            '      "type": "formula_block",\n'
+            '      "expression": "E = mc^2",\n'
+            '      "variables": [{"name": "E", "definition": "Energy"}, {"name": "m", "definition": "Mass"}],\n'
+            '      "example": "Calculating energy from 1kg of mass."\n'
+            "    }"
+        )
+
+    if family == "comparison_table" or (
+        family == "comparison" and "smart_layout" not in variant
+    ):
+        return (
+            "{\n"
+            '      "type": "comparison_table",\n'
+            '      "headers": ["Feature", "Option A", "Option B"],\n'
+            f'      "rows": [["Performance", "High", "Low"]],  // Exactly {expected_items} rows\n'
+            '      "caption": "Comparison of A and B"\n'
+            "    }"
+        )
+
+    if family == "hub_and_spoke" or variant == "hubAndSpoke":
+        return (
+            "{\n"
+            '      "type": "hub_and_spoke",\n'
+            '      "hub_label": "The Core Concept",\n'
+            f'      "items": [{{"label": "Satellite Point", "description": "...", "icon": "ri-..."}}]  // {expected_items} items\n'
+            "    }"
+        )
+
+    if family == "feature_showcase_block" or variant == "featureShowcase":
+        return (
+            "{\n"
+            '      "type": "feature_showcase_block",\n'
+            '      "title": "Central Feature Name",\n'
+            f'      "items": [{{"label": "Feature Item", "description": "...", "icon": "ri-..."}}]  // {expected_items} items\n'
+            "    }"
+        )
+
+    if family == "key_value_list":
+        return (
+            "{\n"
+            '      "type": "key_value_list",\n'
+            f'      "items": [{{"key": "Term", "value": "Definition"}}]  // {expected_items} items\n'
+            "    }"
+        )
+
+    if family == "sequential_output" or variant == "sequentialOutput":
+        return (
+            "{\n"
+            '      "type": "sequential_output",\n'
+            f'      "items": ["First output string", "Second output string"]  // {expected_items} items\n'
+            "    }"
+        )
+
+    # Default to smart_layout
+    item_schema = _get_block_item_schema(variant)
+    return (
+        "{\n"
+        '      "type": "smart_layout",\n'
+        f'      "variant": "{variant}",\n'
+        f'      "items": [{item_schema}]  // Repeat this item structure exactly {expected_items} times\n'
+        "    }"
+    )
+
+
 def _join_limited(values: List[str], max_items: int = 4) -> str:
     cleaned = [str(v).strip() for v in values if str(v).strip()]
     return "; ".join(cleaned[:max_items])
@@ -173,10 +282,14 @@ def _build_image_prompt(plan_item: Dict[str, Any]) -> str:
     title = str(plan_item.get("title") or "the topic").strip()
     objective = str(plan_item.get("objective") or "teach the concept clearly").strip()
     tier = str(plan_item.get("image_tier") or "none").strip().lower()
+
+    # Negative indexing: focus on symbolic representation to avoid letters/labels
+    style_suffix = " No text, no words, no letters, no labels, purely visual symbolic illustration, premium artistic composition."
+
     if tier == "hero":
-        return f"High-end editorial hero image for {title}, visually explaining {objective} with polished, premium composition."
+        return f"High-end editorial hero image for {title}, visually explaining {objective}.{style_suffix}"
     if tier == "accent":
-        return f"Accent illustration for {title}, supporting {objective} with a clean instructional visual."
+        return f"Accent illustration for {title}, supporting {objective}.{style_suffix}"
     return ""
 
 
@@ -256,41 +369,48 @@ def _pick_best_supporting_fact(plan_item: Dict[str, Any]) -> str:
 
 
 def _build_intro_text(plan_item: Dict[str, Any]) -> str:
-    objective = str(plan_item.get("objective") or "").strip()
-    if objective:
-        return _ensure_sentence(objective)
+    """Build a mentor-like intro sentence that bridges the slide title to the content."""
     title = str(plan_item.get("title") or "this topic").strip()
-    return _ensure_sentence(
-        f"Let's frame {title} before diving into the core structure"
-    )
+    objective = str(plan_item.get("objective") or "").strip()
+    teaching_intent = str(plan_item.get("teaching_intent") or "").strip().lower()
+
+    if teaching_intent in ("introduce", "narrate") and objective:
+        return _ensure_sentence(f"To understand {title}, it helps to first ask: {objective}")
+    if teaching_intent in ("teach", "demo") and objective:
+        return _ensure_sentence(f"Here is how {title} actually works in practice: {objective}")
+    if teaching_intent == "compare" and objective:
+        return _ensure_sentence(f"Let's look at both sides of {title} — {objective}")
+    if objective:
+        return _ensure_sentence(f"This slide unpacks {title}. {objective}")
+    return _ensure_sentence(f"Let's break down {title} step by step.")
 
 
 def _build_context_text(plan_item: Dict[str, Any]) -> str:
+    """Build a natural context bridge using a key fact as an analogy anchor."""
     title = str(plan_item.get("title") or "this topic").strip()
-    objective = str(plan_item.get("objective") or "").strip()
     best_fact = _pick_best_supporting_fact(plan_item)
+    objective = str(plan_item.get("objective") or "").strip()
 
-    if best_fact and objective:
-        return _ensure_sentence(f"{objective} {best_fact}")
     if best_fact:
-        return best_fact
+        return _ensure_sentence(
+            f"To make sense of {title}, remember that {best_fact.rstrip('.')}."
+        )
     if objective:
-        return _ensure_sentence(objective)
-    return _ensure_sentence(
-        f"This context sets up the core idea in {title} with a concrete teaching anchor"
-    )
+        return _ensure_sentence(f"Before the details, here is the big picture: {objective}")
+    return _ensure_sentence(f"Here is the foundational idea behind {title}.")
 
 
 def _build_callout_text(plan_item: Dict[str, Any]) -> str:
-    assessment = str(plan_item.get("assessment_prompt") or "").strip()
+    """Build a concise, conversational key-takeaway sentence."""
     best_fact = _pick_best_supporting_fact(plan_item)
-    if best_fact and assessment:
-        return _ensure_sentence(f"{best_fact} Check your understanding: {assessment}")
-    if assessment:
-        return _ensure_sentence(f"Check your understanding: {assessment}")
+    assessment = str(plan_item.get("assessment_prompt") or "").strip()
+    title = str(plan_item.get("title") or "this topic").strip()
+
     if best_fact:
-        return _ensure_sentence(f"Key takeaway: {best_fact}")
-    return "Key takeaway: summarize the most actionable insight from this slide."
+        return _ensure_sentence(f"The key insight here is that {best_fact.rstrip('.')}. Keep this in mind as you move forward.")
+    if assessment:
+        return _ensure_sentence(f"Pause and reflect — {assessment}")
+    return _ensure_sentence(f"The most important takeaway from {title} is the pattern it reveals.")
 
 
 def _enforce_supporting_for_big_boxes(
@@ -339,6 +459,15 @@ def _enforce_supporting_for_big_boxes(
 def _apply_composition_style(
     payload: Dict[str, Any], plan_item: Dict[str, Any], composition_style: str
 ) -> None:
+    """Enforce composition style while preserving high-quality LLM-generated paragraphs.
+
+    Strategy:
+    1. Every slide gets an intro_paragraph before the primary block (always).
+    2. For styles that add a post-primary block (callout/context after), we:
+       - Prefer the LLM's block if it exists and is non-empty.
+       - Fall back to our mentor-tone builder only if the LLM omitted it.
+    3. For primary_only, we strip all paragraph blocks.
+    """
     blocks = payload.get("contentBlocks", [])
     if not isinstance(blocks, list):
         return
@@ -351,60 +480,67 @@ def _apply_composition_style(
         "outro_paragraph",
     }
 
-    # Keep non-paragraph-like blocks intact, then layer style-specific supporting text.
-    filtered_blocks = []
+    # ── Separate paragraph blocks from structured blocks ────────────────────
+    llm_paragraphs: Dict[str, Dict[str, Any]] = {}
+    structured_blocks: List[Dict[str, Any]] = []
+
     for block in blocks:
         if not isinstance(block, dict):
             continue
         block_type = str(block.get("type") or "").strip().lower()
+        text_content = str(block.get("text") or "").strip()
         if block_type in paragraph_like:
-            continue
-        filtered_blocks.append(block)
+            # Keep the LLM's paragraph if it has meaningful content (>8 words)
+            if text_content and len(text_content.split()) > 8:
+                llm_paragraphs[block_type] = block
+        else:
+            structured_blocks.append(block)
 
-    primary_idx = _find_primary_block_index(filtered_blocks)
+    primary_idx = _find_primary_block_index(structured_blocks)
     if primary_idx < 0:
-        payload["contentBlocks"] = filtered_blocks
+        payload["contentBlocks"] = structured_blocks
         return
 
-    before_primary: List[Dict[str, Any]] = []
+    # ── Primary-only: strip all paragraph blocks and return early ───────────
+    if composition_style == "primary_only":
+        payload["contentBlocks"] = structured_blocks
+        payload["primary_block_index"] = primary_idx
+        return
+
+    # ── Always inject an intro_paragraph before the primary block ───────────
+    # Prefer what the LLM wrote; fall back to our mentor-tone builder.
+    intro_block = (
+        llm_paragraphs.get("intro_paragraph")
+        or llm_paragraphs.get("paragraph")
+        or {"type": "intro_paragraph", "text": _build_intro_text(plan_item)}
+    )
+    if intro_block.get("type") != "intro_paragraph":
+        intro_block = {"type": "intro_paragraph", "text": intro_block.get("text", _build_intro_text(plan_item))}
+
+    # ── Build optional post-primary block based on composition style ────────
     after_primary: List[Dict[str, Any]] = []
 
     if composition_style == "context_then_primary":
-        before_primary.append(
-            {"type": "context_paragraph", "text": _build_context_text(plan_item)}
-        )
+        # context_then_primary uses context_paragraph as the "before" block;
+        # we already handle the "before" with intro, so add context as "after" callout.
+        context_block = llm_paragraphs.get("context_paragraph")
+        if not context_block:
+            context_block = {"type": "context_paragraph", "text": _build_context_text(plan_item)}
+        after_primary.append(context_block)
+
     elif composition_style == "primary_then_callout":
-        after_primary.append(
-            {"type": "annotation_paragraph", "text": _build_callout_text(plan_item)}
-        )
-    elif composition_style == "intro_then_primary":
-        before_primary.append(
-            {"type": "intro_paragraph", "text": _build_intro_text(plan_item)}
-        )
+        callout_block = llm_paragraphs.get("annotation_paragraph")
+        if not callout_block:
+            callout_block = {"type": "annotation_paragraph", "text": _build_callout_text(plan_item)}
+        after_primary.append(callout_block)
 
+    # ── Reassemble: [other before] + [intro] + [primary] + [after] + [rest] ─
     rebuilt: List[Dict[str, Any]] = []
-    rebuilt.extend(filtered_blocks[:primary_idx])
-    rebuilt.extend(before_primary)
-    rebuilt.append(filtered_blocks[primary_idx])
+    rebuilt.extend(structured_blocks[:primary_idx])
+    rebuilt.append(intro_block)
+    rebuilt.append(structured_blocks[primary_idx])
     rebuilt.extend(after_primary)
-    rebuilt.extend(filtered_blocks[primary_idx + 1 :])
-
-    # Hard rule: never allow intro + annotation/outro on the same slide.
-    has_intro = any(
-        str(block.get("type") or "").strip().lower() == "intro_paragraph"
-        for block in rebuilt
-        if isinstance(block, dict)
-    )
-    if has_intro:
-        rebuilt = [
-            block
-            for block in rebuilt
-            if not (
-                isinstance(block, dict)
-                and str(block.get("type") or "").strip().lower()
-                in {"annotation_paragraph", "outro_paragraph"}
-            )
-        ]
+    rebuilt.extend(structured_blocks[primary_idx + 1:])
 
     payload["contentBlocks"] = rebuilt
     payload["primary_block_index"] = _find_primary_block_index(rebuilt)
@@ -1085,8 +1221,9 @@ def _enforce_primary_description_word_budget(payload: Dict[str, Any]) -> None:
     block = blocks[primary_index]
     if not isinstance(block, dict):
         return
-    if str(block.get("type") or "").strip().lower() != "smart_layout":
-        return
+    variant = str(block.get("variant") or "").lower()
+    # Stats use 'label' for their text content, most others use 'description'
+    content_key = "label" if "stats" in variant else "description"
 
     items = block.get("items", [])
     if not isinstance(items, list):
@@ -1095,12 +1232,12 @@ def _enforce_primary_description_word_budget(payload: Dict[str, Any]) -> None:
     for item in items:
         if not isinstance(item, dict):
             continue
-        description = str(item.get("description") or "").strip()
-        if not description:
+        text_content = str(item.get(content_key) or "").strip()
+        if not text_content:
             continue
-        if _count_words(description) > _MAX_ITEM_DESCRIPTION_WORDS:
-            item["description"] = _trim_to_word_budget(
-                description, _MAX_ITEM_DESCRIPTION_WORDS
+        if _count_words(text_content) > _MAX_ITEM_DESCRIPTION_WORDS:
+            item[content_key] = _trim_to_word_budget(
+                text_content, _MAX_ITEM_DESCRIPTION_WORDS
             )
 
 
@@ -1314,9 +1451,14 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     else:
         primary_block_instruction = (
             f"You MUST include exactly ONE structured primary teaching block "
-            f'(smart_layout variant "{smart_layout_variant}" is strongly preferred). '
-            f"It MUST contain {expected_items} items."
+            f'(variant "{smart_layout_variant}" is strongly preferred). '
+            f"It MUST contain {expected_items} items/rows."
         )
+
+    # Construct the dynamic schema for the primary block
+    primary_block_schema = _get_primary_block_schema(
+        primary_family, smart_layout_variant, expected_items
+    )
 
     prompt = f"""You are generating a single GyML slide JSON object for an educational presentation.
 
@@ -1324,17 +1466,22 @@ HARD RULES (violations will cause rejection):
 1. Return ONLY a valid JSON object. No markdown, no explanation.
 2. {primary_block_instruction}
 3. DO NOT include two smart_layout blocks on the same slide.
-4. Max 7 content blocks per slide. Primary block carries 70% of visual weight.
-5. Enforce composition_style exactly: {composition_style}.
-    - primary_only: PRIMARY BLOCK only (no intro/context/annotation/outro blocks)
-    - context_then_primary: context_paragraph → PRIMARY BLOCK
-    - primary_then_callout: PRIMARY BLOCK → annotation_paragraph
-    - intro_then_primary: intro_paragraph → PRIMARY BLOCK (no annotation/outro/takeaway block)
-    NEVER place intro_paragraph and annotation_paragraph/outro_paragraph together on the same slide.
-6. Do not include both an accentImagePrompt and block-embedded image prompts.
-7. Respect selected_template and image policy (image_need: {image_need}, image_tier: {image_tier}).
-8. Description length: each primary block item description MUST be 12–15 words (1 sentence). Keep it specific and meaningful; remove filler instead of adding extra words.
-9. Avoid one-line generic text. Prefer specific, explanatory sentences tied to the objective.
+4. Max 5 content blocks per slide. Primary block carries 70% of visual weight.
+5. EVERY slide MUST include ONE intro_paragraph block placed BEFORE the primary block.
+   - Write it as a mentor speaking directly to the student.
+   - It must bridge the slide title to the content below — do NOT just repeat the title.
+   - Use natural phrasing: "Here's the key to understanding...", "Think of it this way...", "Before we dive in..."
+   - Length: 1–2 sentences, 15–30 words.
+6. For composition_style "{composition_style}":
+    - primary_only: intro_paragraph + PRIMARY BLOCK only (no callout/annotation/outro)
+    - context_then_primary: intro_paragraph + PRIMARY BLOCK + context_paragraph (analogy or grounding fact)
+    - primary_then_callout: intro_paragraph + PRIMARY BLOCK + annotation_paragraph (key takeaway, conversational)
+    - intro_then_primary: intro_paragraph + PRIMARY BLOCK (same as primary_only for extra blocks)
+    NEVER place intro_paragraph and annotation_paragraph/outro_paragraph together UNLESS the style is primary_then_callout.
+7. Do not include both an accentImagePrompt and block-embedded image prompts.
+8. Respect selected_template and image policy (image_need: {image_need}, image_tier: {image_tier}).
+9. Description length: each primary block item description MUST be 12–15 words (1 sentence). Keep it specific and meaningful.
+10. Avoid generic filler. Every sentence must teach something concrete tied to the slide objective.
 
 {grounding_instruction}
 
@@ -1359,17 +1506,6 @@ Expected items in primary block: {expected_items}
 Designer blueprint (additional context):
 {json.dumps(designer_blueprint, ensure_ascii=True)}
 
-SMART LAYOUT VARIANT REFERENCE:
-  TIMELINES: timeline, timelineHorizontal, timelineSequential, timelineMilestone, timelineIcon
-  CARD GRIDS: cardGrid, cardGridIcon, cardGridSimple, cardGridImage
-  RELATIONSHIPS: relationshipMap
-  RIBBONS: ribbonFold
-  STAT TILES: statsBadgeGrid
-  STATS: stats, statsComparison, statsPercentage
-  BULLETS: bigBullets, bulletIcon, bulletCheck, bulletCross
-  PROCESS STEPS: processSteps, processArrow, processAccordion
-  COMPARISONS: comparison, comparisonProsCons, comparisonBeforeAfter
-
 OUTPUT SCHEMA (JSON only):
 {{
   "title": "string",
@@ -1379,14 +1515,16 @@ OUTPUT SCHEMA (JSON only):
   "image_layout": "right|left|top|bottom|blank",
   "contentBlocks": [
     {{
-      "type": "smart_layout",
-      "variant": "{smart_layout_variant}",
-      "items": [
-        {{"heading": "...", "description": "...", "icon_name": "ri-...(optional)"}}
-      ]
+      "type": "intro_paragraph",
+      "text": "A 1–2 sentence mentor-style bridge between the title and the content below."
+    }},
+    {primary_block_schema},
+    {{
+      "type": "annotation_paragraph",
+      "text": "(Only if composition_style is primary_then_callout) A concise key takeaway in 1 sentence."
     }}
   ],
-  "primary_block_index": 0,
+  "primary_block_index": 1,
   "accentImagePrompt": "optional string (only if image_tier=accent)",
   "heroImagePrompt": "optional string (only if image_tier=hero)"
 }}

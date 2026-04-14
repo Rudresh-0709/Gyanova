@@ -221,11 +221,21 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         smart_layout_variant="processSteps",
         intent_fit=("teach", "demo", "explain"),
     ),
+    ("smart_layout", "sequentialSteps"): BlockSpec(
+        family="smart_layout",
+        variant="sequentialSteps",
+        width_class="wide",
+        supported_layouts=("top", "bottom", "blank"),
+        density_ok=("balanced", "standard", "dense"),
+        is_primary_candidate=True,
+        smart_layout_variant="sequentialSteps",
+        intent_fit=("teach", "demo", "explain", "sequence"),
+    ),
     ("smart_layout", "processArrow"): BlockSpec(
         family="smart_layout",
         variant="processArrow",
         width_class="wide",
-        supported_layouts=("top", "bottom", "blank"),
+        supported_layouts=("top", "blank"),
         density_ok=("balanced", "standard", "dense"),
         is_primary_candidate=True,
         smart_layout_variant="processArrow",
@@ -497,8 +507,8 @@ _INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], List[str]] = {
     # ═══════════════════════════════════════════════════════════════════════
     # TEACH — instructing how something works, step-by-step pedagogy
     # ═══════════════════════════════════════════════════════════════════════
-    ("teach", "mechanism"):     ["processSteps", "processAccordion", "timelineSequential"],
-    ("teach", "sequence"):      ["processSteps", "processArrow", "timeline"],
+    ("teach", "mechanism"):     ["processSteps", "processAccordion", "timelineSequential", "sequentialSteps"],
+    ("teach", "sequence"):      ["processSteps", "sequentialSteps", "processArrow", "timeline"],
     ("teach", "application"):   ["processArrow", "processAccordion", "sequentialOutput"],
     ("teach", "foundation"):    ["processSteps", "ribbonFold", "solidBoxesWithIconsInside"],
     ("teach", "overview"):      ["processAccordion", "ribbonFold", "featureShowcase"],
@@ -506,9 +516,9 @@ _INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], List[str]] = {
     # ═══════════════════════════════════════════════════════════════════════
     # DEMO — demonstrating application, showing how to do something
     # ═══════════════════════════════════════════════════════════════════════
-    ("demo", "mechanism"):      ["processArrow", "sequentialOutput", "processSteps"],
+    ("demo", "mechanism"):      ["processArrow", "sequentialOutput", "sequentialSteps", "processSteps"],
     ("demo", "application"):    ["processAccordion", "sequentialOutput", "processArrow"],
-    ("demo", "sequence"):       ["sequentialOutput", "processSteps", "timeline"],
+    ("demo", "sequence"):       ["sequentialOutput", "processSteps", "sequentialSteps", "timeline"],
 
     # ═══════════════════════════════════════════════════════════════════════
     # COMPARE — contrasting two or more things, pros/cons, before/after
@@ -564,9 +574,10 @@ _INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], List[str]] = {
 # Fallback variants when intent/scope combination is not found.
 _DEFAULT_SMART_LAYOUT_VARIANTS = ["solidBoxesWithIconsInside", "diamondGrid", "cardGridDiamond"]
 
+
 # Each slide appends ~2 tokens to variant_history (template + smart_layout variant).
-# Window of 10 covers last ~5 slides.
-_VARIANT_HISTORY_WINDOW: int = 10
+# Window of 20 covers last ~10 slides (increased for more variety).
+_VARIANT_HISTORY_WINDOW: int = 20
 
 
 def get_smart_layout_variant(teaching_intent: str, coverage_scope: str) -> List[str]:
@@ -588,8 +599,10 @@ def select_primary_block(
     variant_history: Optional[List[str]] = None,
     teaching_intent: Optional[str] = None,
     coverage_scope: Optional[str] = None,
+    debug_log: Optional[list] = None,
 ) -> BlockSpec:
-    """Select the best primary BlockSpec, applying history-based anti-repetition."""
+    """Select the best primary BlockSpec, applying history-based anti-repetition.
+    If debug_log is provided, append fallback reasons when solidBoxesWithIconsInside is chosen."""
     family_key = str(family or "smart_layout").strip().lower()
     density_key = str(density or "balanced").strip().lower()
     image_need_key = str(image_need or "optional").strip().lower()
@@ -649,6 +662,9 @@ def select_primary_block(
                 and variant_name not in recent_variants
             ]
             if candidates:
+                # Log if fallback to solidBoxesWithIconsInside
+                if debug_log is not None and candidates[0].smart_layout_variant == "solidBoxesWithIconsInside":
+                    debug_log.append(f"Fallback: Picked solidBoxesWithIconsInside (preferred, not recently used)")
                 return candidates[0]
 
         # Phase 2: All preferred variants recently used — try ANY non-repeated variant (random)
@@ -658,17 +674,25 @@ def select_primary_block(
             if spec.smart_layout_variant and spec.smart_layout_variant not in recent_variants
         ]
         if non_repeated:
-            return random.choice(non_repeated)
+            pick = random.choice(non_repeated)
+            if debug_log is not None and pick.smart_layout_variant == "solidBoxesWithIconsInside":
+                debug_log.append(f"Fallback: Picked solidBoxesWithIconsInside (any non-repeated variant)")
+            return pick
 
         # Phase 3: Everything repeated — use first preferred variant anyway (freshest choice)
         for variant_name in deduped_preferred:
             candidates = [spec for spec in family_candidates if spec.smart_layout_variant == variant_name]
             if candidates:
+                if debug_log is not None and candidates[0].smart_layout_variant == "solidBoxesWithIconsInside":
+                    debug_log.append(f"Fallback: Picked solidBoxesWithIconsInside (all preferred variants recently used)")
                 return candidates[0]
 
         # Phase 4: Nothing matched at all — random from all family candidates
         if family_candidates:
-            return random.choice(family_candidates)
+            pick = random.choice(family_candidates)
+            if debug_log is not None and pick.smart_layout_variant == "solidBoxesWithIconsInside":
+                debug_log.append(f"Fallback: Picked solidBoxesWithIconsInside (random from all family candidates)")
+            return pick
 
     # If image required and family is title-like, prefer content-image-aware spec
     if image_need_key == "required" and family_key in {"overview", "title"}:
@@ -685,6 +709,8 @@ def select_primary_block(
         spec.family,
         spec.variant,
     ))
+    if debug_log is not None and family_candidates and family_candidates[0].smart_layout_variant == "solidBoxesWithIconsInside":
+        debug_log.append(f"Fallback: Picked solidBoxesWithIconsInside (final sort fallback)")
     return family_candidates[0]
 
 

@@ -66,120 +66,86 @@ def _detect_concept_visuals(enriched_slide: Dict[str, Any]) -> Tuple[bool, str, 
     return has_concept_image, concept_image_alt, has_icons
 
 
-def _summarize_slide_content(enriched_slide: Dict[str, Any]) -> str:
+def _summarize_slide_content(enriched_slide: Dict[str, Any]) -> Tuple[str, int]:
     """
     Extract and summarize slide content for LLM narration context.
-    Includes: headings, smart_layout items, comparisons, formulas, process steps.
-    Target: <400 tokens
+    Returns: (content_summary, item_count)
     """
     summary_parts = []
+    item_count = 0
 
     gyml_content = enriched_slide.get("gyml_content", {})
     if not isinstance(gyml_content, dict):
-        return ""
+        return "", 0
 
     content_blocks = gyml_content.get("contentBlocks", [])
     if not isinstance(content_blocks, list) or not content_blocks:
-        return ""
+        return "", 0
 
-    # The user specifically requested that ONLY the primary content block is sent 
-    # to the narration function, to keep the output focused.
+    # Include Slide Header for context
+    slide_title = str(enriched_slide.get("title") or "").strip()
+    if slide_title:
+        summary_parts.append(f"SLIDE TITLE: {slide_title}")
+
     try:
         primary_idx = int(enriched_slide.get("primary_block_index", 0))
     except (ValueError, TypeError):
         primary_idx = 0
         
     if 0 <= primary_idx < len(content_blocks):
-        content_blocks = [content_blocks[primary_idx]]
+        primary_block = content_blocks[primary_idx]
     else:
-        content_blocks = [content_blocks[0]]
+        primary_block = content_blocks[0]
 
-    for block in content_blocks:
-        if not isinstance(block, dict):
-            continue
+    if not isinstance(primary_block, dict):
+        return "\n".join(summary_parts), 0
 
-        block_type = str(block.get("type") or "").strip()
+    block_type = str(primary_block.get("type") or "").strip()
+    summary_parts.append(f"PRIMARY BLOCK TYPE: {block_type}")
 
-        # Heading blocks
-        if block_type == "heading":
-            text = str(block.get("text") or "").strip()
-            if text:
-                summary_parts.append(f"Heading: {text}")
+    # Extract items and count them
+    items = primary_block.get("items", [])
+    if not isinstance(items, list):
+        items = []
 
-        # Paragraph
-        elif block_type == "paragraph":
-            text = str(block.get("text") or "").strip()
-            if text and len(text) < 200:
-                summary_parts.append(f"Text: {text}")
+    if block_type == "smart_layout":
+        for i, item in enumerate(items):
+            if not isinstance(item, dict):
+                continue
+            title = str(item.get("title") or item.get("heading") or "").strip()
+            desc = str(item.get("description") or "").strip()
+            if title:
+                item_count += 1
+                summary_parts.append(f"ITEM {item_count} (Title: {title}): {desc}")
+    
+    elif block_type == "comparison_table":
+        # Each row (excluding header) could be a segment
+        rows = primary_block.get("rows", [])
+        if isinstance(rows, list):
+            for row in rows:
+                if isinstance(row, list):
+                    item_count += 1
+                    summary_parts.append(f"Comparison Row {item_count}: {' | '.join(map(str, row))}")
 
-        # Smart layout items (cards with titles/descriptions)
-        elif block_type == "smart_layout":
-            items = block.get("items", [])
-            if isinstance(items, list):
-                for item in items:
-                    if not isinstance(item, dict):
-                        continue
-                    title = str(item.get("title") or "").strip()
-                    desc = str(item.get("description") or "").strip()
-                    if title:
-                        summary_parts.append(f"Card '{title}': {desc[:100]}")
+    elif block_type in ["numbered_list", "cyclic_process", "process_arrow"]:
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            label = str(item.get("label") or item.get("text") or item.get("title") or "").strip()
+            desc = str(item.get("description") or "").strip()
+            if label:
+                item_count += 1
+                summary_parts.append(f"STEP {item_count} ({label}): {desc}")
+    
+    else:
+        # Fallback for simple blocks like paragraph
+        text = str(primary_block.get("text") or "").strip()
+        if text:
+            summary_parts.append(f"Content: {text}")
+            item_count = 0 # Let generate_narration_v2 handle the default
 
-        # Comparison table
-        elif block_type == "comparison_table":
-            subjects = block.get("subjects", [])
-            criteria = block.get("criteria", [])
-            if isinstance(subjects, list) and isinstance(criteria, list):
-                subj_str = ", ".join(str(s).strip() for s in subjects[:3] if s)
-                crit_str = ", ".join(str(c).strip() for c in criteria[:3] if c)
-                if subj_str and crit_str:
-                    summary_parts.append(f"Comparison: {subj_str} on {crit_str}")
-
-        # Formula block
-        elif block_type == "formula":
-            expression = str(block.get("expression") or "").strip()
-            if expression and len(expression) < 100:
-                summary_parts.append(f"Formula: {expression}")
-
-        # Number list items
-        elif block_type == "numbered_list":
-            items = block.get("items", [])
-            if isinstance(items, list):
-                for i, item in enumerate(items[:3], 1):
-                    if not isinstance(item, dict):
-                        continue
-                    text = str(item.get("text") or "").strip()
-                    if text:
-                        summary_parts.append(f"Step {i}: {text[:80]}")
-
-        # Cyclic process
-        elif block_type == "cyclic_process":
-            items = block.get("items", [])
-            if isinstance(items, list):
-                for item in items[:3]:
-                    if not isinstance(item, dict):
-                        continue
-                    label = str(item.get("label", "") or "").strip()
-                    description = str(item.get("description", "") or "").strip()
-                    if label:
-                        summary_parts.append(f"Phase: {label} - {description[:60]}")
-
-        # Process arrow block
-        elif block_type == "process_arrow":
-            items = block.get("items", [])
-            if isinstance(items, list):
-                for item in items[:3]:
-                    if not isinstance(item, dict):
-                        continue
-                    label = str(item.get("label", "") or "").strip()
-                    if label:
-                        summary_parts.append(f"Step: {label}")
-
-    # Limit to ~400 tokens by truncating
-    content_summary = "\n".join(summary_parts[:15])
-    if len(content_summary) > 1200:
-        content_summary = content_summary[:1200] + "..."
-
-    return content_summary
+    content_summary = "\n".join(summary_parts)
+    return content_summary, item_count
 
 
 def _build_fallback_narration(
@@ -278,7 +244,10 @@ def generate_narration_v2(
     visual_cues = "IMPORTANT: Focus purely on explaining the concepts. DO NOT explicitly reference the frontend visual elements or the screen. Never say 'as you can see', 'shown by the icon', 'in this image', 'on this slide', or similar phrases. Teach the material directly as if having a conversation."
 
     # Step 3: Summarize slide content for the LLM
-    content_summary = _summarize_slide_content(enriched_slide)
+    content_summary, item_count = _summarize_slide_content(enriched_slide)
+
+    # Calculate expected segments
+    expected_segments = item_count if item_count > 0 else 3
 
     # Step 4: Attempt LLM call (prefer Groq for speed)
     slide_title = str(enriched_slide.get("title") or "the concept").strip()
@@ -298,17 +267,22 @@ SLIDE CONTENT SUMMARY:
 {visual_cues}
 
 INSTRUCTIONS:
-1. Content Conversion: Take the exact facts and concepts from the SLIDE CONTENT SUMMARY and convert them into spoken narration. The slide content MUST be the core of what you say.
-2. Teacher Persona & Mental Model: You MUST teach the content by strictly conforming to the framework, analogy, or approach provided in TEACHING STYLE OR MENTAL MODEL. Present the slide content through this exact lens, using its specific vocabulary (e.g., if it's a factory analogy, map the content to 'assembly' or 'inputs'; if it's Socratic, guide the user with questions).
-3. Segmentation: Each segment should map roughly to one visual element on the slide (one card, one step, etc.) and be short (good for animation sync).
-4. Do NOT repeat the slide title verbatim. Do NOT just read bullet points — explain them naturally as a teacher would.
-5. Create 3–5 segments in total.
-6. Output MUST be ONLY valid JSON matching this schema exactly, with NO markdown formatting or code fences:
+1. Content Conversion: Take the facts and concepts from the SLIDE CONTENT SUMMARY and convert them into spoken narration.
+2. Introduction: The VERY FIRST segment MUST start with a human, pedagogical opening.
+   - Avoid generic phrases like "Welcome to the slide," "On this page," or "Now we see."
+   - Never repeat the slide title verbatim as the first words.
+   - Use a 'Bridge' (connecting to the previous concept), a 'Hook' (posing a high-level question), or a 'Future Frame' (stating why this knowledge is crucial).
+   - Ensure the tone is warm and conversational, opening the subtopic as if in a live tutoring session.
+3. Teacher Persona & Mental Model: Strictly conform to the {mentalModel} framework.
+4. Smart Depth: Use your professional judgment to decide on explanation depth. If a concept is complex or crucial, explain it in more detail. If it's a simple term or auxiliary info, keep it concise. Do NOT be generic; be specific to the facts provided.
+5. Exact Segmentation: You MUST output exactly {expected_segments} segments. Each segment must map cleanly to one visual item (e.g., if there are 3 cards in the summary, provide exactly 3 segments).
+6. Avoid repetition: Do not read bullet points verbatim. Explain them naturally as if in a live classroom.
+7. Output MUST be ONLY valid JSON:
 {{
   "narration_segments": [
-    "segment 1...",
-    "segment 2...",
-    "segment 3..."
+    "segment 1 (intro + item 1)...",
+    "segment 2 (item 2)...",
+    "segment {expected_segments} (item {expected_segments})..."
   ]
 }}"""
 

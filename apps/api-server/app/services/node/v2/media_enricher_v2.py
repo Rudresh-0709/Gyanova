@@ -139,7 +139,10 @@ def _fill_missing_icons(payload: dict[str, Any], topic: str) -> None:
 
     for idx, (_, item) in enumerate(targets):
         if idx < len(selected):
-            item["icon_name"] = selected[idx]
+            icon = selected[idx]
+            item["icon_name"] = icon
+            heading = item.get("heading") or item.get("title") or "Item"
+            print(f"   [MEDIA] Assigned icon: '{icon}' to '{heading}'")
 
 
 def _remove_accent_images(payload: dict[str, Any]) -> None:

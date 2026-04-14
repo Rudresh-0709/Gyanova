@@ -217,6 +217,14 @@ class ImageGenerator:
             response.raise_for_status()
             data = response.json()
             return data.get("sdGenerationJob", {}).get("generationId")
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 403:
+                print(f"   ❌ Leonardo.AI Forbidden (403): Check API Key or Subscription level.")
+            elif e.response.status_code == 429:
+                print(f"   ⏳ Leonardo.AI Rate Limited (429).")
+            else:
+                print(f"   ❌ Leonardo.AI HTTP Error: {e.response.status_code} - {e.response.text[:100]}")
+            return None
         except Exception as e:
             print(f"ERROR: Leonardo Generation Request failed: {e}")
             return None

@@ -195,7 +195,7 @@ class GyMLValidator:
             "cyclic_process_block",
             "process_arrow_block",
             "feature_showcase_block",
-            "sequential_output_block",
+            "sequential_output",
             "code",
             "table",
         ]
@@ -292,6 +292,7 @@ class GyMLValidator:
             "featureShowcase",
             "cyclicBlock",
             "sequentialOutput",
+            "sequentialSteps",
             "bulletIcon",
             "bulletCheck",
             "timelineIcon",
@@ -367,7 +368,10 @@ class GyMLValidator:
         elif isinstance(node, GyMLFormulaBlock):
             return "formula_block"
         elif hasattr(node, "type"):
-            return getattr(node, "type")
+            node_type = getattr(node, "type")
+            if hasattr(node_type, "value"):
+                return str(node_type.value)
+            return str(node_type)
         else:
             return type(node).__name__.lower()
 

@@ -610,9 +610,17 @@ class GyMLRenderer:
         icon_class = None
         if variant not in ICON_SKIP_VARIANTS:
             if item.icon:
-                icon_class = item.icon.alt
-                if not icon_class.startswith("ri-"):
-                    icon_class = f"ri-{icon_class}-line"
+                icon_class = str(item.icon.alt or "").strip()
+                if icon_class:
+                    if not icon_class.startswith("ri-"):
+                        icon_class = f"ri-{icon_class}-line"
+                    elif not (icon_class.endswith("-line") or icon_class.endswith("-fill")):
+                        # Special cases like ri-github-fill or ri-number-1
+                        # Most concepts need -line or -fill. 
+                        # If it's a concept (not a number/brand that usually exists as-is), add -line
+                        concept_bases = ["brain", "pencil", "link", "shield", "star", "heart"]
+                        if any(b in icon_class for b in concept_bases) or not any(c.isdigit() for c in icon_class[-2:]):
+                             icon_class = f"{icon_class}-line"
             elif variant == "solidBoxesWithIconsInside":
                 default_icons = [
                     "ri-lightbulb-line",
@@ -631,6 +639,8 @@ class GyMLRenderer:
                 icon_class = "ri-check-line" if index == 0 else "ri-close-line"
 
         if icon_class:
+            # Diagnostic Log
+            print(f"   [RENDER] Item Icon: {icon_class} (variant: {variant})")
             html_parts.append(
                 f'<div class="card-icon"><i class="{self._escape(icon_class)}"></i></div>'
             )
@@ -1487,6 +1497,12 @@ body {
 }
 
 :root {
+    --bg-primary: #0b1121;
+    --bg-secondary: #0f172a;
+    --text-primary: #f8fafc;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --accent: #4f46e5;
+    
     /* Single source of truth for content padding (applied ONLY on .body). */
     /* Use responsive padding by default; allow per-slide overrides via --section-padding. */
     --slide-content-padding: var(
@@ -2030,12 +2046,31 @@ section {
     height: 100vh;
     /* Section never has padding — all padding lives on .body. */
     padding: 0;
-    background: var(--bg-secondary, #ffffff);
+    background: radial-gradient(circle at 2% 2%, rgba(56, 189, 248, 0.1) 0%, transparent 45%),
+                radial-gradient(circle at 98% 98%, rgba(79, 70, 229, 0.1) 0%, transparent 45%),
+                #0b1121;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     scroll-snap-align: start; /* Snap target */
-    flex-shrink: 0; /* Prevent shrinking */
+    flex-shrink: 0;           /* Prevent shrinking */
+}
+
+/* Precise Digital Grid Overlay - Hoisted to top layer for visibility */
+section::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* Explicitly disable grid for full-image background slides to keep them clean */
+section[data-image-layout="behind"]::after {
+    display: none;
 }
 
 /* ... image layouts ... */
@@ -2128,6 +2163,23 @@ section[data-image-layout="top"] {
     flex-direction: column;
     gap: 0;
 }
+section[data-image-layout="top"] .accent-image-wrapper,
+section[data-image-layout="bottom"] .accent-image-wrapper {
+    position: relative;
+}
+section[data-image-layout="top"] .accent-image-wrapper::after,
+section[data-image-layout="bottom"] .accent-image-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    z-index: 1;
+}
+
 section[data-image-layout="bottom"] {
     display: flex;
     flex-direction: column;
@@ -2408,7 +2460,6 @@ section[data-image-layout="right-wide"] .accent-image-wrapper img {
     /* Vertical centering: equal whitespace above/below when content is short.
        "safe center" prevents top clipping if content overflows. */
     justify-content: center;
-    justify-content: safe center;
     min-height: 0;
 }
 
@@ -2426,8 +2477,22 @@ h1 {
     font-weight: 800;
     line-height: 1.25;
     letter-spacing: -0.03em;
-    color: var(--text-primary, #1a1a1a);
-    margin-bottom: var(--heading-gap, 0.1rem);
+    color: #D0E4FF;
+    margin-bottom: var(--heading-gap, 0.5rem);
+    position: relative;
+    padding-bottom: 0.75rem;
+    display: inline-block;
+}
+
+h1::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 120px;
+    height: 4px;
+    background: linear-gradient(90deg, #D0E4FF, #2E6BC4, transparent);
+    border-radius: 2px;
 }
 
 h2 {
@@ -2458,9 +2523,13 @@ p {
     color: var(--text-secondary, #4a4a4a);
 }
 
-.p-intro {
-    font-size: calc(var(--p-size) * 1.22);
+.p-intro, .p-context {
+    font-size: calc(var(--h1-size, 2.25rem) * 0.5);
     font-weight: 500;
+    line-height: normal;
+}
+
+.p-intro {
     color: var(--text-primary, #1a1a1a);
     margin-bottom: 0.4rem;
     line-height: 1.55;
@@ -2473,7 +2542,7 @@ p {
     color: var(--text-tertiary, #666);
     opacity: 0.95;
     /* Keep context/subtitle clearly subordinate to the main title */
-    font-size: clamp(0.9rem, calc(var(--h1-size, 2.25rem) * 0.44), 1.05rem);
+    font-size: calc(var(--h1-size, 2.25rem) * 0.5);
     line-height: 1.55;
     background: color-mix(in srgb, var(--bg-secondary, #f8fafc) 78%, transparent);
     border: 1px dashed color-mix(in srgb, var(--border-color, #d1d5db) 85%, transparent);
@@ -3721,16 +3790,14 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"] {
-    /* Default (no supporting image): 3-column vertical grid */
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
+    gap: var(--block-gap, 1.25rem);
     width: 100%;
-    max-width: none;
     margin-inline: 0;
     margin-top: 0;
     padding: 0;
     overflow: visible;
-    /* Let the grid expand to reduce unused bottom whitespace on sparse slides */
     flex: 1 1 auto;
     align-content: stretch;
 }
@@ -3767,13 +3834,14 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
     height: 2.7rem;
     margin-bottom: 0.35rem;
     border-radius: 0.78rem;
-    background: color-mix(in srgb, var(--accent, #38bdf8) 12%, transparent);
-    color: color-mix(in srgb, var(--accent, #38bdf8) 82%, #ffffff);
-    box-shadow: none;
+    background: linear-gradient(to bottom, #1A4B8C, #3B7DD8);
+    color: #D0E4FF;
+    box-shadow: 0 0 20px rgba(46, 107, 196, 0.25);
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"] .card-icon i {
     font-size: 1.15rem;
+    color: #D0E4FF;
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"] .card-number {
@@ -4320,12 +4388,10 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
     z-index: 0;
 }
 
-.smart-layout[data-variant="diamondRibbon"] .card:nth-child(odd)::before {
-    background: #d92d2d;
-}
-
+.smart-layout[data-variant="diamondRibbon"] .card:nth-child(odd)::before,
 .smart-layout[data-variant="diamondRibbon"] .card:nth-child(even)::before {
-    background: #2f343b;
+    background: linear-gradient(to bottom, #1A4B8C, #3B7DD8);
+    box-shadow: 0 0 20px rgba(46, 107, 196, 0.3);
 }
 
 .smart-layout[data-variant="diamondRibbon"] .card::after {
@@ -4335,7 +4401,7 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
     left: 50%;
     width: 1px;
     height: 1.5rem;
-    background: rgba(148, 163, 184, 0.6);
+    background: #2E6BC4;
     transform: translateX(-50%);
 }
 
@@ -4365,7 +4431,7 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
 .smart-layout[data-variant="diamondRibbon"] .card-icon i,
 .smart-layout[data-variant="diamondRibbon"] .card-number {
     font-size: 1.8rem;
-    color: inherit;
+    color: #D0E4FF;
 }
 
 .smart-layout[data-variant="diamondRibbon"] .card-title {
@@ -4374,15 +4440,15 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
     line-height: 1.35;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--text-primary, #111827);
+    color: #8AAFDB;
 }
 
 .smart-layout[data-variant="diamondRibbon"] .card-text {
     max-width: 16ch;
     margin: 0 auto;
     font-size: 0.95rem;
-    line-height: 1.45;
-    color: var(--text-secondary, #4b5563);
+    line-height: 1.55;
+    color: #5A7EA3;
 }
 
 section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] {
@@ -4448,6 +4514,8 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
     position: relative;
     display: flex;
     overflow: visible;
+    gap: 2.5rem;
+    grid-template-columns: auto 1fr;
 }
 
 .smart-layout[data-variant="diamondGrid"] .card-content {
@@ -4499,8 +4567,8 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
 .smart-layout[data-variant="diamondGrid"][data-item-count="3"]:not(.diagonal) .card {
     grid-column: 1 / 3;
     display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: 4rem;
+    grid-template-columns: auto 1fr;
+    gap: 2.5rem;
     align-items: center;
 }
 
@@ -4520,7 +4588,7 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
 .smart-layout[data-variant="diamondGrid"][data-item-count="4"]:not(.grid-2d) .card {
     flex-direction: column;
     align-items: center;
-    gap: 3rem;
+    gap: 2.5rem;
 }
 
 /* Sub-Layout 3: 2x2 Grid (Slide 3 Style - n=4) */
@@ -4531,8 +4599,8 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
 
 .smart-layout[data-variant="diamondGrid"].grid-2d[data-item-count="4"] .card {
     display: grid;
-    grid-template-columns: 100px 1fr;
-    gap: 3rem;
+    grid-template-columns: auto 1fr;
+    gap: 2.5rem;
     align-items: flex-start;
 }
 
@@ -4834,22 +4902,10 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
 }
 
 .smart-layout[data-variant="processAccordion"] {
-    /* Grid layout (not stacked): 2x2 for 4 items, bento for 5 items */
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
-    align-items: stretch;
-}
-
-.smart-layout[data-variant="processAccordion"][data-item-count="5"],
-.smart-layout[data-variant="processAccordion"][data-item-count="6"] {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-auto-flow: row dense;
-}
-
-/* Bento: 5 items -> last row is 2-wide + 1 */
-.smart-layout[data-variant="processAccordion"][data-item-count="5"] .card:nth-child(4) {
-    grid-column: 1 / span 2;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+    width: 100%;
 }
 
 .smart-layout[data-variant="processSteps"] .card {
@@ -4896,26 +4952,26 @@ section[data-density="super_dense"] .smart-layout[data-variant="diamondRibbon"] 
 
 .smart-layout[data-variant="processAccordion"] .card {
     position: relative;
-    border: 1px solid var(--border-color, #e2e8f0);
-    background: var(--bg-secondary, #ffffff);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
     padding: 1.25rem 1.5rem;
     margin: 0;
     border-left: 4px solid var(--accent, #6366f1);
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .smart-layout[data-variant="processAccordion"] .card-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--text-primary, #0f172a);
-    margin-bottom: 0.25rem;
+    font-size: clamp(1.125rem, 2vw, 1.25rem);
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
 }
 
 .smart-layout[data-variant="processAccordion"] .card-text {
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: var(--text-secondary, #475569);
+    font-size: clamp(0.875rem, 1.5vw, 1rem);
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.65);
 }
 
 .smart-layout[data-variant="processAccordion"] .card-number {

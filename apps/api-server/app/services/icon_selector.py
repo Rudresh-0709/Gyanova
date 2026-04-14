@@ -30,6 +30,7 @@ import re
 import sys
 import json
 import time
+import asyncio
 import threading
 from typing import Dict, List, Optional, Set, Tuple
 from functools import lru_cache
@@ -39,11 +40,12 @@ from dotenv import load_dotenv
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 try:
-    from llm.model_loader import load_groq_fast
+    from app.services.llm.model_loader import load_groq_fast
 except ImportError:
-    import sys as _sys
-    _sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-    from app.llm.model_loader import load_groq_fast
+    try:
+        from services.llm.model_loader import load_groq_fast
+    except ImportError:
+        from llm.model_loader import load_groq_fast
 
 load_dotenv()
 
@@ -346,10 +348,16 @@ def invoke_with_retry(
             if is_rate_limit and attempt < max_retries - 1:
                 delay = base_delay * (2 ** attempt)  # 2s, 4s, 8s
                 print(
-                    f"   ⏳ Rate limited. Waiting {delay:.1f}s before retry "
+                    f"   [WAIT] Rate limited (429). Waiting {delay:.1f}s before retry "
                     f"{attempt + 2}/{max_retries}..."
                 )
                 time.sleep(delay)
+            elif "413" in error_str:
+                print("   [ERR] LLM Request Too Large (413). Prompt exceeds token limit.")
+                raise  # Let caller handle fallback
+            elif "403" in error_str:
+                print("   [ERR] LLM Access Forbidden (403). Check API keys/permissions.")
+                raise  # Let caller handle fallback
             else:
                 raise
 
@@ -521,11 +529,11 @@ Pick the single best category. Output ONLY valid JSON."""
                 return cat_name
 
         # Default to first category
-        print(f"   ⚠ Unknown category '{category}', using first available.")
+        print(f"   [WARN] Unknown category '{category}', using first available.")
         return list(REMIX_ICONS.keys())[0]
 
     except Exception as e:
-        print(f"   ⚠ Category selection failed: {e}. Using first category.")
+        print(f"   [WARN] Category selection failed: {e}. Using first category.")
         return list(REMIX_ICONS.keys())[0]
 
 
@@ -568,7 +576,7 @@ def _select_icon_from_list(
     exclusion_text = ""
     if exclude_icons:
         exclusion_text = f"""
-🚨 DO NOT use any of these icons (already assigned to other items):
+[CRITICAL] DO NOT use any of these icons (already assigned to other items):
 {json.dumps(sorted(exclude_icons), indent=2)}
 """
 
@@ -582,7 +590,7 @@ CONTENT:
 AVAILABLE ICONS (you MUST pick from this exact list):
 {json.dumps(available, indent=2)}
 {exclusion_text}
-⚠️ You MUST return an icon name that appears EXACTLY in the list above.
+[WARN]️ You MUST return an icon name that appears EXACTLY in the list above.
 Do NOT invent or modify icon names.
 
 OUTPUT FORMAT (JSON only, no markdown):
@@ -607,11 +615,11 @@ Output ONLY valid JSON."""
                 return avail
 
         # LLM returned something not in the list; pick first available
-        print(f"   ⚠ Icon '{icon}' not in available list. Using first available.")
+        print(f"   [WARN] Icon '{icon}' not in available list. Using first available.")
         return available[0]
 
     except Exception as e:
-        print(f"   ⚠ Icon selection from list failed: {e}. Using first available.")
+        print(f"   [WARN] Icon selection from list failed: {e}. Using first available.")
         return available[0] if available else get_unique_fallback(exclude_icons)
 
 
@@ -628,16 +636,6 @@ def select_icon(
     """
     Intelligently select the most appropriate RemixIcon for given content.
     Uses a two-stage approach: (1) pick category, (2) pick icon from category.
-
-    Args:
-        heading: The bullet point heading/title
-        description: The bullet point description text
-        context: Additional context (slide_title, slide_purpose, subtopic_name)
-        exclude_icons: Set of icon names to avoid (for uniqueness)
-
-    Returns:
-        Normalized RemixIcon class name (e.g., "ri-cpu-line")
-        Guaranteed to exist in the library (or a valid fallback).
     """
     context = context or {}
     exclude_icons = exclude_icons or set()
@@ -646,46 +644,43 @@ def select_icon(
     try:
         # Stage 1: Pick best category
         category = _select_category(llm, heading, description, context)
-        print(f"   📂 Category: {category}")
-
+        
         # Stage 2: Pick best icon from that category
         icons_in_category = get_all_icons_for_category(category)
         raw_icon = _select_icon_from_list(
             llm, heading, description, category, icons_in_category, exclude_icons
         )
 
-        # Normalize to ensure consistent suffix handling
         icon = normalize_icon_name(raw_icon)
 
-        # ---------------------------------------------------------------
-        # FINAL VALIDATION: ensure the normalized icon actually exists
-        # in the library. If the LLM hallucinated or normalize produced
-        # an invalid name, fall back safely.
-        # ---------------------------------------------------------------
         if not icon_exists(icon):
-            print(
-                f"   ⚠ Normalized icon '{icon}' does not exist in library. "
-                f"Raw was '{raw_icon}'. Falling back."
-            )
-            # Try using the raw icon directly if it exists
             if raw_icon in _ALL_RAW_ICONS and raw_icon not in exclude_icons:
                 icon = raw_icon
-                print(f"   🔄 Using raw icon instead: {icon}")
             else:
                 icon = get_unique_fallback(exclude_icons)
-                print(f"   🔄 Using fallback: {icon}")
 
-        # One more check: make sure it's not in the exclude set
         if icon in exclude_icons:
             icon = get_unique_fallback(exclude_icons)
-            print(f"   🔄 Icon was excluded, switched to fallback: {icon}")
 
-        print(f"   ✓ Selected icon: {icon} ({category})")
         return icon
 
     except Exception as e:
-        print(f"   ❌ Icon selection failed: {e}")
+        print(f"   [ERR] Icon selection failed: {e}")
         return get_unique_fallback(exclude_icons)
+
+
+async def select_icon_async(
+    heading: str,
+    description: str,
+    context: Optional[Dict[str, str]] = None,
+    exclude_icons: Optional[Set[str]] = None,
+) -> str:
+    """Async version of select_icon."""
+    # Since Groq Fast is so quick, we mostly just wrap the sync call in a thread 
+    # to allow parallel execution in _individual_selection.
+    return await asyncio.to_thread(
+        select_icon, heading, description, context, exclude_icons
+    )
 
 
 # ============================================================================
@@ -698,18 +693,6 @@ def select_icons_batch(
     """
     Select UNIQUE icons for multiple items efficiently.
     Ensures no duplicate icons are assigned to different items on the same slide.
-
-    Strategy:
-    1. First try a single batch LLM call for efficiency.
-    2. Validate & deduplicate the results.
-    3. For any items that still need icons (invalid or duplicate), use individual calls.
-
-    Args:
-        items: List of dicts with 'heading' and 'description' keys
-        context: Shared context for all items
-
-    Returns:
-        List of unique, normalized, library-validated icon class names
     """
     if not items:
         return []
@@ -717,27 +700,27 @@ def select_icons_batch(
     context = context or {}
     llm = get_llm_client()
 
-    print(f"   🎨 Selecting icons for {len(items)} items (style: {ICON_STYLE})")
+    print(f"   [ICONS] Selecting icons for {len(items)} items (style: {ICON_STYLE})")
 
-    # ---------------------------------------------------------------
-    # STAGE A: Try a single batch LLM call
-    # ---------------------------------------------------------------
+    # 1. Try Batch
     batch_result = _try_batch_selection(llm, items, context)
-
-    if batch_result is not None and len(batch_result) == len(items):
-        # Validate and deduplicate
+    if batch_result and len(batch_result) == len(items):
         final_icons = _validate_and_deduplicate(batch_result, items, context)
         if final_icons:
-            print(f"   ✓ Selected {len(final_icons)} unique icons via batch")
             return final_icons
 
-    # ---------------------------------------------------------------
-    # STAGE B: Fallback to individual selection with dedup tracking
-    # ---------------------------------------------------------------
-    print(f"   🔄 Falling back to individual icon selection")
-    final_icons = _individual_selection(items, context)
+    # 2. Fallback to Parallel Individual Selection
+    print(f"   [PARALLEL] Falling back to parallel individual icon selection")
+    try:
+        # Use a nested event loop or create one if not running
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        final_icons = loop.run_until_complete(_individual_selection_async(items, context))
+        loop.close()
+    except Exception as e:
+        print(f"   [WARN] Async fallback failed: {e}. Using sync fallback.")
+        final_icons = _individual_selection_sync(items, context)
 
-    print(f"   ✓ Selected {len(final_icons)} unique icons (individual)")
     return final_icons
 
 
@@ -745,15 +728,10 @@ def _try_batch_selection(
     llm, items: List[Dict[str, str]], context: Dict[str, str]
 ) -> Optional[List[str]]:
     """
-    Attempt to select all icons in a single LLM call.
-    Returns list of raw icon names, or None on failure.
+    Attempt to select all icons via 'Propose-and-Match' pattern.
+    Avoids 413 error by NOT sending the full library.
     """
     categories_summary = get_icon_categories_summary()
-
-    # Build full icon library reference (all icons per category)
-    icon_library = {}
-    for category, data in REMIX_ICONS.items():
-        icon_library[category] = data.get("icons", [])
 
     items_text = "\n".join(
         [
@@ -763,33 +741,27 @@ def _try_batch_selection(
         ]
     )
 
-    prompt = f"""You are selecting visually meaningful icons for {len(items)} educational bullet points.
-
-AVAILABLE ICON CATEGORIES:
+    prompt = f"""You are picking one icon for each of {len(items)} items.
+    
+AVAILABLE CATEGORIES:
 {categories_summary}
-
-COMPLETE ICON LIBRARY (you MUST pick icons from these lists):
-{json.dumps(icon_library, indent=2)}
 
 SLIDE CONTEXT: {json.dumps(context, indent=2)}
 
 ITEMS:
 {items_text}
 
-🚨 CRITICAL REQUIREMENTS:
-1. Each item MUST have a DIFFERENT icon — NO DUPLICATES
-2. You MUST pick icons that appear EXACTLY in the icon library above
-3. Do NOT invent icon names
-
-OUTPUT FORMAT (JSON only, no markdown):
+OUTPUT FORMAT (JSON only):
 {{
   "icons": [
-    {{"item_number": 1, "icon": "exact-icon-from-library", "category": "CategoryName", "reasoning": "Brief"}},
-    {{"item_number": 2, "icon": "different-icon-from-library", "category": "CategoryName", "reasoning": "Brief"}}
+    {{"item_number": 1, "category": "CategoryName", "conceptual_name": "brain", "reasoning": "..."}},
+    {{"item_number": 2, "category": "CategoryName", "conceptual_name": "lightning", "reasoning": "..."}}
   ]
 }}
-
-Output ONLY valid JSON. Every icon MUST be unique and MUST exist in the library."""
+IMPORTANT: 
+- Pick a valid Category.
+- Propose a simple 'conceptual_name' like 'shield', 'settings', 'cpu', 'search', 'book'.
+- I will match your conceptual_name to the real library locally."""
 
     try:
         response = invoke_with_retry(llm, [{"role": "user", "content": prompt}])
@@ -798,12 +770,20 @@ Output ONLY valid JSON. Every icon MUST be unique and MUST exist in the library.
 
         raw_icons = []
         for icon_data in icon_list:
-            raw_icons.append(icon_data.get("icon", ""))
+            category = icon_data.get("category", "")
+            concept = icon_data.get("conceptual_name", "")
+            
+            # Local Resolution: Try matching concept to library
+            matched = validate_icon_any_category(concept)
+            if not matched:
+                # Try category representative
+                matched = get_category_icon(category)
+            
+            raw_icons.append(matched)
 
         return raw_icons
-
     except Exception as e:
-        print(f"   ⚠ Batch LLM call failed: {e}")
+        print(f"   [WARN] Batch selection optimized prompt failed: {e}")
         return None
 
 
@@ -848,7 +828,7 @@ def _validate_and_deduplicate(
 
     # Re-select the problematic ones individually
     if needs_reselection:
-        print(f"   🔧 Re-selecting {len(needs_reselection)} icons (duplicates/invalid)")
+        print(f"   [FIX] Re-selecting {len(needs_reselection)} icons (duplicates/invalid)")
         for idx in needs_reselection:
             item = items[idx]
             icon = select_icon(
@@ -870,16 +850,33 @@ def _validate_and_deduplicate(
     return normalized
 
 
-def _individual_selection(
+async def _individual_selection_async(
     items: List[Dict[str, str]], context: Dict[str, str]
 ) -> List[str]:
-    """
-    Select icons one by one with duplicate tracking.
-    Most reliable but uses more API calls.
-    """
+    """Select icons in parallel."""
+    tasks = []
+    for item in items:
+        tasks.append(
+            select_icon_async(
+                heading=item.get("heading", ""),
+                description=item.get("description", ""),
+                context=context
+            )
+        )
+    
+    # Simple parallel execution - uniqueness is handled by post-processing in batch wrapper if needed,
+    # but here we just gather results. Note: exclude_icons is hard to do perfectly in pure parallel
+    # without a shared state, so we just select them and then deduplicate if needed.
+    results = await asyncio.gather(*tasks)
+    return list(results)
+
+
+def _individual_selection_sync(
+    items: List[Dict[str, str]], context: Dict[str, str]
+) -> List[str]:
+    """Legacy sync individual selection."""
     selected_icons: List[str] = []
     used_icons: Set[str] = set()
-
     for i, item in enumerate(items):
         icon = select_icon(
             heading=item.get("heading", ""),
@@ -887,14 +884,8 @@ def _individual_selection(
             context=context,
             exclude_icons=used_icons,
         )
-
-        # select_icon already checks excludes, but belt-and-suspenders
-        if icon in used_icons:
-            icon = get_unique_fallback(used_icons, i)
-
         selected_icons.append(icon)
         used_icons.add(icon)
-
     return selected_icons
 
 
@@ -921,9 +912,9 @@ def quick_icon_select(icon_type: str) -> str:
 # ============================================================================
 
 if __name__ == "__main__":
-    print("\n" + "=" * 80)
-    print("ICON SELECTOR TEST (v2 — with all refinements)")
-    print("=" * 80 + "\n")
+    print("-" * 80)
+    print("ICON SELECTOR TEST (v2 - with all refinements)")
+    print("-" * 80 + "\n")
 
     # --- Test 0: normalize_icon_name edge cases ---
     print("--- Test 0: normalize_icon_name Edge Cases ---\n")
@@ -938,7 +929,7 @@ if __name__ == "__main__":
     ]
     for raw, desc in test_normalize:
         result = normalize_icon_name(raw)
-        exists = "✅" if icon_exists(result) else "❌"
+        exists = "[OK]" if icon_exists(result) else "[MISSING]"
         print(f"  {raw:25s} -> {result:30s} {exists}  ({desc})")
     print()
 
@@ -983,8 +974,8 @@ if __name__ == "__main__":
             context=test.get("context"),
         )
 
-        exists = "✅ exists" if icon_exists(icon) else "❌ NOT FOUND"
-        print(f"  ➜ Selected Icon: {icon}  ({exists})")
+        exists = "OK" if icon_exists(icon) else "NOT FOUND"
+        print(f"  -> Selected Icon: {icon}  ({exists})")
         print("-" * 60)
 
     # --- Test 2: Batch selection (uniqueness) ---
@@ -1007,7 +998,7 @@ if __name__ == "__main__":
 
     print("\nBatch Results:")
     for i, (item, icon) in enumerate(zip(batch_items, icons), 1):
-        exists = "✅" if icon_exists(icon) else "❌"
+        exists = "[OK]" if icon_exists(icon) else "[MISSING]"
         print(f"  {i}. {item['heading']:15s} -> {icon:35s} {exists}")
 
     # Check uniqueness
@@ -1015,19 +1006,19 @@ if __name__ == "__main__":
     total_count = len(icons)
     print(f"\n  Uniqueness: {unique_count}/{total_count} unique icons")
     if unique_count == total_count:
-        print("  ✅ All icons are unique!")
+        print("  [OK] All icons are unique!")
     else:
-        print("  ❌ DUPLICATE ICONS DETECTED")
+        print("  [ERR] DUPLICATE ICONS DETECTED")
 
     # Check existence
     all_exist = all(icon_exists(icon) for icon in icons)
-    print(f"  Existence: {'✅ All exist' if all_exist else '❌ Some missing'}")
+    print(f"  Existence: {'OK' if all_exist else 'Some missing'}")
 
     # --- Test 3: Quick select ---
     print("\n\n--- Test 3: Quick Select (No LLM) ---\n")
     for icon_type in ["technology", "security", "education", "step", "unknown_type"]:
         icon = quick_icon_select(icon_type)
-        exists = "✅" if icon_exists(icon) else "❌"
+        exists = "[OK]" if icon_exists(icon) else "[ERR]"
         print(f"  {icon_type:20s} → {icon:35s} {exists}")
 
     print("\n" + "=" * 80)

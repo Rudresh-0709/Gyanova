@@ -1,21 +1,5 @@
 from __future__ import annotations
 
-try:
-    from app.services.node.slides.gyml.image_manager import ImageManager
-except ImportError:
-    from ..slides.gyml.image_manager import ImageManager  # type: ignore
-
-
-_DENSITY_TO_FLOAT = {
-    "ultra_sparse": 0.25,
-    "sparse": 0.45,
-    "balanced": 0.65,
-    "standard": 0.90,
-    "dense": 1.05,
-    "super_dense": 1.25,
-}
-
-
 def _normalize_history_layout(token: str) -> str:
     value = str(token or "").strip().lower()
     if not value:
@@ -36,73 +20,45 @@ def determine_image_layout_v2(
     explicit_layout: str | None = None,
     allowed_layouts: list[str] | tuple[str, ...] | None = None,
 ) -> str:
-    density_key = str(engine_density or "balanced").strip().lower()
-    mapped_float = _DENSITY_TO_FLOAT.get(density_key, _DENSITY_TO_FLOAT["balanced"])
-
-    # Tier 1: Use block's explicit supported_layouts (most accurate)
+    """
+    Determines image layout by prioritizing Block Catalog constraints.
+    Bypasses legacy heuristics in favor of variety-aware catalog rotation.
+    """
+    # 1. Determine the pool of valid layouts for this specific block
     if block_spec and getattr(block_spec, "supported_layouts", None):
-        width_allowed = list(block_spec.supported_layouts)
-    # Tier 2: Fall back to width_class heuristic for un-audited blocks  
-    elif has_wide_block:
-        width_allowed = ["top", "bottom", "blank"]
-    # Tier 3: No width constraint
+        valid_pool = list(block_spec.supported_layouts)
     else:
-        width_allowed = ["left", "right", "top", "bottom", "blank"]
+        # Fallback for un-audited or legacy blocks
+        valid_pool = ["top", "bottom", "blank"] if has_wide_block else ["left", "right", "top", "bottom", "blank"]
 
-    # Intersect with template constraints if provided
-    effective_allowed = width_allowed
+    # 2. Intersect with template constraints
     if allowed_layouts:
-        template_allowed = [str(l).strip().lower() for l in allowed_layouts]
-        intersection = [ly for ly in width_allowed if ly in template_allowed]
+        template_set = {str(l).strip().lower() for l in allowed_layouts}
+        intersection = [ly for ly in valid_pool if ly in template_set]
         if intersection:
-            effective_allowed = intersection
-        else:
-            # If intersection is empty (mismatch between template and width rule),
-            # default to the width-based rule as the primary visual constraint.
-            effective_allowed = width_allowed
+            valid_pool = intersection
 
-    raw_result = ImageManager.determine_placement(
-        slide_density=mapped_float,
-        has_user_image=False,
-        intent=intent,
-        explicit_layout=explicit_layout,
-        slide_index=slide_index,
-        has_wide_block=has_wide_block,
-        block_spec=block_spec,
-    )
+    # 3. Handle explicit requests (from user/LLM)
+    if explicit_layout and explicit_layout in valid_pool:
+        return explicit_layout
 
-    raw_result = str(raw_result or "blank").strip().lower()
+    # 4. Variety: Simple rotation through the active (non-blank) pool
+    active_pool = [l for l in valid_pool if l != "blank"]
+    if not active_pool:
+        active_pool = ["blank"]
 
-    # Apply history-based variety/flipping
+    # Use slide_index to ensures alternating placement (left/right or top/bottom)
+    choice = active_pool[slide_index % len(active_pool)]
+    
+    # 5. Flip if it repeats the previous slide (Deep variety)
     normalized_history = [
         _normalize_history_layout(item)
         for item in list(layout_history or [])
         if str(item or "").strip()
     ]
-    if normalized_history:
-        last_layout = normalized_history[-1]
-        if raw_result == last_layout:
-            flip_map = {
-                "left": "right",
-                "right": "left",
-                "top": "bottom",
-                "bottom": "top",
-                "blank": "left" if not has_wide_block else "top",
-            }
-            raw_result = flip_map.get(raw_result, raw_result)
+    if normalized_history and normalized_history[-1] == choice and len(active_pool) > 1:
+        # Simple cyclic rotation
+        idx = (active_pool.index(choice) + 1) % len(active_pool)
+        choice = active_pool[idx]
 
-    # Final enforcement of effective_allowed
-    if raw_result not in effective_allowed:
-        # Fallback strategy: try to find a similar one in effective_allowed
-        if raw_result in ("left", "right"):
-            for fb in ["top", "bottom", "blank"]:
-                if fb in effective_allowed:
-                    return fb
-        elif raw_result in ("top", "bottom"):
-            for fb in ["left", "right", "blank"]:
-                if fb in effective_allowed:
-                    return fb
-        
-        return effective_allowed[0]
-
-    return raw_result
+    return choice

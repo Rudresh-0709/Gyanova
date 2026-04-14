@@ -200,9 +200,15 @@ class SlideComposer:
 
         if "layout" in content:
             main_concept["layout"] = content["layout"]
+        elif "image_layout" in content:
+            main_concept["layout"] = content["image_layout"]
 
         if "imagePrompt" in content:
             main_concept["image_prompt"] = content["imagePrompt"]
+        elif "heroImagePrompt" in content:
+            main_concept["image_prompt"] = content["heroImagePrompt"]
+        elif "accentImagePrompt" in content:
+            main_concept["image_prompt"] = content["accentImagePrompt"]
 
         if "imageStyle" in content:
             main_concept["image_style"] = content["imageStyle"]

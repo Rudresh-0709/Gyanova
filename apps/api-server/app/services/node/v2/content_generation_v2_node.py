@@ -16,6 +16,7 @@ except ImportError:
     from .media_enricher_v2 import enrich_slide_media_sync
     from .narration_v2 import generate_narration_v2
 import json
+import time
 
 
 def _build_narration_text(plan_item: Dict[str, Any], slide: Dict[str, Any]) -> str:
@@ -101,7 +102,9 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         slide_grounding_mode = "soft_grounded" if concept.get("research_context") else global_grounding_mode
         concept["grounding_mode"] = slide_grounding_mode
 
+        t_gyml_start = time.time()
         slide_payload = generate_gyml_v2(concept)
+        t_gyml = time.time() - t_gyml_start
 
         # Apply hallucination guard in general_knowledge mode (non-destructive flag scan).
         if slide_grounding_mode == "general_knowledge":
@@ -130,6 +133,7 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
         # Mirror v1-style icon robustness by enriching media/icons after generation.
         # This fills missing icon_name values and keeps GyML/visual payloads synchronized.
+        t_media_start = time.time()
         try:
             slide_obj = enrich_slide_media_sync(
                 slide_obj,
@@ -139,6 +143,12 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         except Exception:
             # Never block slide generation on enrichment errors.
             pass
+        t_media = time.time() - t_media_start
+
+        slide_obj["_perf"] = {
+            "gyml": round(t_gyml, 2),
+            "media": round(t_media, 2)
+        }
 
         enriched_payload = slide_obj.get("gyml_content", slide_payload)
         

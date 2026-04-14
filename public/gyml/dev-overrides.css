@@ -17,14 +17,37 @@
 
 /* === Common overrides while tuning content-block hierarchy === */
 :root {
-  --slide-content-padding: var(
-    --section-padding,
-    clamp(1.5rem, 3.2vh, 2.75rem) clamp(1.75rem, 3vw, 3.25rem)
-  );
+  --bg-primary: #0b1121 !important;
+  --bg-secondary: #0f172a !important;
+  --text-primary: #f8fafc !important;
+  --slide-content-padding: clamp(1rem, 2.8vh, 2.5rem) clamp(1.25rem, 2.5vw, 2.75rem);
 }
 
-/* Base layout refactor: section has no padding, .body owns padding */
-section { padding: 0 !important; }
+section { 
+  padding: 0 !important; 
+  background: radial-gradient(circle at 2% 2%, rgba(56, 189, 248, 0.1) 0%, transparent 45%),
+              radial-gradient(circle at 98% 98%, rgba(79, 70, 229, 0.1) 0%, transparent 45%),
+              #0b1121 !important;
+  position: relative !important;
+}
+
+/* Precise Digital Grid Overlay - Hoisted to top layer for visibility */
+section::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px) !important;
+  background-size: 60px 60px !important;
+  pointer-events: none !important;
+  z-index: 100 !important;
+}
+
+/* Explicitly disable grid for full-image background slides to keep them clean */
+section[data-image-layout="behind"]::after {
+  display: none !important;
+}
+
 .body {
   padding: var(--slide-content-padding) !important;
   display: flex !important;
@@ -33,12 +56,29 @@ section { padding: 0 !important; }
   height: 100% !important;
   align-self: stretch !important;
   justify-content: center !important;
-  justify-content: safe center !important;
   min-height: 0 !important;
 }
 
 /* Make titles slightly larger */
-h1 { font-size: calc(var(--h1-size, 2.25rem) + 0.2rem) !important; }
+h1 {
+  font-size: calc(var(--h1-size, 2.25rem) + 0.2rem) !important;
+  color: #D0E4FF !important;
+  position: relative !important;
+  padding-bottom: 0.75rem !important;
+  display: inline-block !important;
+}
+
+h1::after {
+  content: "" !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 120px !important;
+  height: 4px !important;
+  background: linear-gradient(90deg, #D0E4FF, #2E6BC4, transparent) !important;
+  border-radius: 2px !important;
+}
+
 h2 { font-size: calc(var(--h2-size, 2rem) + 0.15rem) !important; }
 
 section[data-image-layout="right"] .body,
@@ -49,27 +89,55 @@ section[data-image-layout="left"] .body {
   padding-left: 0 !important;
 }
 
-.p-context {
-  font-size: clamp(0.9rem, calc(var(--h1-size, 2.25rem) * 0.44), 1.05rem) !important;
+.p-intro, .p-context {
+  font-size: calc(var(--h1-size, 2.25rem) * 0.5) !important;
   line-height: 1.55 !important;
 }
 
-/* === Diamond Grid: alternating diamond colors + typography hierarchy === */
-.smart-layout[data-variant="diamondGrid"] .card:nth-child(even) .card-number,
-.smart-layout[data-variant="diamondGrid"] .card:nth-child(even) .card-icon {
-  background: color-mix(in srgb, var(--item-color, #2563eb) 55%, white) !important;
-  color: #0f172a !important;
+/* === Universal Icons (Modern Tech) === */
+.card-icon, 
+.timeline-icon-badge {
+  background: linear-gradient(to bottom, #1A4B8C, #3B7DD8) !important;
+  color: #D0E4FF !important;
+  box-shadow: 0 0 20px rgba(46, 107, 196, 0.25) !important;
 }
-.smart-layout[data-variant="diamondGrid"] .card:nth-child(even) .card-icon i {
-  color: #0f172a !important;
+
+.card-icon i {
+  background: transparent !important;
+  color: #D0E4FF !important;
+  box-shadow: none !important;
 }
-.smart-layout[data-variant="diamondGrid"] .card-title {
+
+/* === Diamond Grid: refined tech hierarchy === */
+.smart-layout[data-variant="diamondGrid"] .card::before,
+.smart-layout[data-variant="diamondRibbon"] .card::before {
+  background: linear-gradient(to bottom, #1A4B8C, #3B7DD8) !important;
+  box-shadow: 0 0 20px rgba(46, 107, 196, 0.3) !important;
+}
+
+.smart-layout[data-variant="diamondGrid"] .card-title,
+.smart-layout[data-variant="diamondRibbon"] .card-title {
+  color: #8AAFDB !important;
   font-size: clamp(1.2rem, calc(var(--h1-size, 2.25rem) * 0.58), 1.45rem) !important;
 }
-.smart-layout[data-variant="diamondGrid"] .card-text {
+
+.smart-layout[data-variant="diamondGrid"] .card-text,
+.smart-layout[data-variant="diamondRibbon"] .card-text {
+  color: #5A7EA3 !important;
   font-size: clamp(0.95rem, calc(var(--h1-size, 2.25rem) * 0.40), 1.1rem) !important;
   line-height: 1.62 !important;
 }
+
+.smart-layout[data-variant="diamondGrid"] .card::after,
+.smart-layout[data-variant="diamondRibbon"] .card::after {
+  background: #2E6BC4 !important;
+}
+
+.smart-layout[data-variant="diamondGrid"] .card {
+  gap: 2.5rem !important;
+  grid-template-columns: auto 1fr !important;
+}
+
 
 /* === solidBoxesWithIconsInside: 3 cols when no image, bento with left/right image === */
 .smart-layout[data-variant="solidBoxesWithIconsInside"] {
@@ -96,6 +164,7 @@ section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIco
 section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card,
 section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
   min-height: 10.5rem !important;
+  border-color: #2E6BC4 !important;
 }
 section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"],
 section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"],
@@ -127,21 +196,49 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
   }
 }
 
-/* === processAccordion: grid layout (2x2 for 4, bento for 5) === */
+
+/* === processAccordion: 1x4 horizontal grid === */
 .smart-layout[data-variant="processAccordion"] {
   display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 1.25rem !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 1.5rem !important;
   align-items: stretch !important;
-}
-.smart-layout[data-variant="processAccordion"][data-item-count="5"],
-.smart-layout[data-variant="processAccordion"][data-item-count="6"] {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  grid-auto-flow: row dense !important;
-}
-.smart-layout[data-variant="processAccordion"][data-item-count="5"] .card:nth-child(4) {
-  grid-column: 1 / span 2 !important;
 }
 .smart-layout[data-variant="processAccordion"] .card {
   margin: 0 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-left: 4px solid var(--accent, #6366f1) !important;
+  padding: 1.25rem 1.5rem !important;
+  border-radius: 8px !important;
+}
+.smart-layout[data-variant="processAccordion"] .card-title {
+  font-size: clamp(1.125rem, 2vw, 1.25rem) !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  margin-bottom: 0.5rem !important;
+}
+.smart-layout[data-variant="processAccordion"] .card-text {
+  font-size: clamp(0.875rem, 1.5vw, 1rem) !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  line-height: 1.55 !important;
+}
+
+/* === Dark overlay for top/bottom hero images to improve contrast === */
+section[data-image-layout="top"] .accent-image-wrapper,
+section[data-image-layout="bottom"] .accent-image-wrapper {
+  position: relative !important;
+}
+
+section[data-image-layout="top"] .accent-image-wrapper::after,
+section[data-image-layout="bottom"] .accent-image-wrapper::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(0,0,0,0.4) !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
 }

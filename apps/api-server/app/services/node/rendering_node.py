@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import Dict, Any, List
 import os
 import sys
@@ -357,7 +358,9 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                             task_to_slide.append(("block_image", block, None))
 
     # Run image generations concurrently with a semaphore to avoid rate limits
+    t_images = 0
     if generation_tasks:
+        t_images_start = time.time()
         print(
             f"   🔥 [Rendering Node] Running {len(generation_tasks)} image generations with concurrency={image_concurrency}..."
         )
@@ -370,6 +373,7 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 return await task_coro
 
         results = await asyncio.gather(*(sem_task(t) for t in generation_tasks))
+        t_images = time.time() - t_images_start
 
         # Map results back to ComposedSlide or Item dicts
         for (target_kind, target, item), url in zip(task_to_slide, results):
@@ -427,14 +431,25 @@ async def rendering_node(state: Dict[str, Any]) -> Dict[str, Any]:
         try:
             composed_objs = composed_by_slide.get(id(slide))
             if composed_objs and isinstance(composed_objs, list) and len(composed_objs) > 0:
+                t_render_start = time.time()
                 # Serialize
                 gyml_sections = serializer.serialize_many(composed_objs)
                 # Render
                 html_output = renderer.render_complete(gyml_sections)
+                t_render = time.time() - t_render_start
 
                 slide["html_content"] = html_output
                 rendered_count += 1
+                
+                # Performance Logging
+                perf = slide.get("_perf", {})
+                gyml_t = perf.get("gyml", 0)
+                icons_t = perf.get("media", 0)
+                # "media" category includes both icon enrichment and Leonardo image generation
+                total_media = round(icons_t + t_images, 2)
+                
                 print(f"   ✅ Rendered {slide.get('slide_id', 'unknown')}")
+                print(f"   [PERF] gyml={gyml_t}s media={total_media}s render={round(t_render, 2)}s")
             elif not composed_objs:
                 print(f"   ⚠️ No composed objects for {slide.get('slide_id', 'unknown')}")
         except Exception as e:

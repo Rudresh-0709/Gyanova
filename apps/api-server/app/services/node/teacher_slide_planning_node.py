@@ -434,7 +434,7 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
     return [
         {
             "title": f"{subtopic_name}: Core Idea",
-            "objective": "Define the core idea and why it matters.",
+            "objective": "Establish foundational understanding of the core concept and its significance.",
             "intent": "definition",
             "content_angle": "overview",
             "coverage_contract": "Sole slide responsible for defining core terminology.",
@@ -461,7 +461,7 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
         },
         {
             "title": f"{subtopic_name}: How It Works",
-            "objective": "Explain the mechanism or process clearly.",
+            "objective": "Deconstruct the internal mechanism or process flow.",
             "intent": "classification",
             "content_angle": "mechanism",
             "coverage_contract": "Sole slide responsible for showing the internal process or mechanism.",
@@ -488,7 +488,7 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
         },
         {
             "title": f"{subtopic_name}: Applied Example",
-            "objective": "Apply the concept to a practical scenario.",
+            "objective": "Demonstrate practical application in a real-world scenario.",
             "intent": "application",
             "content_angle": "example",
             "coverage_contract": "Sole slide responsible for a worked application or real-world scenario.",
@@ -515,7 +515,7 @@ def _fallback_teacher_slides(subtopic_name: str) -> List[Dict[str, Any]]:
         },
         {
             "title": f"{subtopic_name}: Practice",
-            "objective": "Test recall and deepen retention.",
+            "objective": "Validate recall and reinforce core takeaways.",
             "intent": "practice",
             "content_angle": "summary",
             "coverage_contract": "Sole slide responsible for active recall and assessment.",
@@ -785,7 +785,7 @@ Output JSON schema:
     "slides": [
         {{
             "title": "short, specific title",
-            "objective": "1 sentence learning goal",
+            "objective": "A concise, high-level pedagogical goal (e.g. 'Recognize the 3 types of bonding'). CRITICAL: This is a subtitle; it must NOT be a preview of the narration or a snippet of the slide content.",
             "intent": "definition|classification|recognition|comparison|application|practice",
             "content_angle": "overview|mechanism|example|comparison|application|visualization|summary",
             "coverage_contract": "clear statement of UNIQUE responsibility",
@@ -892,7 +892,7 @@ Output JSON schema:
                 "slide_id": f"{sub_id}_t{i + 1}",
                 "sequence_index": i,
                 "title": str(slide.get("title", f"{subtopic_name} - Slide {i + 1}")).strip(),
-                "objective": str(slide.get("objective", "Explain the concept clearly.")).strip(),
+                "objective": str(slide.get("objective", "Acquire a clear understanding of the subject.")).strip(),
                 # New v2 fields
                 "intent": intent,
                 "content_angle": content_angle,
