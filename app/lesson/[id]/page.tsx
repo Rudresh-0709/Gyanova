@@ -262,36 +262,14 @@ function splitDeckIntoSlides(html: string, devCssVersion: number = 0): string[] 
             var _commandQueue = [];
             var _animator = null;
 
-            // Use a more robust way to block auto-reveal: 
-            // Monkey-patch the prototype if it exists, or wait for it.
-            function patchSlideAnimator() {
-                if (window.SlideAnimator && !window.SlideAnimator._patched) {
-                    var proto = window.SlideAnimator.prototype;
-                    var origRevealAll = proto.revealAll;
-                    
-                    // The real revealAll that we can trigger via message
-                    proto._realRevealAll = origRevealAll;
-                    
-                    // The blocked one that renderer calls at 100ms
-                    proto.revealAll = function() {
-                        console.log("SlideAnimator: blocked auto-revealAll");
-                    };
-                    
-                    window.SlideAnimator._patched = true;
-                    return true;
-                }
-                return false;
-            }
-
-            // Poll for animator instance and prototype
+            // Poll for animator instance (renderer skips auto-reveal in iframes,
+            // so no monkey-patching needed — just wait for it to initialize).
             var _initInterval = setInterval(function() {
-                patchSlideAnimator();
-                
                 if (window.slideAnimators && Object.keys(window.slideAnimators).length > 0) {
                     _animator = Object.values(window.slideAnimators)[0];
-                    
-                    // Ensure it starts reset
-                    if (_animator.reset) _animator.reset();
+
+                    // Ensure it starts fully reset (hidden)
+                    if (_animator && _animator.reset) _animator.reset();
 
                     clearInterval(_initInterval);
                     _ready = true;
@@ -303,7 +281,18 @@ function splitDeckIntoSlides(html: string, devCssVersion: number = 0): string[] 
                     // Tell the parent we are ready
                     window.parent.postMessage({ type: 'iframeReady' }, '*');
                 }
-            }, 10);
+            }, 50);
+
+            // Safety: if no animator exists after 2s (e.g. intro slide with no
+            // data-animated sections), signal ready immediately so the player
+            // can start narration.
+            setTimeout(function() {
+                if (!_ready) {
+                    clearInterval(_initInterval);
+                    _ready = true;
+                    window.parent.postMessage({ type: 'iframeReady' }, '*');
+                }
+            }, 2000);
 
             function handleCommand(data) {
                 if (!_animator) return;
@@ -312,9 +301,7 @@ function splitDeckIntoSlides(html: string, devCssVersion: number = 0): string[] 
                         if (_animator.revealSegment) _animator.revealSegment(data.index);
                         break;
                     case 'revealAll':
-                        // Use the real one we saved on the prototype
-                        if (_animator._realRevealAll) _animator._realRevealAll();
-                        else if (_animator.revealAll) _animator.revealAll();
+                        if (_animator.revealAll) _animator.revealAll();
                         break;
                     case 'reset':
                         if (_animator.reset) _animator.reset();
@@ -656,6 +643,12 @@ export default function LessonViewPage() {
     useEffect(() => { segIdxRef.current = currentSegIdx; }, [currentSegIdx]);
     useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
+    // Reset readiness and tracking when slide changes
+    useEffect(() => {
+        setIframeReady(false);
+        lastRevealedIdxRef.current = -1;
+    }, [currentSlideIdx]);
+
     // ─── Iframe messaging ───────────────────────────────────────────────
     const postToSlide = useCallback(
         (msg: any) => {
@@ -820,7 +813,7 @@ export default function LessonViewPage() {
 
     // ─── If no narration segments, reveal all immediately ───────────────
     useEffect(() => {
-        if (slideList.length === 0) return;
+        if (slideList.length === 0 || !iframeReady) return;
         const slide = slideList[currentSlideIdx];
         if (!slide) return;
         const hasAudio = slide.narration_segments.some((s) => s.audio_url);
@@ -832,7 +825,7 @@ export default function LessonViewPage() {
             );
             return () => clearTimeout(t);
         }
-    }, [currentSlideIdx, slideList, postToSlide]);
+    }, [currentSlideIdx, slideList, postToSlide, iframeReady]);
 
 
 
@@ -927,12 +920,20 @@ export default function LessonViewPage() {
         }
         postToSlide({ type: "reset" });
         lastRevealedIdxRef.current = -1;
+
+        // Reset BOTH the ref and state synchronously so the useEffects
+        // that guard on segIdxRef.current >= 0 don't block re-entry.
+        segIdxRef.current = -1;
         setCurrentSegIdx(-1);
+
+        // Force isPlaying via ref immediately so playSegment doesn't bail.
+        isPlayingRef.current = true;
         setIsPlaying(true);
 
+        // Give the iframe a beat to process the reset, then start from segment 0.
         window.setTimeout(() => {
             playSegmentRef.current(slideIdxRef.current, 0);
-        }, 120);
+        }, 200);
     }, [clearPlaybackTimer, postToSlide]);
 
     // ─── Progress ───────────────────────────────────────────────────────

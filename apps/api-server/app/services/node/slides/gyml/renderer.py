@@ -6381,11 +6381,14 @@ document.querySelectorAll('section[data-animated="true"]').forEach(section => {
     const animator = new SlideAnimator(section);
     window.slideAnimators[section.id] = animator;
     
-    // Auto-reveal for static previews. Parent presentation controller 
-    // can reset() this if it wants to control the animation.
-    setTimeout(() => {
-        animator.revealAll();
-    }, 100);
+    // Only auto-reveal in standalone mode (direct file open / static preview).
+    // When embedded inside the player iframe, the parent bridge script controls
+    // the animation via postMessage — auto-revealing here would race with it.
+    if (window.parent === window) {
+        setTimeout(() => {
+            animator.revealAll();
+        }, 100);
+    }
 });
 </script>
 """

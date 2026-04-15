@@ -114,6 +114,17 @@ If the topic is too vague or invalid (like "No clear topic detected"), respond w
 """
     user_prompt = state.get("topic", "")
 
+    # Guard: If sub_topics already exists and has data, don't re-run expensive extraction
+    # This ensures ID stability across graph loops/retries.
+    if state.get("sub_topics") and len(state["sub_topics"]) > 0:
+        print("\n✅ [INFO] Sub-topics already exist in state. Skipping extraction to maintain ID stability.")
+        return {
+            "sub_topics": state["sub_topics"],
+            "subtopic_target_count": state.get("subtopic_target_count", len(state["sub_topics"])),
+            "subtopic_available_count": state.get("subtopic_available_count", len(state["sub_topics"])),
+            "topic_granularity": state.get("topic_granularity"),
+        }
+
     if state.get("unsupported_topic"):
         print("\n⚠️  [WARNING] Skipping sub-topic extraction - topic is currently unsupported")
         return {

@@ -283,7 +283,10 @@ def coverage_checker_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 f"Regenerate with a distinct learning objective and different instructional angle."
             )
 
+    print(f"\n🔍 [COVERLAP] Checking subtopic {latest_sub_id} against prior content ({len(planned_sub_ids)-1} subtopics)...")
+
     if not overlap_report:
+        print(f"✅ [COVERLAP] No overlaps detected for subtopic {latest_sub_id}.")
         return {
             "plans": plans,
             "coverage_overlap_report": [],
@@ -293,6 +296,7 @@ def coverage_checker_node(state: Dict[str, Any]) -> Dict[str, Any]:
     attempt_count = int(regen_attempts.get(latest_sub_id, 0))
 
     if attempt_count >= 2:
+        print(f"⚠️ [REGEN] Max overlap attempts (2) reached for {latest_sub_id}. Stopping regeneration to prevent loop.")
         return {
             "plans": plans,
             "coverage_overlap_report": overlap_report,
@@ -305,6 +309,10 @@ def coverage_checker_node(state: Dict[str, Any]) -> Dict[str, Any]:
     regen_instructions = dict(state.get("coverage_regeneration_instructions", {}))
     regen_instructions[latest_sub_id] = instructions[:10]
 
+    print(f"🔄 [REGEN] Overlap detected in {latest_sub_id}! Attempt {attempt_count + 1}/2. Removing plan to trigger regeneration.")
+    for report in overlap_report:
+        print(f"   - Overlap: '{report['latest_text'][:50]}...' matches prior content (Score: {report['score']}, Method: {report['method']})")
+    
     plans.pop(latest_sub_id, None)
 
     return {

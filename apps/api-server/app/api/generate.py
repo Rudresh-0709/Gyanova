@@ -31,7 +31,7 @@ TASKS_FILE = os.path.join(DATA_ROOT, "tasks.json")
 TASK_STATE_DIR = os.path.join(DATA_ROOT, "task_states")
 tasks_db: Dict[str, Dict[str, Any]] = {}
 
-AUDIO_TTL_SECONDS = int(os.getenv("AUDIO_TTL_SECONDS", "3600"))
+AUDIO_TTL_SECONDS = int(os.getenv("AUDIO_TTL_SECONDS", "86400"))
 ACTIVE_TASK_STATUSES = {"pending", "planning", "planning_completed", "processing"}
 
 

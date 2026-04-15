@@ -101,6 +101,11 @@ class TutorState(TypedDict, total=False):
     unsupported_subject: str
     unsupported_message: str
 
+    # Coverage & Regeneration Tracking
+    coverage_regen_attempts: Annotated[Dict[str, int], merge_dict_updates]
+    coverage_regeneration_instructions: Annotated[Dict[str, Any], merge_dict_updates]
+    coverage_overlap_report: List[Any]
+
     # Flags
     is_paused: bool
     timestamp: str
