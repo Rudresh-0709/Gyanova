@@ -2238,6 +2238,11 @@ section[data-density="super_dense"] {
 }
 
 section[data-density="super_dense"] h1 { font-size: 1.8rem !important; margin-bottom: 0.15rem; }
+
+/* Preserve large title for relationshipMap even in dense mode */
+section:has(.smart-layout[data-variant="relationshipMap"]) h1 {
+    font-size: calc(var(--h1-size, 2.25rem) + 0.2rem) !important;
+}
 section[data-density="super_dense"] h2 { font-size: 1.5rem !important; margin-bottom: 0.15rem; }
 section[data-density="super_dense"] p { font-size: 0.95rem !important; line-height: 1.4; }
 
@@ -2552,25 +2557,23 @@ p {
 
 .p-annotation {
     position: relative;
-    font-size: calc(var(--p-size) * 1.0);
+    font-size: calc(var(--p-size) * 0.95);
     font-style: italic;
-    color: color-mix(in srgb, var(--text-secondary, #4b5563) 88%, var(--text-primary, #111827));
-    background: linear-gradient(90deg, color-mix(in srgb, var(--accent, #64748b) 7%, transparent) 0%, transparent 42%),
-                linear-gradient(180deg, color-mix(in srgb, var(--callout-bg, #f8fafc) 45%, white) 0%, transparent 100%);
-    padding: 0.85rem 1rem;
-    border-radius: 0.4rem;
-    margin: 0.6rem 0;
+    color: #8AAFDB;
+    background: rgba(20, 60, 110, 0.25);
+    padding: 0.85rem 1.25rem;
+    border-radius: 8px;
+    margin: 1.2rem 0;
+    border: 1px solid rgba(100, 170, 230, 0.2);
+    border-left: 3px solid #2E6BC4;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* Accent bar is now handled by border-left on the container */
 .p-annotation::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: color-mix(in srgb, var(--accent, #64748b) 45%, transparent);
-    border-radius: 0.3rem 0 0 0.3rem;
+    display: none;
 }
 
 .p-annotation::after {
@@ -3798,14 +3801,14 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
     margin-top: 0;
     padding: 0;
     overflow: visible;
-    flex: 1 1 auto;
-    align-content: stretch;
+    flex: 0 1 auto;
+    align-content: flex-start;
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
     position: relative;
-    min-height: 13rem;
-    padding: 1.35rem 1.2rem 1.2rem;
+    min-height: 8.8rem;
+    padding: 1.25rem 1.15rem 0.9rem;
     border-radius: 1rem;
     border: 1px solid color-mix(in srgb, var(--accent, #38bdf8) 38%, #7a8ea8);
     background: transparent;
@@ -3825,7 +3828,7 @@ section[data-density="dense"] .smart-layout[data-variant="timelineMilestone"] .c
 }
 
 .smart-layout[data-variant="solidBoxesWithIconsInside"] .card-content {
-    gap: 0.72rem;
+    gap: 0.55rem;
     align-items: flex-start;
 }
 
@@ -3909,7 +3912,7 @@ section[data-image-layout="blank"] .smart-layout[data-variant="solidBoxesWithIco
 section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card,
 section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card,
 section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
-    min-height: 10.5rem;
+    min-height: 8.8rem;
 }
 
 section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"],
@@ -3918,20 +3921,25 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
     grid-template-columns: 1fr;
 }
 
-section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1),
-section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1),
-section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1) {
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(1),
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(1),
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(1),
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="5"] .card:nth-child(1),
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="5"] .card:nth-child(1),
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="5"] .card:nth-child(1) {
     grid-row: span 2;
     min-height: 15rem;
 }
 
-section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
-section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
-section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
-section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6),
-section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6),
-section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6) {
-    grid-column: 1 / -1;
+/* Explicitly force symmetrical grid for even counts (4, 6) */
+section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card,
+section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card {
+    grid-row: auto;
+    grid-column: auto;
+}
+section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"],
+section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 /* Guard: never force the 3rd card full-width for top/bottom/blank layouts */
@@ -4026,18 +4034,23 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
     overflow: visible;
 }
 
+.smart-layout[data-variant="relationshipMap"] .card:nth-child(1) {
+    z-index: 3;
+}
+
 .smart-layout[data-variant="relationshipMap"] .card {
     position: relative;
     min-height: 13rem;
     aspect-ratio: 1 / 1;
     border-radius: 50%;
-    border: none;
-    box-shadow: none;
+    border: 1px solid rgba(100, 160, 220, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    z-index: 1;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 1.75rem;
-    background: #8b9099;
+    padding: 1.15rem;
+    background: #142A4A;
     color: #ffffff;
 }
 
@@ -4046,9 +4059,11 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
 }
 
 .smart-layout[data-variant="relationshipMap"] .card:nth-child(2) {
-    background: #f8fafc;
-    border: 1px solid rgba(148, 163, 184, 0.35);
-    color: var(--text-primary, #1e293b);
+    z-index: 2;
+    background: #1A3A5C;
+    border: 1.5px solid rgba(100, 170, 230, 0.25);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    color: #ffffff;
 }
 
 .smart-layout[data-variant="relationshipMap"] .card-content {
@@ -4058,39 +4073,47 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
 }
 
 .smart-layout[data-variant="relationshipMap"] .card-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: inherit;
+    font-size: 1.45rem;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: normal;
+    color: #8AAFDB;
+}
+
+.smart-layout[data-variant="relationshipMap"] .card:nth-child(2) .card-title {
+    color: #D0E4FF;
 }
 
 .smart-layout[data-variant="relationshipMap"] .card-text {
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     line-height: 1.5;
-    color: inherit;
-    max-width: 16ch;
-    text-transform: uppercase;
+    color: #5A7EA3;
+    max-width: none;
+    text-transform: none;
+}
+
+.smart-layout[data-variant="relationshipMap"] .card:nth-child(2) .card-text {
+    color: #8AAFDB;
 }
 
 .smart-layout[data-variant="relationshipMap"] .relationship-connector {
     position: absolute;
     right: -0.55rem;
-    width: 4.15rem;
-    height: 4.15rem;
+    width: 5.5rem;
+    height: 5.5rem;
     border-radius: 999px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #d74141;
-    color: #ffffff;
-    border: 4px solid rgba(255, 255, 255, 0.92);
-    box-shadow: 0 10px 24px rgba(215, 65, 65, 0.25);
-    z-index: 4;
+    background: linear-gradient(to bottom, #1A4B8C, #3B7DD8);
+    color: #D0E4FF;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 32px rgba(46, 107, 196, 0.45);
+    z-index: 20;
 }
 
 .smart-layout[data-variant="relationshipMap"] .relationship-connector i {
-    font-size: 1.8rem;
+    font-size: 2.25rem;
 }
 
 .smart-layout[data-variant="relationshipMap"] .card:nth-child(1) .relationship-connector {
@@ -6341,6 +6364,7 @@ class SlideAnimator {
     reset() {
         this.segments.forEach(el => {
             el.classList.remove('active');
+            el.style.transition = '';
         });
         this.revealedCount = 0;
     }

@@ -26,13 +26,15 @@ def generate_intro_image_prompt(intro_type: str, title: str, context: str = "") 
         Image prompt suitable for Leonardo AI FLUX Schnell
     """
     if intro_type == "lesson":
-        # Broad, landscape context for lessons
+        # Blueprint-forward visual language for lesson intros.
         return (
-            f"A professional educational illustration of '{title}'. "
-            f"Show a comprehensive overview with visual elements representing the topic. "
-            f"Modern, clean design with academic aesthetic. "
-            f"Wide landscape composition. Studio lighting. "
-            f"Educational, authoritative, inspirational. 4K quality."
+            f"Blueprint-style educational hero illustration for '{title}'. "
+            f"Create a topic-resonant symbolic scene that clearly reflects the lesson concept. "
+            f"Technical drawing aesthetic, glowing cyan line art, dark navy gradient background, "
+            f"schematic overlays, geometric precision, minimal modern composition. "
+            f"Wide cinematic landscape framing with central focus and generous negative space for title text. "
+            f"No text, no letters, no labels, no watermark. "
+            f"Premium, clean, professional educational visual, 4K quality."
         )
     elif intro_type == "subtopic":
         # Focused, detailed for subtopics

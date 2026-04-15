@@ -382,7 +382,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         # Select primary block spec matching the resolved family + variant
         debug_log = []
         primary_spec = select_primary_block(
-            "smart_layout",
+            primary_family,
             density,
             image_need,
             preferred_variants=ordered_preferences,
@@ -450,10 +450,12 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     if actual_slv:
                         smart_layout_variant = actual_slv
 
+        supporting_offset = len(local_variant_history) + len(local_layout_history) + index
         supporting_specs = select_supporting_blocks(
             family=primary_spec.family,
             density=density,
             max_supporting_blocks=template_spec.max_supporting_blocks,
+            offset=supporting_offset,
         )
         if template_spec.is_sparse:
             supporting_specs = supporting_specs[:1]

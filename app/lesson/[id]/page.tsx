@@ -16,6 +16,7 @@ import {
     Maximize2,
     Minimize2,
     RefreshCw,
+    RotateCcw,
 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────
@@ -31,6 +32,7 @@ interface SlideEntry {
     html_doc: string;           // single-section HTML document
     narration_segments: NarrationSegment[];
     subtopic_name: string;
+    animation_unit_count?: number;
 }
 
 interface LessonRenderResult {
@@ -42,6 +44,29 @@ interface LessonRenderResult {
 
 const BACKEND_URL = "http://localhost:8000";
 const MIN_SLIDES_TO_RENDER_EARLY = 2;
+function getRevealIndexForSegment(slide: SlideEntry, segIdx: number): number {
+    const units = Math.max(0, Number(slide.animation_unit_count || 0));
+    const segs = Array.isArray(slide.narration_segments) ? slide.narration_segments.length : 0;
+
+    // No reliable unit metadata: fall back to 1:1 indexing.
+    if (units <= 0) {
+        return segIdx;
+    }
+    if (segs <= 0 || segIdx < 0) {
+        return -1;
+    }
+
+    // Legacy n+1 shape: dedicated intro segment followed by item segments.
+    if (segs === units + 1) {
+        return Math.min(units - 1, Math.max(-1, segIdx - 1));
+    }
+
+    // General case (including mismatches): map segments proportionally so:
+    // - first segment reveals first unit immediately
+    // - later segments progressively reveal remaining units
+    const mapped = Math.floor((segIdx * units) / Math.max(1, segs));
+    return Math.min(units - 1, Math.max(0, mapped));
+}
 
 /**
  * Convert a filesystem audio_url from the backend into an HTTP URL
@@ -204,7 +229,7 @@ function generateSubtopicIntroHtml(
  * <head> styles/links + a small override so 100 vh sizing doesn't
  * force inner scrolling.
  */
-function splitDeckIntoSlides(html: string): string[] {
+function splitDeckIntoSlides(html: string, devCssVersion: number = 0): string[] {
     try {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
@@ -216,7 +241,7 @@ function splitDeckIntoSlides(html: string): string[] {
 
         const devOverridesCssLink =
             process.env.NODE_ENV === "development"
-                ? `<link rel="stylesheet" href="/gyml/dev-overrides.css?v=${Date.now()}">`
+                ? `<link rel="stylesheet" href="/gyml/dev-overrides.css?v=${devCssVersion}">`
                 : "";
 
         // Override: let the section fill the viewport naturally
@@ -404,6 +429,37 @@ function countRenderableGeneratedSlides(
     return count;
 }
 
+function areSlideListsEquivalent(a: SlideEntry[], b: SlideEntry[]): boolean {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i += 1) {
+        const sa = a[i];
+        const sb = b[i];
+        if (
+            sa.slide_id !== sb.slide_id ||
+            sa.title !== sb.title ||
+            sa.subtopic_name !== sb.subtopic_name ||
+            sa.html_doc !== sb.html_doc ||
+            (sa.animation_unit_count || 0) !== (sb.animation_unit_count || 0)
+        ) {
+            return false;
+        }
+
+        if (sa.narration_segments.length !== sb.narration_segments.length) return false;
+        for (let j = 0; j < sa.narration_segments.length; j += 1) {
+            const na = sa.narration_segments[j];
+            const nb = sb.narration_segments[j];
+            if (
+                na.text !== nb.text ||
+                na.audio_url !== nb.audio_url ||
+                na.segment_index !== nb.segment_index
+            ) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 // ─── Component ──────────────────────────────────────────────────────────
 
 export default function LessonViewPage() {
@@ -438,6 +494,7 @@ export default function LessonViewPage() {
     const slideIdxRef = useRef(0);
     const segIdxRef = useRef(-1);
     const isPlayingRef = useRef(false);
+    const lastRevealedIdxRef = useRef(-1);
     const playSegmentRef = useRef<(slideIdx: number, segIdx: number) => void>(() => { });
 
     const clearPlaybackTimer = useCallback(() => {
@@ -527,6 +584,7 @@ export default function LessonViewPage() {
                     },
                 ],
                 subtopic_name: "Getting Started",
+                animation_unit_count: 0,
             });
         }
 
@@ -540,7 +598,7 @@ export default function LessonViewPage() {
                     return;
                 }
 
-                const docs = splitDeckIntoSlides(slide.html_content);
+                const docs = splitDeckIntoSlides(slide.html_content, devCssNonce);
                 docs.forEach((doc, docIdx) => {
                     list.push({
                         slide_id: `${slide.slide_id || "unknown"}_${docIdx}`,
@@ -553,12 +611,13 @@ export default function LessonViewPage() {
                             audio_url: toAudioHttpUrl(seg.audio_url),
                         })),
                         subtopic_name: sub.name || "",
+                        animation_unit_count: Number(slide.animation_unit_count || 0),
                     });
                 });
             });
         });
 
-        setSlideList(list);
+        setSlideList((prev) => (areSlideListsEquivalent(prev, list) ? prev : list));
     }, [lessonData, devCssNonce]);
 
     useEffect(() => {
@@ -658,9 +717,11 @@ export default function LessonViewPage() {
             const seg = segments[segIdx];
             setCurrentSegIdx(segIdx);
 
-            // NOTE: All content is revealed at slide start (revealAll)
-            // No step-by-step animation for now — just play audio segments sequentially
-            // postToSlide({ type: "revealSegment", index: segIdx });
+            const revealIdx = getRevealIndexForSegment(slide, segIdx);
+            if (revealIdx >= 0 && revealIdx > lastRevealedIdxRef.current) {
+                postToSlide({ type: "revealSegment", index: revealIdx });
+                lastRevealedIdxRef.current = revealIdx;
+            }
 
             // Play audio
             if (seg.audio_url && audioRef.current) {
@@ -708,24 +769,20 @@ export default function LessonViewPage() {
     // Reset iframeReady when the slide changes (iframe remounts)
     useEffect(() => {
         setIframeReady(false);
+        lastRevealedIdxRef.current = -1;
     }, [currentSlideIdx, slideList.length]); // reset if list changes too
 
-    // When iframe signals ready AND we're playing, reveal all content immediately
-    // (No step-by-step animation for now, just show everything)
+    // When iframe signals ready AND we're playing, reset then start segment playback.
     useEffect(() => {
         if (!iframeReady || !isPlaying || slideList.length === 0) return;
 
         // If we are already mid-way through a slide (segIdx >= 0), don't restart from 0
         if (segIdxRef.current >= 0) return;
 
-        // Iframe just signaled ready — reveal all content and start audio from segment 0
+        // Iframe just signaled ready — reset and start audio from segment 0.
         postToSlide({ type: "reset" });
         const t = setTimeout(() => {
-            postToSlide({ type: "revealAll" });
-            // Start playing first segment audio after revealing
-            setTimeout(() => {
-                playSegment(currentSlideIdx, 0);
-            }, 100);
+            playSegment(currentSlideIdx, 0);
         }, 150);
         return () => clearTimeout(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -861,6 +918,22 @@ export default function LessonViewPage() {
             document.exitFullscreen();
         }
     };
+
+    const restartCurrentSlideFromBeginning = useCallback(() => {
+        clearPlaybackTimer();
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+        postToSlide({ type: "reset" });
+        lastRevealedIdxRef.current = -1;
+        setCurrentSegIdx(-1);
+        setIsPlaying(true);
+
+        window.setTimeout(() => {
+            playSegmentRef.current(slideIdxRef.current, 0);
+        }, 120);
+    }, [clearPlaybackTimer, postToSlide]);
 
     // ─── Progress ───────────────────────────────────────────────────────
     const currentSlide = slideList[currentSlideIdx];
@@ -1046,6 +1119,14 @@ export default function LessonViewPage() {
                             ) : (
                                 <Volume2 className="w-5 h-5" />
                             )}
+                        </button>
+
+                        <button
+                            onClick={restartCurrentSlideFromBeginning}
+                            className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-white backdrop-blur-sm"
+                            title="Restart slide animation"
+                        >
+                            <RotateCcw className="w-5 h-5" />
                         </button>
 
                         <button

@@ -133,23 +133,16 @@ section[data-image-layout="left"] .body {
   background: #2E6BC4 !important;
 }
 
-.smart-layout[data-variant="diamondGrid"] .card {
-  gap: 2.5rem !important;
-  grid-template-columns: auto 1fr !important;
-}
-
-
 /* === solidBoxesWithIconsInside: 3 cols when no image, bento with left/right image === */
 .smart-layout[data-variant="solidBoxesWithIconsInside"] {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  flex: 0 1 auto !important;
+  align-content: flex-start !important;
 }
-.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-title {
-  font-size: 1.35rem !important;
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
+  height: auto !important;
 }
-.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-text {
-  font-size: 0.92rem !important;
-  line-height: 1.55 !important;
-}
+
 section[data-image-layout="blank"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"] {
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 }
@@ -160,40 +153,50 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   grid-auto-rows: minmax(6.5rem, auto) !important;
 }
+
 section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card,
 section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card,
 section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
-  min-height: 10.5rem !important;
+  min-height: 8.8rem !important;
+  padding-bottom: 0.9rem !important;
+  height: 100% !important;
   border-color: #2E6BC4 !important;
 }
-section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"],
-section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"],
-section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="2"] {
-  grid-template-columns: 1fr !important;
+.smart-layout[data-variant="solidBoxesWithIconsInside"] .card-content {
+  gap: 0.55rem !important;
 }
-section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1),
-section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1),
-section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"] .card:nth-child(1) {
+
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(1),
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(1),
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(1),
+section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="5"] .card:nth-child(1),
+section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="5"] .card:nth-child(1),
+section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="5"] .card:nth-child(1) {
   grid-row: span 2 !important;
   min-height: 15rem !important;
 }
+
+/* Explicitly force symmetrical grid for even counts (4, 6) */
+section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card,
+section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card {
+  grid-row: auto !important;
+  grid-column: auto !important;
+}
+section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"],
+section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
 /* Undo legacy rule that made the 3rd card full-width */
 .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="3"] .card:nth-child(3) {
   grid-column: auto !important;
 }
-section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
-section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
-section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"] .card:nth-child(4),
-section[data-image-layout="right"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6),
-section[data-image-layout="left"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6),
-section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] .card:nth-child(6) {
-  grid-column: 1 / -1 !important;
-}
 
 @media (max-width: 1080px) {
   .smart-layout[data-variant="solidBoxesWithIconsInside"] {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
   }
+}
 }
 
 
@@ -242,3 +245,86 @@ section[data-image-layout="bottom"] .accent-image-wrapper::after {
   pointer-events: none !important;
   z-index: 1 !important;
 }
+
+/* === relationshipMap: tech navy circles with focus hierarchy === */
+.smart-layout[data-variant="relationshipMap"] .card {
+  padding: 1.15rem !important;
+  background: #142A4A !important;
+  border: 1px solid rgba(100, 160, 220, 0.15) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+.smart-layout[data-variant="relationshipMap"] .card:nth-child(2) {
+  background: #1A3A5C !important;
+  border: 1.5px solid rgba(100, 170, 230, 0.25) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.smart-layout[data-variant="relationshipMap"] .card-title {
+  font-size: 1.45rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  color: #8AAFDB !important;
+}
+
+.smart-layout[data-variant="relationshipMap"] .card:nth-child(2) .card-title {
+  color: #D0E4FF !important;
+}
+
+.smart-layout[data-variant="relationshipMap"] .card-text {
+  font-size: 1.05rem !important;
+  text-transform: none !important;
+  max-width: none !important;
+  color: #5A7EA3 !important;
+}
+
+.smart-layout[data-variant="relationshipMap"] .card:nth-child(2) .card-text {
+  color: #8AAFDB !important;
+}
+
+.smart-layout[data-variant="relationshipMap"] .relationship-connector {
+  width: 5.5rem !important;
+  height: 5.5rem !important;
+  z-index: 20 !important;
+  background: linear-gradient(to bottom, #1A4B8C, #3B7DD8) !important;
+  color: #D0E4FF !important;
+  border: 3px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 32px rgba(46, 107, 196, 0.45) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.smart-layout[data-variant="relationshipMap"] .relationship-connector i {
+  font-size: 2.25rem !important;
+}
+
+/* Force large title for relationshipMap slides */
+section:has(.smart-layout[data-variant="relationshipMap"]) h1 {
+  font-size: calc(var(--h1-size, 2.25rem) + 0.2rem) !important;
+}
+
+
+/* === annotation_paragraph: premium tech-navy callout === */
+.p-annotation {
+  background: rgba(20, 60, 110, 0.25) !important;
+  color: #8AAFDB !important;
+  padding: 0.85rem 1.25rem !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(100, 170, 230, 0.2) !important;
+  border-left: 3px solid #2E6BC4 !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+  font-style: italic !important;
+}
+
+.p-annotation::before { display: none !important; }
+
+
+
+/* === Fix relationshipMap stacking order for icons === */
+.smart-layout[data-variant='relationshipMap'] .card:nth-child(1) { z-index: 3 !important; }
+.smart-layout[data-variant='relationshipMap'] .card:nth-child(2) { z-index: 2 !important; }
+.smart-layout[data-variant='relationshipMap'] .card:nth-child(3) { z-index: 1 !important; }
+

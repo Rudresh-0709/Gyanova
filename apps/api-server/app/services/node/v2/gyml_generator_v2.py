@@ -1083,13 +1083,13 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
                 for item in block.get("items", []):
                     if not isinstance(item, dict):
                         continue
+                    heading_value = item.get("heading") or item.get("title")
                     item_kwargs = {
                         k: v
                         for k, v in item.items()
                         if k
                         in {
                             "heading",
-                            "title",
                             "description",
                             "points",
                             "year",
@@ -1097,6 +1097,8 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
                             "label",
                         }
                     }
+                    if heading_value:
+                        item_kwargs["heading"] = str(heading_value)
                     # Accept both v2 (`icon_name`) and legacy (`icon`) keys.
                     icon_name = item.get("icon_name") or item.get("icon")
                     if icon_name:
