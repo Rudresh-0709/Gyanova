@@ -3,7 +3,7 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.api import generate, slides, qna, tts
+from app.api import generate, slides, qna, tts, quiz
 
 app = FastAPI(title="GyML AI Teacher API")
 
@@ -20,6 +20,7 @@ app.include_router(generate.router, prefix="/api/generate", tags=["generate"])
 app.include_router(slides.router, prefix="/api/slides", tags=["slides"])
 app.include_router(qna.router, prefix="/api/qna", tags=["qna"])
 app.include_router(tts.router, prefix="/api/tts", tags=["tts"])
+app.include_router(quiz.router, prefix="/api/quiz", tags=["quiz"])
 
 # Serve audio files so the frontend player can fetch narration segments
 # Placed in .persistent_data to avoid triggering Next.js reloads when new audio is generated

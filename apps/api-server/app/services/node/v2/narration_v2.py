@@ -249,17 +249,22 @@ def generate_narration_v2(
     # Calculate expected segments
     expected_segments = item_count if item_count > 0 else 3
 
-    # Step 4: Attempt LLM call (prefer Groq for speed)
+    # Step 4: Construct the style-aware prompt
     slide_title = str(enriched_slide.get("title") or "the concept").strip()
 
-    prompt = f"""You are a warm, knowledgeable teacher narrating an educational slide to a student.
+    if mentalModel:
+        persona_directive = f"You are an expert teacher who specializes in teaching complex topics using the '{mentalModel}' framework. Your voice, pedagogical persona, and choice of analogies must be entirely defined by this specific style."
+    else:
+        persona_directive = "You are a warm, knowledgeable, and professional teacher narrating an educational slide to a student."
+
+    prompt = f"""{persona_directive}
 
 INPUTS:
 TOPIC: {topic}
 SLIDE INDEX: {slide_index}
 SLIDE TITLE: {slide_title}
 TEACHING INTENT: {intent}
-TEACHING STYLE OR MENTAL MODEL: {mentalModel}
+TEACHING STYLE / MENTAL MODEL: {mentalModel or "Standard Academic"}
 
 SLIDE CONTENT SUMMARY:
 {content_summary}
@@ -267,16 +272,15 @@ SLIDE CONTENT SUMMARY:
 {visual_cues}
 
 INSTRUCTIONS:
-1. Content Conversion: Take the facts and concepts from the SLIDE CONTENT SUMMARY and convert them into spoken narration.
-2. Introduction: The VERY FIRST segment MUST start with a human, pedagogical opening.
-   - Avoid generic phrases like "Welcome to the slide," "On this page," or "Now we see."
-   - Never repeat the slide title verbatim as the first words.
+1. Tone & Persona: Your narration must be consistently in the voice of a teacher using the '{mentalModel or "Standard Academic"}' style. If the style is 'Socratic', ask probing questions. If it's 'Factory Analogy', use industrial metaphors.
+2. Content Conversion: Take the facts and concepts from the SLIDE CONTENT SUMMARY and convert them into natural, spoken narration that fits your persona.
+3. Introduction: The VERY FIRST segment MUST start with a human, pedagogical opening.
    - Use a 'Bridge' (connecting to the previous concept), a 'Hook' (posing a high-level question), or a 'Future Frame' (stating why this knowledge is crucial).
-   - Ensure the tone is warm and conversational, opening the subtopic as if in a live tutoring session.
-3. Teacher Persona & Mental Model: Strictly conform to the {mentalModel} framework.
-4. Smart Depth: Use your professional judgment to decide on explanation depth. If a concept is complex or crucial, explain it in more detail. If it's a simple term or auxiliary info, keep it concise. Do NOT be generic; be specific to the facts provided.
-5. Exact Segmentation: You MUST output exactly {expected_segments} segments. Each segment must map cleanly to one visual item (e.g., if there are 3 cards in the summary, provide exactly 3 segments).
-6. Avoid repetition: Do not read bullet points verbatim. Explain them naturally as if in a live classroom.
+   - Ensure the opening feels like a natural continuation of a live tutoring session.
+   - DO NOT repeat the slide title verbatim or use phrases like "This slide is about..."
+4. Smart Depth: Use your professional judgment to decide on explanation depth. If a concept is complex, expand on it using your teaching style's framework. If it's simple, keep it concise.
+5. Exact Segmentation: You MUST output exactly {expected_segments} segments. Each segment must map cleanly to one visual item or concept identified in the summary.
+6. Avoid repetition: Do not read bullet points verbatim. Transform them into a natural explanation that feels like it's coming from a human teacher, not a script.
 7. Output MUST be ONLY valid JSON:
 {{
   "narration_segments": [
@@ -298,12 +302,11 @@ INSTRUCTIONS:
         response = client.invoke([{"role": "user", "content": prompt}])
         narration_text = _extract_response_text(response)
 
-        # Clear fences if LLM ignored instructions
-        if narration_text.startswith("```"):
-            import re
-            match = re.search(r"\{.*\}", narration_text, re.DOTALL)
-            if match:
-                narration_text = match.group(0)
+        # Robust JSON extraction: look for the first '{' and last '}'
+        import re
+        match = re.search(r"\{.*\}", narration_text, re.DOTALL)
+        if match:
+            narration_text = match.group(0)
 
         if narration_text:
             return narration_text

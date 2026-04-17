@@ -17,7 +17,10 @@ import {
     Minimize2,
     RefreshCw,
     RotateCcw,
+    MessageSquare,
 } from "lucide-react";
+import { ChatPopup } from "@/components/chat-popup";
+import { QuizWizard } from "@/components/quiz-wizard";
 
 // ─── Types ──────────────────────────────────────────────────────────────
 interface NarrationSegment {
@@ -32,6 +35,7 @@ interface SlideEntry {
     html_doc: string;           // single-section HTML document
     narration_segments: NarrationSegment[];
     subtopic_name: string;
+    subtopic_id: string;        // subtopic identifier for quiz generation
     animation_unit_count?: number;
 }
 
@@ -425,6 +429,7 @@ function areSlideListsEquivalent(a: SlideEntry[], b: SlideEntry[]): boolean {
             sa.slide_id !== sb.slide_id ||
             sa.title !== sb.title ||
             sa.subtopic_name !== sb.subtopic_name ||
+            sa.subtopic_id !== sb.subtopic_id ||
             sa.html_doc !== sb.html_doc ||
             (sa.animation_unit_count || 0) !== (sb.animation_unit_count || 0)
         ) {
@@ -470,6 +475,13 @@ export default function LessonViewPage() {
     const [showControls, setShowControls] = useState(true);
     const [iframeReady, setIframeReady] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
+
+    // Quiz state
+    const [quizOpen, setQuizOpen] = useState(false);
+    const [quizSubtopicId, setQuizSubtopicId] = useState<string | null>(null);
+    const [quizSubtopicName, setQuizSubtopicName] = useState("");
+    const [completedQuizSubtopics, setCompletedQuizSubtopics] = useState<Set<string>>(new Set());
 
     // Refs (used to avoid stale closures in callbacks)
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -483,6 +495,9 @@ export default function LessonViewPage() {
     const isPlayingRef = useRef(false);
     const lastRevealedIdxRef = useRef(-1);
     const playSegmentRef = useRef<(slideIdx: number, segIdx: number) => void>(() => { });
+    const completedQuizSubtopicsRef = useRef<Set<string>>(new Set());
+    const prefetchedQuizzesRef = useRef<Record<string, any>>({});
+    const prefetchingSubtopicsRef = useRef<Set<string>>(new Set());
 
     const clearPlaybackTimer = useCallback(() => {
         if (playbackTimerRef.current) {
@@ -571,6 +586,7 @@ export default function LessonViewPage() {
                     },
                 ],
                 subtopic_name: "Getting Started",
+                subtopic_id: "__intro__",
                 animation_unit_count: 0,
             });
         }
@@ -598,6 +614,7 @@ export default function LessonViewPage() {
                             audio_url: toAudioHttpUrl(seg.audio_url),
                         })),
                         subtopic_name: sub.name || "",
+                        subtopic_id: sub.id || "",
                         animation_unit_count: Number(slide.animation_unit_count || 0),
                     });
                 });
@@ -606,6 +623,56 @@ export default function LessonViewPage() {
 
         setSlideList((prev) => (areSlideListsEquivalent(prev, list) ? prev : list));
     }, [lessonData, devCssNonce]);
+
+    // ─── Quiz Prefetching ───────────────────────────────────────────────
+    useEffect(() => {
+        if (!lessonData || !taskId) return;
+
+        const subTopics = lessonData.sub_topics || [];
+        const plans = lessonData.plans || {};
+        const slides = lessonData.slides || {};
+
+        subTopics.forEach((sub: any) => {
+            const subId = sub.id;
+            if (!subId) return;
+
+            const subPlans = plans[subId] || [];
+            const subSlides = slides[subId] || [];
+
+            if (
+                subPlans.length > 0 &&
+                subSlides.length === subPlans.length &&
+                !prefetchingSubtopicsRef.current.has(subId) &&
+                !prefetchedQuizzesRef.current[subId]
+            ) {
+                const lastSlide = subSlides[subSlides.length - 1];
+                if (lastSlide && lastSlide.html_content?.trim()) {
+                    prefetchingSubtopicsRef.current.add(subId);
+                    
+                    fetch("/api/quiz", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            task_id: taskId,
+                            subtopic_id: subId,
+                        }),
+                    })
+                        .then((res) => {
+                            if (!res.ok) throw new Error("Prefetch failed");
+                            return res.json();
+                        })
+                        .then((data) => {
+                            if (data.questions && data.questions.length > 0) {
+                                prefetchedQuizzesRef.current[subId] = data;
+                            }
+                        })
+                        .catch((err) => {
+                            prefetchingSubtopicsRef.current.delete(subId); // Retry later if needed
+                        });
+                }
+            }
+        });
+    }, [lessonData, taskId]);
 
     useEffect(() => {
         if (slideList.length === 0) {
@@ -642,6 +709,7 @@ export default function LessonViewPage() {
     useEffect(() => { slideIdxRef.current = currentSlideIdx; }, [currentSlideIdx]);
     useEffect(() => { segIdxRef.current = currentSegIdx; }, [currentSegIdx]);
     useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+    useEffect(() => { completedQuizSubtopicsRef.current = completedQuizSubtopics; }, [completedQuizSubtopics]);
 
     // Reset readiness and tracking when slide changes
     useEffect(() => {
@@ -697,10 +765,41 @@ export default function LessonViewPage() {
                 clearPlaybackTimer();
                 playbackTimerRef.current = setTimeout(() => {
                     if (!isPlayingRef.current) return;
+
                     if (slideIdx < slideList.length - 1) {
+                        const currentSub = slideList[slideIdx].subtopic_id;
+                        const nextSub = slideList[slideIdx + 1].subtopic_id;
+
+                        // Subtopic boundary: trigger quiz before advancing
+                        if (
+                            currentSub &&
+                            currentSub !== "__intro__" &&
+                            currentSub !== nextSub &&
+                            !completedQuizSubtopicsRef.current.has(currentSub)
+                        ) {
+                            setIsPlaying(false);
+                            setQuizSubtopicId(currentSub);
+                            setQuizSubtopicName(slideList[slideIdx].subtopic_name);
+                            setQuizOpen(true);
+                            return;
+                        }
+
                         setCurrentSlideIdx(slideIdx + 1);
                         setCurrentSegIdx(-1);
                     } else {
+                        // End of deck: trigger quiz for last subtopic if not done
+                        const lastSub = slideList[slideIdx].subtopic_id;
+                        if (
+                            lastSub &&
+                            lastSub !== "__intro__" &&
+                            !completedQuizSubtopicsRef.current.has(lastSub)
+                        ) {
+                            setIsPlaying(false);
+                            setQuizSubtopicId(lastSub);
+                            setQuizSubtopicName(slideList[slideIdx].subtopic_name);
+                            setQuizOpen(true);
+                            return;
+                        }
                         setIsPlaying(false); // end of deck
                     }
                 }, 800);
@@ -1152,6 +1251,18 @@ export default function LessonViewPage() {
                                 <Maximize2 className="w-5 h-5" />
                             )}
                         </button>
+
+                        <button
+                            onClick={() => setIsChatOpen((v) => !v)}
+                            className={`p-2.5 rounded-full transition-all text-white backdrop-blur-sm ${
+                                isChatOpen
+                                    ? "bg-indigo-500/40 ring-1 ring-indigo-400/50"
+                                    : "bg-white/10 hover:bg-white/20"
+                            }`}
+                            title="Ask Teacher"
+                        >
+                            <MessageSquare className="w-5 h-5" />
+                        </button>
                     </div>
 
                     {/* Next */}
@@ -1174,6 +1285,54 @@ export default function LessonViewPage() {
                 className="absolute right-0 top-1/2 -translate-y-1/2 w-16 h-32 cursor-pointer z-20"
                 onClick={goNext}
             />
+
+            {/* ─── Ask Teacher Chat Popup ──────────────────────── */}
+            <ChatPopup
+                isOpen={isChatOpen}
+                onClose={() => setIsChatOpen(false)}
+                taskId={taskId}
+                currentSlideTitle={currentSlide?.title}
+                lessonTopic={lessonData?.topic || lessonData?.user_input}
+            />
+
+            {/* ─── Quiz Wizard ─────────────────────────────────── */}
+            {quizOpen && quizSubtopicId && (
+                <QuizWizard
+                    isOpen={quizOpen}
+                    onClose={() => {
+                        setQuizOpen(false);
+                        if (quizSubtopicId) {
+                            setCompletedQuizSubtopics(prev => new Set([...prev, quizSubtopicId]));
+                        }
+                        // Resume: advance to next subtopic's first slide
+                        const currentSub = quizSubtopicId;
+                        const nextIdx = slideList.findIndex(
+                            (s, i) => i > currentSlideIdx && s.subtopic_id !== currentSub
+                        );
+                        if (nextIdx >= 0) {
+                            setCurrentSlideIdx(nextIdx);
+                            setCurrentSegIdx(-1);
+                            setTimeout(() => setIsPlaying(true), 300);
+                        }
+                    }}
+                    taskId={taskId}
+                    subtopicId={quizSubtopicId}
+                    subtopicName={quizSubtopicName}
+                    onNavigateToSlide={(slideId) => {
+                        // Find the slide in the list by matching slide_id prefix
+                        const targetIdx = slideList.findIndex(s =>
+                            s.slide_id === slideId || s.slide_id.startsWith(slideId)
+                        );
+                        if (targetIdx >= 0) {
+                            setQuizOpen(false);
+                            setCurrentSlideIdx(targetIdx);
+                            setCurrentSegIdx(-1);
+                            // Reveal all content on the review slide
+                            setTimeout(() => postToSlide({ type: "revealAll" }), 500);
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }

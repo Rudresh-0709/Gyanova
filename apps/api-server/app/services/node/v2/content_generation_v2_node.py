@@ -200,7 +200,7 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 enriched_slide=slide_obj,
                 topic=str(state.get("topic") or state.get("user_input") or subtopic_name),
                 intent=str(concept.get("teaching_intent", "explain")),
-                mentalModel=state.get("preferred_method", ""),
+                mentalModel=str(state.get("preferred_method") or state.get("narration_style") or "").strip(),
                 slide_index=index + 1
             )
             narration_data = json.loads(narration_raw)
