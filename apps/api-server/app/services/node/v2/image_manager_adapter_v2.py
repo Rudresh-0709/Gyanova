@@ -25,18 +25,26 @@ def determine_image_layout_v2(
     Bypasses legacy heuristics in favor of variety-aware catalog rotation.
     """
     # 1. Determine the pool of valid layouts for this specific block
-    if block_spec and getattr(block_spec, "supported_layouts", None):
-        valid_pool = list(block_spec.supported_layouts)
+    # Use explicit check to allow empty tuples if they were provided (though catalog defaults to ())
+    block_supported = getattr(block_spec, "supported_layouts", None)
+    
+    if block_supported is not None and len(block_supported) > 0:
+        valid_pool = list(block_supported)
+    elif block_supported is not None:
+        # If it was empty but not None, it means all are allowed (per catalog documentation)
+        valid_pool = ["top", "bottom", "blank"] if has_wide_block else ["left", "right", "top", "bottom", "blank"]
     else:
-        # Fallback for un-audited or legacy blocks
+        # Fallback for un-audited or legacy blocks (block_spec is None or doesn't have the attr)
         valid_pool = ["top", "bottom", "blank"] if has_wide_block else ["left", "right", "top", "bottom", "blank"]
 
     # 2. Intersect with template constraints
     if allowed_layouts:
         template_set = {str(l).strip().lower() for l in allowed_layouts}
+        # Filter the pool to only what the template allows
         intersection = [ly for ly in valid_pool if ly in template_set]
         if intersection:
             valid_pool = intersection
+        # else: if no overlap, we keep valid_pool as is (safest fallback for rendering)
 
     # 3. Handle explicit requests (from user/LLM)
     if explicit_layout and explicit_layout in valid_pool:

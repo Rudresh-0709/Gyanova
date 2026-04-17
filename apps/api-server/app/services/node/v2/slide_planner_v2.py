@@ -630,13 +630,19 @@ def plan_slide_v2(
 
     # Intersect template allowed layouts with block supported layouts
     effective_allowed = list(template_spec.allowed_layouts)
-    if primary_spec.supported_layouts:
+    block_supported = getattr(primary_spec, "supported_layouts", None)
+    if block_supported is not None and len(block_supported) > 0:
         # If block explicitly restricts layouts, intersect them
-        block_set = set(primary_spec.supported_layouts)
-        effective_allowed = [ly for ly in effective_allowed if ly in block_set]
-        # If intersection is empty (should not happen with good catalog design), fallback to block supported
-        if not effective_allowed:
-            effective_allowed = list(primary_spec.supported_layouts)
+        block_set = {str(ly).strip().lower() for ly in block_supported}
+        intersection = [ly for ly in effective_allowed if ly.lower() in block_set]
+        # If intersection is NOT empty, apply it. 
+        # If it IS empty, we have a catalog mismatch (template doesn't support block's only layouts).
+        # In that case, we fallback to block's supported layouts to ensure the block renders correctly.
+        if intersection:
+            effective_allowed = intersection
+        else:
+            effective_allowed = list(block_supported)
+    # else: if block_supported is None or empty (), we allow template's full set.
 
     image_layout = determine_image_layout_v2(
         engine_density=engine_density,
