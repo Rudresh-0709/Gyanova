@@ -225,7 +225,11 @@ def _build_designer_blueprint(
             "image_mode_required": template.image_mode_required,
             "max_blocks": template.max_blocks,
             "max_supporting_blocks": template.max_supporting_blocks,
+            "allowed_primary_families": list(template.allowed_primary_families),
+            "allowed_accent_placements": list(template.allowed_accent_placements),
+            "allowed_layouts": list(template.allowed_layouts),
             "supports_high_end_image": template.supports_high_end_image,
+            "preferred_smart_layout_variants": list(template.preferred_smart_layout_variants),
         },
         "primary_block": primary_block,
         "primary_family": primary_family,
@@ -241,7 +245,6 @@ def _build_designer_blueprint(
             f"Coverage scope: {teacher_slide.get('coverage_scope', 'foundation')}",
             f"Planned smart_layout variant: {smart_layout_variant or 'none'}",
             f"Composition style: {composition_style}",
-            f"Layout directive: {layout}"
         ],
     }
 
@@ -330,7 +333,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
             )
         )
         smart_layout_variant = pick_smart_layout_variant(
-            preferred_slvs,
+            preferred_slv,
             allowed_slvs,
             local_variant_history,
         )
@@ -370,7 +373,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         # Refine smart_layout_variant using template's preferred list (if specified)
         if template_spec.preferred_smart_layout_variants:
             smart_layout_variant = pick_smart_layout_variant(
-                preferred_slvs,
+                preferred_slv,
                 list(template_spec.preferred_smart_layout_variants),
                 local_variant_history,
             )
@@ -380,16 +383,14 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         ordered_preferences = [smart_layout_variant] + [v for v in preferred_slvs if v != smart_layout_variant]
 
         # Select primary block spec matching the resolved family + variant
-        debug_log = []
         primary_spec = select_primary_block(
-            primary_family,
+            "smart_layout",
             density,
             image_need,
             preferred_variants=ordered_preferences,
             variant_history=local_variant_history,
             teaching_intent=teaching_intent,
             coverage_scope=coverage_scope,
-            debug_log=debug_log,
         )
 
         # Ensure primary block family is allowed by selected template
@@ -404,13 +405,11 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 variant_history=local_variant_history,
                 teaching_intent=teaching_intent,
                 coverage_scope=coverage_scope,
-                debug_log=debug_log,
             )
 
         # For formula slides, use formula block regardless
         if primary_family == "formula":
             primary_spec = get_block_spec("formula", "normal")
-            debug_log.append("Used formula block (primary_family == 'formula')")
 
         # Single source of truth: the chosen spec defines the final smart_layout variant.
         actual_slv = primary_spec.smart_layout_variant
@@ -435,7 +434,7 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
             if candidate_variants:
                 replacement_variant = pick_smart_layout_variant(
-                    preferred_slvs,
+                    preferred_slv,
                     candidate_variants,
                     local_variant_history,
                 )
@@ -450,12 +449,10 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                     if actual_slv:
                         smart_layout_variant = actual_slv
 
-        supporting_offset = len(local_variant_history) + len(local_layout_history) + index
         supporting_specs = select_supporting_blocks(
             family=primary_spec.family,
             density=density,
             max_supporting_blocks=template_spec.max_supporting_blocks,
-            offset=supporting_offset,
         )
         if template_spec.is_sparse:
             supporting_specs = supporting_specs[:1]
@@ -501,7 +498,6 @@ def designer_slide_planning_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
             {
                 "slide_id": teacher_slide_ref,
                 "teacher_slide_ref": teacher_slide_ref,
-                "debug_log": debug_log,
                 "sequence_index": index,
                 "title": str(teacher_slide.get("title") or f"{subtopic_name} - Slide {index + 1}").strip(),
                 "objective": str(teacher_slide.get("objective") or "Explain the concept clearly.").strip(),

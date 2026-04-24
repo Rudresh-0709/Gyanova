@@ -16,7 +16,6 @@ except ImportError:
     from .media_enricher_v2 import enrich_slide_media_sync
     from .narration_v2 import generate_narration_v2
 import json
-import time
 
 
 def _build_narration_text(plan_item: Dict[str, Any], slide: Dict[str, Any]) -> str:
@@ -42,51 +41,9 @@ def _build_narration_text(plan_item: Dict[str, Any], slide: Dict[str, Any]) -> s
 def _animation_metadata(slide: Dict[str, Any]) -> Dict[str, Any]:
     blocks = slide.get("contentBlocks", []) if isinstance(slide.get("contentBlocks"), list) else []
     primary_index = int(slide.get("primary_block_index", 0) or 0)
-
-    # Count the actual items that will receive data-segment attributes in the
-    # renderer.  Only items inside animated block types (smart_layout, process
-    # arrows, hub-and-spoke, etc.) are stamped — NOT headings or paragraphs.
-    # This count MUST match the number of data-segment elements the renderer
-    # produces, otherwise getRevealIndexForSegment's proportional mapping will
-    # skip or double-up cards.
-    ANIMATED_BLOCK_TYPES = {
-        "smart_layout",
-        "hub_and_spoke",
-        "process_arrow_block",
-        "cyclic_process_block",
-        "cyclic_block",
-        "feature_showcase_block",
-        "sequential_output",
-    }
-
-    item_count = 0
-    for block in blocks:
-        if not isinstance(block, dict):
-            continue
-        block_type = str(block.get("type") or "").strip().lower()
-        # smart_layout routes some variants to dedicated GyML classes that
-        # also produce data-segment — count their items too.
-        variant = str(block.get("variant") or "").strip().lower()
-        items = block.get("items", [])
-        n_items = len(items) if isinstance(items, list) else 0
-
-        if block_type == "smart_layout" and variant in {
-            "hubandspoke", "featureshowcase", "cyclicblock", "sequentialoutput",
-        }:
-            item_count += n_items
-            print(f"  [ANIM] Counted {n_items} items from {block_type} (variant={variant})")
-        elif block_type in ANIMATED_BLOCK_TYPES:
-            item_count += n_items
-            print(f"  [ANIM] Counted {n_items} items from {block_type} (variant={variant})")
-        else:
-            print(f"  [ANIM] Skipped block type={block_type} variant={variant} (not animated)")
-
-    final_count = max(1, item_count)
-    print(f"  [ANIM] Final animation_unit_count={final_count} (raw item_count={item_count})")
-
     return {
-        "animation_unit": "item",
-        "animation_unit_count": final_count,
+        "animation_unit": "block",
+        "animation_unit_count": max(1, len(blocks)),
         "animated_block_index": primary_index,
     }
 
@@ -144,9 +101,7 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         slide_grounding_mode = "soft_grounded" if concept.get("research_context") else global_grounding_mode
         concept["grounding_mode"] = slide_grounding_mode
 
-        t_gyml_start = time.time()
         slide_payload = generate_gyml_v2(concept)
-        t_gyml = time.time() - t_gyml_start
 
         # Apply hallucination guard in general_knowledge mode (non-destructive flag scan).
         if slide_grounding_mode == "general_knowledge":
@@ -175,7 +130,6 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
         # Mirror v1-style icon robustness by enriching media/icons after generation.
         # This fills missing icon_name values and keeps GyML/visual payloads synchronized.
-        t_media_start = time.time()
         try:
             slide_obj = enrich_slide_media_sync(
                 slide_obj,
@@ -185,12 +139,6 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
         except Exception:
             # Never block slide generation on enrichment errors.
             pass
-        t_media = time.time() - t_media_start
-
-        slide_obj["_perf"] = {
-            "gyml": round(t_gyml, 2),
-            "media": round(t_media, 2)
-        }
 
         enriched_payload = slide_obj.get("gyml_content", slide_payload)
         
@@ -200,7 +148,7 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 enriched_slide=slide_obj,
                 topic=str(state.get("topic") or state.get("user_input") or subtopic_name),
                 intent=str(concept.get("teaching_intent", "explain")),
-                mentalModel=str(state.get("preferred_method") or state.get("narration_style") or "").strip(),
+                mentalModel=state.get("preferred_method", ""),
                 slide_index=index + 1
             )
             narration_data = json.loads(narration_raw)
