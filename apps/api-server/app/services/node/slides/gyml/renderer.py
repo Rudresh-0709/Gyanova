@@ -44,6 +44,37 @@ from .theme import Theme, THEMES
 from .responsive import ResponsiveConstraints
 from .hierarchy import VisualHierarchy
 
+# ── Canonical variant map ──────────────────────────────────────────────────
+# LLMs frequently output lowercase variant names (e.g. "cardgriddiamond")
+# but CSS selectors are case-sensitive and expect camelCase ("cardGridDiamond").
+# This map ensures the rendered HTML always has the correct casing.
+_VARIANT_CANONICAL = {v.lower(): v for v in [
+    "bigBullets", "bulletCheck", "bulletCross", "bulletIcon",
+    "cardGridIcon", "cardGridDiamond",
+    "comparison", "comparisonProsCons", "comparisonBeforeAfter", "comparisonCards",
+    "definition",
+    "diamondGrid", "diamondRibbon", "diamondHub",
+    "highlight", "striped",
+    "processSteps", "processArrow", "processAccordion",
+    "quote", "quoteTestimonial", "quoteCitation",
+    "relationshipMap", "ribbonFold",
+    "sequentialSteps", "sequentialOutput",
+    "solidBoxesWithIconsInside",
+    "stats", "statsBadgeGrid", "statsComparison", "statsPercentage",
+    "timeline", "timelineSequential", "timelineIcon",
+    "timelineHorizontal", "timelineMilestone",
+    "cyclicBlock", "hubAndSpoke", "knowledgeWeb",
+    "numberedList",
+]}
+
+
+def _norm_variant(raw: str) -> str:
+    """Normalize a variant string to its canonical camelCase form."""
+    if not raw:
+        return "bigBullets"
+    return _VARIANT_CANONICAL.get(raw.strip().lower(), raw.strip())
+
+
 
 class GyMLRenderer:
     """
@@ -519,7 +550,7 @@ class GyMLRenderer:
 
     def _render_smart_layout(self, layout: GyMLSmartLayout) -> str:
         """Render smart-layout as grid container."""
-        variant = self._escape(layout.variant)
+        variant = _norm_variant(self._escape(layout.variant))
         item_count = len(layout.items)
         extra_classes = []
 
@@ -548,7 +579,7 @@ class GyMLRenderer:
         ]
 
         for i, item in enumerate(layout.items):
-            html_parts.append(self._render_smart_layout_item(item, layout.variant, i))
+            html_parts.append(self._render_smart_layout_item(item, variant, i))
 
         html_parts.append("</div>")
         return "\n".join(html_parts)

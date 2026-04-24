@@ -23,11 +23,11 @@
   --slide-content-padding: clamp(1rem, 2.8vh, 2.5rem) clamp(1.25rem, 2.5vw, 2.75rem);
 }
 
-section { 
-  padding: 0 !important; 
+section {
+  padding: 0 !important;
   background: radial-gradient(circle at 2% 2%, rgba(56, 189, 248, 0.1) 0%, transparent 45%),
-              radial-gradient(circle at 98% 98%, rgba(79, 70, 229, 0.1) 0%, transparent 45%),
-              #0b1121 !important;
+    radial-gradient(circle at 98% 98%, rgba(79, 70, 229, 0.1) 0%, transparent 45%),
+    #0b1121 !important;
   position: relative !important;
 }
 
@@ -37,7 +37,7 @@ section::after {
   position: absolute !important;
   inset: 0 !important;
   background-image: linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px) !important;
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px) !important;
   background-size: 60px 60px !important;
   pointer-events: none !important;
   z-index: 100 !important;
@@ -79,23 +79,28 @@ h1::after {
   border-radius: 2px !important;
 }
 
-h2 { font-size: calc(var(--h2-size, 2rem) + 0.15rem) !important; }
+h2 {
+  font-size: calc(var(--h2-size, 2rem) + 0.15rem) !important;
+}
 
 section[data-image-layout="right"] .body,
 section[data-image-layout="right-wide"] .body {
   padding-right: 0 !important;
 }
+
 section[data-image-layout="left"] .body {
   padding-left: 0 !important;
 }
 
-.p-intro, .p-context {
+.p-intro,
+.p-context {
   font-size: calc(var(--h1-size, 2.25rem) * 0.5) !important;
   line-height: 1.55 !important;
+  margin-bottom: 0.5rem !important;
 }
 
 /* === Universal Icons (Modern Tech) === */
-.card-icon, 
+.card-icon,
 .timeline-icon-badge {
   background: linear-gradient(to bottom, #1A4B8C, #3B7DD8) !important;
   color: #D0E4FF !important;
@@ -139,6 +144,7 @@ section[data-image-layout="left"] .body {
   flex: 0 1 auto !important;
   align-content: flex-start !important;
 }
+
 .smart-layout[data-variant="solidBoxesWithIconsInside"] .card {
   height: auto !important;
 }
@@ -162,6 +168,7 @@ section[data-image-layout="right-wide"] .smart-layout[data-variant="solidBoxesWi
   height: 100% !important;
   border-color: #2E6BC4 !important;
 }
+
 .smart-layout[data-variant="solidBoxesWithIconsInside"] .card-content {
   gap: 0.55rem !important;
 }
@@ -182,6 +189,7 @@ section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside
   grid-row: auto !important;
   grid-column: auto !important;
 }
+
 section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="4"],
 section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside"][data-item-count="6"] {
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -197,7 +205,7 @@ section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside
     grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
   }
 }
-}
+
 
 
 /* === processAccordion: 1x4 horizontal grid === */
@@ -207,30 +215,27 @@ section[data-image-layout] .smart-layout[data-variant="solidBoxesWithIconsInside
   gap: 1.5rem !important;
   align-items: stretch !important;
 }
+
 .smart-layout[data-variant="processAccordion"] .card {
   margin: 0 !important;
   background: rgba(255, 255, 255, 0.1) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-left: 4px solid var(--accent, #6366f1) !important;
-  padding: 1.25rem 1.5rem !important;
+  border-left: 4px solid #2E6BC4 !important;
+  padding: 1rem 1.25rem !important;
   border-radius: 8px !important;
 }
+
 .smart-layout[data-variant="processAccordion"] .card-title {
   font-size: clamp(1.125rem, 2vw, 1.25rem) !important;
   font-weight: 600 !important;
   color: #ffffff !important;
   margin-bottom: 0.5rem !important;
 }
+
 .smart-layout[data-variant="processAccordion"] .card-text {
   font-size: clamp(0.875rem, 1.5vw, 1rem) !important;
   color: rgba(255, 255, 255, 0.65) !important;
   line-height: 1.55 !important;
-}
-
-/* === Dark overlay for top/bottom hero images to improve contrast === */
-section[data-image-layout="top"] .accent-image-wrapper,
-section[data-image-layout="bottom"] .accent-image-wrapper {
-  position: relative !important;
 }
 
 section[data-image-layout="top"] .accent-image-wrapper::after,
@@ -241,9 +246,20 @@ section[data-image-layout="bottom"] .accent-image-wrapper::after {
   left: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  background: rgba(0,0,0,0.4) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
   pointer-events: none !important;
   z-index: 1 !important;
+}
+
+/* Save vertical space when intro paragraphs are present alongside top images */
+section[data-image-layout="top"]:has(.p-intro) .accent-image-wrapper,
+section[data-image-layout="top"]:has(.p-context) .accent-image-wrapper {
+  height: 160px !important;
+}
+
+section[data-image-layout="top"]:has(.p-intro) .body,
+section[data-image-layout="top"]:has(.p-context) .body {
+  margin-top: -80px !important;
 }
 
 /* === relationshipMap: tech navy circles with focus hierarchy === */
@@ -319,12 +335,334 @@ section:has(.smart-layout[data-variant="relationshipMap"]) h1 {
   font-style: italic !important;
 }
 
-.p-annotation::before { display: none !important; }
+.p-annotation::before {
+  display: none !important;
+}
 
 
 
 /* === Fix relationshipMap stacking order for icons === */
-.smart-layout[data-variant='relationshipMap'] .card:nth-child(1) { z-index: 3 !important; }
-.smart-layout[data-variant='relationshipMap'] .card:nth-child(2) { z-index: 2 !important; }
-.smart-layout[data-variant='relationshipMap'] .card:nth-child(3) { z-index: 1 !important; }
+.smart-layout[data-variant='relationshipMap'] .card:nth-child(1) {
+  z-index: 3 !important;
+}
 
+.smart-layout[data-variant='relationshipMap'] .card:nth-child(2) {
+  z-index: 2 !important;
+}
+
+.smart-layout[data-variant='relationshipMap'] .card:nth-child(3) {
+  z-index: 1 !important;
+}
+
+
+
+/* === cardGridDiamond (diamondGrid) Overhaul === */
+.smart-layout[data-variant='diamondGrid'] {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 18px !important;
+  width: 100% !important;
+  margin: 1.25rem 0 !important;
+  padding: 0 !important;
+}
+
+.smart-layout[data-variant='diamondGrid'] .card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  background: rgba(15, 35, 65, 0.4) !important;
+  border: 1px solid rgba(100, 170, 230, 0.1) !important;
+  border-top: 2px solid #2E6BC4 !important;
+  border-radius: 0 !important;
+  padding: 20px !important;
+  height: 100% !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+  text-align: left !important;
+}
+
+.smart-layout[data-variant='diamondGrid'] .card-icon {
+  width: 40px !important;
+  height: 40px !important;
+  margin: 0 0 12px 0 !important;
+  background: #1A3A5C !important;
+  border: 1px solid rgba(100, 170, 230, 0.2) !important;
+  box-shadow: 0 0 12px rgba(46, 107, 196, 0.15) !important;
+  color: #4A90D9 !important;
+  transform: rotate(45deg) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.smart-layout[data-variant='diamondGrid'] .card-icon i {
+  transform: rotate(-45deg) !important;
+  font-size: 1.25rem !important;
+}
+
+.smart-layout[data-variant='diamondGrid'] .card-title {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #D0E4FF !important;
+  margin-bottom: 10px !important;
+  text-align: left !important;
+}
+
+.smart-layout[data-variant='diamondGrid'] .card-text {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: #6889A8 !important;
+  text-align: left !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+section:has(.smart-layout[data-variant='diamondGrid']) h1::after {
+  display: none !important;
+}
+
+
+/* === Comparison Table Redesign (Gyanova Blue Theme) === */
+
+/* Reduce vertical gap between slide title and content block */
+.comparison-layout .body {
+  justify-content: flex-start !important;
+}
+
+/* Tame the gap created by h1 margins combined with flex margins */
+.comparison-layout h1 {
+  margin-bottom: 0 !important;
+}
+
+.comparison-table-wrapper {
+  margin-top: -1rem !important;
+  /* Aggressively pull UP towards the H1 title */
+  gap: 0.75rem !important;
+  /* Reduce gap between table title and the table itself */
+}
+
+.comparison-table-title {
+  color: #8AAFDB !important;
+}
+
+/* Deep navy background for scroll container */
+.comparison-table-scroll-container {
+  background: var(--bg-primary, #0b1121) !important;
+  border: 1px solid rgba(46, 107, 196, 0.3) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Base table adjustments */
+.refined-comparison-table th,
+.refined-comparison-table td {
+  border-color: rgba(46, 107, 196, 0.2) !important;
+}
+
+/* Headers */
+.refined-comparison-table th {
+  background: rgba(46, 107, 196, 0.1) !important;
+  color: #D0E4FF !important;
+  border-bottom: 2px solid #2E6BC4 !important;
+}
+
+/* Content cells */
+.refined-comparison-table td {
+  color: #5A7EA3 !important;
+}
+
+/* Hover glow effect */
+.refined-comparison-table tr:hover td {
+  background: rgba(46, 107, 196, 0.08) !important;
+  color: #8AAFDB !important;
+}
+
+/* === processSteps: Vertical Flow (Sequential Steps) Redesign === */
+.smart-layout[data-variant="processSteps"] {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+  /* Tighten gap between steps */
+  margin-top: 0.5rem !important;
+  width: 100% !important;
+}
+
+.smart-layout[data-variant="processSteps"] .card {
+  position: relative !important;
+  background: rgba(15, 35, 65, 0.4) !important;
+  border: 1px solid rgba(100, 170, 230, 0.1) !important;
+  border-left: 4px solid #2E6BC4 !important;
+  /* Strong accent on the left */
+  padding: 1.15rem 1.5rem 1.15rem 4rem !important;
+  /* Space for the number badge */
+  border-radius: 8px !important;
+  min-height: auto !important;
+  transition: all 0.3s ease !important;
+  margin: 0 !important;
+}
+
+.smart-layout[data-variant="processSteps"] .card:hover {
+  background: rgba(15, 35, 65, 0.6) !important;
+  border-left-color: #3B7DD8 !important;
+  box-shadow: 0 0 20px rgba(46, 107, 196, 0.25) !important;
+  transform: translateX(4px) !important;
+}
+
+/* Redesign Step Number as a Premium Badge */
+.smart-layout[data-variant="processSteps"] .card-number {
+  position: absolute !important;
+  left: 1rem !important;
+  top: 1.15rem !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  background: linear-gradient(135deg, #1A4B8C, #3B7DD8) !important;
+  color: #D0E4FF !important;
+  border-radius: 50% !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 0 15px rgba(46, 107, 196, 0.4) !important;
+  z-index: 2 !important;
+  border: 1px solid rgba(208, 228, 255, 0.2) !important;
+}
+
+/* Connecting Line between steps - vertical track */
+.smart-layout[data-variant="processSteps"] .card:not(:last-child)::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 2.1rem !important;
+  /* Align with center of the number badge */
+  top: 3.4rem !important;
+  width: 2px !important;
+  height: calc(100% - 1.25rem) !important;
+  background: linear-gradient(to bottom, #2E6BC4 30%, rgba(46, 107, 196, 0.1)) !important;
+  z-index: 1 !important;
+}
+
+.smart-layout[data-variant="processSteps"] .card-title {
+  color: #D0E4FF !important;
+  font-size: 1.35rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem !important;
+  letter-spacing: -0.01em !important;
+}
+
+.smart-layout[data-variant="processSteps"] .card-text {
+  color: #8AAFDB !important;
+  font-size: 1.05rem !important;
+  line-height: 1.6 !important;
+  opacity: 0.9 !important;
+}
+
+/* Spacing optimization for slides with high density (intro paragraphs, context) */
+section:has(.p-intro) .smart-layout[data-variant="processSteps"],
+section:has(.p-context) .smart-layout[data-variant="processSteps"] {
+  gap: 0.65rem !important;
+}
+
+section:has(.p-intro) .smart-layout[data-variant="processSteps"] .card,
+section:has(.p-context) .smart-layout[data-variant="processSteps"] .card {
+  padding-top: 0.9rem !important;
+  padding-bottom: 0.9rem !important;
+}
+
+section:has(.p-intro) .smart-layout[data-variant="processSteps"] .card-title,
+section:has(.p-context) .smart-layout[data-variant="processSteps"] .card-title {
+  font-size: 1.2rem !important;
+}
+
+section:has(.p-intro) .smart-layout[data-variant="processSteps"] .card-text,
+section:has(.p-context) .smart-layout[data-variant="processSteps"] .card-text {
+  font-size: 0.95rem !important;
+}
+
+/* Handle overflow by allowing small scaling on very dense slides */
+section[data-density="super_dense"] .smart-layout[data-variant="processSteps"] .card {
+  padding: 0.75rem 1.25rem 0.75rem 3.5rem !important;
+}
+
+/* === processArrow: Horizontal Interlocking Refinement === */
+.smart-layout[data-variant="processArrow"] .card {
+  background: rgba(15, 35, 65, 0.4) !important;
+  border: 1px solid rgba(100, 170, 230, 0.1) !important;
+  border-top: 3px solid #2E6BC4 !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+.smart-layout[data-variant="processArrow"] .card-number {
+  background: #1A3A5C !important;
+  color: #D0E4FF !important;
+  border: 1px solid #2E6BC4 !important;
+}
+
+
+/* === sequentialOutput: Modern Terminal Visual === */
+.smart-layout[data-variant="sequentialOutput"] {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+  background: #0B1121 !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  border: 1px solid rgba(46, 107, 196, 0.3) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  max-width: 900px !important;
+  margin: 1rem auto !important;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+}
+
+.smart-layout[data-variant="sequentialOutput"]::before {
+  content: "•••" !important;
+  display: block !important;
+  color: #2E6BC4 !important;
+  font-size: 1.5rem !important;
+  margin-bottom: 1rem !important;
+  letter-spacing: 4px !important;
+  opacity: 0.5 !important;
+}
+
+.smart-layout[data-variant="sequentialOutput"] .card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.25rem 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 1rem !important;
+}
+
+.smart-layout[data-variant="sequentialOutput"] .card-number {
+  display: none !important;
+}
+
+.smart-layout[data-variant="sequentialOutput"] .card-icon {
+  color: #2E6BC4 !important;
+  font-size: 1.1rem !important;
+  margin-top: 0.2rem !important;
+  flex-shrink: 0 !important;
+  text-shadow: 0 0 10px rgba(46, 107, 196, 0.5) !important;
+}
+
+.smart-layout[data-variant="sequentialOutput"] .card-title {
+  color: #8AAFDB !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.smart-layout[data-variant="sequentialOutput"] .card-title::after {
+  content: ":" !important;
+  margin-right: 0.5rem !important;
+}
+
+.smart-layout[data-variant="sequentialOutput"] .card-text {
+  color: #D0E4FF !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+}

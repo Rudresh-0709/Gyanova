@@ -20,6 +20,7 @@ class ImageGenerator:
 
     BASE_URL = "https://cloud.leonardo.ai/api/rest/v1"
     MODEL_ID = "1dd50843-d653-4516-a8e3-f0238ee453ff"  # FLUX Schnell as requested
+    DISABLE_REMOTE_GENERATION = True  # Set to True to save Leonardo.AI credits
 
     # Style Presets (Dynamic is usually best for mixed educational content)
     STYLE_UUIDS = {
@@ -72,6 +73,13 @@ class ImageGenerator:
         cls, prompt: str, width: int = 1024, height: int = 1024, style: str = "dynamic"
     ) -> Optional[str]:
         """Generic method to generate a single image."""
+        if cls.DISABLE_REMOTE_GENERATION:
+            print(f"   [IMAGE] Generic generation disabled (credit saving).")
+            return cls.build_svg_fallback_data_url(
+                title="Gyanova Visual",
+                subtitle="Generic Placeholder"
+            )
+
         if not LEONARDO_API_KEY:
             print(
                 "WARNING: LEONARDO_API_KEY not found in environment. Skipping image generation."
@@ -94,6 +102,13 @@ class ImageGenerator:
         Main entry point to generate an image.
         Returns the publicly accessible URL of the generated image.
         """
+        if cls.DISABLE_REMOTE_GENERATION:
+            print(f"   [IMAGE] Generation disabled (credit saving). Topic: {topic}")
+            return cls.build_svg_fallback_data_url(
+                title=topic or "Gyanova Visual",
+                subtitle="Premium Educational Graphic (Placeholder)"
+            )
+
         if not LEONARDO_API_KEY:
             print(
                 "WARNING: LEONARDO_API_KEY not found in environment. Skipping image generation."

@@ -295,9 +295,11 @@ class GyMLValidator:
             "sequentialSteps",
             "bulletIcon",
             "bulletCheck",
+            "bulletCross",
             "timelineIcon",
             "timelineHorizontal",
             "timelineSequential",
+            "timelineMilestone",
             "cardGridIcon",
             "cardGridSimple",
             "cardGridImage",
@@ -306,8 +308,16 @@ class GyMLValidator:
             "comparisonProsCons",
             "comparisonBeforeAfter",
             "statsComparison",
+            "statsPercentage",
+            "quote",
+            "quoteTestimonial",
+            "quoteCitation",
+            "definition",
+            "knowledgeWeb",
         ]
-        if layout.variant not in valid_variants:
+        # Case-insensitive check: the LLM may emit lowercase variants
+        valid_variants_lower = {v.lower() for v in valid_variants}
+        if layout.variant.lower() not in valid_variants_lower:
             result.add_warning(f"Unrecognized smart-layout variant: '{layout.variant}'")
 
         # Check items

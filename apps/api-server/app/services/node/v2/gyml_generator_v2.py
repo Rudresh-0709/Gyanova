@@ -102,6 +102,70 @@ def _safe_json_loads(raw: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+# ---------------------------------------------------------------------------
+# Canonical camelCase variant names.  The LLM sometimes emits these in
+# lowercase ("solidboxeswithiconsinside") which breaks downstream CSS
+# attribute selectors and the _slide_to_section router that both rely on
+# exact case matching.
+# Build a lookup: lowered_name -> officialCamelCase
+# ---------------------------------------------------------------------------
+_CANONICAL_VARIANTS: List[str] = [
+    "solidBoxesWithIconsInside",
+    "timeline",
+    "processSteps",
+    "comparison",
+    "stats",
+    "bigBullets",
+    "cardGrid",
+    "comparisonCards",
+    "processAccordion",
+    "hubAndSpoke",
+    "relationshipMap",
+    "ribbonFold",
+    "statsBadgeGrid",
+    "diamondRibbon",
+    "diamondGrid",
+    "diamondHub",
+    "featureShowcase",
+    "cyclicBlock",
+    "sequentialOutput",
+    "sequentialSteps",
+    "bulletIcon",
+    "bulletCheck",
+    "bulletCross",
+    "timelineIcon",
+    "timelineHorizontal",
+    "timelineSequential",
+    "timelineMilestone",
+    "cardGridIcon",
+    "cardGridSimple",
+    "cardGridImage",
+    "cardGridDiamond",
+    "processArrow",
+    "comparisonProsCons",
+    "comparisonBeforeAfter",
+    "statsComparison",
+    "statsPercentage",
+    "quote",
+    "quoteTestimonial",
+    "quoteCitation",
+    "definition",
+    "knowledgeWeb",
+]
+
+_VARIANT_LOOKUP: Dict[str, str] = {v.lower(): v for v in _CANONICAL_VARIANTS}
+
+
+def _normalize_variant(raw: Optional[str]) -> str:
+    """Return the canonical camelCase variant name for any casing the LLM
+    might produce.  Falls back to the raw string unchanged if no match is
+    found (the validator will still warn about truly unknown variants)."""
+    if not raw:
+        return "bigBullets"
+    cleaned = str(raw).strip()
+    return _VARIANT_LOOKUP.get(cleaned.lower(), cleaned)
+
+
 def _get_block_item_schema(variant: str) -> str:
     """Get the representative JSON schema for a smart_layout item based on its variant."""
     v = str(variant).lower()
@@ -134,7 +198,7 @@ def _get_block_item_schema(variant: str) -> str:
     }
 
     if any(iv in v for iv in icon_variants):
-        return '{"heading": "Item Title", "description": "Self-contained teaching point.", "icon": "ri-lightbulb-line"}'
+        return '{"heading": "Item Title", "description": "Self-contained teaching point.", "icon_name": "ri-lightbulb-line"}'
 
     return '{"heading": "Item Title", "description": "Self-contained teaching point."}'
 
@@ -171,7 +235,7 @@ def _get_primary_block_schema(family: str, variant: str, expected_items: int) ->
             "{\n"
             '      "type": "hub_and_spoke",\n'
             '      "hub_label": "The Core Concept",\n'
-            f'      "items": [{{"label": "Satellite Point", "description": "...", "icon": "ri-..."}}]  // {expected_items} items\n'
+            f'      "items": [{{"label": "Satellite Point", "description": "...", "icon_name": "ri-..."}}]  // {expected_items} items\n'
             "    }"
         )
 
@@ -180,7 +244,7 @@ def _get_primary_block_schema(family: str, variant: str, expected_items: int) ->
             "{\n"
             '      "type": "feature_showcase_block",\n'
             '      "title": "Central Feature Name",\n'
-            f'      "items": [{{"label": "Feature Item", "description": "...", "icon": "ri-..."}}]  // {expected_items} items\n'
+            f'      "items": [{{"label": "Feature Item", "description": "...", "icon_name": "ri-..."}}]  // {expected_items} items\n'
             "    }"
         )
 
@@ -1008,7 +1072,7 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
                 )
             )
         elif block_type == "smart_layout":
-            variant = block.get("variant")
+            variant = _normalize_variant(block.get("variant"))
             # Route specialized variants to their dedicated GyML classes
             if variant == "hubAndSpoke":
                 items = []
@@ -1106,7 +1170,7 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
                     items.append(GyMLSmartLayoutItem(**item_kwargs))
                 body_children.append(
                     GyMLSmartLayout(
-                        variant=str(block.get("variant") or "bigBullets"), items=items
+                        variant=_normalize_variant(block.get("variant")), items=items
                     )
                 )
         elif block_type == "image":
