@@ -41,9 +41,24 @@ def _build_narration_text(plan_item: Dict[str, Any], slide: Dict[str, Any]) -> s
 def _animation_metadata(slide: Dict[str, Any]) -> Dict[str, Any]:
     blocks = slide.get("contentBlocks", []) if isinstance(slide.get("contentBlocks"), list) else []
     primary_index = int(slide.get("primary_block_index", 0) or 0)
+    
+    item_count = 0
+    if blocks and 0 <= primary_index < len(blocks):
+        primary_block = blocks[primary_index]
+        if isinstance(primary_block, dict):
+            items = primary_block.get("items", [])
+            if isinstance(items, list) and len(items) > 0:
+                item_count = len(items)
+            elif primary_block.get("type") == "comparison_table":
+                rows = primary_block.get("rows", [])
+                if isinstance(rows, list):
+                    item_count = len(rows)
+
+    count = item_count if item_count > 0 else max(1, len(blocks))
+    
     return {
-        "animation_unit": "block",
-        "animation_unit_count": max(1, len(blocks)),
+        "animation_unit": "item" if item_count > 0 else "block",
+        "animation_unit_count": count,
         "animated_block_index": primary_index,
     }
 
