@@ -626,15 +626,18 @@ class GyMLSerializer:
                         GyMLSmartLayoutItem(
                             heading=item.get(
                                 "title",
-                                item.get("label", item.get("heading", "Option")),
+                                item.get("heading", "Option"),
                             ),
                             description=desc,
                             points=points,
                             icon=(
-                                GyMLIcon(alt=item.get("icon"))
-                                if item.get("icon")
+                                GyMLIcon(alt=item.get("icon", item.get("icon_name")))
+                                if item.get("icon") or item.get("icon_name")
                                 else None
                             ),
+                            year=item.get("year"),
+                            value=item.get("value"),
+                            label=item.get("label", item.get("heading"))
                         )
                     )
 

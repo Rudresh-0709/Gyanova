@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GyML Slides</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <!-- KaTeX for professional math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, { 
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
+        ],
+        throwOnError : false 
+    });"></script>
+    <link rel="stylesheet" href="gyml_sandbox.css">
+</head>
+<body>
+    <div class="gyml-deck">
+        <!-- 
+          =============================================================
+          SANDBOX SLIDE
+          Replace the contents inside this section with your content blocks
+          to test them with the actual viewport and styling.
+          ============================================================= 
+        -->
+        <section data-image-layout="blank" data-density="balanced" style="--item-color: #6366f1;">
+            
+            <header class="header">
+                <div class="topic-label">Testing Sandbox</div>
+                <h1>Preview Content Blocks Here</h1>
+            </header>
+            
+            <div class="body">
+                
+                <!-- =============== PASTE YOUR CONTENT BLOCK BELOW =============== -->
+                
+                <div style="padding: 2rem; border: 2px dashed #cbd5e1; border-radius: 12px; text-align: center; color: #64748b;">
+                    <h2>Paste your block HTML here!</h2>
+                    <p>It will render exactly as it does in the slide engine.</p>
+                </div>
+                
+                <!-- =============== PASTE YOUR CONTENT BLOCK ABOVE =============== -->
+
+            </div>
+            
+            <footer class="footer">
+                <div class="footer-dots">
+                    <span class="dot active"></span>
+                </div>
+            </footer>
+            
+        </section>
+    </div>
+    
+    <!-- Scripts for animations/reveals -->
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('.anim-fade').forEach(el => el.classList.add('active'));
+        }, 500);
+    </script>
+</body>
+</html>

@@ -303,14 +303,14 @@ BLOCK_CATALOG: Dict[Tuple[str, str], BlockSpec] = {
         smart_layout_variant="ribbonFold",
         intent_fit=("explain", "list", "teach"),
     ),
-    ("smart_layout", "statsBadgeGrid"): BlockSpec(
+    ("smart_layout", "InterlockingArrows"): BlockSpec(
         family="smart_layout",
-        variant="statsBadgeGrid",
+        variant="InterlockingArrows",
         width_class="normal",
         supported_layouts=("left", "right", "blank"),
         density_ok=("dense", "super_dense"),
         is_primary_candidate=True,
-        smart_layout_variant="statsBadgeGrid",
+        smart_layout_variant="InterlockingArrows",
         intent_fit=("prove", "compare", "explain"),
     ),
     ("smart_layout", "diamondRibbon"): BlockSpec(
@@ -497,17 +497,17 @@ _INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], List[str]] = {
     # ═══════════════════════════════════════════════════════════════════════
     # TEACH — instructing how something works, step-by-step pedagogy
     # ═══════════════════════════════════════════════════════════════════════
-    ("teach", "mechanism"):     ["processSteps", "processAccordion", "timelineSequential"],
+    ("teach", "mechanism"):     ["processSteps", "BorderedCards", "timelineSequential"],
     ("teach", "sequence"):      ["processSteps", "processArrow", "timeline"],
-    ("teach", "application"):   ["processArrow", "processAccordion", "sequentialOutput"],
+    ("teach", "application"):   ["processArrow", "BorderedCards", "sequentialOutput"],
     ("teach", "foundation"):    ["processSteps", "ribbonFold", "solidBoxesWithIconsInside"],
-    ("teach", "overview"):      ["processAccordion", "ribbonFold", "featureShowcase"],
+    ("teach", "overview"):      ["BorderedCards", "ribbonFold", "featureShowcase"],
 
     # ═══════════════════════════════════════════════════════════════════════
     # DEMO — demonstrating application, showing how to do something
     # ═══════════════════════════════════════════════════════════════════════
     ("demo", "mechanism"):      ["processArrow", "sequentialOutput", "processSteps"],
-    ("demo", "application"):    ["processAccordion", "sequentialOutput", "processArrow"],
+    ("demo", "application"):    ["BorderedCards", "sequentialOutput", "processArrow"],
     ("demo", "sequence"):       ["sequentialOutput", "processSteps", "timeline"],
 
     # ═══════════════════════════════════════════════════════════════════════
@@ -516,8 +516,8 @@ _INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], List[str]] = {
     ("compare", "comparison"):  ["comparisonProsCons", "comparisonBeforeAfter", "statsComparison"],
     ("compare", "foundation"):  ["comparisonBeforeAfter", "comparisonProsCons", "diamondGrid"],
     ("compare", "mechanism"):   ["relationshipMap", "comparisonProsCons", "statsComparison"],
-    ("compare", "overview"):    ["diamondRibbon", "comparisonProsCons", "statsBadgeGrid"],
-    ("compare", "data"):        ["statsComparison", "statsBadgeGrid", "comparisonProsCons"],
+    ("compare", "overview"):    ["diamondRibbon", "comparisonProsCons", "InterlockingArrows"],
+    ("compare", "data"):        ["statsComparison", "InterlockingArrows", "comparisonProsCons"],
 
     # ═══════════════════════════════════════════════════════════════════════
     # EXPLAIN — breaking down a concept, making something clear
@@ -526,10 +526,10 @@ _INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], List[str]] = {
     ("explain", "overview"):    ["solidBoxesWithIconsInside", "diamondHub", "cardGridDiamond", "hubAndSpoke"],
     ("explain", "comparison"):  ["relationshipMap", "comparisonProsCons", "statsComparison"],
     ("explain", "application"): ["solidBoxesWithIconsInside", "processSteps", "diamondGrid"],
-    ("explain", "mechanism"):   ["diamondGrid", "cyclicBlock", "processAccordion", "featureShowcase"],
+    ("explain", "mechanism"):   ["diamondGrid", "cyclicBlock", "BorderedCards", "featureShowcase"],
     ("explain", "example"):     ["cardGridImage", "cardGridDiamond", "cardGridIcon"],
     ("explain", "sequence"):    ["timelineSequential", "ribbonFold", "processSteps"],
-    ("explain", "data"):        ["stats", "statsBadgeGrid", "ribbonFold"],
+    ("explain", "data"):        ["stats", "InterlockingArrows", "ribbonFold"],
 
     # ═══════════════════════════════════════════════════════════════════════
     # LIST — enumerating items, features, points
@@ -557,9 +557,9 @@ _INTENT_SCOPE_TO_VARIANT: Dict[Tuple[str, str], List[str]] = {
     # ═══════════════════════════════════════════════════════════════════════
     # PROVE — backing up claims with data, evidence, statistics
     # ═══════════════════════════════════════════════════════════════════════
-    ("prove", "data"):        ["stats", "statsBadgeGrid", "statsComparison"],
-    ("prove", "comparison"):  ["statsComparison", "statsBadgeGrid", "comparisonProsCons"],
-    ("prove", "foundation"):  ["stats", "statsBadgeGrid", "solidBoxesWithIconsInside"],
+    ("prove", "data"):        ["stats", "InterlockingArrows", "statsComparison"],
+    ("prove", "comparison"):  ["statsComparison", "InterlockingArrows", "comparisonProsCons"],
+    ("prove", "foundation"):  ["stats", "InterlockingArrows", "solidBoxesWithIconsInside"],
 }
 # Fallback variants when intent/scope combination is not found.
 _DEFAULT_SMART_LAYOUT_VARIANTS = ["solidBoxesWithIconsInside", "diamondGrid", "cardGridDiamond"]

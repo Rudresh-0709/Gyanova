@@ -50,20 +50,21 @@ from .hierarchy import VisualHierarchy
 # This map ensures the rendered HTML always has the correct casing.
 _VARIANT_CANONICAL = {v.lower(): v for v in [
     "bigBullets", "bulletCheck", "bulletCross", "bulletIcon",
-    "cardGridIcon", "cardGridDiamond",
+    "cardGridIcon", "cardGridDiamond", "cardGridImage", "cardGridSimple",
     "comparison", "comparisonProsCons", "comparisonBeforeAfter", "comparisonCards",
     "definition",
     "diamondGrid", "diamondRibbon", "diamondHub",
     "highlight", "striped",
-    "processSteps", "processArrow", "processAccordion",
+    "processSteps", "processArrow", "BorderedCards",
     "quote", "quoteTestimonial", "quoteCitation",
     "relationshipMap", "ribbonFold",
     "sequentialSteps", "sequentialOutput",
     "solidBoxesWithIconsInside",
-    "stats", "statsBadgeGrid", "statsComparison", "statsPercentage",
+    "stats", "InterlockingArrows", "statsComparison", "statsPercentage",
     "timeline", "timelineSequential", "timelineIcon",
     "timelineHorizontal", "timelineMilestone",
     "cyclicBlock", "hubAndSpoke", "knowledgeWeb",
+    "featureShowcase",
     "numberedList",
 ]}
 
