@@ -60,20 +60,6 @@ awesome-copilot-main/
 .github/skills/
 .github/agents/
 
-# local test and debug outputs
-test_*.html
-test_*.py
-test_*.json
-debug*.txt
-repro_error*.py
-*_output.html
-*_output.json
-density_preview.html
-output*.html
-output.txt
-terminaloutput.txt
-simple_layer_test.py
-cyclic_process_test.html
 
 # generated lesson audio artifacts
 .persistent_data/audio_output/
