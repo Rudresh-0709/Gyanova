@@ -472,11 +472,8 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     # Resolve the intended smart_layout variant from plan
-    smart_layout_variant = (
-        str(plan_item.get("smart_layout_variant") or "")
-        or str(designer_blueprint.get("smart_layout_variant") or "")
-        or "bigBullets"
-    ).strip()
+    selected_block_variant = str(plan_item.get("selected_block_variant") or "bigBullets").strip()
+    smart_layout_variant = selected_block_variant  # alias for the rest of the function
 
     content_blocks: List[Dict[str, Any]] = [
         {
@@ -487,7 +484,7 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     ]
 
     family = (
-        str(primary.get("family") or plan_item.get("primary_family") or "smart_layout")
+        str(plan_item.get("primary_family") or "smart_layout")
         .strip()
         .lower()
     )
@@ -1127,12 +1124,11 @@ def _enforce_structured_primary(
     if not isinstance(blocks, list):
         return
 
-    # Check if a template is explicitly title/sparse – those may skip primary block.
-    selected_template = str(
-        payload.get("selected_template") or plan_item.get("selected_template") or ""
-    ).strip()
-    sparse_templates = {"Title card", "Formula block", "Large bullet list"}
-    if selected_template in sparse_templates:
+    # Check if this is a sparse/title-only block variant — those may skip primary block.
+    # Sparse blocks that intentionally have no structured primary
+    sparse_variants = {"definition", "quote", "callout", "keyTakeaway", "annotation_paragraph"}
+    selected_block_variant = str(payload.get("selected_block_variant") or plan_item.get("selected_block_variant") or "").strip()
+    if selected_block_variant in sparse_variants:
         return
 
     if _has_structured_primary(blocks):
@@ -1209,45 +1205,35 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     image_tier = str(plan_item.get("image_tier") or "accent").strip().lower()
 
     # ── Planned primary block info ───────────────────────────────────────────
-    primary_family = (
-        str(
-            plan_item.get("primary_family")
-            or designer_blueprint.get("primary_family")
-            or "smart_layout"
-        )
-        .strip()
-        .lower()
-    )
-    primary_variant = str(
-        plan_item.get("primary_variant")
-        or designer_blueprint.get("primary_variant")
-        or "bigBullets"
-    ).strip()
-    smart_layout_variant = str(
-        plan_item.get("smart_layout_variant")
-        or designer_blueprint.get("smart_layout_variant")
-        or "bigBullets"
-    ).strip()
+    # Block variant is now set by the designer node — do not re-derive it here
+    selected_block_variant = str(plan_item.get("selected_block_variant") or "bigBullets").strip()
+    block_constraints = plan_item.get("block_constraints") or {}
+
+    item_min = int(block_constraints.get("item_min", 2))
+    item_max = int(block_constraints.get("item_max", 6))
+    requires_icons = bool(block_constraints.get("requires_icons", False))
+    width_class = str(block_constraints.get("width_class", "normal"))
+    supported_layouts = list(block_constraints.get("supported_layouts", ["blank"]))
+    layout_variant = str(block_constraints.get("layout_variant", "default"))
+
+    # Clamp estimated_items to block's supported range
+    try:
+        estimated_items = int(plan_item.get("estimated_items", 4))
+        estimated_items = max(item_min, min(item_max, estimated_items))
+    except (TypeError, ValueError):
+        estimated_items = max(item_min, min(item_max, 4))
+
+    # Keep smart_layout_variant as an alias for backward compat with composition/enforcement helpers
+    smart_layout_variant = selected_block_variant
+
+    # selected_template is legacy — keep for fallback helpers that still reference it
+    selected_template = str(plan_item.get("selected_template") or "Title with bullets").strip()
+
     slide_density = str(plan_item.get("slide_density") or "balanced").strip().lower()
 
-    # Derive expected item count from density
-    density_item_counts = {
-        "ultra_sparse": "2–3",
-        "sparse": "2–3",
-        "balanced": "3–4",
-        "standard": "4–5",
-        "dense": "5–6",
-        "super_dense": "5–6",
-    }
-    expected_items = density_item_counts.get(slide_density, "3–4")
+    expected_items = str(estimated_items)  # exact count from designer
 
     # ── Research / grounding context ────────────────────────────────────────
-    if smart_layout_variant == "relationshipMap":
-        expected_items = "3"
-    if smart_layout_variant == "ribbonFold":
-        expected_items = "4"
-    if smart_layout_variant == "statsBadgeGrid":
-        expected_items = "4"
 
     research_context = str(
         plan_item.get("research_context") or plan_item.get("research_raw_text") or ""
@@ -1271,52 +1257,18 @@ def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     # ── Determine the primary block type string for the prompt ───────────────
-    if primary_family == "smart_layout":
-        primary_block_instruction = (
-            f'You MUST include exactly ONE `"type": "smart_layout"` block with `"variant": "{smart_layout_variant}"`'
-            f" as the PRIMARY teaching block (primary_block_index)."
-            f" It MUST contain {expected_items} items."
-        )
-        if smart_layout_variant == "relationshipMap":
-            primary_block_instruction += (
-                " Use exactly 3 items arranged as left circle, center circle, and right circle."
-                " The first two items MUST include `icon_name` values so the renderer can place"
-                " connector icons between the circles."
-            )
-        if smart_layout_variant == "ribbonFold":
-            primary_block_instruction += (
-                " Use exactly 4 items as folded vertical ribbons."
-                " Each item SHOULD include an `icon_name` so every ribbon shows an icon badge."
-            )
-        if smart_layout_variant == "statsBadgeGrid":
-            primary_block_instruction += (
-                " Use exactly 4 compact stat tiles in a 2x2 grid."
-                " Each item's heading SHOULD be the headline metric such as a percentage,"
-                " and the description should be a short supporting line."
-            )
-        if smart_layout_variant == "solidBoxesWithIconsInside":
-            primary_block_instruction += (
-                " Every item MUST include `icon_name` with a valid Remix Icon class"
-                " (examples: ri-lightbulb-line, ri-compass-3-line, ri-book-open-line)."
-            )
-    elif primary_family == "formula":
-        primary_block_instruction = 'You MUST include exactly ONE `"type": "formula_block"` block as the PRIMARY teaching block.'
-    elif primary_family == "comparison":
-        primary_block_instruction = (
-            'You MUST include exactly ONE `"type": "comparison_table"` OR a `"type": "smart_layout"` '
-            f'block with variant "comparisonProsCons" as the PRIMARY teaching block. It MUST contain {expected_items} items/rows.'
-        )
-    elif primary_family == "process":
-        primary_block_instruction = (
-            'You MUST include exactly ONE `"type": "process_arrow_block"` OR a `"type": "smart_layout"` '
-            f'block with variant "processSteps" as the PRIMARY teaching block. It MUST contain {expected_items} items.'
-        )
-    else:
-        primary_block_instruction = (
-            f"You MUST include exactly ONE structured primary teaching block "
-            f'(smart_layout variant "{smart_layout_variant}" is strongly preferred). '
-            f"It MUST contain {expected_items} items."
-        )
+    icon_instruction = (
+        " Every item MUST include `icon_name` with a valid Remix Icon class "
+        "(examples: ri-lightbulb-line, ri-compass-3-line, ri-book-open-line)."
+        if requires_icons else ""
+    )
+
+    primary_block_instruction = (
+        f'You MUST include exactly ONE `"type": "smart_layout"` block '
+        f'with `"variant": "{selected_block_variant}"` as the PRIMARY teaching block '
+        f'(primary_block_index). It MUST contain exactly {estimated_items} items '
+        f'(min {item_min}, max {item_max}).{icon_instruction}'
+    )
 
     prompt = f"""You are generating a single GyML slide JSON object for an educational presentation.
 
@@ -1349,12 +1301,14 @@ Formulas: {json.dumps(plan_item.get('formulas', []), ensure_ascii=True)}
 Assessment prompt: {plan_item.get('assessment_prompt', '')}
 
 DESIGN PLAN:
-Selected template: {selected_template}
-Primary block family: {primary_family}
-Primary smart_layout variant: {smart_layout_variant}
+Selected block variant: {selected_block_variant}
+Item count: exactly {estimated_items} (min {item_min}, max {item_max})
+Requires icons: {requires_icons}
+Width class: {width_class}
+Layout variant: {layout_variant}
+Supported image layouts: {supported_layouts}
 Composition style: {composition_style}
 Slide density: {slide_density}
-Expected items in primary block: {expected_items}
 
 Designer blueprint (additional context):
 {json.dumps(designer_blueprint, ensure_ascii=True)}
@@ -1380,7 +1334,7 @@ OUTPUT SCHEMA (JSON only):
   "contentBlocks": [
     {{
       "type": "smart_layout",
-      "variant": "{smart_layout_variant}",
+      "variant": "{selected_block_variant}",
       "items": [
         {{"heading": "...", "description": "...", "icon_name": "ri-...(optional)"}}
       ]
@@ -1424,16 +1378,21 @@ OUTPUT SCHEMA (JSON only):
         payload.pop("imagePrompt", None)
 
     # Enforce: use the layout decided by the planner (ground truth for variety/constraints)
-    planned_layout = (
-        str(
-            plan_item.get("layout")
-            or designer_blueprint.get("layout")
-            or payload.get("layout")
-            or "blank"
-        )
-        .strip()
-        .lower()
-    )
+    # Use allows_wide_layout + supported_layouts to pick the best image layout
+    allows_wide_layout = bool(plan_item.get("allows_wide_layout", True))
+    image_role = str(plan_item.get("image_role", "none")).strip().lower()
+
+    if image_role == "content" and supported_layouts:
+        # Pick a side layout if supported, else blank
+        side_layouts = [l for l in supported_layouts if l in {"left", "right"}]
+        planned_layout = side_layouts[0] if side_layouts else "blank"
+    elif image_role == "accent":
+        top_bottom = [l for l in supported_layouts if l in {"top", "bottom"}]
+        planned_layout = top_bottom[0] if top_bottom else "blank"
+    else:
+        planned_layout = "blank"
+
+    planned_layout = _normalize_layout(planned_layout)
     payload["layout"] = planned_layout
     payload["image_layout"] = planned_layout
 
@@ -1464,6 +1423,7 @@ OUTPUT SCHEMA (JSON only):
 
     payload["title"] = title
     payload["selected_template"] = selected_template
+    payload["selected_block_variant"] = selected_block_variant
     payload["image_need"] = image_need
     payload["image_tier"] = image_tier
     payload["designer_blueprint"] = designer_blueprint

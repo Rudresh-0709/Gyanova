@@ -59,12 +59,14 @@ def test_wide_blocks_never_have_side_images():
                     f"{variant} is wide but has 'right' in supported_layouts"
 
 
-def test_combinable_only_on_normal_width_low_count():
+def test_combinable_rule2_normal_width_low_count():
+    # Rule 2: combinable=True on normal-width profiles requires item_range max ≤ 4.
+    # Wide blocks may be combinable regardless of item count.
     for variant, block in SEQUENTIAL_PROCESS_BLOCKS.items():
         for profile in block.item_count_profiles:
-            if profile.combinable:
-                assert profile.width_class == "normal", \
-                    f"{variant}: combinable=True but width_class is wide"
+            if profile.combinable and profile.width_class == "normal":
+                assert profile.item_range[1] <= 4, \
+                    f"{variant}: combinable=True on normal width but max items {profile.item_range[1]} > 4"
 
 
 def test_sequential_output_has_two_profiles():

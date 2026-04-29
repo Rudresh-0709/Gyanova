@@ -1,0 +1,201 @@
+/*
+ * Sequential & Process family styles
+ * Extracted from: _get_gamma_styles() in renderer.py
+ * Extracted on: 2026-04-29
+ * Variants: processArrow, processSteps, processAccordion, sequentialOutput, sequentialSteps, branching_path, input_process_output
+ *
+ * DO NOT modify selectors during extraction. Output must be identical before and after.
+ */
+
+/* ================================================
+   PROCESS STEPS & ARROWS
+   ================================================ */
+
+.smart-layout[data-variant="processSteps"],
+.smart-layout[data-variant="processSteps"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.smart-layout[data-variant="processAccordion"] {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.smart-layout[data-variant="processSteps"] .card {
+    position: relative;
+    border: none;
+    background: transparent;
+    padding: 1.5rem 0;
+    padding-left: 4rem;
+}
+
+.smart-layout[data-variant="processSteps"] .card-number {
+    position: absolute;
+    left: 0;
+    top: 1.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin: 0;
+    padding: 0;
+    background: var(--number-bg, #e8e8e8);
+    border-radius: 50%;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.smart-layout[data-variant="processSteps"] .card::after {
+    content: '';
+    position: absolute;
+    left: 1.125rem;
+    top: 4.5rem;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--number-bg, #e8e8e8);
+}
+
+.smart-layout[data-variant="processSteps"] .card:last-child::after,
+.smart-layout[data-variant="processAccordion"] .card:last-child::after {
+    display: none;
+}
+
+.smart-layout[data-variant="processAccordion"] .card {
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.25rem 1.5rem;
+    margin: 0;
+    border-left: 4px solid var(--accent, #6366f1);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.smart-layout[data-variant="processAccordion"] .card-title {
+    font-size: clamp(1.125rem, 2vw, 1.25rem);
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.smart-layout[data-variant="processAccordion"] .card-text {
+    font-size: clamp(0.875rem, 1.5vw, 1rem);
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.smart-layout[data-variant="processAccordion"] .card-number {
+    display: none;
+}
+
+section[data-density="super_dense"] .smart-layout[data-variant="processAccordion"] .card {
+    padding: 0.75rem 1rem;
+}
+
+/* --- Process Arrow --- */
+.smart-layout[data-variant="processArrow"] {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    align-items: stretch;
+}
+
+.smart-layout[data-variant="processArrow"] .card {
+    flex: 1;
+    position: relative;
+    padding: 1.5rem;
+    background: var(--bg-secondary, #ffffff);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    z-index: 1;
+    transition: transform 0.2s ease;
+}
+.smart-layout[data-variant="processArrow"] .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+}
+
+.smart-layout[data-variant="processArrow"] .card:not(:last-child)::after {
+    content: '\ea6e';  /* remixicon arrow-right-line */
+    font-family: 'remixicon';
+    position: absolute;
+    right: -1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.25rem;
+    color: var(--text-tertiary, #cbd5e1);
+    z-index: 0;
+}
+
+/* --- Sequential Steps --- */
+.smart-layout[data-variant="sequentialSteps"] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;               /* No gap — the triangle bridges the space */
+    position: relative;
+    padding: 0.5rem 0;
+    width: 100%;
+}
+
+.smart-layout[data-variant="sequentialSteps"] .card {
+    position: relative;
+    width: 70%;
+    max-width: 550px;
+    padding: 1.1rem 2rem;
+    border: none;
+    border-radius: 0;
+    text-align: center;
+    box-shadow: none;
+    z-index: 1;
+    background: var(--seq-step-bg, #c8941a);
+    color: #ffffff;
+    margin-bottom: 1.75rem;  /* space for the arrow triangle + gap */
+}
+
+/* Last card needs no bottom margin for the arrow */
+.smart-layout[data-variant="sequentialSteps"] .card:last-child {
+    margin-bottom: 0;
+}
+
+/* Arrow: same-color triangle flush at the box bottom */
+.smart-layout[data-variant="sequentialSteps"] .card:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 100%;          /* flush with bottom edge */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 1.75rem solid transparent;
+    border-right: 1.75rem solid transparent;
+    border-top: 1.25rem solid var(--seq-step-bg, #c8941a);
+    z-index: 2;
+}
+
+.smart-layout[data-variant="sequentialSteps"] .card-number,
+.smart-layout[data-variant="sequentialSteps"] .card-icon {
+    display: none;
+}
+
+.smart-layout[data-variant="sequentialSteps"] .card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    color: #ffffff;
+}
+
+.smart-layout[data-variant="sequentialSteps"] .card-text {
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.9);
+}

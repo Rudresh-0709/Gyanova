@@ -185,13 +185,9 @@ def content_generation_v2_node(state: Dict[str, Any]) -> Dict[str, Any]:
 
         layout_history.append(str(layout))
         angle_history.append(str(concept.get("teaching_intent", "explain")))
-        template_name = str(concept.get("selected_template") or slide_payload.get("selected_template") or "Title with bullets")
-        composition_history.append(template_name)
-        variant_history.append(template_name)
-        # Also track the smart_layout variant for fine-grained variety enforcement
-        slv = str(concept.get("smart_layout_variant") or "")
-        if slv:
-            variant_history.append(slv)
+        block_variant = str(concept.get("selected_block_variant") or slide_payload.get("selected_block_variant") or "bigBullets")
+        composition_history.append(block_variant)
+        # variant_history is now managed by the designer node — don't double-append here
 
         # Break after one slide to yield state back to LangGraph, enabling slide-by-slide streaming!
         break

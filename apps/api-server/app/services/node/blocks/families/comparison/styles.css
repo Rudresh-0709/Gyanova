@@ -1,0 +1,201 @@
+/*
+ * Comparison & Analytical family styles
+ * Extracted from: _get_gamma_styles() in renderer.py
+ * Extracted on: 2026-04-29
+ * Variants: comparisonProsCons, comparisonBeforeAfter, ranking_ladder, spectrum_scale, weighted_comparison
+ *
+ * DO NOT modify selectors during extraction. Output must be identical before and after.
+ */
+
+/* ================================================
+   COMPARISON VARIANT (Gamma-style Premium)
+   ================================================ */
+
+.smart-layout[data-variant="comparison"],
+.smart-layout[data-variant="comparisonProsCons"],
+.smart-layout[data-variant="comparisonBeforeAfter"] {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+    align-items: stretch;
+    padding: 0.5rem 0;
+}
+
+.smart-layout[data-variant="comparison"] .card,
+.smart-layout[data-variant="comparisonProsCons"] .card,
+.smart-layout[data-variant="comparisonBeforeAfter"] .card {
+    border: 1px solid color-mix(in srgb, var(--card-accent) 25%, transparent);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    background: var(--bg-secondary, #0f172a);
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.smart-layout[data-variant="comparison"] .card:hover,
+.smart-layout[data-variant="comparisonProsCons"] .card:hover,
+.smart-layout[data-variant="comparisonBeforeAfter"] .card:hover {
+    transform: translateY(-4px);
+    box-shadow: none;
+    border-color: var(--card-accent);
+}
+
+/* Accent strip at the top (Removed based on user request) */
+.smart-layout[data-variant="comparison"] .card::before,
+.smart-layout[data-variant="comparisonProsCons"] .card::before,
+.smart-layout[data-variant="comparisonBeforeAfter"] .card::before {
+    display: none;
+}
+
+.smart-layout[data-variant="comparison"] .card:nth-child(1) { --card-accent: #3b82f6; } /* Blue */
+.smart-layout[data-variant="comparison"] .card:nth-child(2) { --card-accent: #8b5cf6; } /* Purple */
+.smart-layout[data-variant="comparison"] .card:nth-child(3) { --card-accent: #f59e0b; } /* Orange */
+.smart-layout[data-variant="comparison"] .card:nth-child(4) { --card-accent: #10b981; } /* Green */
+.smart-layout[data-variant="comparison"] .card:nth-child(5) { --card-accent: #ef4444; } /* Red */
+.smart-layout[data-variant="comparison"] .card:nth-child(6) { --card-accent: #06b6d4; } /* Cyan */
+.smart-layout[data-variant="comparison"] .card:nth-child(7) { --card-accent: #ec4899; } /* Pink */
+.smart-layout[data-variant="comparison"] .card:nth-child(8) { --card-accent: #eab308; } /* Yellow */
+
+.smart-layout[data-variant="comparison"] .card-icon {
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 2rem;
+    background: color-mix(in srgb, var(--card-accent) 15%, transparent);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-3deg);
+    transition: transform 0.3s ease;
+}
+
+.smart-layout[data-variant="comparison"] .card:hover .card-icon {
+    transform: rotate(0deg) scale(1.1);
+}
+
+.smart-layout[data-variant="comparison"] .card-icon i {
+    color: var(--card-accent);
+    font-size: 1.75rem;
+}
+
+.smart-layout[data-variant="comparison"] .card-title,
+.smart-layout[data-variant="comparisonProsCons"] .card-title,
+.smart-layout[data-variant="comparisonBeforeAfter"] .card-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: var(--card-accent);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1.4;
+}
+
+/* Premium Card List */
+.card-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.card-list li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text-secondary, #cbd5e1);
+}
+
+.card-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--card-accent);
+    font-size: 1.25rem;
+    line-height: 1.1;
+    opacity: 0.8;
+}
+
+.smart-layout[data-variant="comparisonProsCons"] .card:last-child .card-list li::before {
+    content: '\eb98'; /* remixicon close */
+}
+
+/* --- Pros / Cons --- */
+.smart-layout[data-variant="comparisonProsCons"] .card:first-child {
+    --card-accent: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, var(--bg-secondary) 100%);
+}
+.smart-layout[data-variant="comparisonProsCons"] .card:last-child {
+    --card-accent: #ef4444;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, var(--bg-secondary) 100%);
+}
+
+/* --- Before / After --- */
+.smart-layout[data-variant="comparisonBeforeAfter"] .card:nth-child(1) { --card-accent: #64748b; background: linear-gradient(135deg, rgba(100, 116, 139, 0.1) 0%, var(--bg-secondary) 100%); }
+.smart-layout[data-variant="comparisonBeforeAfter"] .card:nth-child(2) { --card-accent: #3b82f6; }
+.smart-layout[data-variant="comparisonBeforeAfter"]::after {
+    content: '\ea6e';
+    font-family: 'remixicon';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.75rem;
+    color: #fff;
+    background: var(--card-accent, #3b82f6);
+    border: 4px solid var(--bg-primary, #0f172a);
+    border-radius: 50%;
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    z-index: 10;
+}
+
+/* --- Density Overrides --- */
+.slide-section[data-density="super_dense"] .smart-layout[data-variant="comparison"] .card,
+.slide-section[data-density="super_dense"] .smart-layout[data-variant="comparisonProsCons"] .card,
+.slide-section[data-density="super_dense"] .smart-layout[data-variant="comparisonBeforeAfter"] .card {
+    padding: 1.25rem 1rem;
+    gap: 0.5rem;
+}
+
+.slide-section[data-density="super_dense"] .smart-layout[data-variant="comparison"] .card-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.slide-section[data-density="super_dense"] .smart-layout[data-variant="comparison"] .card-icon i {
+    font-size: 1.25rem;
+}
+
+.slide-section[data-density="super_dense"] .smart-layout[data-variant="comparison"] .card-title,
+.slide-section[data-density="super_dense"] .smart-layout[data-variant="comparisonProsCons"] .card-title,
+.slide-section[data-density="super_dense"] .smart-layout[data-variant="comparisonBeforeAfter"] .card-title {
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
+}
+
+.slide-section[data-density="super_dense"] .card-list li {
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    padding-left: 1.5rem;
+}
+
+.slide-section[data-density="super_dense"] .card-list li::before {
+    font-size: 0.85rem;
+}
+
+/* --- Bento Grid (3 items: 2 on top, 1 wide on bottom) --- */
+.smart-layout[data-variant^="comparison"][data-item-count="3"] {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}

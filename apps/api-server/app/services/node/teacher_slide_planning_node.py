@@ -38,42 +38,50 @@ VALID_VISUAL_TYPES = {"image", "diagram", "chart", "illustration", "none"}
 VALID_IMAGE_ROLES = {"content", "accent", "none"}
 
 # --- Legacy aliases for downstream compatibility ---
-VALID_INTENTS = {"introduce", "explain", "teach", "compare", "demo", "prove", "summarize"}
-VALID_SCOPES = {"foundation", "mechanism", "comparison", "application", "reinforcement"}
+# VALID_INTENTS = {"introduce", "explain", "teach", "compare", "demo", "prove", "summarize"}  # commented out: replaced by VALID_INTENTS_V2
+# VALID_SCOPES = {"foundation", "mechanism", "comparison", "application", "reinforcement"}  # commented out: replaced by content_angle
 
 VALID_BRIEF_DENSITIES = {"low", "medium", "high"}
 VALID_ENGINE_DENSITIES = {"ultra_sparse", "sparse", "balanced", "standard", "dense", "super_dense"}
 VALID_DENSITIES = VALID_BRIEF_DENSITIES | VALID_ENGINE_DENSITIES
 
-# Mapping tables: new intent → legacy teaching_intent
-_INTENT_TO_TEACHING_INTENT = {
-    "definition": "explain",
-    "classification": "teach",
-    "recognition": "demo",
-    "comparison": "compare",
-    "application": "demo",
-    "practice": "prove",
-}
+# --- Mapping tables: commented out — designer node replaces these derivations ---
+# _INTENT_TO_TEACHING_INTENT = {
+#     "definition": "explain",
+#     "classification": "teach",
+#     "recognition": "demo",
+#     "comparison": "compare",
+#     "application": "demo",
+#     "practice": "prove",
+# }
+#
+# _CONTENT_ANGLE_TO_SCOPE = {
+#     "overview": "foundation",
+#     "mechanism": "mechanism",
+#     "example": "application",
+#     "comparison": "comparison",
+#     "application": "application",
+#     "visualization": "mechanism",
+#     "summary": "reinforcement",
+# }
+#
+# _TARGET_DENSITY_TO_BRIEF = {
+#     "ultra_sparse": "low",
+#     "sparse": "low",
+#     "balanced": "medium",
+#     "standard": "medium",
+#     "dense": "high",
+#     "super_dense": "high",
+# }
 
-# Mapping tables: new content_angle → legacy coverage_scope
-_CONTENT_ANGLE_TO_SCOPE = {
-    "overview": "foundation",
-    "mechanism": "mechanism",
-    "example": "application",
-    "comparison": "comparison",
-    "application": "application",
-    "visualization": "mechanism",
-    "summary": "reinforcement",
+# --- New v2 designer-facing valid sets ---
+VALID_CONTENT_STRUCTURES = {
+    "list", "steps", "timeline", "two_sided", "single",
+    "matrix", "spectrum", "tree", "layers", "network", "web", "funnel"
 }
-
-# Mapping tables: new target_density → brief density
-_TARGET_DENSITY_TO_BRIEF = {
-    "ultra_sparse": "low",
-    "sparse": "low",
-    "balanced": "medium",
-    "standard": "medium",
-    "dense": "high",
-    "super_dense": "high",
+VALID_ITEM_RELATIONSHIPS = {
+    "sequential", "parallel", "opposing", "causal", "hierarchical",
+    "cyclical", "radial", "ranked", "overlapping", "layered", "single"
 }
 VALID_FACT_RETRIEVERS = {"wiki", "tavily", "none"}
 
@@ -774,6 +782,35 @@ QUALITY REQUIREMENTS
 6. Include at least one application-oriented slide.
 7. For math/science, decide if a formula-focused slide is needed.
 
+CONTENT STRUCTURE RULES (for designer-facing fields)
+For each slide, choose content_structure, item_relationship, estimated_items, allows_wide_layout, and requires_icons:
+
+content_structure — the shape of the content on this slide:
+- "single" = one key concept, stat, formula, or definition
+- "steps" = ordered process where sequence matters
+- "two_sided" = exactly two opposing or contrasting sides
+- "timeline" = events ordered by time
+- "list" = parallel items with no strict order
+- "matrix" / "spectrum" / "tree" / "layers" / "network" / "web" / "funnel" for specialized layouts
+
+item_relationship — how items on the slide relate:
+- "sequential" = ordered, position matters
+- "parallel" = independent, interchangeable
+- "opposing" = contrasting two sides
+- "causal" = cause → effect chain
+- "hierarchical" = parent-child nesting
+- "cyclical" / "radial" / "ranked" / "overlapping" / "layered" / "single" for specialized relationships
+
+estimated_items — integer 1-8, how many discrete content items the slide naturally has.
+- Must be consistent with content_structure: "single" always has 1, "two_sided" always has 2.
+
+allows_wide_layout — boolean: is full-width layout appropriate?
+- MUST be false whenever image_role is "content" (side image expected).
+- Should be true when image_role is "accent" or "none".
+
+requires_icons — boolean: would icons meaningfully aid comprehension?
+- true when items are categorical, parallel, or benefit from visual anchors.
+
 OUTPUT RULES
 - Return JSON only (no prose, no markdown).
 - Keep arrays compact and high-signal.
@@ -794,7 +831,6 @@ Output JSON schema:
             "key_facts": ["unique_fact1", "unique_fact2", "unique_fact3"],
             "formulas": ["..."],
             "assessment_prompt": "question aligned to this slide's unique focus",
-            "selected_template": "Title card|Title with bullets|Image and text|Timeline|Two columns|Three columns|Large bullet list|Diagram|Icons with text|Title with bullets and image|Key-Value list|Labeled diagram",
             "role": "Introduce|Interpret|Guide|Contrast|Emphasize|Connect|Reinforce|Question",
             "goal": "what this slide achieves in the learning sequence",
             "reasoning": "why this slide is needed and what new value it adds",
@@ -802,6 +838,11 @@ Output JSON schema:
             "visual_type": "image|diagram|chart|illustration|none",
             "image_role": "content|accent|none",
             "target_density": "ultra_sparse|sparse|balanced|standard|dense|super_dense",
+            "content_structure": "list|steps|timeline|two_sided|single|matrix|spectrum|tree|layers|network|web|funnel",
+            "item_relationship": "sequential|parallel|opposing|causal|hierarchical|cyclical|radial|ranked|overlapping|layered|single",
+            "estimated_items": 4,
+            "allows_wide_layout": true,
+            "requires_icons": false,
             "research_evidence": ["optional source title or url"],
             "factual_confidence": "high|medium|low"
         }}
@@ -853,23 +894,50 @@ Output JSON schema:
         if target_density not in VALID_ENGINE_DENSITIES:
             target_density = "balanced"
 
-        selected_template = str(slide.get("selected_template", "Title with bullets")).strip()
+        # selected_template = str(slide.get("selected_template", "Title with bullets")).strip()  # commented out: designer node now selects the block
 
         # --- Derive legacy fields for downstream compatibility ---
-        teaching_intent = _INTENT_TO_TEACHING_INTENT.get(intent, "explain")
-        coverage_scope = _CONTENT_ANGLE_TO_SCOPE.get(content_angle, "foundation")
-        slide_density_raw = _TARGET_DENSITY_TO_BRIEF.get(target_density, "medium")
-        slide_density_engine = map_brief_density_to_engine(slide_density_raw, slide_index=i)
+        # commented out: designer node replaces these derivations
+        # teaching_intent = _INTENT_TO_TEACHING_INTENT.get(intent, "explain")
+        # coverage_scope = _CONTENT_ANGLE_TO_SCOPE.get(content_angle, "foundation")
+        # slide_density_raw = _TARGET_DENSITY_TO_BRIEF.get(target_density, "medium")
+        # slide_density_engine = map_brief_density_to_engine(slide_density_raw, slide_index=i)
 
         formulas = _to_list(slide.get("formulas"))
-        high_end_required = visual_required and image_role == "content"
-        if not high_end_required:
-            high_end_required = _infer_high_end_image_required(subject_domain, coverage_scope, teaching_intent)
-        formula_candidate = _to_bool(
-            slide.get("formula_slide_candidate"),
-            default=bool(formulas) or (subject_domain in {"math", "science"} and coverage_scope in {"mechanism", "comparison"}),
-        )
-        example_candidate = intent == "application" or content_angle in {"example", "application"}
+        # commented out: high_end_image_required / formula / example derivation — now handled below or by designer
+        # high_end_required = visual_required and image_role == "content"
+        # if not high_end_required:
+        #     high_end_required = _infer_high_end_image_required(subject_domain, coverage_scope, teaching_intent)
+        # formula_candidate = _to_bool(
+        #     slide.get("formula_slide_candidate"),
+        #     default=bool(formulas) or (subject_domain in {"math", "science"} and coverage_scope in {"mechanism", "comparison"}),
+        # )
+        # example_candidate = intent == "application" or content_angle in {"example", "application"}
+
+        # --- New v2 designer-facing fields ---
+        content_structure = str(slide.get("content_structure", "list")).strip().lower()
+        if content_structure not in VALID_CONTENT_STRUCTURES:
+            content_structure = "list"
+
+        item_relationship = str(slide.get("item_relationship", "parallel")).strip().lower()
+        if item_relationship not in VALID_ITEM_RELATIONSHIPS:
+            item_relationship = "parallel"
+
+        estimated_items = int(slide.get("estimated_items", 4))
+        estimated_items = max(1, min(8, estimated_items))
+
+        # allows_wide_layout and high_end_image_required are derived from image_role
+        allows_wide_layout = True  # default
+        high_end_image_required = False  # default
+
+        if image_role == "content":
+            allows_wide_layout = False
+            high_end_image_required = True
+        elif image_role in {"accent", "none"}:
+            allows_wide_layout = _to_bool(slide.get("allows_wide_layout"), default=True)
+            high_end_image_required = False
+
+        requires_icons = _to_bool(slide.get("requires_icons"), default=False)
 
         evidence = _to_list(slide.get("research_evidence"))
         if not evidence and research_evidence:
@@ -882,10 +950,11 @@ Output JSON schema:
             confidence = "medium"
 
         # Derive image_requirement_reason from visual_type/image_role
-        if visual_required and visual_type != "none":
-            image_req_reason = f"{visual_type.capitalize()} required for {content_angle} slide ({role} role)."
-        else:
-            image_req_reason = "No dedicated visual required for this slide."
+        # commented out: kept for reference, not passed forward
+        # if visual_required and visual_type != "none":
+        #     image_req_reason = f"{visual_type.capitalize()} required for {content_angle} slide ({role} role)."
+        # else:
+        #     image_req_reason = "No dedicated visual required for this slide."
 
         normalized.append(
             {
@@ -905,21 +974,27 @@ Output JSON schema:
                 "visual_type": visual_type,
                 "image_role": image_role,
                 "target_density": target_density,
-                "selected_template": selected_template,
-                # Legacy derived fields for downstream compatibility
-                "teaching_intent": teaching_intent,
-                "coverage_scope": coverage_scope,
+                # "selected_template": selected_template,  # commented out: designer node now selects the block
+                # New v2 designer-facing fields
+                "content_structure": content_structure,
+                "item_relationship": item_relationship,
+                "estimated_items": estimated_items,
+                "allows_wide_layout": allows_wide_layout,
+                "requires_icons": requires_icons,
+                # Legacy derived fields — commented out: designer node replaces these
+                # "teaching_intent": teaching_intent,
+                # "coverage_scope": coverage_scope,
                 "must_cover": _to_list(slide.get("must_cover")),
                 "key_facts": _to_list(slide.get("key_facts")),
                 "formulas": formulas,
                 "assessment_prompt": str(slide.get("assessment_prompt", "")).strip(),
                 "subject_domain": subject_domain,
-                "slide_density": slide_density_raw if slide_density_raw in VALID_BRIEF_DENSITIES else "medium",
-                "slide_density_engine": slide_density_engine,
-                "high_end_image_required": high_end_required,
-                "image_requirement_reason": image_req_reason,
-                "formula_slide_candidate": formula_candidate,
-                "example_slide_candidate": example_candidate,
+                # "slide_density": slide_density_raw if slide_density_raw in VALID_BRIEF_DENSITIES else "medium",  # commented out: designer node
+                # "slide_density_engine": slide_density_engine,  # commented out: designer node
+                "high_end_image_required": high_end_image_required,
+                # "image_requirement_reason": image_req_reason,  # commented out: designer node
+                # "formula_slide_candidate": formula_candidate,  # commented out: designer node
+                # "example_slide_candidate": example_candidate,  # commented out: designer node
                 "research_evidence": evidence,
                 "research_raw_text": slide_raw_text,
                 "factual_confidence": confidence,
@@ -932,7 +1007,7 @@ Output JSON schema:
             slide["slide_id"] = f"{sub_id}_t{i + 1}"
             slide["sequence_index"] = i
 
-    normalized = _enforce_domain_requirements(normalized, subject_domain)
+    # normalized = _enforce_domain_requirements(normalized, subject_domain)  # commented out: relies on legacy fields (coverage_scope, formula_slide_candidate, example_slide_candidate)
 
     prompt_domain = generated_subject_domain or subject_domain
     if prompt_domain not in {"math", "science", "history", "language", "general"}:
