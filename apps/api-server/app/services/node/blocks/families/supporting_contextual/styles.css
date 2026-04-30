@@ -81,6 +81,11 @@
     z-index: 3;
 }
 
+/* Keep process arcs stroked-only (not filled semicircles) */
+.cyclic-process-container .cp-arrows-overlay path {
+    fill: none !important;
+}
+
 .cp-info {
     text-align: center;
     padding: 1.25rem 0.5rem 0;

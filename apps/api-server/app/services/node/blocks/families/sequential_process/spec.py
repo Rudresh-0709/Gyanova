@@ -62,24 +62,14 @@ SEQUENTIAL_PROCESS_BLOCKS: dict[str, BlockSpec] = {
         requires_icons=False,
         is_primary_candidate=True,
         item_count_profiles=(
-            # Rule 1 split: normal width + left/right layouts + max > 4
             ItemCountProfile(
-                item_range=(3, 4),
-                layout_variant="vertical_short",
+                item_range=(3, 5),
+                layout_variant="processSteps_default",
                 height_class="full",
                 width_class="normal",
                 supported_layouts=("blank", "left", "right"),
                 combinable=False,
-                notes="Low-count profile (3–4 items); side images permitted alongside short vertical step list."
-            ),
-            ItemCountProfile(
-                item_range=(5, 5),
-                layout_variant="vertical_long",
-                height_class="full",
-                width_class="normal",
-                supported_layouts=("blank",),
-                combinable=False,
-                notes="High-count profile (5 items); side images dropped to avoid crowding the taller step list."
+                notes="Allows side images up to 5 items."
             ),
         ),
     ),
@@ -91,7 +81,7 @@ SEQUENTIAL_PROCESS_BLOCKS: dict[str, BlockSpec] = {
         density_range=("balanced", "dense"),
         item_relationship_fit=("sequential",),
         content_structure_fit=("steps",),
-        requires_icons=False,
+        requires_icons=True,
         is_primary_candidate=True,
         item_count_profiles=(
             # Low profile: normal width, 2–4 items
@@ -106,13 +96,13 @@ SEQUENTIAL_PROCESS_BLOCKS: dict[str, BlockSpec] = {
             ),
             # High profile: wide, 4–6 items
             ItemCountProfile(
-                item_range=(4, 6),
+                item_range=(5, 6),
                 layout_variant="vertical_long",
                 height_class="full",
                 width_class="wide",
                 supported_layouts=("blank", "top", "bottom"),
-                combinable=False,
-                notes="Wide high-count profile; expands to full width, side images dropped, not combinable."
+                combinable=True,
+                notes="Wide high-count profile; expands to full width, side images dropped, supports combinable pairing."
             ),
         ),
     ),
@@ -129,11 +119,11 @@ SEQUENTIAL_PROCESS_BLOCKS: dict[str, BlockSpec] = {
         is_primary_candidate=True,
         item_count_profiles=(
             ItemCountProfile(
-                item_range=(2, 6),
+                item_range=(2, 4),
                 layout_variant="sequentialSteps_default",
                 height_class="full",
-                width_class="wide",
-                supported_layouts=("blank", "top", "bottom"),
+                width_class="normal",
+                supported_layouts=("blank", "left", "right"),
                 combinable=False,
                 notes="Promoted wide block; no side images, single profile spans full item range."
             ),

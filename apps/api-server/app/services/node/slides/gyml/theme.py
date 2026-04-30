@@ -181,6 +181,8 @@ THEMES: Dict[str, Theme] = {
         number_bg="#1e293b",
         callout_bg="#1e293b",
         icon_bg="#38bdf8",
+        font_heading="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        font_body="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     ),
 }
 

@@ -389,7 +389,9 @@ function hasRenderableLessonContent(
                 ) ||
                 (
                     typeof (slide as { html_doc?: string | null } | undefined)?.html_doc === "string" &&
-                    (slide as { html_doc?: string | null } | undefined)?.html_doc?.trim().length > 0
+                    ((slide as { html_doc?: string | null } | undefined)?.html_doc?.trim()?.length ?? 0) > 0
+
+
                 )
         )
     );

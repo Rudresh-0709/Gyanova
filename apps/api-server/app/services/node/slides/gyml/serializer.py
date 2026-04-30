@@ -344,6 +344,16 @@ class GyMLSerializer:
             items_data = content.get("items", [])
             variant = content.get("variant", SmartLayoutVariant.BIG_BULLETS.value)
 
+            if variant == "branching_path":
+                return GyMLSmartLayout(
+                    variant=variant,
+                    items=[],
+                    start=content.get("start"),
+                    decision=content.get("decision"),
+                    branches=content.get("branches", []) or [],
+                    fallback=content.get("fallback"),
+                )
+
             # Auto-convert large comparison grids (>3 items) into cleanly formatted tables
             if len(items_data) > 3 and variant in [
                 SmartLayoutVariant.COMPARISON.value,

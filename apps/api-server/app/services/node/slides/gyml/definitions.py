@@ -363,6 +363,13 @@ class GyMLSmartLayout:
     items: List[GyMLSmartLayoutItem] = field(default_factory=list)
     cellsize: int = 15  # Cell size hint for renderer
 
+    # Variant-specific structured payloads.
+    # branching_path uses these instead of peer `items`.
+    start: Optional[Dict[str, Any]] = None
+    decision: Optional[Dict[str, Any]] = None
+    branches: List[Dict[str, Any]] = field(default_factory=list)
+    fallback: Optional[Dict[str, Any]] = None
+
 
 @dataclass
 class LayoutConstraints:

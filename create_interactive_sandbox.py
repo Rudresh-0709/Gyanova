@@ -21,7 +21,8 @@ if API_SERVER_ROOT not in sys.path:
 from app.services.node.slides.gyml.composer import SlideComposer
 from app.services.node.slides.gyml.serializer import GyMLSerializer
 from app.services.node.slides.gyml.renderer import GyMLRenderer, _VARIANT_CANONICAL
-from app.services.node.slides.gyml.theme import get_theme
+from app.services.node.slides.gyml.theme import THEMES
+from app.services.node.blocks.shared.styles import get_slide_css
 from app.services.node.v2.block_catalog_v2 import BLOCK_CATALOG
 
 # ── Master variant lists ────────────────────────────────────────────────────
@@ -125,7 +126,8 @@ def generate_standalone_items(family, num=4):
 def main():
     composer = SlideComposer()
     serializer = GyMLSerializer()
-    renderer = GyMLRenderer(theme=get_theme("midnight"), animated=False)
+    selected_theme = THEMES["midnight"]
+    renderer = GyMLRenderer(theme=selected_theme, animated=False)
 
     entries = []  # List of (key, status_tag, status_color, html)
     errors = []
@@ -272,8 +274,7 @@ def main():
         options_html += f'<option value="slide-{idx}" data-tag="{tag}" data-color="{color}">{key}</option>\n'
         divs_html += f'<div id="slide-{idx}" class="slide-container" style="display:{display};">{html}</div>\n'
 
-    gamma_styles = renderer._get_gamma_styles()
-    theme_vars = get_theme("midnight").to_css_vars()
+    gamma_styles = get_slide_css("__all__", selected_theme)
     responsive = renderer._get_responsive_styles()
 
     # Count stats for the header
@@ -439,7 +440,6 @@ def main():
 
         /* ── GyML Engine Styles ──────────────────────────────────── */
         {gamma_styles}
-        {theme_vars}
         {responsive}
 
         .gyml-deck {{ height: 100%; }}

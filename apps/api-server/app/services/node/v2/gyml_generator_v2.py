@@ -965,7 +965,12 @@ def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
                     items.append(GyMLSmartLayoutItem(**item_kwargs))
                 body_children.append(
                     GyMLSmartLayout(
-                        variant=str(block.get("variant") or "bigBullets"), items=items
+                        variant=str(block.get("variant") or "bigBullets"),
+                        items=items,
+                        start=block.get("start"),
+                        decision=block.get("decision"),
+                        branches=block.get("branches", []) or [],
+                        fallback=block.get("fallback"),
                     )
                 )
         elif block_type == "image":

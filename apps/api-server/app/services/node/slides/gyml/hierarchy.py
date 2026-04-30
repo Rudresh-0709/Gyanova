@@ -13,7 +13,7 @@ from typing import Callable, Optional
 class TypographyScale:
     """Defines font sizes and line heights for a specific hierarchy level."""
 
-    h1: str = "2.4rem"
+    h1: str = "2.8rem"
     h2: str = "2rem"
     h3: str = "1.625rem"
     h4: str = "1.25rem"
@@ -59,7 +59,7 @@ class VisualHierarchy:
             return VisualHierarchy(
                 name="dense",
                 typography=TypographyScale(
-                    h1="2.6rem",
+                    h1="3.0rem",
                     h2="2.2rem",
                     body="1.25rem",
                     small="1.125rem",
@@ -77,7 +77,7 @@ class VisualHierarchy:
             return VisualHierarchy(
                 name="balanced",
                 typography=TypographyScale(
-                    h1="3.0rem",
+                    h1="3.4rem",
                     h2="2.6rem",
                     body="1.4rem",
                     small="1.25rem",
@@ -96,7 +96,7 @@ class VisualHierarchy:
             return VisualHierarchy(
                 name="impact",
                 typography=TypographyScale(
-                    h1="3.5rem",
+                    h1="4.0rem",
                     h2="3rem",
                     body="1.6rem",
                     small="1.4rem",
@@ -114,7 +114,7 @@ class VisualHierarchy:
             return VisualHierarchy(
                 name="super_dense",
                 typography=TypographyScale(
-                    h1="2.2rem",
+                    h1="2.6rem",
                     h2="1.8rem",
                     body="1.1rem",
                     small="1.0625rem",  # Used for card text

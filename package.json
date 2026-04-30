@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:web": "next dev",
-    "dev:api": "cd apps/api-server && set PYTHONIOENCODING=utf-8&& set PYTHONUTF8=1&& set SLIDE_SKIP_REPETITION_CHECK=1&& .venv\\Scripts\\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
+    "dev:api": "cd apps/api-server && set PYTHONIOENCODING=utf-8&& set PYTHONUTF8=1&& set SLIDE_SKIP_REPETITION_CHECK=1&& .venv\\Scripts\\python.exe -m uvicorn app.main:app --reload --reload-include \"*.py\" --reload-include \"*.css\" --reload-include \"*.html\" --host 127.0.0.1 --port 8000",
     "dev:all": "concurrently -k -n WEB,API -c cyan,green \"npm run dev:web\" \"npm run dev:api\"",
     "build": "next build",
     "start": "next start",

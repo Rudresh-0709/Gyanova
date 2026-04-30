@@ -29,15 +29,6 @@ def test_image_process_wide_blank_only():
         assert profile.supported_layouts == ("blank",)
 
 
-def test_split_blocks_drop_side_image_at_high_count():
-    # processSteps is the only Rule-1 split in this family (normal + left/right + max > 4)
-    block = SEQUENTIAL_PROCESS_BLOCKS["processSteps"]
-    high_profile = next(
-        p for p in block.item_count_profiles if p.item_range[0] >= 5
-    )
-    assert "left" not in high_profile.supported_layouts
-    assert "right" not in high_profile.supported_layouts
-
 
 def test_density_gates():
     block = SEQUENTIAL_PROCESS_BLOCKS["processAccordion"]
