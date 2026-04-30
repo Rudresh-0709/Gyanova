@@ -1,0 +1,19 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Term being defined.", "min_words": null, "max_words": null, "example": "Concept"},
+      "description": {"type": "string", "description": "Definition text.", "min_words": null, "max_words": null, "example": "A concept is an idea learners can explain and apply."}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "definition", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "definition",
+    "items": [
+      {"heading": "Concept", "description": "A concept is an idea learners can explain and apply."},
+      {"heading": "Example", "description": "An example shows how the concept appears in context."}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly definition.", "Use heading for the term and description for the definition.", "Current BlockSpec supports 1-3 items."]
+}

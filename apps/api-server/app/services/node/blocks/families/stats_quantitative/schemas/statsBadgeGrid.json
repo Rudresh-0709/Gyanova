@@ -1,0 +1,65 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "value": {
+        "type": "string",
+        "description": "Metric value displayed prominently by stats-style smart_layout items.",
+        "min_words": null,
+        "max_words": null,
+        "example": "3x"
+      },
+      "label": {
+        "type": "string",
+        "description": "Short label describing the metric.",
+        "min_words": null,
+        "max_words": null,
+        "example": "Faster Recall"
+      }
+    },
+    "optional_fields": {
+      "description": {
+        "type": "string",
+        "description": "Optional explanatory sentence accepted by the current smart_layout item mapping.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "This metric summarizes the improvement learners should understand from the slide."
+      },
+      "icon_name": {
+        "type": "string",
+        "description": "Optional Remix Icon class accepted by the current smart_layout item mapping.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-line-chart-line"
+      }
+    }
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "statsBadgeGrid",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "statsBadgeGrid",
+    "items": [
+      {
+        "value": "3x",
+        "label": "Faster Recall",
+        "description": "This metric summarizes the improvement learners should understand from the slide."
+      },
+      {
+        "value": "2",
+        "label": "Key Steps",
+        "description": "This metric counts the steps needed to apply the concept."
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly statsBadgeGrid.",
+    "Use value and label for metric items.",
+    "Only use fields accepted by the current smart_layout item mapping."
+  ]
+}

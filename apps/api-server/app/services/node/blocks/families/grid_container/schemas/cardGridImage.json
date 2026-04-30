@@ -1,0 +1,22 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Image card heading.", "min_words": null, "max_words": null, "example": "Visual Cue"},
+      "description": {"type": "string", "description": "Specific explanation for the image card.", "min_words": 12, "max_words": 15, "example": "This cue links the visual detail to the learning objective."}
+    },
+    "optional_fields": {
+      "imagePrompt": {"type": "string", "description": "Optional image prompt accepted by current image enrichment paths.", "min_words": null, "max_words": null, "example": "Clean instructional visual cue"},
+      "icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-image-line"}
+    }
+  },
+  "block_schema": {"type": "smart_layout", "variant": "cardGridImage", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "cardGridImage",
+    "items": [
+      {"heading": "Visual Cue", "description": "This cue links the visual detail to the learning objective.", "imagePrompt": "Clean instructional visual cue"},
+      {"heading": "Second Cue", "description": "This cue reinforces the same idea through a different example.", "imagePrompt": "Second educational visual cue"}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly cardGridImage.", "Current BlockSpec supports 2-4 items.", "Each primary item description must be 12-15 words."]
+}

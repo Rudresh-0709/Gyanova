@@ -1,0 +1,20 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Input, process, or output stage heading.", "min_words": null, "max_words": null, "example": "Input"},
+      "description": {"type": "string", "description": "Specific explanation for the stage.", "min_words": 12, "max_words": 15, "example": "The input stage gathers the information needed before the process begins."},
+      "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-login-box-line"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "input_process_output", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "input_process_output",
+    "items": [
+      {"heading": "Input", "description": "The input stage gathers the information needed before the process begins.", "icon_name": "ri-login-box-line"},
+      {"heading": "Process", "description": "The process stage transforms information into a meaningful learner outcome.", "icon_name": "ri-settings-3-line"}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly input_process_output.", "Every item must include icon_name.", "Current BlockSpec item range is exactly 3.", "Each primary item description must be 12-15 words."]
+}

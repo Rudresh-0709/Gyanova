@@ -1,0 +1,58 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {
+        "type": "string",
+        "description": "Feature label mapped to GyMLFeatureShowcaseItem.label by the current validator path.",
+        "min_words": null,
+        "max_words": null,
+        "example": "Clear Signal"
+      },
+      "description": {
+        "type": "string",
+        "description": "Feature description mapped to GyMLFeatureShowcaseItem.description.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "This feature helps learners identify the important pattern quickly."
+      }
+    },
+    "optional_fields": {
+      "icon_name": {
+        "type": "string",
+        "description": "Optional Remix Icon class mapped to GyMLFeatureShowcaseItem.icon.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-lightbulb-line"
+      }
+    }
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "featureShowcase",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "featureShowcase",
+    "items": [
+      {
+        "heading": "Clear Signal",
+        "description": "This feature helps learners identify the important pattern quickly.",
+        "icon_name": "ri-lightbulb-line"
+      },
+      {
+        "heading": "Useful Anchor",
+        "description": "This feature connects the pattern to a practical classroom example.",
+        "icon_name": "ri-compass-3-line"
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly featureShowcase.",
+    "Items are routed to GyMLFeatureShowcaseItem by the current validator path.",
+    "Use heading, description, and optional icon_name only."
+  ]
+}

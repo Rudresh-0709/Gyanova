@@ -1,0 +1,57 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {
+        "type": "string",
+        "description": "Icon card heading accepted by the current smart_layout generation path.",
+        "min_words": null,
+        "max_words": null,
+        "example": "Core Idea"
+      },
+      "description": {
+        "type": "string",
+        "description": "Specific explanatory sentence for the icon card.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "This icon card explains one concrete part of the lesson objective."
+      },
+      "icon_name": {
+        "type": "string",
+        "description": "Required Remix Icon class for the icon card variant.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-lightbulb-line"
+      }
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "cardGridIcon",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "cardGridIcon",
+    "items": [
+      {
+        "heading": "Core Idea",
+        "description": "This icon card explains one concrete part of the lesson objective.",
+        "icon_name": "ri-lightbulb-line"
+      },
+      {
+        "heading": "Useful Detail",
+        "description": "This icon card connects the idea to a practical learning outcome.",
+        "icon_name": "ri-compass-3-line"
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly cardGridIcon.",
+    "Every item must include icon_name.",
+    "Each primary item description must be 12-15 words."
+  ]
+}

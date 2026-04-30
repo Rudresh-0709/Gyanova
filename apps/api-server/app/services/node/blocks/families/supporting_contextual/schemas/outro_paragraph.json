@@ -1,0 +1,6 @@
+{
+  "item_schema": {},
+  "block_schema": {"type": "outro_paragraph", "text": {"type": "string", "description": "Closing paragraph text.", "example": "This closes the slide with a clear takeaway."}},
+  "prompt_example": {"type": "outro_paragraph", "text": "This closes the slide with a clear takeaway."},
+  "validation_rules": ["Block type must be exactly outro_paragraph.", "text must be present.", "Current BlockSpec item range is exactly 1."]
+}

@@ -1,0 +1,27 @@
+{
+  "item_schema": {},
+  "block_schema": {
+    "type": "hierarchy_tree",
+    "root": {
+      "type": "object",
+      "description": "Root tree node with label and children.",
+      "example": {"label": "Main Concept", "children": [{"label": "Sub Concept", "children": []}]}
+    }
+  },
+  "prompt_example": {
+    "type": "hierarchy_tree",
+    "root": {
+      "label": "Main Concept",
+      "children": [
+        {"label": "Sub Concept A", "children": []},
+        {"label": "Sub Concept B", "children": []}
+      ]
+    }
+  },
+  "validation_rules": [
+    "Block type must be exactly hierarchy_tree.",
+    "root must include a label.",
+    "children must be an array when present.",
+    "Current BlockSpec supports 2-4 items."
+  ]
+}

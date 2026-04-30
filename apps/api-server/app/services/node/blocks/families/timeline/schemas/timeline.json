@@ -1,0 +1,59 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {
+        "type": "string",
+        "description": "Short event or step label for the timeline item. The current v2 prompt asks for this field as the item title.",
+        "min_words": null,
+        "max_words": null,
+        "example": "Initial Discovery"
+      },
+      "description": {
+        "type": "string",
+        "description": "One specific explanatory sentence tied to the slide objective.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "Researchers identify the core pattern and connect it to the lesson objective."
+      }
+    },
+    "optional_fields": {
+      "icon_name": {
+        "type": "string",
+        "description": "Optional Remix Icon class accepted by the current v2 prompt schema.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-lightbulb-line"
+      }
+    }
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "timeline",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "timeline",
+    "items": [
+      {
+        "heading": "Initial Discovery",
+        "description": "Researchers identify the core pattern and connect it to the lesson objective."
+      },
+      {
+        "heading": "Practical Use",
+        "description": "Learners apply the pattern to explain a concrete real-world outcome."
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly timeline.",
+    "Items must use the current v2 smart-layout item shape: heading and description.",
+    "Each primary item description must be 12-15 words.",
+    "The generated block must contain exactly the item count requested by the v2 prompt.",
+    "Current timeline BlockSpec profiles support 4 items for vertical_short or 5-6 items for vertical_long.",
+    "Do not add fields that the v2 prompt does not request."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "item_schema": {},
+  "block_schema": {
+    "type": "callout",
+    "text": {"type": "string", "description": "Callout text.", "example": "Remember this key insight."},
+    "label": {"type": "string", "description": "Optional callout label accepted by serializer paths.", "example": "Tip"},
+    "callout_type": {"type": "string", "description": "Optional type noted in spec: tip, warning, info, or danger.", "example": "tip"}
+  },
+  "prompt_example": {"type": "callout", "label": "Tip", "text": "Remember this key insight.", "callout_type": "tip"},
+  "validation_rules": ["Block type must be exactly callout.", "text must be present.", "Spec allows type variants tip, warning, info, and danger.", "Current BlockSpec item range is exactly 1."]
+}

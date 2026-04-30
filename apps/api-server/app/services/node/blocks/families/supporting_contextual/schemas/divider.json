@@ -1,0 +1,6 @@
+{
+  "item_schema": {},
+  "block_schema": {"type": "divider"},
+  "prompt_example": {"type": "divider"},
+  "validation_rules": ["Block type must be exactly divider.", "Divider has no item fields.", "Current BlockSpec item range is exactly 1."]
+}

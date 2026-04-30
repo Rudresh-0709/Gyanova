@@ -88,55 +88,42 @@ except ImportError:
     )
     from ..slides.gyml.validator import GyMLValidator  # type: ignore
 
-
-def _clean_json(raw: str) -> str:
-    return raw.replace("```json", "").replace("```", "").strip()
-
-
-def _safe_json_loads(raw: str) -> Optional[Dict[str, Any]]:
-    if not raw:
-        return None
-    try:
-        return json.loads(_clean_json(raw))
-    except Exception:
-        return None
-
-
-def _join_limited(values: List[str], max_items: int = 4) -> str:
-    cleaned = [str(v).strip() for v in values if str(v).strip()]
-    return "; ".join(cleaned[:max_items])
-
-
-def _default_icon_name(index: int) -> str:
-    icons = [
-        "ri-lightbulb-line",
-        "ri-compass-3-line",
-        "ri-flag-2-line",
-        "ri-book-open-line",
-        "ri-shield-check-line",
-        "ri-line-chart-line",
-    ]
-    return icons[index % len(icons)]
-
-
-def _intent_for_teacher(teacher_intent: str) -> str:
-    intent = str(teacher_intent or "explain").strip().lower()
-    return (
-        intent
-        if intent
-        in {
-            "introduce",
-            "explain",
-            "teach",
-            "compare",
-            "demo",
-            "prove",
-            "summarize",
-            "narrate",
-            "list",
-        }
-        else "explain"
-    )
+from .generation.llm_caller import _clean_json, _safe_json_loads
+from .generation.post_processor import (
+    _STRUCTURED_PRIMARY_TYPES,
+    _SUPPORTING_ONLY_TYPES,
+    _apply_composition_style,
+    _build_callout_text,
+    _build_context_text,
+    _build_intro_text,
+    _default_icon_name,
+    _enforce_primary_description_word_budget,
+    _enforce_side_strip_only_on_blank_layout,
+    _enforce_structured_primary,
+    _enforce_supporting_for_big_boxes,
+    _find_primary_block_index,
+    _has_structured_primary,
+    _pick_best_supporting_fact,
+)
+from .generation.prompt_builder import (
+    _COMPOSITION_STYLES,
+    _build_image_prompt,
+    _ensure_sentence,
+    _intent_for_teacher,
+    _join_limited,
+    _normalize_layout,
+    _resolve_composition_style,
+)
+from .generation.response_validator import (
+    _MAX_ITEM_DESCRIPTION_WORDS,
+    _MAX_ITEM_HEADING_LENGTH,
+    _MIN_ITEM_DESCRIPTION_WORDS,
+    _count_words,
+    _slide_to_section,
+    _trim_to_word_budget,
+    _validate_payload,
+    _validate_with_existing_validator,
+)
 
 
 def _build_narration_text(
@@ -167,283 +154,6 @@ def _build_narration_text(
 
     sentences = [segment.strip() for segment in parts if segment.strip()]
     return "\n\n".join(sentences)
-
-
-def _build_image_prompt(plan_item: Dict[str, Any]) -> str:
-    title = str(plan_item.get("title") or "the topic").strip()
-    objective = str(plan_item.get("objective") or "teach the concept clearly").strip()
-    tier = str(plan_item.get("image_tier") or "none").strip().lower()
-    if tier == "hero":
-        return f"High-end editorial hero image for {title}, visually explaining {objective} with polished, premium composition."
-    if tier == "accent":
-        return f"Accent illustration for {title}, supporting {objective} with a clean instructional visual."
-    return ""
-
-
-def _normalize_layout(layout: str) -> str:
-    value = str(layout or "blank").strip().lower()
-    if value not in {"right", "left", "top", "bottom", "blank"}:
-        return "blank"
-    return value
-
-
-_COMPOSITION_STYLES = (
-    "primary_only",
-    "context_then_primary",
-    "primary_then_callout",
-    "intro_then_primary",
-)
-
-
-def _resolve_composition_style(
-    plan_item: Dict[str, Any], designer_blueprint: Dict[str, Any]
-) -> str:
-    raw_style = (
-        str(
-            plan_item.get("composition_style")
-            or designer_blueprint.get("composition_style")
-            or ""
-        )
-        .strip()
-        .lower()
-    )
-    if raw_style in _COMPOSITION_STYLES:
-        return raw_style
-
-    # Deterministic fallback for legacy plan items that do not set composition_style.
-    seq_idx = plan_item.get("sequence_index")
-    try:
-        seq_num = int(seq_idx)
-    except Exception:
-        seq_num = 0
-    return _COMPOSITION_STYLES[seq_num % len(_COMPOSITION_STYLES)]
-
-
-def _find_primary_block_index(blocks: List[Dict[str, Any]]) -> int:
-    for i, block in enumerate(blocks):
-        if not isinstance(block, dict):
-            continue
-        block_type = str(block.get("type") or "").strip().lower()
-        if block_type in _STRUCTURED_PRIMARY_TYPES:
-            return i
-    return -1
-
-
-def _ensure_sentence(text: str) -> str:
-    cleaned = str(text or "").strip()
-    if not cleaned:
-        return ""
-    if cleaned[-1] in {".", "!", "?"}:
-        return cleaned
-    return f"{cleaned}."
-
-
-def _pick_best_supporting_fact(plan_item: Dict[str, Any]) -> str:
-    key_facts = [
-        str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()
-    ]
-    must_cover = [
-        str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()
-    ]
-
-    # Prefer richer full-sentence facts over terse keywords.
-    if key_facts:
-        key_facts_sorted = sorted(key_facts, key=lambda text: len(text), reverse=True)
-        return _ensure_sentence(key_facts_sorted[0])
-    if must_cover:
-        return _ensure_sentence(must_cover[0])
-    return ""
-
-
-def _build_intro_text(plan_item: Dict[str, Any]) -> str:
-    objective = str(plan_item.get("objective") or "").strip()
-    if objective:
-        return _ensure_sentence(objective)
-    title = str(plan_item.get("title") or "this topic").strip()
-    return _ensure_sentence(
-        f"Let's frame {title} before diving into the core structure"
-    )
-
-
-def _build_context_text(plan_item: Dict[str, Any]) -> str:
-    title = str(plan_item.get("title") or "this topic").strip()
-    objective = str(plan_item.get("objective") or "").strip()
-    best_fact = _pick_best_supporting_fact(plan_item)
-
-    if best_fact and objective:
-        return _ensure_sentence(f"{objective} {best_fact}")
-    if best_fact:
-        return best_fact
-    if objective:
-        return _ensure_sentence(objective)
-    return _ensure_sentence(
-        f"This context sets up the core idea in {title} with a concrete teaching anchor"
-    )
-
-
-def _build_callout_text(plan_item: Dict[str, Any]) -> str:
-    assessment = str(plan_item.get("assessment_prompt") or "").strip()
-    best_fact = _pick_best_supporting_fact(plan_item)
-    if best_fact and assessment:
-        return _ensure_sentence(f"{best_fact} Check your understanding: {assessment}")
-    if assessment:
-        return _ensure_sentence(f"Check your understanding: {assessment}")
-    if best_fact:
-        return _ensure_sentence(f"Key takeaway: {best_fact}")
-    return "Key takeaway: summarize the most actionable insight from this slide."
-
-
-def _enforce_supporting_for_big_boxes(
-    payload: Dict[str, Any], plan_item: Dict[str, Any]
-) -> None:
-    """Ensure solidBoxesWithIconsInside always has a supporting paragraph block."""
-    blocks = payload.get("contentBlocks", [])
-    if not isinstance(blocks, list) or not blocks:
-        return
-
-    primary_idx = _find_primary_block_index(blocks)
-    if primary_idx < 0 or primary_idx >= len(blocks):
-        return
-
-    primary_block = blocks[primary_idx] if isinstance(blocks[primary_idx], dict) else {}
-    primary_type = str(primary_block.get("type") or "").strip().lower()
-    primary_variant = str(primary_block.get("variant") or "").strip()
-
-    if primary_type != "smart_layout" or primary_variant != "solidBoxesWithIconsInside":
-        return
-
-    paragraph_like = {
-        "paragraph",
-        "intro_paragraph",
-        "context_paragraph",
-        "annotation_paragraph",
-        "outro_paragraph",
-    }
-    has_supporting = any(
-        isinstance(block, dict)
-        and str(block.get("type") or "").strip().lower() in paragraph_like
-        for block in blocks
-    )
-    if has_supporting:
-        return
-
-    insert_at = min(primary_idx + 1, len(blocks))
-    blocks.insert(
-        insert_at,
-        {"type": "annotation_paragraph", "text": _build_callout_text(plan_item)},
-    )
-    payload["contentBlocks"] = blocks
-    payload["primary_block_index"] = _find_primary_block_index(blocks)
-
-
-def _apply_composition_style(
-    payload: Dict[str, Any], plan_item: Dict[str, Any], composition_style: str
-) -> None:
-    blocks = payload.get("contentBlocks", [])
-    if not isinstance(blocks, list):
-        return
-
-    paragraph_like = {
-        "paragraph",
-        "intro_paragraph",
-        "context_paragraph",
-        "annotation_paragraph",
-        "outro_paragraph",
-    }
-
-    # Keep non-paragraph-like blocks intact, then layer style-specific supporting text.
-    filtered_blocks = []
-    for block in blocks:
-        if not isinstance(block, dict):
-            continue
-        block_type = str(block.get("type") or "").strip().lower()
-        if block_type in paragraph_like:
-            continue
-        filtered_blocks.append(block)
-
-    primary_idx = _find_primary_block_index(filtered_blocks)
-    if primary_idx < 0:
-        payload["contentBlocks"] = filtered_blocks
-        return
-
-    before_primary: List[Dict[str, Any]] = []
-    after_primary: List[Dict[str, Any]] = []
-
-    if composition_style == "context_then_primary":
-        before_primary.append(
-            {"type": "context_paragraph", "text": _build_context_text(plan_item)}
-        )
-    elif composition_style == "primary_then_callout":
-        after_primary.append(
-            {"type": "annotation_paragraph", "text": _build_callout_text(plan_item)}
-        )
-    elif composition_style == "intro_then_primary":
-        before_primary.append(
-            {"type": "intro_paragraph", "text": _build_intro_text(plan_item)}
-        )
-
-    rebuilt: List[Dict[str, Any]] = []
-    rebuilt.extend(filtered_blocks[:primary_idx])
-    rebuilt.extend(before_primary)
-    rebuilt.append(filtered_blocks[primary_idx])
-    rebuilt.extend(after_primary)
-    rebuilt.extend(filtered_blocks[primary_idx + 1 :])
-
-    # Hard rule: never allow intro + annotation/outro on the same slide.
-    has_intro = any(
-        str(block.get("type") or "").strip().lower() == "intro_paragraph"
-        for block in rebuilt
-        if isinstance(block, dict)
-    )
-    if has_intro:
-        rebuilt = [
-            block
-            for block in rebuilt
-            if not (
-                isinstance(block, dict)
-                and str(block.get("type") or "").strip().lower()
-                in {"annotation_paragraph", "outro_paragraph"}
-            )
-        ]
-
-    payload["contentBlocks"] = rebuilt
-    payload["primary_block_index"] = _find_primary_block_index(rebuilt)
-
-
-def _enforce_side_strip_only_on_blank_layout(payload: Dict[str, Any]) -> None:
-    blocks = payload.get("contentBlocks", [])
-    if not isinstance(blocks, list):
-        return
-
-    image_layout = (
-        str(payload.get("image_layout") or payload.get("layout") or "blank")
-        .strip()
-        .lower()
-    )
-    is_blank_layout = image_layout == "blank"
-
-    rebuilt: List[Dict[str, Any]] = []
-    for block in blocks:
-        if not isinstance(block, dict):
-            rebuilt.append(block)
-            continue
-
-        block_type = str(block.get("type") or "").strip().lower()
-        variant = str(block.get("variant") or "").strip().lower()
-        is_side_strip = block_type == "side_strip_paragraph" or variant in {
-            "side-strip",
-            "side-strip-left",
-        }
-
-        if is_side_strip and not is_blank_layout:
-            text = str(block.get("text") or "").strip()
-            if text:
-                rebuilt.append({"type": "annotation_paragraph", "text": text})
-            continue
-
-        rebuilt.append(block)
-
-    payload["contentBlocks"] = rebuilt
 
 
 def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
@@ -620,13 +330,74 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
             if smart_layout_variant == "solidBoxesWithIconsInside":
                 for idx, item in enumerate(sl_items):
                     item["icon_name"] = _default_icon_name(idx)
-        content_blocks.append(
-            {
-                "type": "smart_layout",
-                "variant": smart_layout_variant,
-                "items": sl_items,
-            }
-        )
+
+        if smart_layout_variant == "branching_path":
+            branch_source = sl_items[:4]
+            if len(branch_source) < 2:
+                branch_source = [
+                    {
+                        "heading": "Recognize",
+                        "description": objective or "Choose this route when the condition is met.",
+                    },
+                    {
+                        "heading": "Optimize",
+                        "description": str(
+                            plan_item.get("assessment_prompt")
+                            or "Choose this route when more refinement is needed."
+                        ),
+                    },
+                ]
+
+            branches = []
+            for idx, item in enumerate(branch_source[:4]):
+                suffix = chr(65 + idx)
+                label = str(item.get("heading") or f"Path {suffix}").strip()
+                description = str(item.get("description") or "").strip()
+                branches.append(
+                    {
+                        "edge_label": "Yes" if idx == 0 else ("No" if idx == 1 else f"Option {suffix}"),
+                        "path_label": label[:30],
+                        "path_description": description[:120],
+                        "outcome_label": (
+                            "Prediction Made" if idx == 0 else ("Retrain" if idx == 1 else f"Outcome {suffix}")
+                        ),
+                        "outcome_description": (
+                            description[:120]
+                            or "The learner follows this branch to a clear outcome."
+                        ),
+                    }
+                )
+
+            content_blocks.append(
+                {
+                    "type": "smart_layout",
+                    "variant": "branching_path",
+                    "density": "balanced",
+                    "start": {
+                        "label": "Data Input",
+                        "description": objective[:120]
+                        or "Raw information enters the decision flow.",
+                    },
+                    "decision": {
+                        "label": "Pattern Found?",
+                        "description": "Choose the branch that matches the current condition.",
+                    },
+                    "branches": branches,
+                    "fallback": {
+                        "label": "Re-evaluate",
+                        "description": "Return to the decision if the result is not reliable.",
+                        "style": "dashed",
+                    },
+                }
+            )
+        else:
+            content_blocks.append(
+                {
+                    "type": "smart_layout",
+                    "variant": smart_layout_variant,
+                    "items": sl_items,
+                }
+            )
 
     for block in supporting_blocks[:2]:
         if not isinstance(block, dict):
@@ -664,774 +435,7 @@ def _build_fallback_slide(plan_item: Dict[str, Any]) -> Dict[str, Any]:
     return payload
 
 
-def _validate_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
-    title = str(payload.get("title") or "Untitled Slide").strip()
-    layout = _normalize_layout(
-        payload.get("layout") or payload.get("image_layout") or "blank"
-    )
-    image_layout = _normalize_layout(payload.get("image_layout") or layout)
-    if layout == "blank" and image_layout != "blank":
-        layout = image_layout
-    elif image_layout == "blank" and layout != "blank":
-        image_layout = layout
-    content_blocks = payload.get("contentBlocks", [])
-    if not isinstance(content_blocks, list):
-        content_blocks = []
-    normalized_blocks: List[Dict[str, Any]] = []
-    for block in content_blocks:
-        if not isinstance(block, dict):
-            continue
-        block_type = str(block.get("type") or "").strip().lower()
-        if block_type in {
-            "heading",
-            "paragraph",
-            "intro_paragraph",
-            "context_paragraph",
-            "annotation_paragraph",
-            "outro_paragraph",
-            "caption",
-            "comparison_table",
-            "key_value_list",
-            "rich_text",
-            "numbered_list",
-            "formula_block",
-            "process_arrow_block",
-            "cyclic_process_block",
-            "smart_layout",
-            "image",
-        }:
-            normalized_blocks.append(block)
-            continue
-
-        content = block.get("content")
-        if isinstance(content, list) and content:
-            items = []
-            for i, item in enumerate(content[:4]):
-                text = str(item).strip()
-                if text:
-                    items.append({"heading": f"Point {i + 1}", "description": text})
-            if items:
-                normalized_blocks.append(
-                    {"type": "smart_layout", "variant": "bigBullets", "items": items}
-                )
-                continue
-
-        text_value = str(
-            block.get("text") or block.get("description") or block.get("title") or title
-        ).strip()
-        normalized_blocks.append({"type": "paragraph", "text": text_value})
-
-    if not normalized_blocks:
-        normalized_blocks = [{"type": "paragraph", "text": title}]
-    if not isinstance(payload.get("primary_block_index"), int):
-        payload["primary_block_index"] = 1 if len(normalized_blocks) > 1 else 0
-    payload["title"] = title
-    payload["layout"] = layout
-    payload["image_layout"] = image_layout
-    payload["contentBlocks"] = normalized_blocks
-    return payload
-
-
-def _slide_to_section(payload: Dict[str, Any]) -> GyMLSection:
-    # Minimal mapping for structural validation with the existing validator.
-    slide_title = str(payload.get("title") or "Untitled Slide")
-    image_layout = str(payload.get("image_layout") or payload.get("layout") or "blank")
-    body_children: List[Any] = [GyMLHeading(level=1, text=slide_title)]
-    for block in payload.get("contentBlocks", []):
-        if not isinstance(block, dict):
-            continue
-        block_type = str(block.get("type") or "paragraph").strip().lower()
-        if block_type in {
-            "paragraph",
-            "intro_paragraph",
-            "context_paragraph",
-            "annotation_paragraph",
-            "outro_paragraph",
-            "caption",
-        }:
-            body_children.append(
-                GyMLParagraph(
-                    text=str(block.get("text") or block.get("description") or "")
-                )
-            )
-        elif block_type == "comparison_table":
-            body_children.append(
-                GyMLComparisonTable(
-                    headers=list(block.get("headers", [])),
-                    rows=list(block.get("rows", [])),
-                    caption=block.get("caption"),
-                )
-            )
-        elif block_type == "key_value_list":
-            items = [
-                GyMLKeyValueItem(
-                    key=str(item.get("key") or item.get("label") or "Key"),
-                    value=str(item.get("value") or item.get("description") or "Value"),
-                )
-                for item in block.get("items", [])
-                if isinstance(item, dict)
-            ]
-            body_children.append(GyMLKeyValueList(items=items))
-        elif block_type == "rich_text":
-            body_children.append(
-                GyMLRichText(paragraphs=[str(p) for p in block.get("paragraphs", [])])
-            )
-        elif block_type == "numbered_list":
-            items = [
-                GyMLNumberedListItem(
-                    title=str(item.get("title") or item.get("label") or "Item"),
-                    description=str(item.get("description") or ""),
-                )
-                for item in block.get("items", [])
-                if isinstance(item, dict)
-            ]
-            body_children.append(GyMLNumberedList(items=items))
-        elif block_type == "formula_block":
-            variables = []
-            for var in block.get("variables", []):
-                if isinstance(var, dict):
-                    variables.append(
-                        {
-                            "name": str(var.get("name") or "x"),
-                            "meaning": str(var.get("meaning") or ""),
-                        }
-                    )
-            body_children.append(
-                GyMLFormulaBlock(
-                    expression=str(block.get("expression") or ""),
-                    variables=variables,
-                    example=str(block.get("example") or ""),
-                )
-            )
-        elif block_type == "process_arrow_block":
-            items = [
-                GyMLProcessArrowItem(
-                    label=str(item.get("label") or "Step"),
-                    description=str(item.get("description") or ""),
-                    imagePrompt=str(item.get("imagePrompt") or ""),
-                    color=item.get("color"),
-                )
-                for item in block.get("items", [])
-                if isinstance(item, dict)
-            ]
-            body_children.append(GyMLProcessArrowBlock(items=items))
-        elif block_type == "cyclic_process_block":
-            items = [
-                GyMLCyclicProcessItem(
-                    label=str(item.get("label") or "Step"),
-                    description=str(item.get("description") or ""),
-                    image_url=str(
-                        item.get("image_url") or item.get("imagePrompt") or ""
-                    ),
-                )
-                for item in block.get("items", [])
-                if isinstance(item, dict)
-            ]
-            body_children.append(GyMLCyclicProcessBlock(items=items))
-        elif block_type == "feature_showcase_block":
-            items = []
-            for it in block.get("items", []):
-                if not isinstance(it, dict):
-                    continue
-                icon_name = it.get("icon_name") or it.get("icon")
-                items.append(
-                    GyMLFeatureShowcaseItem(
-                        label=str(it.get("heading") or it.get("title") or "Feature"),
-                        description=it.get("description"),
-                        icon=str(icon_name) if icon_name else None,
-                    )
-                )
-            body_children.append(
-                GyMLFeatureShowcaseBlock(
-                    title=str(block.get("title") or slide_title),
-                    items=items,
-                    image_url=str(
-                        block.get("image_url") or block.get("imagePrompt") or ""
-                    ),
-                )
-            )
-        elif block_type == "hub_and_spoke":
-            items = []
-            for it in block.get("items", []):
-                if not isinstance(it, dict):
-                    continue
-                icon_name = it.get("icon_name") or it.get("icon")
-                items.append(
-                    GyMLHubAndSpokeItem(
-                        label=str(it.get("heading") or it.get("title") or "Point"),
-                        description=it.get("description"),
-                        icon=str(icon_name) if icon_name else None,
-                    )
-                )
-            body_children.append(
-                GyMLHubAndSpoke(
-                    hub_label=str(block.get("hub_label") or slide_title), items=items
-                )
-            )
-        elif block_type == "smart_layout":
-            variant = block.get("variant")
-            # Route specialized variants to their dedicated GyML classes
-            if variant == "hubAndSpoke":
-                items = []
-                for it in block.get("items", []):
-                    if not isinstance(it, dict):
-                        continue
-                    icon_name = it.get("icon_name") or it.get("icon")
-                    items.append(
-                        GyMLHubAndSpokeItem(
-                            label=str(it.get("heading") or it.get("title") or "Point"),
-                            description=it.get("description"),
-                            icon=str(icon_name) if icon_name else None,
-                        )
-                    )
-                body_children.append(
-                    GyMLHubAndSpoke(
-                        hub_label=str(block.get("hub_label") or slide_title),
-                        items=items,
-                    )
-                )
-            elif variant == "featureShowcase":
-                items = []
-                for it in block.get("items", []):
-                    if not isinstance(it, dict):
-                        continue
-                    icon_name = it.get("icon_name") or it.get("icon")
-                    items.append(
-                        GyMLFeatureShowcaseItem(
-                            label=str(
-                                it.get("heading") or it.get("title") or "Feature"
-                            ),
-                            description=it.get("description"),
-                            icon=str(icon_name) if icon_name else None,
-                        )
-                    )
-                body_children.append(
-                    GyMLFeatureShowcaseBlock(
-                        title=str(block.get("title") or slide_title),
-                        items=items,
-                        image_url=str(
-                            block.get("image_url") or block.get("imagePrompt") or ""
-                        ),
-                    )
-                )
-            elif variant == "cyclicBlock":
-                items = []
-                for it in block.get("items", []):
-                    if not isinstance(it, dict):
-                        continue
-                    icon_name = it.get("icon_name") or it.get("icon")
-                    items.append(
-                        GyMLCyclicItem(
-                            label=str(it.get("heading") or it.get("title") or "Stage"),
-                            description=it.get("description"),
-                            icon=str(icon_name) if icon_name else None,
-                        )
-                    )
-                body_children.append(
-                    GyMLCyclicBlock(
-                        items=items,
-                        hub_label=str(block.get("hub_label") or slide_title),
-                    )
-                )
-            elif variant == "sequentialOutput":
-                items = [
-                    str(it.get("text") or it.get("description") or it)
-                    for it in block.get("items", [])
-                ]
-                body_children.append(GyMLSequentialOutput(items=items))
-            else:
-                items = []
-                for item in block.get("items", []):
-                    if not isinstance(item, dict):
-                        continue
-                    item_kwargs = {
-                        k: v
-                        for k, v in item.items()
-                        if k
-                        in {
-                            "heading",
-                            "title",
-                            "description",
-                            "points",
-                            "year",
-                            "value",
-                            "label",
-                        }
-                    }
-                    # Accept both v2 (`icon_name`) and legacy (`icon`) keys.
-                    icon_name = item.get("icon_name") or item.get("icon")
-                    if icon_name:
-                        item_kwargs["icon"] = GyMLIcon(alt=str(icon_name))
-                    items.append(GyMLSmartLayoutItem(**item_kwargs))
-                body_children.append(
-                    GyMLSmartLayout(
-                        variant=str(block.get("variant") or "bigBullets"),
-                        items=items,
-                        start=block.get("start"),
-                        decision=block.get("decision"),
-                        branches=block.get("branches", []) or [],
-                        fallback=block.get("fallback"),
-                    )
-                )
-        elif block_type == "image":
-            body_children.append(
-                GyMLImage(
-                    src=str(block.get("src") or block.get("imagePrompt") or ""),
-                    alt=str(block.get("alt") or slide_title),
-                    is_accent=bool(block.get("is_accent", False)),
-                )
-            )
-        else:
-            body_children.append(
-                GyMLParagraph(
-                    text=str(
-                        block.get("text") or block.get("description") or slide_title
-                    )
-                )
-            )
-
-    section = GyMLSection(
-        id=str(payload.get("title") or "slide").strip().replace(" ", "_"),
-        image_layout=image_layout,
-        body=GyMLBody(children=body_children),
-        slide_density=str(payload.get("slide_density") or "balanced").strip().lower(),
-    )
-    return section
-
-
-def _validate_with_existing_validator(
-    payload: Dict[str, Any],
-) -> Tuple[bool, List[str], List[str]]:
-    validator = GyMLValidator()
-    result = validator.validate(_slide_to_section(payload))
-    return result.is_valid, list(result.errors), list(result.warnings)
-
-
-# Block types that count as structured primary blocks (non-trivial teaching content)
-_STRUCTURED_PRIMARY_TYPES = {
-    "smart_layout",
-    "comparison_table",
-    "key_value_list",
-    "numbered_list",
-    "formula_block",
-    "process_arrow_block",
-    "cyclic_process_block",
-    "feature_showcase_block",
-    "hub_and_spoke",
-    "cyclic_block",
-    "sequential_output",
-    "step_list",
-    "rich_text",
-}
-
-# Block types that are only acceptable as *supporting* blocks (never primary)
-_SUPPORTING_ONLY_TYPES = {
-    "heading",
-    "paragraph",
-    "intro_paragraph",
-    "context_paragraph",
-    "annotation_paragraph",
-    "outro_paragraph",
-    "caption",
-    "image",
-}
-
-# Maximum characters for a smart_layout item heading (keeps cards readable at typical font sizes)
-_MAX_ITEM_HEADING_LENGTH = 60
-# Word budget for smart_layout item descriptions (keeps cards scannable on desktop/mobile)
-_MIN_ITEM_DESCRIPTION_WORDS = 12
-_MAX_ITEM_DESCRIPTION_WORDS = 15
-
-
-def _count_words(text: str) -> int:
-    tokens = [t for t in str(text or "").strip().split() if t.strip()]
-    return len(tokens)
-
-
-def _trim_to_word_budget(text: str, max_words: int) -> str:
-    cleaned = str(text or "").strip()
-    if not cleaned:
-        return ""
-    words = cleaned.split()
-    if len(words) <= max_words:
-        return cleaned
-
-    trimmed = " ".join(words[:max_words]).rstrip()
-    # Prefer ending at punctuation if we cut mid-thought.
-    for punct in (".", ";", ":"):
-        idx = trimmed.rfind(punct)
-        if idx >= max(0, len(trimmed) - 22):
-            trimmed = trimmed[: idx + 1].strip()
-            break
-    if trimmed and trimmed[-1] not in {".", "!", "?"}:
-        trimmed = f"{trimmed}."
-    return trimmed
-
-
-def _enforce_primary_description_word_budget(payload: Dict[str, Any]) -> None:
-    """
-    Mutates ``payload`` in-place: ensure the primary smart_layout item descriptions
-    are scannable by keeping them within the configured word budget.
-    """
-    try:
-        primary_index = int(payload.get("primary_block_index", 0) or 0)
-    except Exception:
-        primary_index = 0
-
-    blocks = payload.get("contentBlocks", [])
-    if not isinstance(blocks, list) or not blocks:
-        return
-    if primary_index < 0 or primary_index >= len(blocks):
-        return
-
-    block = blocks[primary_index]
-    if not isinstance(block, dict):
-        return
-    if str(block.get("type") or "").strip().lower() != "smart_layout":
-        return
-
-    items = block.get("items", [])
-    if not isinstance(items, list):
-        return
-
-    for item in items:
-        if not isinstance(item, dict):
-            continue
-        description = str(item.get("description") or "").strip()
-        if not description:
-            continue
-        if _count_words(description) > _MAX_ITEM_DESCRIPTION_WORDS:
-            item["description"] = _trim_to_word_budget(
-                description, _MAX_ITEM_DESCRIPTION_WORDS
-            )
-
-
-def _has_structured_primary(blocks: List[Dict[str, Any]]) -> bool:
-    """Return True if any block in the list qualifies as a structured primary block."""
-    return any(
-        str(b.get("type") or "").strip().lower() in _STRUCTURED_PRIMARY_TYPES
-        for b in blocks
-        if isinstance(b, dict)
-    )
-
-
-def _enforce_structured_primary(
-    payload: Dict[str, Any], plan_item: Dict[str, Any], smart_layout_variant: str
-) -> None:
-    """
-    Mutates ``payload`` in-place: if the slide has no structured primary block,
-    inject a smart_layout block built from plan_item data as a fallback.
-
-    This satisfies the hard requirement that non-title slides always include
-    a structured primary block.
-    """
-    blocks = payload.get("contentBlocks", [])
-    if not isinstance(blocks, list):
-        return
-
-    # Check if this is a sparse/title-only block variant — those may skip primary block.
-    # Sparse blocks that intentionally have no structured primary
-    sparse_variants = {"definition", "quote", "callout", "keyTakeaway", "annotation_paragraph"}
-    selected_block_variant = str(payload.get("selected_block_variant") or plan_item.get("selected_block_variant") or "").strip()
-    if selected_block_variant in sparse_variants:
-        return
-
-    if _has_structured_primary(blocks):
-        return
-
-    # Build a minimal smart_layout block from plan_item content
-    title = str(plan_item.get("title") or "The Topic").strip()
-    objective = str(plan_item.get("objective") or "").strip()
-    must_cover = [
-        str(v).strip() for v in plan_item.get("must_cover", []) if str(v).strip()
-    ]
-    key_facts = [
-        str(v).strip() for v in plan_item.get("key_facts", []) if str(v).strip()
-    ]
-
-    items = []
-    # Use must_cover points as items
-    for point in (must_cover + key_facts)[:6]:
-        items.append(
-            {"heading": point[:_MAX_ITEM_HEADING_LENGTH], "description": point}
-        )
-    # Ensure at least 2 items
-    if len(items) < 2:
-        items = [
-            {"heading": "Key Concept", "description": objective or title},
-            {
-                "heading": "Why It Matters",
-                "description": str(
-                    plan_item.get("assessment_prompt") or "Reflect on what you learned."
-                ),
-            },
-        ]
-
-    fallback_block: Dict[str, Any] = {
-        "type": "smart_layout",
-        "variant": smart_layout_variant or "bigBullets",
-        "items": items[:6],
-    }
-
-    if (smart_layout_variant or "").strip() == "solidBoxesWithIconsInside":
-        for idx, item in enumerate(fallback_block.get("items", [])):
-            if isinstance(item, dict) and not str(item.get("icon_name") or "").strip():
-                item["icon_name"] = _default_icon_name(idx)
-
-    # Insert after the first heading/paragraph block (or at position 1)
-    insert_at = 1
-    for i, block in enumerate(blocks):
-        if (
-            isinstance(block, dict)
-            and str(block.get("type") or "").strip().lower()
-            not in _SUPPORTING_ONLY_TYPES
-        ):
-            break
-        insert_at = i + 1
-
-    blocks.insert(insert_at, fallback_block)
-    payload["contentBlocks"] = blocks
-    # Update primary_block_index to point to the injected block
-    payload["primary_block_index"] = insert_at
-
-
 def generate_gyml_v2(plan_item: Dict[str, Any]) -> Dict[str, Any]:
-    title = str(plan_item.get("title") or "Untitled Slide").strip()
-    selected_template = str(
-        plan_item.get("selected_template") or "Title with bullets"
-    ).strip()
-    designer_blueprint = (
-        plan_item.get("designer_blueprint", {})
-        if isinstance(plan_item.get("designer_blueprint"), dict)
-        else {}
-    )
-    composition_style = _resolve_composition_style(plan_item, designer_blueprint)
-    image_need = str(plan_item.get("image_need") or "optional").strip().lower()
-    image_tier = str(plan_item.get("image_tier") or "accent").strip().lower()
+    from .generation.generator import generate_gyml_v2 as _generate_gyml_v2
 
-    # ── Planned primary block info ───────────────────────────────────────────
-    # Block variant is now set by the designer node — do not re-derive it here
-    selected_block_variant = str(plan_item.get("selected_block_variant") or "bigBullets").strip()
-    block_constraints = plan_item.get("block_constraints") or {}
-
-    item_min = int(block_constraints.get("item_min", 2))
-    item_max = int(block_constraints.get("item_max", 6))
-    requires_icons = bool(block_constraints.get("requires_icons", False))
-    width_class = str(block_constraints.get("width_class", "normal"))
-    supported_layouts = list(block_constraints.get("supported_layouts", ["blank"]))
-    layout_variant = str(block_constraints.get("layout_variant", "default"))
-
-    # Clamp estimated_items to block's supported range
-    try:
-        estimated_items = int(plan_item.get("estimated_items", 4))
-        estimated_items = max(item_min, min(item_max, estimated_items))
-    except (TypeError, ValueError):
-        estimated_items = max(item_min, min(item_max, 4))
-
-    # Keep smart_layout_variant as an alias for backward compat with composition/enforcement helpers
-    smart_layout_variant = selected_block_variant
-
-    # selected_template is legacy — keep for fallback helpers that still reference it
-    selected_template = str(plan_item.get("selected_template") or "Title with bullets").strip()
-
-    slide_density = str(plan_item.get("slide_density") or "balanced").strip().lower()
-
-    expected_items = str(estimated_items)  # exact count from designer
-
-    # ── Research / grounding context ────────────────────────────────────────
-
-    research_context = str(
-        plan_item.get("research_context") or plan_item.get("research_raw_text") or ""
-    ).strip()
-    factual_confidence = (
-        str(plan_item.get("factual_confidence") or "low").strip().lower()
-    )
-
-    if research_context:
-        grounding_instruction = (
-            f"RESEARCH CONTEXT (use this as primary source for facts, dates, and names):\n{research_context[:5000]}\n"
-            "When research context is provided: use only the facts, dates, entities, and relationships "
-            "stated above. Do NOT invent additional statistics, quotes, or historical claims."
-        )
-    else:
-        grounding_instruction = (
-            "No verified research context is available for this slide. "
-            "You may use general, well-established knowledge about the topic. "
-            "STRICTLY FORBIDDEN: invented statistics, made-up dates, fabricated quotes, "
-            "fake source attributions, or hallucinated specifics."
-        )
-
-    # ── Determine the primary block type string for the prompt ───────────────
-    icon_instruction = (
-        " Every item MUST include `icon_name` with a valid Remix Icon class "
-        "(examples: ri-lightbulb-line, ri-compass-3-line, ri-book-open-line)."
-        if requires_icons else ""
-    )
-
-    primary_block_instruction = (
-        f'You MUST include exactly ONE `"type": "smart_layout"` block '
-        f'with `"variant": "{selected_block_variant}"` as the PRIMARY teaching block '
-        f'(primary_block_index). It MUST contain exactly {estimated_items} items '
-        f'(min {item_min}, max {item_max}).{icon_instruction}'
-    )
-
-    prompt = f"""You are generating a single GyML slide JSON object for an educational presentation.
-
-HARD RULES (violations will cause rejection):
-1. Return ONLY a valid JSON object. No markdown, no explanation.
-2. {primary_block_instruction}
-3. DO NOT include two smart_layout blocks on the same slide.
-4. Max 7 content blocks per slide. Primary block carries 70% of visual weight.
-5. Enforce composition_style exactly: {composition_style}.
-    - primary_only: PRIMARY BLOCK only (no intro/context/annotation/outro blocks)
-    - context_then_primary: context_paragraph → PRIMARY BLOCK
-    - primary_then_callout: PRIMARY BLOCK → annotation_paragraph
-    - intro_then_primary: intro_paragraph → PRIMARY BLOCK (no annotation/outro/takeaway block)
-    NEVER place intro_paragraph and annotation_paragraph/outro_paragraph together on the same slide.
-6. Do not include both an accentImagePrompt and block-embedded image prompts.
-7. Respect selected_template and image policy (image_need: {image_need}, image_tier: {image_tier}).
-8. Description length: each primary block item description MUST be 12–15 words (1 sentence). Keep it specific and meaningful; remove filler instead of adding extra words.
-9. Avoid one-line generic text. Prefer specific, explanatory sentences tied to the objective.
-
-{grounding_instruction}
-
-SLIDE CONTENT:
-Title: {title}
-Teacher objective: {plan_item.get('objective', '')}
-Teaching intent: {plan_item.get('teaching_intent', '')}
-Coverage scope: {plan_item.get('coverage_scope', '')}
-Must cover: {json.dumps(plan_item.get('must_cover', []), ensure_ascii=True)}
-Key facts: {json.dumps(plan_item.get('key_facts', []), ensure_ascii=True)}
-Formulas: {json.dumps(plan_item.get('formulas', []), ensure_ascii=True)}
-Assessment prompt: {plan_item.get('assessment_prompt', '')}
-
-DESIGN PLAN:
-Selected block variant: {selected_block_variant}
-Item count: exactly {estimated_items} (min {item_min}, max {item_max})
-Requires icons: {requires_icons}
-Width class: {width_class}
-Layout variant: {layout_variant}
-Supported image layouts: {supported_layouts}
-Composition style: {composition_style}
-Slide density: {slide_density}
-
-Designer blueprint (additional context):
-{json.dumps(designer_blueprint, ensure_ascii=True)}
-
-SMART LAYOUT VARIANT REFERENCE:
-  TIMELINES: timeline, timelineHorizontal, timelineSequential, timelineMilestone, timelineIcon
-  CARD GRIDS: cardGrid, cardGridIcon, cardGridSimple, cardGridImage
-  RELATIONSHIPS: relationshipMap
-  RIBBONS: ribbonFold
-  STAT TILES: statsBadgeGrid
-  STATS: stats, statsComparison, statsPercentage
-  BULLETS: bigBullets, bulletIcon, bulletCheck, bulletCross
-  PROCESS STEPS: processSteps, processArrow, processAccordion
-  COMPARISONS: comparison, comparisonProsCons, comparisonBeforeAfter
-
-OUTPUT SCHEMA (JSON only):
-{{
-  "title": "string",
-  "subtitle": "string or null",
-  "intent": "introduce|explain|teach|compare|demo|prove|summarize|narrate|list",
-  "layout": "right|left|top|bottom|blank",
-  "image_layout": "right|left|top|bottom|blank",
-  "contentBlocks": [
-    {{
-      "type": "smart_layout",
-      "variant": "{selected_block_variant}",
-      "items": [
-        {{"heading": "...", "description": "...", "icon_name": "ri-...(optional)"}}
-      ]
-    }}
-  ],
-  "primary_block_index": 0,
-  "accentImagePrompt": "optional string (only if image_tier=accent)",
-  "heroImagePrompt": "optional string (only if image_tier=hero)"
-}}
-"""
-    # Enforce scannability for the primary block descriptions even if the LLM overshoots.
-    # This is intentionally conservative (only trims when exceeding the max word budget).
-
-    payload = None
-    try:
-        llm = load_openai()
-        response = llm.invoke([{"role": "user", "content": prompt}])
-        payload = _safe_json_loads(str(response.content or ""))
-    except Exception:
-        payload = None
-
-    if not isinstance(payload, dict):
-        payload = _build_fallback_slide(plan_item)
-
-    payload = _validate_payload(payload)
-
-    # Enforce single-image policy.
-    if image_tier == "hero":
-        payload.pop("accentImagePrompt", None)
-        hero_prompt = _build_image_prompt(plan_item)
-        payload["heroImagePrompt"] = hero_prompt
-        payload["imagePrompt"] = hero_prompt
-    elif image_tier == "accent":
-        payload.pop("heroImagePrompt", None)
-        accent_prompt = _build_image_prompt(plan_item)
-        payload["accentImagePrompt"] = accent_prompt
-        payload["imagePrompt"] = accent_prompt
-    else:
-        payload.pop("accentImagePrompt", None)
-        payload.pop("heroImagePrompt", None)
-        payload.pop("imagePrompt", None)
-
-    # Enforce: use the layout decided by the planner (ground truth for variety/constraints)
-    # Use allows_wide_layout + supported_layouts to pick the best image layout
-    allows_wide_layout = bool(plan_item.get("allows_wide_layout", True))
-    image_role = str(plan_item.get("image_role", "none")).strip().lower()
-
-    if image_role == "content" and supported_layouts:
-        # Pick a side layout if supported, else blank
-        side_layouts = [l for l in supported_layouts if l in {"left", "right"}]
-        planned_layout = side_layouts[0] if side_layouts else "blank"
-    elif image_role == "accent":
-        top_bottom = [l for l in supported_layouts if l in {"top", "bottom"}]
-        planned_layout = top_bottom[0] if top_bottom else "blank"
-    else:
-        planned_layout = "blank"
-
-    planned_layout = _normalize_layout(planned_layout)
-    payload["layout"] = planned_layout
-    payload["image_layout"] = planned_layout
-
-    # Enforce: non-title slides must have a structured primary block.
-    # If the LLM only produced paragraphs/headings, inject a fallback smart_layout.
-    _enforce_structured_primary(payload, plan_item, smart_layout_variant)
-
-    # Enforce composition style and hard exclusion rule for intro+callout coexistence.
-    _apply_composition_style(payload, plan_item, composition_style)
-
-    # Keep primary smart_layout descriptions within the scannable word budget.
-    _enforce_primary_description_word_budget(payload)
-
-    # Hard rule: solid boxes primary must include at least one supporting paragraph block.
-    _enforce_supporting_for_big_boxes(payload, plan_item)
-
-    # Enforce: side-strip supporting text may only appear on blank image layout slides.
-    _enforce_side_strip_only_on_blank_layout(payload)
-
-    is_valid, errors, warnings = _validate_with_existing_validator(payload)
-    if not is_valid:
-        fallback = _build_fallback_slide(plan_item)
-        fallback = _validate_payload(fallback)
-        payload = fallback
-        payload["validation_errors"] = errors
-    if warnings:
-        payload["validation_warnings"] = warnings
-
-    payload["title"] = title
-    payload["selected_template"] = selected_template
-    payload["selected_block_variant"] = selected_block_variant
-    payload["image_need"] = image_need
-    payload["image_tier"] = image_tier
-    payload["designer_blueprint"] = designer_blueprint
-    payload["slide_density"] = slide_density
-    payload["composition_style"] = composition_style
-    return payload
+    return _generate_gyml_v2(plan_item)

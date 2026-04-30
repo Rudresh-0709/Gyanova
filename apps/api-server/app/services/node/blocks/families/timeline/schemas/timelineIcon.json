@@ -1,0 +1,61 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {
+        "type": "string",
+        "description": "Short event or step label for the icon timeline item.",
+        "min_words": null,
+        "max_words": null,
+        "example": "Key Signal"
+      },
+      "description": {
+        "type": "string",
+        "description": "One specific explanatory sentence tied to the slide objective.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "The signal marks the moment learners should connect evidence with the concept."
+      },
+      "icon_name": {
+        "type": "string",
+        "description": "Required Remix Icon class because the current timelineIcon BlockSpec requires icons.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-lightbulb-line"
+      }
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "timelineIcon",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "timelineIcon",
+    "items": [
+      {
+        "heading": "Key Signal",
+        "description": "The signal marks the moment learners should connect evidence with the concept.",
+        "icon_name": "ri-lightbulb-line"
+      },
+      {
+        "heading": "Clear Action",
+        "description": "The action shows how students can apply the idea in context.",
+        "icon_name": "ri-compass-3-line"
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly timelineIcon.",
+    "Items must use the current v2 smart-layout item shape: heading, description, and icon_name.",
+    "Each primary item description must be 12-15 words.",
+    "Every item must include icon_name with a valid Remix Icon class.",
+    "The generated block must contain exactly the item count requested by the v2 prompt.",
+    "Current timelineIcon BlockSpec profiles support 4 items for vertical_icon_short or 5-6 items for vertical_icon_long.",
+    "Do not add fields that the v2 prompt does not request."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "label": {"type": "string", "description": "Feature label used by the feature showcase block.", "min_words": null, "max_words": null, "example": "Core Feature"},
+      "description": {"type": "string", "description": "Feature explanation.", "min_words": 12, "max_words": 15, "example": "This feature clarifies the main idea through a focused visual explanation."},
+      "icon": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-lightbulb-line"}
+    },
+    "optional_fields": {"color": {"type": "string", "description": "Optional color token accepted by related item structures.", "min_words": null, "max_words": null, "example": "#2563EB"}}
+  },
+  "block_schema": {"type": "feature_showcase_block", "title": "string", "items": ["item_schema"], "image_url": "string", "image_prompt": "string"},
+  "prompt_example": {
+    "type": "feature_showcase_block",
+    "title": "Key Features",
+    "items": [
+      {"label": "Core Feature", "description": "This feature clarifies the main idea through a focused visual explanation.", "icon": "ri-lightbulb-line"},
+      {"label": "Support Feature", "description": "This feature connects supporting evidence to the learner's practical takeaway.", "icon": "ri-compass-3-line"}
+    ],
+    "image_prompt": "Clean instructional visual for the central concept"
+  },
+  "validation_rules": [
+    "Block type must be exactly feature_showcase_block.",
+    "Every item must include an icon.",
+    "Current BlockSpec supports 4-6 items.",
+    "Use label and description for each item."
+  ]
+}

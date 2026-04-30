@@ -1,0 +1,6 @@
+{
+  "item_schema": {},
+  "block_schema": {"type": "annotation_paragraph", "text": {"type": "string", "description": "Annotation or context paragraph text.", "example": "This note reinforces the main teaching point."}},
+  "prompt_example": {"type": "annotation_paragraph", "text": "This note reinforces the main teaching point."},
+  "validation_rules": ["Block type must be exactly annotation_paragraph.", "text must be present.", "Current BlockSpec item range is exactly 1."]
+}

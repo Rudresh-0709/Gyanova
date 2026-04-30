@@ -1,0 +1,21 @@
+{
+  "item_schema": {},
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "summary_strip",
+    "items": [
+      {
+        "heading": {"type": "string", "description": "Strip title.", "example": "Key Takeaways"},
+        "points": {"type": "array[string]", "description": "Nested summary points noted in the BlockSpec.", "example": ["First takeaway", "Second takeaway"]}
+      }
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "summary_strip",
+    "items": [
+      {"heading": "Key Takeaways", "points": ["First takeaway", "Second takeaway"]}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly summary_strip.", "Block-level item range is 1 according to the spec.", "Use nested points for the strip entries."]
+}

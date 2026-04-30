@@ -1,0 +1,22 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "value": {"type": "string", "description": "Metric value displayed prominently.", "min_words": null, "max_words": null, "example": "3x"},
+      "label": {"type": "string", "description": "Metric label.", "min_words": null, "max_words": null, "example": "Faster Recall"}
+    },
+    "optional_fields": {
+      "description": {"type": "string", "description": "Optional explanatory text accepted by smart-layout items.", "min_words": 12, "max_words": 15, "example": "This metric summarizes the improvement learners should understand from the slide."},
+      "icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-line-chart-line"}
+    }
+  },
+  "block_schema": {"type": "smart_layout", "variant": "stats", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "stats",
+    "items": [
+      {"value": "3x", "label": "Faster Recall", "description": "This metric summarizes the improvement learners should understand from the slide."},
+      {"value": "2", "label": "Key Steps", "description": "This metric counts the steps needed to apply the concept."}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly stats.", "Use value and label for metric items.", "Current BlockSpec supports 2-4 items."]
+}

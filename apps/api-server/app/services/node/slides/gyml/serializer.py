@@ -345,12 +345,49 @@ class GyMLSerializer:
             variant = content.get("variant", SmartLayoutVariant.BIG_BULLETS.value)
 
             if variant == "branching_path":
+                branches = content.get("branches", []) or []
+                if not branches and items_data:
+                    branches = []
+                    for idx, item in enumerate(items_data[:4]):
+                        if not isinstance(item, dict):
+                            continue
+                        suffix = chr(65 + idx)
+                        label = str(
+                            item.get("path_label")
+                            or item.get("heading")
+                            or item.get("label")
+                            or item.get("title")
+                            or f"Path {suffix}"
+                        ).strip()
+                        description = str(
+                            item.get("path_description")
+                            or item.get("description")
+                            or item.get("text")
+                            or item.get("content")
+                            or ""
+                        ).strip()
+                        branches.append(
+                            {
+                                "edge_label": str(item.get("edge_label") or f"Option {suffix}").strip(),
+                                "path_label": label,
+                                "path_description": description,
+                                "outcome_label": str(
+                                    item.get("outcome_label")
+                                    or item.get("outcome")
+                                    or f"Outcome {suffix}"
+                                ).strip(),
+                                "outcome_description": str(
+                                    item.get("outcome_description") or description
+                                ).strip(),
+                            }
+                        )
+
                 return GyMLSmartLayout(
                     variant=variant,
                     items=[],
                     start=content.get("start"),
                     decision=content.get("decision"),
-                    branches=content.get("branches", []) or [],
+                    branches=branches,
                     fallback=content.get("fallback"),
                 )
 

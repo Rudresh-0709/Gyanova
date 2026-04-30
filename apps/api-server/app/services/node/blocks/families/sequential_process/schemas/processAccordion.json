@@ -1,0 +1,20 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Accordion step heading.", "min_words": null, "max_words": null, "example": "Open Step"},
+      "description": {"type": "string", "description": "Specific explanation for the accordion step.", "min_words": 12, "max_words": 15, "example": "This step opens the sequence and establishes the learner's starting point."},
+      "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-list-check"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "processAccordion", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "processAccordion",
+    "items": [
+      {"heading": "Open Step", "description": "This step opens the sequence and establishes the learner's starting point.", "icon_name": "ri-list-check"},
+      {"heading": "Next Step", "description": "This step explains what changes after the starting point is clear.", "icon_name": "ri-arrow-down-line"}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly processAccordion.", "Every item must include icon_name.", "Current BlockSpec supports 3-5 items.", "Each primary item description must be 12-15 words."]
+}

@@ -1,0 +1,20 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Icon bullet heading.", "min_words": null, "max_words": null, "example": "Key Idea"},
+      "description": {"type": "string", "description": "Specific explanation for the icon bullet.", "min_words": 12, "max_words": 15, "example": "This idea gives learners a clear anchor for the concept."},
+      "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-lightbulb-line"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "bulletIcon", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "bulletIcon",
+    "items": [
+      {"heading": "Key Idea", "description": "This idea gives learners a clear anchor for the concept.", "icon_name": "ri-lightbulb-line"},
+      {"heading": "Useful Detail", "description": "This detail connects the idea to a practical learning outcome.", "icon_name": "ri-compass-3-line"}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly bulletIcon.", "Every item must include icon_name.", "Current BlockSpec supports 2-6 items.", "Each primary item description must be 12-15 words."]
+}

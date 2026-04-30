@@ -39,16 +39,33 @@ def render_branching_path(block: Any, context: Any) -> str:
     branches = _get(block, "branches", []) or []
     if not branches:
         items = _get(block, "items", []) or []
-        branches = [
-            {
-                "edge_label": f"Option {chr(65 + index)}",
-                "path_label": _get(item, "heading") or _get(item, "label") or f"Path {chr(65 + index)}",
-                "path_description": _get(item, "description", ""),
-                "outcome_label": _get(item, "label") or _get(item, "heading") or f"Outcome {chr(65 + index)}",
-                "outcome_description": _get(item, "description", ""),
-            }
-            for index, item in enumerate(items)
-        ]
+        if items:
+            print(
+                "[RENDER WARNING] branching_path received items[]; expected "
+                "start/decision/branches. Converting legacy items as a fallback."
+            )
+            branches = [
+                {
+                    "edge_label": f"Option {chr(65 + index)}",
+                    "path_label": _get(item, "heading") or _get(item, "label") or f"Path {chr(65 + index)}",
+                    "path_description": _get(item, "description", ""),
+                    "outcome_label": _get(item, "label") or _get(item, "heading") or f"Outcome {chr(65 + index)}",
+                    "outcome_description": _get(item, "description", ""),
+                }
+                for index, item in enumerate(items)
+            ]
+        else:
+            print(
+                "[RENDER WARNING] branching_path received no branches and no "
+                "legacy items; rendering schema error state."
+            )
+            return (
+                '<div class="smart-layout" data-variant="branching_path" data-item-count="0">'
+                '  <div class="bp-schema-error">'
+                '    branching_path requires start, decision, and 2-4 branches.'
+                '  </div>'
+                '</div>'
+            )
     fallback = _get(block, "fallback")
     branch_count = len(branches)
     spine_count = max(branch_count, 1)

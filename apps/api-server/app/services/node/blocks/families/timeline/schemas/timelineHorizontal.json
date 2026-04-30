@@ -1,0 +1,59 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {
+        "type": "string",
+        "description": "Short event or step label for the horizontal timeline item.",
+        "min_words": null,
+        "max_words": null,
+        "example": "First Stage"
+      },
+      "description": {
+        "type": "string",
+        "description": "One specific explanatory sentence tied to the slide objective.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "The first stage establishes the context students need before comparing later changes."
+      }
+    },
+    "optional_fields": {
+      "icon_name": {
+        "type": "string",
+        "description": "Optional Remix Icon class accepted by the current v2 prompt schema.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-flag-2-line"
+      }
+    }
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "timelineHorizontal",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "timelineHorizontal",
+    "items": [
+      {
+        "heading": "First Stage",
+        "description": "The first stage establishes the context students need before comparing later changes."
+      },
+      {
+        "heading": "Next Shift",
+        "description": "The next shift shows how one change creates a clearer learning outcome."
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly timelineHorizontal.",
+    "Items must use the current v2 smart-layout item shape: heading and description.",
+    "Each primary item description must be 12-15 words.",
+    "The generated block must contain exactly the item count requested by the v2 prompt.",
+    "Current timelineHorizontal BlockSpec profile supports 3-5 items.",
+    "Do not add fields that the v2 prompt does not request."
+  ]
+}

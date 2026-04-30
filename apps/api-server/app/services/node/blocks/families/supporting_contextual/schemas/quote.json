@@ -1,0 +1,21 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Quote author or source heading.", "min_words": null, "max_words": null, "example": "Teacher"},
+      "description": {"type": "string", "description": "Quote text.", "min_words": null, "max_words": null, "example": "A clear concept becomes useful when learners can explain it."}
+    },
+    "optional_fields": {
+      "citation": {"type": "string", "description": "Optional citation from the absorbed quoteCitation schema noted in the spec.", "min_words": null, "max_words": null, "example": "Classroom note"}
+    }
+  },
+  "block_schema": {"type": "smart_layout", "variant": "quote", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "quote",
+    "items": [
+      {"heading": "Teacher", "description": "A clear concept becomes useful when learners can explain it.", "citation": "Classroom note"},
+      {"heading": "Guide", "description": "Understanding grows when each example connects back to the goal."}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly quote.", "Use heading for author/source and description for quote text.", "Current BlockSpec item range is exactly 1."]
+}

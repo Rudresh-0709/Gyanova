@@ -1,0 +1,19 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Sequential step heading.", "min_words": null, "max_words": null, "example": "First Move"},
+      "description": {"type": "string", "description": "Specific explanation for the sequential step.", "min_words": 12, "max_words": 15, "example": "This move starts the sequence and prepares learners for the next change."}
+    },
+    "optional_fields": {"icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-number-1"}}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "sequentialSteps", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "sequentialSteps",
+    "items": [
+      {"heading": "First Move", "description": "This move starts the sequence and prepares learners for the next change."},
+      {"heading": "Second Move", "description": "This move shows how the first change creates a new outcome."}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly sequentialSteps.", "Current BlockSpec supports 2-4 items.", "Each primary item description must be 12-15 words."]
+}

@@ -1,0 +1,22 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Metric comparison heading.", "min_words": null, "max_words": null, "example": "Before"},
+      "description": {"type": "string", "description": "Specific metric comparison explanation.", "min_words": 12, "max_words": 15, "example": "This metric shows the starting point before the concept is applied."}
+    },
+    "optional_fields": {
+      "value": {"type": "string", "description": "Optional metric value accepted by smart-layout items.", "min_words": null, "max_words": null, "example": "40%"},
+      "label": {"type": "string", "description": "Optional metric label accepted by smart-layout items.", "min_words": null, "max_words": null, "example": "Before"}
+    }
+  },
+  "block_schema": {"type": "smart_layout", "variant": "statsComparison", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "statsComparison",
+    "items": [
+      {"heading": "Before", "description": "This metric shows the starting point before the concept is applied.", "value": "40%", "label": "Before"},
+      {"heading": "After", "description": "This metric shows the result after learners apply the concept.", "value": "80%", "label": "After"}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly statsComparison.", "Current BlockSpec supports 3-6 items.", "Each primary item description must be 12-15 words when description is present."]
+}

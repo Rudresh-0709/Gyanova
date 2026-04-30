@@ -1,0 +1,19 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Large bullet heading.", "min_words": null, "max_words": null, "example": "Key Idea"},
+      "description": {"type": "string", "description": "Specific explanation for the bullet.", "min_words": 12, "max_words": 15, "example": "This idea gives learners a clear anchor for the concept."}
+    },
+    "optional_fields": {"icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-lightbulb-line"}}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "bigBullets", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "bigBullets",
+    "items": [
+      {"heading": "Key Idea", "description": "This idea gives learners a clear anchor for the concept."},
+      {"heading": "Useful Detail", "description": "This detail connects the idea to a practical learning outcome."}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly bigBullets.", "Current BlockSpec supports 2-6 items.", "Each primary item description must be 12-15 words."]
+}

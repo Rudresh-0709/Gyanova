@@ -1,0 +1,59 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {
+        "type": "string",
+        "description": "Short sequential timeline label for the item.",
+        "min_words": null,
+        "max_words": null,
+        "example": "Start Point"
+      },
+      "description": {
+        "type": "string",
+        "description": "One specific explanatory sentence tied to the slide objective.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "The start point introduces the first idea students need to follow."
+      }
+    },
+    "optional_fields": {
+      "icon_name": {
+        "type": "string",
+        "description": "Optional Remix Icon class accepted by the current v2 prompt schema.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-compass-3-line"
+      }
+    }
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "timelineSequential",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "timelineSequential",
+    "items": [
+      {
+        "heading": "Start Point",
+        "description": "The start point introduces the first idea students need to follow."
+      },
+      {
+        "heading": "Next Point",
+        "description": "The next point explains how the first idea develops into action."
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly timelineSequential.",
+    "Items must use the current v2 smart-layout item shape: heading and description.",
+    "Each primary item description must be 12-15 words.",
+    "The generated block must contain exactly the item count requested by the v2 prompt.",
+    "No static timelineSequential BlockSpec profile is currently defined in timeline/spec.py; use the v2 prompt's requested item count as the source of truth.",
+    "Do not add fields that the v2 prompt does not request."
+  ]
+}

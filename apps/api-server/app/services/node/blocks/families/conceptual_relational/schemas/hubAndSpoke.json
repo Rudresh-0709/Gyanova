@@ -1,0 +1,26 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "label": {"type": "string", "description": "Spoke label accepted by hub-and-spoke items.", "min_words": null, "max_words": null, "example": "Spoke One"},
+      "description": {"type": "string", "description": "Explanation of this spoke's relationship to the hub.", "min_words": 12, "max_words": 15, "example": "This spoke connects a supporting idea back to the central concept."},
+      "icon": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-link"}
+    },
+    "optional_fields": {"color": {"type": "string", "description": "Optional color token accepted by hub-and-spoke items.", "min_words": null, "max_words": null, "example": "#10B981"}}
+  },
+  "block_schema": {"type": "hub_and_spoke", "hub_label": "string", "items": ["item_schema"], "variant": "hexagon"},
+  "prompt_example": {
+    "type": "hub_and_spoke",
+    "hub_label": "Central Idea",
+    "items": [
+      {"label": "Spoke One", "description": "This spoke connects a supporting idea back to the central concept.", "icon": "ri-link"},
+      {"label": "Spoke Two", "description": "This spoke shows another dependency that helps explain the whole system.", "icon": "ri-node-tree"}
+    ],
+    "variant": "hexagon"
+  },
+  "validation_rules": [
+    "Block type must be exactly hub_and_spoke when using the top-level block.",
+    "Every item must include an icon.",
+    "Current BlockSpec supports 3-6 items.",
+    "Use hub_label for the center."
+  ]
+}

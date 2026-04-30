@@ -1,0 +1,25 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "name": {"type": "string", "description": "Variable name.", "min_words": null, "max_words": null, "example": "x"},
+      "definition": {"type": "string", "description": "Variable meaning.", "min_words": null, "max_words": null, "example": "Input value"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {
+    "type": "formula_block",
+    "expression": {"type": "string", "description": "Formula or equation expression.", "example": "y = f(x)"},
+    "variables": {"type": "array[item_schema]", "description": "Formula variables."},
+    "example": {"type": "string", "description": "Short applied example.", "example": "Use the formula to map an input to an output."}
+  },
+  "prompt_example": {
+    "type": "formula_block",
+    "expression": "y = f(x)",
+    "variables": [
+      {"name": "x", "definition": "Input value"},
+      {"name": "y", "definition": "Output value"}
+    ],
+    "example": "Use the formula to map an input to an output."
+  },
+  "validation_rules": ["Block type must be exactly formula_block.", "expression must be present.", "variables must be an array when present.", "Current BlockSpec item range is exactly 1."]
+}

@@ -1,0 +1,56 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {
+        "type": "string",
+        "description": "Check bullet heading accepted by the current smart_layout generation path.",
+        "min_words": null,
+        "max_words": null,
+        "example": "What Works"
+      },
+      "description": {
+        "type": "string",
+        "description": "Specific explanatory sentence for the check bullet.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "This point identifies a helpful practice learners should remember and apply."
+      }
+    },
+    "optional_fields": {
+      "icon_name": {
+        "type": "string",
+        "description": "Optional Remix Icon class accepted by the current smart_layout item mapping.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-check-line"
+      }
+    }
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "bulletCheck",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "bulletCheck",
+    "items": [
+      {
+        "heading": "What Works",
+        "description": "This point identifies a helpful practice learners should remember and apply."
+      },
+      {
+        "heading": "Why It Helps",
+        "description": "This point connects the practice to a concrete learning outcome."
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly bulletCheck.",
+    "Items must use fields accepted by the current smart_layout item mapping.",
+    "Each primary item description must be 12-15 words."
+  ]
+}

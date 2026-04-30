@@ -1,0 +1,20 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Pillar card heading.", "min_words": null, "max_words": null, "example": "Pillar One"},
+      "description": {"type": "string", "description": "Specific explanation for the pillar.", "min_words": 12, "max_words": 15, "example": "This pillar gives learners one stable support for the concept."},
+      "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-building-2-line"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "pillar_cards", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "pillar_cards",
+    "items": [
+      {"heading": "Pillar One", "description": "This pillar gives learners one stable support for the concept.", "icon_name": "ri-building-2-line"},
+      {"heading": "Pillar Two", "description": "This pillar adds another support that makes the idea clearer.", "icon_name": "ri-stack-line"}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly pillar_cards.", "Every item must include icon_name.", "Current BlockSpec supports 3-5 items.", "Each primary item description must be 12-15 words."]
+}

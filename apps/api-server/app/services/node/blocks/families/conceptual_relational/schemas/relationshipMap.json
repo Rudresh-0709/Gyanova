@@ -1,0 +1,26 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Relationship node label.", "min_words": null, "max_words": null, "example": "Cause"},
+      "description": {"type": "string", "description": "Explanation of the node's role in the relationship.", "min_words": 12, "max_words": 15, "example": "This node starts the relationship and explains why the sequence matters."},
+      "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-arrow-right-line"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "relationshipMap", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "relationshipMap",
+    "items": [
+      {"heading": "Cause", "description": "This node starts the relationship and explains why the sequence matters.", "icon_name": "ri-arrow-right-line"},
+      {"heading": "Effect", "description": "This node shows the result learners should connect to the cause.", "icon_name": "ri-focus-3-line"}
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly relationshipMap.",
+    "Every item must include icon_name.",
+    "Current BlockSpec item range is exactly 3.",
+    "Each primary item description must be 12-15 words."
+  ]
+}

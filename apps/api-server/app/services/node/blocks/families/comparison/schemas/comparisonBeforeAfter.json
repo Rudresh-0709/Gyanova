@@ -1,0 +1,25 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Comparison subject label.", "min_words": null, "max_words": null, "example": "Learning Focus"},
+      "description": {"type": "string", "description": "Before/after explanation accepted by current smart-layout rendering.", "min_words": 12, "max_words": 15, "example": "Before shows isolated recall, while after connects meaning with practical use."}
+    },
+    "optional_fields": {"icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-arrow-right-line"}}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "comparisonBeforeAfter", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "comparisonBeforeAfter",
+    "items": [
+      {"heading": "Learning Focus", "description": "Before shows isolated recall, while after connects meaning with practical use."},
+      {"heading": "Student Action", "description": "Before students repeat facts, after they explain relationships using evidence."}
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly comparisonBeforeAfter.",
+    "Use heading and description for each item.",
+    "Each primary item description must be 12-15 words.",
+    "Current BlockSpec supports 1-6 items."
+  ]
+}

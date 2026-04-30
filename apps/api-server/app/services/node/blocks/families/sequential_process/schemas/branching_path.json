@@ -1,0 +1,36 @@
+{
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "branching_path",
+    "start": {"type": "object", "description": "Start node with label and optional description.", "example": {"label": "Start", "description": "Begin by checking the condition."}},
+    "decision": {"type": "object", "description": "Decision node with label and optional description.", "example": {"label": "Choose Path", "description": "Decide which condition applies."}},
+    "branches": {
+      "type": "array[object]",
+      "min_items": 2,
+      "max_items": 4,
+      "description": "Branch objects with edge_label, path_label, path_description, outcome_label, outcome_description, and optional color.",
+      "item_schema": {
+        "edge_label": {"type": "string", "max_length": 20},
+        "path_label": {"type": "string", "max_length": 30},
+        "path_description": {"type": "string", "max_length": 120},
+        "outcome_label": {"type": "string", "max_length": 30},
+        "outcome_description": {"type": "string", "max_length": 120},
+        "color": {"type": "string", "optional": true}
+      },
+      "example": [{"edge_label": "If yes", "path_label": "Apply", "path_description": "Use the method.", "outcome_label": "Result", "outcome_description": "The learner gets a clear result."}]
+    },
+    "fallback": {"type": "object", "description": "Optional fallback node with label, description, and style.", "example": {"label": "Re-evaluate", "description": "Return to the decision if conditions change.", "style": "solid"}}
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "branching_path",
+    "start": {"label": "Start", "description": "Begin by checking the condition."},
+    "decision": {"label": "Choose Path", "description": "Decide which condition applies."},
+    "branches": [
+      {"edge_label": "If yes", "path_label": "Apply", "path_description": "Use the method.", "outcome_label": "Result", "outcome_description": "The learner gets a clear result."},
+      {"edge_label": "If no", "path_label": "Review", "path_description": "Check the missing context.", "outcome_label": "Retry", "outcome_description": "The learner tries again with better context."}
+    ],
+    "fallback": {"label": "Re-evaluate", "description": "Return to the decision if conditions change.", "style": "solid"}
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly branching_path.", "Use start, decision, branches, and optional fallback.", "branches must contain between 2 and 4 items (min_items: 2, max_items: 4)."]
+}

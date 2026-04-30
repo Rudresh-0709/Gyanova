@@ -1,0 +1,12 @@
+{
+  "item_schema": {},
+  "block_schema": {
+    "type": "image",
+    "src": {"type": "string", "description": "Image source URL.", "example": "https://example.com/image.png"},
+    "alt": {"type": "string", "description": "Image alt text.", "example": "Concept illustration"},
+    "imagePrompt": {"type": "string", "description": "Optional image prompt accepted by current media enrichment paths.", "example": "Clean instructional concept illustration"},
+    "is_accent": {"type": "boolean", "description": "Whether this image is an accent image.", "example": false}
+  },
+  "prompt_example": {"type": "image", "src": "https://example.com/image.png", "alt": "Concept illustration", "is_accent": false},
+  "validation_rules": ["Block type must be exactly image.", "Use src or imagePrompt for the image source path.", "Current BlockSpec item range is exactly 1."]
+}

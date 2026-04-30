@@ -1,0 +1,19 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Layer heading.", "min_words": null, "max_words": null, "example": "Foundation Layer"},
+      "description": {"type": "string", "description": "Specific explanation for the layer.", "min_words": 12, "max_words": 15, "example": "This layer supports the rest of the structure learners will build."}
+    },
+    "optional_fields": {"icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-stack-line"}}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "layer_stack", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "layer_stack",
+    "items": [
+      {"heading": "Foundation Layer", "description": "This layer supports the rest of the structure learners will build."},
+      {"heading": "Application Layer", "description": "This layer shows how the foundation becomes useful in context."}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly layer_stack.", "Current BlockSpec supports 3-6 items.", "Each primary item description must be 12-15 words."]
+}

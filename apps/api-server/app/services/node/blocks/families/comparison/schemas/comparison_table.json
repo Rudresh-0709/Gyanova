@@ -1,0 +1,37 @@
+{
+  "item_schema": {},
+  "block_schema": {
+    "type": "comparison_table",
+    "headers": {
+      "type": "array[string]",
+      "description": "Column labels for the comparison table.",
+      "example": ["Idea", "Meaning", "Use"]
+    },
+    "rows": {
+      "type": "array[array[string]]",
+      "description": "Table rows matching the header order.",
+      "example": [["Core concept", "What it is", "Definition"]]
+    },
+    "caption": {
+      "type": "string",
+      "description": "Optional table caption or conclusion.",
+      "example": "Comparison of key dimensions."
+    }
+  },
+  "prompt_example": {
+    "type": "comparison_table",
+    "headers": ["Dimension", "Option A", "Option B"],
+    "rows": [
+      ["Purpose", "Explains the concept", "Applies the concept"],
+      ["Use", "Best for definitions", "Best for examples"]
+    ],
+    "caption": "Use the option that best matches the learning goal."
+  },
+  "validation_rules": [
+    "Block type must be exactly comparison_table.",
+    "headers must be an array of strings.",
+    "rows must be an array of string arrays.",
+    "Each row should align with the headers.",
+    "Current BlockSpec supports 2-4 compared items."
+  ]
+}

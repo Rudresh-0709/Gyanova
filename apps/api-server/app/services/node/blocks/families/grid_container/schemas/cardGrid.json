@@ -1,0 +1,56 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {
+        "type": "string",
+        "description": "Card heading accepted by the current smart_layout generation path.",
+        "min_words": null,
+        "max_words": null,
+        "example": "Core Idea"
+      },
+      "description": {
+        "type": "string",
+        "description": "Specific explanatory sentence for the card.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "This card explains one concrete part of the lesson objective clearly."
+      }
+    },
+    "optional_fields": {
+      "icon_name": {
+        "type": "string",
+        "description": "Optional Remix Icon class accepted by the current smart_layout item mapping.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-lightbulb-line"
+      }
+    }
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "cardGrid",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "cardGrid",
+    "items": [
+      {
+        "heading": "Core Idea",
+        "description": "This card explains one concrete part of the lesson objective clearly."
+      },
+      {
+        "heading": "Useful Detail",
+        "description": "This card connects the idea to a practical learning outcome."
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly cardGrid.",
+    "Items must use fields accepted by the current smart_layout item mapping.",
+    "Each primary item description must be 12-15 words."
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "value": {"type": "string", "description": "Percentage value displayed prominently.", "min_words": null, "max_words": null, "example": "75%"},
+      "label": {"type": "string", "description": "Percentage label.", "min_words": null, "max_words": null, "example": "Completion"}
+    },
+    "optional_fields": {
+      "description": {"type": "string", "description": "Optional explanatory text accepted by smart-layout items.", "min_words": 12, "max_words": 15, "example": "This percentage summarizes how much progress the learner can identify."}
+    }
+  },
+  "block_schema": {"type": "smart_layout", "variant": "statsPercentage", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "statsPercentage",
+    "items": [
+      {"value": "75%", "label": "Completion", "description": "This percentage summarizes how much progress the learner can identify."},
+      {"value": "25%", "label": "Remaining", "description": "This percentage shows what still needs attention after the lesson."}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly statsPercentage.", "Use value and label for each percentage item.", "Current BlockSpec supports 2-4 items."]
+}

@@ -1,0 +1,19 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Process step heading.", "min_words": null, "max_words": null, "example": "Step One"},
+      "description": {"type": "string", "description": "Specific explanation for the process step.", "min_words": 12, "max_words": 15, "example": "This step introduces the action learners should perform before continuing."}
+    },
+    "optional_fields": {"icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-number-1"}}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "processSteps", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "processSteps",
+    "items": [
+      {"heading": "Step One", "description": "This step introduces the action learners should perform before continuing."},
+      {"heading": "Step Two", "description": "This step connects the action to a concrete learning result."}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly processSteps.", "Current BlockSpec supports 3-5 items.", "Each primary item description must be 12-15 words."]
+}

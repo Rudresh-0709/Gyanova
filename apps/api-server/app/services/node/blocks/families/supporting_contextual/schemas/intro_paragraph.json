@@ -1,0 +1,6 @@
+{
+  "item_schema": {},
+  "block_schema": {"type": "intro_paragraph", "text": {"type": "string", "description": "Introductory paragraph text.", "example": "This slide introduces the concept before the main structure."}},
+  "prompt_example": {"type": "intro_paragraph", "text": "This slide introduces the concept before the main structure."},
+  "validation_rules": ["Block type must be exactly intro_paragraph.", "text must be present.", "Current BlockSpec item range is exactly 1."]
+}

@@ -1,0 +1,19 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Simple card heading.", "min_words": null, "max_words": null, "example": "Core Idea"},
+      "description": {"type": "string", "description": "Specific explanation for the simple card.", "min_words": 12, "max_words": 15, "example": "This card explains the core idea in direct learner-friendly language."}
+    },
+    "optional_fields": {"icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-book-open-line"}}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "cardGridSimple", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "cardGridSimple",
+    "items": [
+      {"heading": "Core Idea", "description": "This card explains the core idea in direct learner-friendly language."},
+      {"heading": "Example Use", "description": "This card shows how the idea appears in a realistic context."}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly cardGridSimple.", "Current BlockSpec supports 2-6 items.", "Each primary item description must be 12-15 words."]
+}

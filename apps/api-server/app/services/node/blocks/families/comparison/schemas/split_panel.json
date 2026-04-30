@@ -1,0 +1,27 @@
+{
+  "item_schema": {},
+  "block_schema": {
+    "type": "split_panel",
+    "leftPanel": {
+      "type": "object",
+      "description": "Left comparison panel with title and content.",
+      "example": {"title": "Before", "content": "The idea is introduced without context."}
+    },
+    "rightPanel": {
+      "type": "object",
+      "description": "Right comparison panel with title and content.",
+      "example": {"title": "After", "content": "The idea is connected to an outcome."}
+    }
+  },
+  "prompt_example": {
+    "type": "split_panel",
+    "leftPanel": {"title": "Before", "content": "Students see isolated facts without a clear relationship."},
+    "rightPanel": {"title": "After", "content": "Students connect each fact to a practical explanation."}
+  },
+  "validation_rules": [
+    "Block type must be exactly split_panel.",
+    "Use exactly two panels.",
+    "Each panel must include title and content.",
+    "Current BlockSpec item range is exactly 2."
+  ]
+}

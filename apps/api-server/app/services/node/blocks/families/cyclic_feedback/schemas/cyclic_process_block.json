@@ -1,0 +1,25 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "label": {"type": "string", "description": "Cycle step label.", "min_words": null, "max_words": null, "example": "Observe"},
+      "description": {"type": "string", "description": "Explanation of this cycle step.", "min_words": null, "max_words": null, "example": "Learners observe the current state before choosing the next action."}
+    },
+    "optional_fields": {
+      "image_url": {"type": "string", "description": "Optional image URL or prompt carried through image_url.", "min_words": null, "max_words": null, "example": "Cycle observation image"},
+      "imagePrompt": {"type": "string", "description": "Optional image prompt accepted by current serialization paths.", "min_words": null, "max_words": null, "example": "Clean image showing observation in a feedback loop"}
+    }
+  },
+  "block_schema": {"type": "cyclic_process_block", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "cyclic_process_block",
+    "items": [
+      {"label": "Observe", "description": "Learners observe the current state before choosing the next action."},
+      {"label": "Adjust", "description": "Learners adjust their approach based on the feedback they received."}
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly cyclic_process_block.",
+    "Each item must include label and description.",
+    "Current BlockSpec supports 3-4 items."
+  ]
+}

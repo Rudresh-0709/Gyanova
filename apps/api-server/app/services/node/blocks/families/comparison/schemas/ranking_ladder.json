@@ -1,0 +1,25 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Ranked item label.", "min_words": null, "max_words": null, "example": "Highest Impact"},
+      "description": {"type": "string", "description": "Reason this item appears at this rank.", "min_words": 12, "max_words": 15, "example": "This item ranks highest because it most directly changes learner behavior."}
+    },
+    "optional_fields": {"icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-number-1"}}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "ranking_ladder", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "ranking_ladder",
+    "items": [
+      {"heading": "Highest Impact", "description": "This item ranks highest because it most directly changes learner behavior."},
+      {"heading": "Next Priority", "description": "This priority matters next because it supports the main learning outcome."}
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly ranking_ladder.",
+    "Use heading and description for each ranked item.",
+    "Current BlockSpec supports 3-6 items.",
+    "Each primary item description must be 12-15 words."
+  ]
+}

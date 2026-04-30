@@ -1,0 +1,20 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Diamond grid item heading.", "min_words": null, "max_words": null, "example": "Facet"},
+      "description": {"type": "string", "description": "Specific explanation for the grid item.", "min_words": 12, "max_words": 15, "example": "This facet highlights one useful way to understand the concept."},
+      "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-diamond-line"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "diamondGrid", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "diamondGrid",
+    "items": [
+      {"heading": "Facet", "description": "This facet highlights one useful way to understand the concept.", "icon_name": "ri-diamond-line"},
+      {"heading": "Connection", "description": "This connection shows how the facet supports the learning goal.", "icon_name": "ri-link"}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly diamondGrid.", "Every item must include icon_name.", "Current BlockSpec supports 1-6 items.", "Each primary item description must be 12-15 words."]
+}

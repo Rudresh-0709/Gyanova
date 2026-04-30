@@ -1,0 +1,10 @@
+{
+  "item_schema": {},
+  "block_schema": {
+    "type": "caption",
+    "text": {"type": "string", "description": "Caption text.", "example": "This image highlights the main relationship."},
+    "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "example": "ri-image-line"}
+  },
+  "prompt_example": {"type": "caption", "text": "This image highlights the main relationship.", "icon_name": "ri-image-line"},
+  "validation_rules": ["Block type must be exactly caption.", "text must be present.", "Caption requires an icon according to the BlockSpec.", "Current BlockSpec item range is exactly 1."]
+}

@@ -1,0 +1,20 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Arrow process step heading.", "min_words": null, "max_words": null, "example": "Step One"},
+      "description": {"type": "string", "description": "Specific explanation for the process step.", "min_words": 12, "max_words": 15, "example": "This step moves the learner from setup toward the main result."},
+      "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-arrow-right-line"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "processArrow", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "processArrow",
+    "items": [
+      {"heading": "Step One", "description": "This step moves the learner from setup toward the main result.", "icon_name": "ri-arrow-right-line"},
+      {"heading": "Step Two", "description": "This step shows how the result becomes visible and useful.", "icon_name": "ri-focus-3-line"}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly processArrow.", "Every item must include icon_name.", "Current BlockSpec supports 2-5 items.", "Each primary item description must be 12-15 words."]
+}

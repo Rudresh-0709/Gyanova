@@ -1,0 +1,25 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Point on the spectrum.", "min_words": null, "max_words": null, "example": "Low Support"},
+      "description": {"type": "string", "description": "Explanation of this spectrum position.", "min_words": 12, "max_words": 15, "example": "This position shows limited support and requires careful learner guidance."}
+    },
+    "optional_fields": {"icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-equalizer-line"}}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "spectrum_scale", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "spectrum_scale",
+    "items": [
+      {"heading": "Low Support", "description": "This position shows limited support and requires careful learner guidance."},
+      {"heading": "High Support", "description": "This position shows strong evidence and encourages confident concept application."}
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly spectrum_scale.",
+    "Use heading and description for each spectrum point.",
+    "Current BlockSpec supports 3-6 items.",
+    "Each primary item description must be 12-15 words."
+  ]
+}

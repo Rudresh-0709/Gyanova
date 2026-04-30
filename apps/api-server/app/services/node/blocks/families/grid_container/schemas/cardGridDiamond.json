@@ -1,0 +1,20 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Diamond card heading.", "min_words": null, "max_words": null, "example": "Concept Part"},
+      "description": {"type": "string", "description": "Specific explanation for the card.", "min_words": 12, "max_words": 15, "example": "This part explains one piece of the larger concept clearly."},
+      "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-shapes-line"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "cardGridDiamond", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "cardGridDiamond",
+    "items": [
+      {"heading": "Concept Part", "description": "This part explains one piece of the larger concept clearly.", "icon_name": "ri-shapes-line"},
+      {"heading": "Linked Part", "description": "This part connects the concept to a useful learner action.", "icon_name": "ri-link"}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly cardGridDiamond.", "Every item must include icon_name.", "Current BlockSpec supports 3-6 items.", "Each primary item description must be 12-15 words."]
+}

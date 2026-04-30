@@ -1,0 +1,20 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Bento tile heading.", "min_words": null, "max_words": null, "example": "Main Tile"},
+      "description": {"type": "string", "description": "Specific explanation for the bento tile.", "min_words": 12, "max_words": 15, "example": "This tile explains the central idea with a compact visual summary."},
+      "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-layout-grid-line"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "bento_grid", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "bento_grid",
+    "items": [
+      {"heading": "Main Tile", "description": "This tile explains the central idea with a compact visual summary.", "icon_name": "ri-layout-grid-line"},
+      {"heading": "Detail Tile", "description": "This tile adds a supporting detail learners can quickly compare.", "icon_name": "ri-focus-3-line"}
+    ]
+  },
+  "validation_rules": ["Block type must be exactly smart_layout.", "Variant must be exactly bento_grid.", "Every item must include icon_name.", "Current BlockSpec supports 3-5 items.", "Each primary item description must be 12-15 words."]
+}

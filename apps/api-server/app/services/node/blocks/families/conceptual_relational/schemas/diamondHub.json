@@ -1,0 +1,26 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Hub node label.", "min_words": null, "max_words": null, "example": "Core Node"},
+      "description": {"type": "string", "description": "Explanation of this radial node.", "min_words": 12, "max_words": 15, "example": "This node explains one part connected directly to the central idea."},
+      "icon_name": {"type": "string", "description": "Required Remix Icon class because the BlockSpec requires icons.", "min_words": null, "max_words": null, "example": "ri-shapes-line"}
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "diamondHub", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "diamondHub",
+    "items": [
+      {"heading": "Core Node", "description": "This node explains one part connected directly to the central idea.", "icon_name": "ri-shapes-line"},
+      {"heading": "Support Node", "description": "This node adds evidence that strengthens the central learning relationship.", "icon_name": "ri-link"}
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly diamondHub.",
+    "Every item must include icon_name.",
+    "Current BlockSpec item range is exactly 4.",
+    "Each primary item description must be 12-15 words."
+  ]
+}

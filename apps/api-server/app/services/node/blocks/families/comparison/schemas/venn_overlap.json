@@ -1,0 +1,25 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {"type": "string", "description": "Circle or overlap label.", "min_words": null, "max_words": null, "example": "Shared Traits"},
+      "description": {"type": "string", "description": "Explanation of this Venn region.", "min_words": 12, "max_words": 15, "example": "This region shows the traits both ideas share in practice."}
+    },
+    "optional_fields": {"icon_name": {"type": "string", "description": "Optional Remix Icon class accepted by v2 smart-layout items.", "min_words": null, "max_words": null, "example": "ri-overline"}}
+  },
+  "block_schema": {"type": "smart_layout", "variant": "venn_overlap", "items": ["item_schema"]},
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "venn_overlap",
+    "items": [
+      {"heading": "Idea A", "description": "This circle captures what makes the first idea distinct and useful."},
+      {"heading": "Shared Traits", "description": "This region shows the traits both ideas share in practice."}
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly venn_overlap.",
+    "Use heading and description for each region.",
+    "Current BlockSpec item range is exactly 3.",
+    "Each primary item description must be 12-15 words."
+  ]
+}

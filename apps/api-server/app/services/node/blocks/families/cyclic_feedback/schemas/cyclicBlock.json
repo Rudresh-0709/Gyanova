@@ -1,0 +1,58 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {
+        "type": "string",
+        "description": "Cycle stage label mapped to GyMLCyclicItem.label by the current validator path.",
+        "min_words": null,
+        "max_words": null,
+        "example": "Observe"
+      },
+      "description": {
+        "type": "string",
+        "description": "Cycle stage description mapped to GyMLCyclicItem.description.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "Learners notice the result and prepare evidence for the next step."
+      }
+    },
+    "optional_fields": {
+      "icon_name": {
+        "type": "string",
+        "description": "Optional Remix Icon class mapped to GyMLCyclicItem.icon.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-refresh-line"
+      }
+    }
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "cyclicBlock",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "cyclicBlock",
+    "items": [
+      {
+        "heading": "Observe",
+        "description": "Learners notice the result and prepare evidence for the next step.",
+        "icon_name": "ri-eye-line"
+      },
+      {
+        "heading": "Adjust",
+        "description": "Learners use the evidence to improve the next attempt.",
+        "icon_name": "ri-refresh-line"
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly cyclicBlock.",
+    "Items are routed to GyMLCyclicItem by the current validator path.",
+    "Use heading, description, and optional icon_name only."
+  ]
+}

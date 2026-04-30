@@ -1,0 +1,61 @@
+{
+  "item_schema": {
+    "required_fields": {
+      "heading": {
+        "type": "string",
+        "description": "Short milestone label for the timeline milestone item.",
+        "min_words": null,
+        "max_words": null,
+        "example": "Critical Milestone"
+      },
+      "description": {
+        "type": "string",
+        "description": "One specific explanatory sentence tied to the slide objective.",
+        "min_words": 12,
+        "max_words": 15,
+        "example": "This milestone marks the decision point that changes the learner's interpretation."
+      },
+      "icon_name": {
+        "type": "string",
+        "description": "Required Remix Icon class because the current timelineMilestone BlockSpec requires icons.",
+        "min_words": null,
+        "max_words": null,
+        "example": "ri-flag-2-line"
+      }
+    },
+    "optional_fields": {}
+  },
+  "block_schema": {
+    "type": "smart_layout",
+    "variant": "timelineMilestone",
+    "items": [
+      "item_schema"
+    ]
+  },
+  "prompt_example": {
+    "type": "smart_layout",
+    "variant": "timelineMilestone",
+    "items": [
+      {
+        "heading": "Critical Milestone",
+        "description": "This milestone marks the decision point that changes the learner's interpretation.",
+        "icon_name": "ri-flag-2-line"
+      },
+      {
+        "heading": "Visible Result",
+        "description": "This result shows the practical effect learners should remember after the slide.",
+        "icon_name": "ri-line-chart-line"
+      }
+    ]
+  },
+  "validation_rules": [
+    "Block type must be exactly smart_layout.",
+    "Variant must be exactly timelineMilestone.",
+    "Items must use the current v2 smart-layout item shape: heading, description, and icon_name.",
+    "Each primary item description must be 12-15 words.",
+    "Every item must include icon_name with a valid Remix Icon class.",
+    "The generated block must contain exactly the item count requested by the v2 prompt.",
+    "Current timelineMilestone BlockSpec profiles support 2-4 items for milestone_normal or 5-6 items for milestone_extended.",
+    "Do not add fields that the v2 prompt does not request."
+  ]
+}

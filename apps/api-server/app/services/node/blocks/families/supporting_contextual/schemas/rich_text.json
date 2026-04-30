@@ -1,0 +1,9 @@
+{
+  "item_schema": {},
+  "block_schema": {
+    "type": "rich_text",
+    "paragraphs": {"type": "array[string]", "description": "Formatted rich text paragraphs.", "example": ["First supporting paragraph.", "Second supporting paragraph."]}
+  },
+  "prompt_example": {"type": "rich_text", "paragraphs": ["First supporting paragraph.", "Second supporting paragraph."]},
+  "validation_rules": ["Block type must be exactly rich_text.", "paragraphs must be an array of strings.", "Current BlockSpec item range is exactly 1."]
+}
